@@ -172,10 +172,9 @@
 
 
         <span>
-            <?php 
-            if( $this->profile == 1){?>
+            <?php if ($this->auth['user_id'] == $this->reciever || $this->profile): ?>
                 <?=$this->user_data->Email_id?>
-            <?php } ?>
+            <?php endif; ?>
         </span>
 
     </li>
