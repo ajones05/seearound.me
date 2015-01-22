@@ -192,41 +192,44 @@ class Application_Model_User extends My_Db_Table_Abstract {
 
         }
 
+		$auth = Zend_Auth::getInstance();
 
+		if (!$auth->getIdentity()) {
+			if($errors['Email_id'] == '' && $data['Email_id'] != '') {
 
-        if($errors['Email_id'] == '' && $data['Email_id'] != '') {
+				$select = $userTable->select()
 
-            $select = $userTable->select()
+					->where('Email_id =?', $data['Email_id']);
 
-                ->where('Email_id =?', $data['Email_id']);
+				if($row = $userTable->fetchRow($select)) {
 
-            if($row = $userTable->fetchRow($select)) {
+					$errors['Email_id'] = 'This email is already registered with herespy.com';
 
-                $errors['Email_id'] = 'This email is already registered with herespy.com';
+				}
 
-            }
+			}
 
-        }
+			if($errors['Password'] == '' && $errors['Re-password'] == '') {
 
-        if($errors['Password'] == '' && $errors['Re-password'] == '') {
+				if($data['Password'] !== $data['Re-password']) {
 
-            if($data['Password'] !== $data['Re-password']) {
+					$errors['Re-password'] = 'Password not match';
 
-                $errors['Re-password'] = 'Password not match';
+				} else {
+				   
+				   $lowercase = preg_match('@[a-z]@', $data['Password']);
+				   $number    = preg_match('@[0-9]@', $data['Password']);
+					
+				   if(!$lowercase || !$number || strlen($data['Password']) < 6) {
+					 $errors['Password'] = 'Password  minimum of 6 characters, with at least one character or number.';
+				   }  
+			
+			
+			   } 
+			
+			}
 
-            } else {
-               
-               $lowercase = preg_match('@[a-z]@', $data['Password']);
-               $number    = preg_match('@[0-9]@', $data['Password']);
-                
-               if(!$lowercase || !$number || strlen($data['Password']) < 6) {
-                 $errors['Password'] = 'Password  minimum of 6 characters, with at least one character or number.';
-               }  
-        
-        
-           } 
-        
-        }
+		}
 
     }
 
