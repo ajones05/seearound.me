@@ -32,6 +32,10 @@ class GeneralController extends  My_Controller_Action_Abstract
     {
     }
 
+    public function forgotPasswordAction()
+    {
+    }
+
     public function logoutAction()
 
     {

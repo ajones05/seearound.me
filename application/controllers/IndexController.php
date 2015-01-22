@@ -940,23 +940,17 @@ public function wsfbLoginAction(){
 
                     $this->from = "admin@herespy.com";
 
-                    $returnurl  = BASE_PATH."index/change-password/pc/yes/em/".urlencode($row->Email_id)."/cd/".urlencode($row->Conf_code);
+                    $this->view->forgot_url  = BASE_PATH."index/change-password/pc/yes/em/".urlencode($row->Email_id)."/cd/".urlencode($row->Conf_code);
 
-                    $this->subject = "Frogot password";
-
-                    $message       = "To change your password. Please click on the link.<br/><br/> link : <a href='$returnurl'>$returnurl</a>";
-
-                    
+                    $this->subject = "Forgot Password";
 
                     $this->view->name      = $row->Name;
-
-                    $this->view->message   = "<p align='justify'>$message</p>";
 
                     $this->view->adminName = "Admin";
 
                     $this->view->response  = "Here Spy";
 
-                    $this->message         = $this->view->action("index","general",array());
+                    $this->message         = $this->view->action("forgot-password", "general", array());
 
                     $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
 
