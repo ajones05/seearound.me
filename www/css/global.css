@@ -699,7 +699,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 .loginForm li span input{ float: left; display: inline-block; width:auto; height:auto; margin-top: 2px;}
 
 
-.loginForm li.btn input{cursor: pointer ; border:0; height:auto; margin-top:0px; ;vertical-align:middle; color: #fff; font: normal 18px Lato-Bold; background: #668cd5; padding:19px 40px; width: auto;} 
+.loginForm li.btn input, .blueButton{cursor: pointer ; border:0; height:auto; margin-top:0px; ;vertical-align:middle; color: #fff; font: normal 18px Lato-Bold; background: #668cd5; padding:19px 40px; width: auto;} 
 
 .loginCopyArea{margin:0px;}
 

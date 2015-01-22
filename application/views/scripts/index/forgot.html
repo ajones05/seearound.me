@@ -21,10 +21,17 @@
                     <?if($this->forgoterror) :?>
                         <div class="errors floatL"><?=$this->forgoterror?></div><br>
                     <?endif;?>
-                </ul><br />
-                <div class="findiv floatL">
-                    <input class="btnBlueRpt" type="submit" value="Done" />&nbsp;&nbsp;<a class="hypDecNone" href="<?=BASE_PATH?>"><input class="btnBlueRpt" type="button" value="Cancel" /></a>
-                </div><br />
+                </ul>
+				<br />
+                <div>
+					<div class="floatR" style="margin-left:10px;">
+						<input style="padding:5px;width:110px;" class="blueButton" type="submit" value="Submit" />
+					</div>
+					<a class="hypDecNone floatR" href="<?php echo BASE_PATH; ?>">
+						<input style="padding:5px;width:110px;" class="blueButton" type="button" value="Cancel" />
+					</a>
+                </div>
+				<br />
             </form>
             <?endif;?>
         <div class="forFormbgBott"></div>
