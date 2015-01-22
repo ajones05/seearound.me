@@ -1,0 +1,753 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Here Spy</title>
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/colorbox.css"/>
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/boxy.css"/>
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery-ui.css"/>
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/reset.css"/>
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/global.css"/>
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/layout.css"/>
+		<!-- custom scrollbar stylesheet -->
+	    <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery.mCustomScrollbar.css"/>
+		
+        <script language="javascript" type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
+        <!--<script language="javascript" type="text/javascript" src="http://j.maxmind.com/app/geoip.js"></script>-->
+        <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script>
+        <script language="javascript" type="text/javascript">
+        
+        var geoiplatitude  = <?php echo LATITUDE_VAR; ?>;
+        var geoiplongitude = <?php echo LONGITUDE_VAR; ?>;
+        var baseUrl = "<?=BASE_PATH?>";
+        var userLatitude = "<?=$this->auth['latitude'];?>";
+        var userLongitude = "<?=$this->auth['longitude'];?>";
+        var userPosition = new google.maps.LatLng(userLatitude,userLongitude);
+        var isLogin = "<?=$this->isLogin?>";
+        var isFbLogin = "<?=$this->auth['is_fb_login']?>";
+        var user_id = "<?=$this->auth['user_id']?>";
+        var reciever_userid =  "<?=$this->reciever?>";
+        
+        /*if(!friendListExist){
+           reciever_userid = "<?=$this->reciever?>";
+         } else {
+          reciever_userid = $('#frndListUserId').val();  
+         }*/
+         
+        var userName = "<?=$this->auth['user_name']?>";
+        var imagePath = "<?=$this->auth['pro_image']?>"; 
+        var controller = "<?=$this->request->getParam('controller')?>";
+        var action = "<?=$this->request->getParam('action')?>";
+        var showMy = "<?=$this->request->getParam('my')?'search':'no'?>";
+        var returnUrl = "<?=$this->request->getParam('url')?$this->request->getParam('url'):''?>";
+        var currentRequests = 0;
+        if(imagePath) {
+            if(imagePath.indexOf("://") > 0){
+                imagePath ='<?=$this->auth["pro_image"]?>';
+            }else {
+                imagePath = '<?=BASE_PATH?>uploads/<?=$this->auth["pro_image"]?>';
+            } 
+        } else {
+            imagePath = '<?=BASE_PATH?>www/images/img-prof40x40.jpg';
+        }  
+        </script>
+        
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery-ui.min.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/infobubble.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/customDatepicker.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.colorbox.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/json2.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.boxy.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.form.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/areaCircle.js"></script>
+        <?if($this->type != 'NEW'){ ?>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-common.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-mainMap.js"></script>
+        <?}else{?>
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/common.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/mainMap.js"></script>
+        <?}?>
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/upclick.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.autogrowtextarea.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.scrollTo-min.js"></script>
+		<!-- custom scrollbar plugin -->
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.mCustomScrollbar.js"></script>	   
+	  
+        <style type="text/css">
+         <?if($this->hideRight):?>
+            #midColLayout {
+                width:986px;
+                min-height: 593px;
+                border-right:0px solid #D3DDE6;
+                
+            }
+          <?endif?>
+        </style>
+        
+        <!-- script for filter posts by -->
+        <script type="text/javascript">
+           	 $(document).ready(function(){
+    	      $('.result').html("View All");
+              // This hides the menu when the page is clicked anywhere other than the menu.
+        		 $(document).bind('click', function(e) {
+        			var $clicked = $(e.target);
+        		     if (!$clicked.parents().hasClass("menu")){
+        		        $(".menu dd ul").hide();
+        				$(".menu dt a").removeClass("selected");
+        			 }
+        		 });
+        		
+        		$(".menu dt a").click(function() {
+         			  var clickedId = "#" + this.id.replace(/^link/,"ul");
+     		            // Hides everything else that the current menu 
+        		 	  $(".menu dd ul").not(clickedId).hide();
+        		        //Toggles the menu.
+         	 	  	  $(clickedId).toggle();
+                     //Add the selected class.
+        			 if($(clickedId).css("display") == "none"){
+        				$(this).removeClass("selected");
+        			 }else{
+        				$(this).addClass("selected");
+        			}
+        		});
+    		
+               // This function shows which menu item was selected in corresponding result place
+        		$(".menu dd ul li a").click(function() {
+        			var text = $(this).html();
+        			$(this).closest('dl').find('.result').html(text);
+        		    $(".menu dd ul").hide();
+        	 	   });
+       	     });
+        </script>
+     <!-- End script for filter posts by -->
+   </head>
+    <body>
+        <div id="fb-root"></div>
+        <div style="display: none;"></div>
+
+        <!-- Starting of top panel with fixed position -->
+        
+        <div class="uprBar">
+            <div class="uprBar-wrapper">
+            <ul class="uprBarInr afterClr">
+                 <li class="leftCol">
+                     <a class="logo" href="<?=BASE_PATH?>">
+                         <img src="<?=BASE_PATH?>www/images/logo.png"/></a>
+                 </li>
+           
+                <?if(!$this->publicProfile) :?>
+                  
+                <li class="midCol">
+                    <span class="sIcn">
+                        <?php if(!$this->message) :?>
+                       <!-- <input type="text" id="searchText" onkeyup="getKeycodes(true);" value="<?=$this->request->getParam('sv', null)?>"placeholder="Search posts..."/>-->
+                        <!--<img src="<?=BASE_PATH?>www/images/icn-search.gif" alt="Search" width="27" height="24" onclick="javascript:getAllNearestPoint('<?=$this->auth['latitude'];?>','<?=$this->auth['longitude'];?>',null)"/>-->
+                        <input type="text" id="searchText"   value="<?=$this->request->getParam('sv', null)?>"placeholder="Search posts..."/>
+                        <img src="<?=BASE_PATH?>www/images/icn-search.png" alt="Search" onclick="getKeycodes(true);"/>
+                        <?php endif;?>
+                    </span>
+                </li>
+                
+                <li class="rightCol">
+                    <ul class="primNav">
+                     
+                     <!-- Code for image profile on top header  <li>
+                            <a href="<?=BASE_PATH?>home/profile" id="myProfLink_1">
+                            <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="imgProf_Header" style="margin-top:-3px;"/>
+                             <?=$this->auth["user_name"]?>
+                            </a>
+                       </li>-->
+                      
+                        
+                      <?php if(!$this->message) :?>   
+                        <li>
+                            <a href="javascript:void(0);" id="ddMyConn"  onclick="showFriendRequest(this);"><img src="<?=BASE_PATH?>www/images/friends.png"  style="margin-top:-6px; width: 27px; height: auto"  alt="My Connections"  id="icnMyConn" /> 
+                                <!--<span style="padding-left:35px;">My Connections</span>-->
+                                   <span style="padding-left:33px;color: #5d5d5d;">My Friends</span>
+                            </a>
+                            <!-- <a href="javascript:void(0);" id="ddMyConn" onclick="showFriendRequest(this);">
+                                 <img src="<?=BASE_PATH?>www/images/spacer.gif" width="21" height="17" alt="My Connections" class="off" id="icnMyConn" /> 
+                                 <span style="padding-left:35px;">My Connections</span>
+                             </a>-->
+                            <span style="display:none;" id="noteTotal" class="connQty"></span>
+
+                            <div id="ddMyConnList" class="ddMyConnList beforeClr"></div>
+
+                        </li>
+                        <li>
+                            <a class="messageLiMargin" href="<?=BASE_PATH?>message">
+                                <!--<img src="<?=BASE_PATH?>www/images/message.png" width="33" height="27"  style="margin-top:-14px;" alt="My Messages" class="off" id="icnMyMsg" />-->
+                                <img src="<?=BASE_PATH?>www/images/message.png" style="margin-top:-1px; width: 24px; height: 18px" alt="My Messages" id="icnMyMsg" />
+                                <span class="linkText" style="color: #5d5d5d;">My Messages</span>
+                                <span style="display:none;" id="msgTotal" class="connQty"></span>
+                            </a>
+                        </li>
+                       
+                 
+                       <li class="last">
+                            <a href="javascript:void(0);" id="myProfLink">
+                               <!-- <img src="<?=BASE_PATH?>www/images/icn-mypro.gif" width="21" height="17" alt="My Profile" />-->
+                             <?php  if(isset($this->auth['pro_image'])) { ?>
+                               <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="imgProf_Header" style="margin-top:-8px;"/>
+                              <?php } else { ?>
+                               <img src="http://www.herespy.com//www/images/img-prof40x40.jpg" class="imgProf_Header" style="margin-top:-3px;"/>
+                              <?php } ?>
+                              <span style="color:#5d5d5d;">My Profile</span> 
+                             <!-- <img src="<?=BASE_PATH?>www/images/spacer.gif" width="30" height="25" class="floatR off" id="arwDwn" alt="My Profile" />-->
+                            </a>
+                                <div id="ddMyProf" class="ddMyProf beforeClr dispNone">
+                                <ul class="ddMyProfLinks afterClr">
+                                    <li>
+                                        <a href="<?=BASE_PATH?>/home/profile">Profile</a>
+                                    </li>
+                                    <li id="logoutLi">
+                                        <a href="javascript:void(0)" onclick="fbLogout('general/logout');">Logout</a>
+                                    </li>
+                                </ul>
+
+                            </div>
+                        </li>
+                        <div class="clr"></div>
+                   <?php endif; ?>
+                   
+                    </ul>
+                </li>
+                <div class="clr"></div>
+                <?endif;?>
+            </ul>
+        </div>
+        </div>
+
+        <!-- End of top panel bar with fixed position -->
+
+        <div id="line_1" class="mainContainer_line"></div>
+        <div id="mainDiv" class="mainContainer appendClr">
+
+            <!-- Start of left menu panel -->
+
+            <!--  /*Currently changed on 22 dec <div id="userDiv" class="leftCol eqlCH">
+                 <div class="profDtl"> 
+                     <?if($this->publicProfile) :?>
+                     <a style="z-index:9999;" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>">
+                             <span id="image_upload_field">
+                                 <?php if($this->user_data->Profile_image != 'null' && $this->user_data->Profile_image != '') {?> 
+                                 <img <? if(strpos($this->user_data->Profile_image, '://')):?>src="<?=$this->user_data->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$this->user_data->Profile_image?>"<?endif;?> class="imgProf" />
+                                 <?php } else { ?>
+                                 <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="imgProf"/>
+                                 <?php } ?>
+                             </span>
+                         </a> 
+                     <a class="hypDecNone" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>"><h3 class="name"><?php echo ucfirst($this->user_data->Name);?></h3></a>
+                         <p class="loc"><?php echo ucfirst($this->user_data->address);?></p>
+                     <?else :?>
+                         <a style="z-index:9999;" href="<?=BASE_PATH?>home/profile">
+                             <span id="image_upload_field">
+                                 <?if($this->auth["pro_image"]){?> 
+                                     <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="imgProf"/> 
+                                 <? } else { ?>
+                                     <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="imgProf"/>
+                                 <? } ?>
+                             </span>
+                         </a> 
+                         <a class="hypDecNone" href="<?=BASE_PATH?>home/profile"><h3 class="name"><?php echo ucfirst($this->auth['user_name']);?></h3></a>
+                         <p class="loc"><?php echo ucfirst($this->auth['address']);?></p>
+                     <?endif;?>                    
+                 </div>
+                 <div class="myProf">                    
+                     <?if($this->request->getParam("controller") == "contacts"):?>
+                         <h4 class="gray">My Profile:</h4>
+                         <ul id="links" class="links">
+                             <li>
+                                 <a href="javascript:void(0);" name="selected" onclick="selectLink(this,false);">My Posts</a>
+                             </li>
+                             <li>
+                                 <a href="<?=BASE_PATH?>home/profile/edit-profile" onclick="selectLink(this,false);">My Info</a>
+                             </li>
+                             <li>
+                                 <a class="blue" href="javascript:void(0);">All Connections </a>
+                             </li>
+                         </ul>
+                     <?elseif($this->request->getParam("controller") == "message") :?>
+                         <ul id="links" class="links">
+                             <li>
+                                 <a href="javascript:void(0);" style="color: #0068C4;" >Email Address </a>
+                                 <span><?php echo $this->auth['user_email'];?></span></br></br>
+                             </li>
+                             <li>
+                                 <a class="<?if($this->request->getParam('action') == 'index'): echo 'blue'; endif;?>" href="<?=BASE_PATH?>message" onclick="selectLink(this,false);">Inbox</a>
+                             </li>
+                             <li>
+                                 <a class="<?if($this->request->getParam('action') == 'sends'): echo 'blue'; endif;?>" href="<?=BASE_PATH?>message/sends" onclick="selectLink(this,false);">Sent</a>
+                             </li>
+                         </ul>
+                     <?elseif($this->request->getParam("controller") == "home") :?>
+                         <?if($this->request->getParam("action") == "profile"):?>
+                             <?if($this->publicProfile) :?>
+                                 <h4 class="gray">Public Profile:</h4>
+                                 <ul id="links" class="links">
+                                     <li>
+                                         <a class="blue" href="javascript:void(0);">Profile Info</a>
+                                     </li>
+                                     
+                                 </ul>
+                             <?else:?>
+                                 <h4 class="gray">My Profile:</h4>
+                                 <ul id="links" class="links">
+                                     <li>
+                                         <a href="javascript:void(0);" name="selected" onclick="sendLink(this,false);">My Posts</a>
+                                     </li>
+                                     <li>
+                                         <a class="blue" href="<?=BASE_PATH?>home/profile/edit-profile" onclick="selectLink(this,false);" >My Info</a>
+                                     </li>
+                                     <li>
+                                         <a href="<?=BASE_PATH?>contacts/friends-list" name="myconnection">My Connections </a>
+                                     </li>
+                                 </ul>
+                             <?endif;?>
+                         <?elseif($this->request->getParam("action") == "edit-profile") :?>
+                             <h4 class="gray">My Profile:</h4>
+                             <ul id="links" class="links">
+                                 <li>
+                                     <a href="javascript:void(0);" name="selected" onclick="sendLink(this,false);">My Posts</a>
+                                 </li>
+                                 <li>
+                                     <a class="blue" href="<?=BASE_PATH?>home/profile" onclick="selectLink(this,false);" >My Profile</a>
+                                 </li>
+                                 <li>
+                                     <a href="javascript:void(0);" name="myconnection" onclick="sendLink(this,false);">My Connections </a>
+                                 </li>
+                             </ul>
+                         <?elseif($this->request->getParam("action") == "index") :?>
+                             <h4 class="gray">Filter Posts:</h4>
+                             <ul id="links" class="links">
+                                 <li>
+                                     <a href="javascript:getAllNearestPoint('<?=$this->auth['latitude'];?>','<?=$this->auth['longitude'];?>',null,true)" onclick="selectLink(this,false);$('#searchText').val('');" <?if($this->current_menu == ""){?> class="blue" <?}?>>View All</a>
+                                 </li>
+                                 <li>
+                                     <a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'selected')" onclick="selectLink(this,false);$('#searchText').val('');" <?if($this->current_menu == "selected"){?> class="blue" <?}?>>Mine only</a>
+                                 </li>
+                                 <li>
+                                     <a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'interest')" onclick="selectLink(this,false);$('#searchText').val('');" <?if($this->current_menu == "interest"){?> class="blue" <?}?> >My Interests</a>
+                                 </li>
+                                 <li>
+                                     <a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'myconnection')" onclick="selectLink(this,false);$('#searchText').val('');" <?if($this->current_menu == "myconnection"){?> class="blue" <?}?> >My Connections </a>
+                                 </li>
+ 
+                             </ul>
+                         <?endif;?>
+                      <?elseif($this->request->getParam("controller") == "info" && $this->auth['user_id'] != '') :?>
+                         <?if($this->request->getParam("action") == "news"):?>
+                             <h4 class="gray">Filter Posts:</h4>
+                             <ul id="links" class="links">
+                                 <li>
+                                     <a href="<?=BASE_PATH?>home" onclick="selectLink(this,false);">View All</a>
+                                 </li>
+                                 <li>
+                                     <a href="javascript:void(0);" name="selected" onclick="sendLink(this,false);">Mine only</a>
+                                 </li>
+                                 <li>
+                                     <a href="javascript:void(0);" name="interest" onclick="sendLink(this,false);">My Interests</a>
+                                 </li>
+                                 <li>
+                                     <a href="javascript:void(0);" name="myconnection" onclick="sendLink(this,false);">My Connections </a>
+                                 </li>
+                                 <li>
+                                     <a class="blue" href="javascript:void(0);" onclick="selectLink(this,false);">Details News </a>
+                                 </li>
+                             </ul>
+                         <?endif;?>
+                     <?endif;?>
+                 </div>
+             </div>   -->
+            <!-- End of left panel -->
+
+            <!-- Middle part of page contents come from action views file -->
+            <?php if(isset($this->currentPage) && ($this->currentPage == 'Message')): ?>
+                <div style="float:left;width:100%;">
+                <div class="midCol eqlCH" id="midColLayout" style="min-height: auto; height: 100%; position: relative; float: right; margin-right: 0px;width: 100%;">
+            <?php else: ?>
+                <div style="float:left;width:49%;">
+                    <?php if(isset($this->currentPage) && ($this->currentPage == 'Profile')):?>
+                    <div class="midCol eqlCH" id="midColLayout" ddd="ddd" style="height: 100%;width:auto;position: relative; margin-right: 0px;">
+                        <?php else: ?>
+                            <div class="midCol eqlCH" id="midColLayout" ddd="ccc"  style="min-height: auto; height: 100%; position: relative; float: right; margin-right: 0px;">
+                        <?php endif ?>
+                        
+                    <?php endif ?>
+                          <?=$this->layout()->content;?>
+                        </div>
+                    </div>
+
+            <!-- End of middle part -->
+
+       <!-- Footer Part with map part --> 
+       <?php if(!$this->message): ?>    
+            <?if(!$this->hideRight):?>
+                  <div style="float:right;width:49%;margin-left:0px;">
+               <?if(!isset($this->homePageExist)) { ?>
+                  <div id="mapDiv" class="rightCol textAlignCenter eqlCH" style="">                
+               <? } else { ?>
+                  <div id="mapDiv" class="rightColUpdated textAlignCenter eqlCH" style="margin-left: 0px;">                
+            <? } ?>
+              
+          <?php if(!isset($this->friendListExist) && !isset($this->myprofileExist) && !isset($this->newsDetailExist) && !isset($this->message)  && !isset($this->myeditprofileExist)) { ?>
+            <div style="height:44px;position:relative;width: 355px;border-right: 1px solid #d7d7d7;">
+    			<div>
+    			   <div style="color:#4276cd;font:normal 18px lato-Regular;display: inline-block; width: 160px; text-align: right;float: left;margin: 13px 15px 0px 0px;">Filter Posts By:</div>
+                 <dl style="z-index:999999; display: inline-block; float: left; width: 160px;margin-top: 10px;" class="menu">
+    			       <dt>
+    				      <a  id="linkglobal" style="cursor: pointer;">
+                              <span class="result" style="text-align: left;color: #8d8d8d; font: normal 15px lato-lightItalic;padding: 5px 0px 4px 15px;"></span>
+                          </a>
+                       </dt>
+                  
+                       <dd style="margin-left:0px;">
+                           <ul style="display: none;z-index:99999;" id="ulglobal" >
+                                     <!-- <li><a href="<?=BASE_PATH?>home" onclick="selectLink(this,false);"><b>View All</b></a></li>-->
+                               <li><a href="javascript:getAllNearestPoint('<?=$this->auth['latitude'];?>','<?=$this->auth['longitude'];?>',null,true)"><b>View All</b></a></li>
+                                     <!--<li><a href="javascript:void(0);" name="selected" onclick="sendLink(this,false);"><b>Mine only</b></a></li>-->
+                               <li><a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'selected')" ><b>Mine Only</b></a></li> 
+                                     <!-- <li><a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'interest')" onclick="selectLink(this,false);$('#searchText').val('');"><b>My Interests</b></a></li>-->
+                               <li><a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'interest')"><b>My Interests</b></a></li>
+                                    <!--<li><a href="<?=BASE_PATH?>contacts/friends-list"  name="myconnection" onclick="sendLink(this,false);"><b>My Connections</b></a></li>-->
+                                    <!--<li><a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'myconnection')" onclick="sendLink(this,false);"  name="myconnection" ><b>My Connections</b></a></li>-->
+                              <li><a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'friends')"><b>Friends</b></a></li>
+                           </ul>
+                       </dd>
+                       
+    			    </dl>
+    			</div>
+		  </div>
+      <?php  } ?>       
+        <!-- Code for map div show and hide this as per requirements -->
+        <!--tried but not succedded-->
+        <!-- <div style="float:left;margin-left:30px;margin-top:-10px;">
+            <li>
+                <a id="myPostLink" href="javascript:void(0);">
+                  <b>Filter post by</b>
+                <img id="arwDwnLink" width="30" height="20" src="http://www.herespy.com/www/images/spacer.gif" alt="Filter post by">
+                </a>
+               <div class="clr"></div>
+                <div id="ddMyProfLnk" class="ddMyProf beforeClr dispNone" style="display: inline;">
+                <ul class="ddMyProfLinks afterClr">
+                <li>
+                <a style="font-weight:bold;" href="javascript:getAllNearestPoint('','',null);" >View all</a>
+                </li>
+                <li id="minonly">
+                <a href="javascript:void(0)" onclick="javascript:searchData('33',true,'selected');">Mine Only</a>
+                </li>
+                <li id="myinterest">
+                <a href="javascript:searchData('33',true,'interest')" >My Interest</a>
+                </li>
+                <li id="myconnections">
+                <a href="http://here-spy:60/contacts/friends-list" href="http://here-spy:60/contacts/friends-list">My Connections</a>
+                </li>
+                </ul>
+                <div class="clr"></div>
+                </div>
+            </li>
+       </div>-->
+     <!-- tried but not succedded-->  
+                
+          <?php if(!isset($this->friendListExist) && !isset($this->myprofileExist) && !isset($this->newsDetailExist) && !isset($this->myeditprofileExist)) { ?>
+                <div class="gMapSec">
+                 <?php } else { ?>
+                    <div class="gMapSec" style="margin-top: 0px">
+                      <?php } ?>   
+                        <?php if(!$this->message) :?>
+                         <div class="gMap">
+                            <div id="map_canvas" class="mapCanvas"></div>
+                         </div>
+                        <?php endif; ?>  
+                        <?if($this->changeLocation) :?>
+                        <div class="gMapBtnBar">
+                            <input id="locationButton" type="button" value="Change Location" class="Location-Popup-Class Map-Popup-Class1 btnBlueRpt" style="width: 100%; padding: 11px 0;"/>
+                        </div>
+                        <?endif;?>
+                    </div>
+
+                <!-- End of map div -->
+              <?if(!isset($this->homePageExist)){?>
+                <div class="footer">
+                    <ul class="footerLinks" >
+                        <li>
+                            <a href="<?=BASE_PATH?>info/about-us">About</a>
+                        </li>
+                        <li>
+                            <a href="<?=BASE_PATH?>info/privacy">Privacy Policy</a>
+                        </li>
+                        <li class="afterClr"><span class="copyRight">@ Copyright 2014 SeeAround.me </span></li>
+                    </ul>
+                    <!--<span class="copyRight">@ Copyright 2012 HereSpy.com </span>-->
+                </div> <?} else {?>
+                  <div class="footer">
+                    <ul class="footerLinks" >
+                        <li>
+                            <a href="<?=BASE_PATH?>info/about-us">About</a>
+                        </li>
+                        <li>
+                            <a href="<?=BASE_PATH?>info/privacy">Privacy Policy</a>
+                        </li>
+                        <li class="afterClr"><span class="copyRight">@ Copyright 2014 SeeAround.me </span></li>
+                    </ul>
+                    <!--<span class="copyRight">@ Copyright 2012 HereSpy.com </span>-->
+                </div>
+                 
+                <? } ?>
+            </div>
+            <?else:?>            
+            <div class="loginFooter">
+                <ul style="float:right;" class="footerLinks" >
+                    <li>
+                        <a href="<?=BASE_PATH?>info/about-us">About</a>
+                    </li>
+                    <li>
+                        <a href="<?=BASE_PATH?>info/privacy">Privacy Policy</a>
+                    </li>
+                    <li class="afterClr">
+                        <span class="copyRight">@ Copyright 2014 SeeAround.me </span>
+                    </li>
+                </ul>                    
+            </div>             
+            <?endif?>
+            <!-- End of footer part and map div -->
+
+        </div>
+     </div>
+    <?endif?>
+        <!-- Code for message popups -->
+        <div style="display: none;">
+            <div style="display:none;"><input type="button" class="Thanks-Popup-Class" id="thanksButton" /></div>
+            <div id="Thanks-Popup">
+                <table width="100%">
+                    <tr>
+                        <td colspan="2">&nbsp;</td>
+                    </tr>    
+                    <tr>
+                        <td colspan="2">
+                            <div align="center">
+                                <span style="color:#33CC00" id="messageSuccess" >
+                                    <img src="<?=BASE_PATH?>www/images/correct.gif" />
+                                    &nbsp;Message sent successful
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <!-- Code for send message popup -->
+        <div style="display: none;">
+           <!--Modify on 3rd March accordig to requirement means message from this pop will be send via Email-->
+            <div id="Message-Popup">
+                <img style="vertical-align:middle;" src="<?=BASE_PATH?>www/images/mail_send.gif" />
+                <span class="locppmsgimg">Send Message</span>                
+                <div class="locationPopup">
+                    <ul id="messageForm">
+                        <? if($this->publicMessage):?>
+                        <li>
+                            <input type="text" id="to" name="to" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter receiver email address..."/><br />
+                            <span class="errors marginL" id="to_error"></span>
+                        </li>
+                        <? else:?>
+                        <li>
+                            <input type="text" id="subject" name="subject" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter subject..."/><br />
+                            <span class="errors marginL" id="subject_error"></span>
+                        </li>
+                        <? endif;?>
+                        <li>
+                            <textarea id="message" name="message" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter message..."></textarea><br />
+                            <span class="errors marginL" id="message_error"></span>
+                        </li>
+                        <input id="closeLocationPopup" class="btnBlueRpt" type="button" value="Send" <? if($this->publicMessage):?> onClick="publicMessage();"<?else:?> onClick="message();"<?endif;?> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type="button" onClick="closePopup();" class="btnBlueRpt" value="Cancel" />
+                    </ul>
+                </div>
+            </div>
+            <div id="Message-Popup_Email">
+                <img style="vertical-align:middle;" src="<?=BASE_PATH?>www/images/mail_send.gif" />
+                <span class="locppmsgimg">Send Message</span>                
+                <div class="locationPopup">
+                    <ul id="messageForm">
+                        <li>
+                            <input type="text" id="to" name="to" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter receiver email address..."/><br />
+                            <span class="errors marginL" id="to_error"></span>
+                        </li>
+                        <li>
+                            <textarea id="message" name="message" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter message..."></textarea><br />
+                            <span class="errors marginL" id="message_error"></span>
+                        </li>
+                    <!--<input id="closeLocationPopup" class="btnBlueRpt" type="button" value="Send" <? if($this->publicMessage):?> onClick="publicMessage();"<?else:?> onClick="message();"<?endif;?> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
+                        <!--  <input id="closeLocationPopup" class="btnBlueRpt" type="button" value="Send" <? if($this->publicMessage):?>  onClick="publicMessageEmail('scrpBox_<?=$row['id']?>','<?=BASE_PATH?>tbnnewsimages/<?=$row['images']?>','<?=$row['news']?>','<?=BASE_PATH?>info/news/nwid/<?=$row['id']?>');" <?else:?> onClick="publicMessageEmail('scrpBox_<?=$row['id']?>','<?=BASE_PATH?>tbnnewsimages/<?=$row['images']?>','<?=$row['news']?>','<?=BASE_PATH?>info/news/nwid/<?=$row['id']?>');" <?endif;?> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->                                      
+                      
+                        <input id="closeLocationPopup" class="btnBlueRpt" type="button" value="Send" <? if($this->publicMessage):?> onClick="publicMessageEmail();"<?else:?> onClick="publicMessageEmail();"<?endif;?> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                                      
+                        <input type="button" onClick="closePopup();" class="btnBlueRpt" value="Cancel" />
+                    </ul>
+                 </div>
+             </div>
+        </div>
+
+        <!-- login and registration poup -->
+        <div style="display: none;">
+            <div id="login-id">
+                <span class="loginMsg">Please Login to post comment</span>
+                <div class="loginPopup">
+                    <ul>
+                        <li>
+                            <?php if($this->returnUrl) :?> 
+                            <a class="hypDecNone" href="<?=BASE_PATH?>?url=<?=$this->returnUrl?>"><input onclick="goLoc('?url=<?=$this->returnUrl?>');" style="width:70px;" class="btnBlueRpt" type="button" value="Login"/></a>
+                            <?php else :?>
+                            <a class="hypDecNone" href="<?=BASE_PATH?>"><input onclick="goLoc('');" style="width:70px;" class="btnBlueRpt" type="button" value="Login"/></a>
+                            <?php endif;?>
+                        </li>
+                        <li>
+                            <span style="color: blue; font-size:17px;">or</span>
+                        </li>
+                        <li>
+                            <span style="margin-top: 10px;font-size: 15px;">Register with us</b></span>
+                        </li>
+                        <li>
+                            <?php if($this->returnUrl) :?> 
+                            <a class="hypDecNone" href="<?=BASE_PATH?>?url=<?=$this->returnUrl?>"><input onclick="goLoc('?url=<?=$this->returnUrl?>');" style="width:80px;" class="btnBlueRpt" type="button" value="Register"/></a>
+                            <?php else :?>
+                            <a class="hypDecNone" href="<?=BASE_PATH?>"><input onclick="goLoc('');" style="width:70px;" class="btnBlueRpt" type="button" value="Register"/></a>
+                            <?php endif;?>
+                        </li>                    
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- end of location popup -->
+        
+        <!-- Pop up to vote without login  -->
+           <div style="display: none;">
+            <div id="voting-id">
+                <span class="loginMsg">Please Login to vote!</span>
+                <div class="loginPopup">
+                    <ul>
+                        <li>
+                            <?php if($this->returnUrl) :?> 
+                            <a class="hypDecNone" href="<?=BASE_PATH?>?url=<?=$this->returnUrl?>"><input onclick="goLoc('?url=<?=$this->returnUrl?>');" style="width:70px;" class="btnBlueRpt" type="button" value="Login"/></a>
+                            <?php else :?>
+                            <a class="hypDecNone" href="<?=BASE_PATH?>"><input onclick="goLoc('');" style="width:70px;" class="btnBlueRpt" type="button" value="Login"/></a>
+                            <?php endif;?>
+                        </li>
+                        <li>
+                            <span style="color: blue; font-size:17px;">or</span>
+                        </li>
+                        <li>
+                            <span style="margin-top: 10px;font-size: 15px;">Register with us</b></span>
+                        </li>
+                        <li>
+                            <?php if($this->returnUrl) :?> 
+                            <a class="hypDecNone" href="<?=BASE_PATH?>?url=<?=$this->returnUrl?>"><input onclick="goLoc('?url=<?=$this->returnUrl?>');" style="width:80px;" class="btnBlueRpt" type="button" value="Register"/></a>
+                            <?php else :?>
+                            <a class="hypDecNone" href="<?=BASE_PATH?>"><input onclick="goLoc('');" style="width:70px;" class="btnBlueRpt" type="button" value="Register"/></a>
+                            <?php endif;?>
+                        </li>                    
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- End of voting with login popup -->
+
+      <!--  <div id="thumbs_up"  style="margin-top:0px;display:none">
+            <span id="message_success_5" style="color: rgb(51, 204, 0);">
+            <img src="http://here-spy/www/images/correct.gif">
+             Voting successful
+            </span>
+        </div>-->
+       
+                    <div style="display: none;">
+                     <div id="Map-Popup-id">
+                         <div id="mapSection"  class="normalScreen" style="height: 432px;"></div>
+                             <div style="text-align:center; padding: 15px 0; position: relative;">
+                                 <!--<label style="font-size: 12px; font-weight: bold;">Address : </label>-->
+                                 
+                                 <input type="text" placeholder="Enter address" class="homemap-address" id="searchAddresHome">
+                                 
+                                 <!--<label style="font-size: 12px; font-weight: bold;">City : </label><input type="text" placeholder="Enter city" class="" id="searchCityHome">&nbsp;&nbsp;
+                                 <label style="font-size: 12px; font-weight: bold;">State : </label><input type="text" placeholder="Enter state" class="" id="searchStateHome">&nbsp;&nbsp;-->
+                                 
+                                 <!--<input type="button" value="Search" class="btnBlueRpt homemap-srh" onclick="changeHomeLocation('draw');" style="cursor: pointer; overflow: visible; border: 0px none;">-->
+                                 <img src="<?=BASE_PATH?>www/images/map_search.png" class="homemap-srh-img" onclick="changeHomeLocation('draw');">
+                                 <!--<input class="btnBlueRpt" id="useAddress" type="button" disabled="disabled" value="Use This Address" onclick="fillAddress()"/>-->
+                                 <input class="btnBlueRpt" id="useNewAddress" type="button" disabled="disabled" value="Use This Address" onclick="fillUserAddress()" />
+                                 <!--<input type="hidden"  id="currentAddress" name="currentAddress"/>-->
+                                 <!--<input class="btnBlueRpt" id="closeOpenPopup" class='btn primary' type="button" value="Cancel Search" onclick="closePopup();"/>-->
+                                 <img id="waitingAddress" src="<?=BASE_PATH?>www/images/wait.gif" style="display: none;" />
+                              </div>
+                        </div>
+                     </div>
+                     
+                     
+                     <div style="display: none;">
+                     <div id="Change-Postlocation-Map-Popup-id">
+                         <div id="mapSection"  class="normalScreen" style="height: 432px;"></div>
+                              <div style="text-align: center;padding: 15px 0;position: relative;">
+                                 <input type="text" placeholder="Enter address" class="Change-homemap-address" id="Change-searchAddresHome">
+                                 <img src="<?=BASE_PATH?>www/images/map_search.png" class="Change-srh-img" onclick="changepostLocation('draw');">
+                                 
+                                 <input class="btnBlueRpt" id="useNewAddress" type="button" disabled="disabled" value="Use This Address" onclick="fillPostLocationAddress()"/>
+                                 <img id="waitingAddress" src="<?=BASE_PATH?>www/images/wait.gif" style="display: none;" />
+                               </div>
+                     </div>
+                     <!--<div id="Change-Postlocation-Map-Popup-id">
+                         <div id="mapSection"  class="normalScreen" style="height: 432px;"></div>
+                              <div width="100%" height="10%" align="center" style="text-align:center;"><br>
+                                 <label style="font-size: 12px; font-weight: bold;">Address : </label>
+                                 <input type="text" placeholder="Enter sddress" class="" id="searchAddresHome">&nbsp;&nbsp;
+                                 <label style="font-size: 12px; font-weight: bold;">City : </label>
+                                 <input type="text" placeholder="Enter city" class="" id="searchCityHome">&nbsp;&nbsp;
+                                 <label style="font-size: 12px; font-weight: bold;">State : </label>
+                                 <input type="text" placeholder="Enter state" class="" id="searchStateHome">&nbsp;&nbsp;
+                                 <input type="button" value="Search" class="btnBlueRpt" onclick="changeHomeLocation('draw');" style="cursor: pointer; overflow: visible; border: 0px none;"><br />
+                              </div>
+                              
+                               <div align="center" style="width: 100%;margin-top:7px;">
+                                 <input class="btnBlueRpt" id="useAddress" type="button" disabled="disabled" value="Use this address" onclick="fillAddress()"/>
+                                 <input class="btnBlueRpt" id="useNewAddress" type="button" disabled="disabled" value="OK " onclick="fillPostLocationAddress()"/>
+                                 <input type="hidden"  id="currentAddress" name="currentAddress"/>
+                                 <input class="btnBlueRpt" id="closeOpenPopup" class='btn primary' type="button" value=" Cancel " onclick="closePopup();"/>
+                                  <img id="waitingAddress" src="<?=BASE_PATH?>www/images/wait.gif" style="display: none;" />
+                               </div>
+                        </div>-->
+                     </div>
+                     
+                     
+
+                        <!-- Image popup -->
+                        <div style="display: none;">
+                            <div id="Image-Popup">
+                                <img id="imagePopup" src="" style="padding: 3px; min-height : 100px; min-width: 100px;" />            
+                            </div>
+                        </div>
+
+                        <div id="contentUpdator" style="display: none;">
+                        </div>
+                </body>
+                      
+    
+          <script type="text/javascript">
+              $('#searchText').keydown(function (e){
+                if(e.keyCode == 13){
+                 //alert('you pressed enter ^_^');
+                  searchLatest(); 
+                } 
+               })
+          </script>
+          
+    
+           <script>
+                <?if($this->current_menu != ""){?>
+                    $(document).ready(function(){
+                    searchData('<?=$this->auth['user_id']?>',true,'<?=$this->current_menu?>')
+                  })
+                    <?}?>
+            </script>
+      </html>

@@ -1,0 +1,76 @@
+<script type="text/javascript" src="<?=BASE_PATH?>www/scripts/messageindex.js"></script>
+
+<h3 class="topHdGrayB12_updated">&nbsp;&nbsp;&nbsp;&nbsp;<img src="<?=BASE_PATH?>www/images/envelope-icon.gif"  style="margin-right: 20px; width: 27px; height: auto; position: relative; top: 3px;" class="tIcn" alt="My Connections" /> Inbox</h3>
+
+<? if(count($this->inbox) > 0):?>
+
+<div class="inboxSec appendClr">
+
+    <? foreach($this->inbox as $inboxData):?>
+<?php //var_dump($inboxData);?>
+    <ul class="afterClr">
+
+        <li onclick="showData(this, '<?=$inboxData->id?>');" id="row_<?=$inboxData->id?>" class="message-list 
+
+                <?if($inboxData->sender_id == $this->auth['user_id'] && $inboxData->sender_read == "false"):?>
+
+                highLight
+
+                <?elseif($inboxData->receiver_id == $this->auth['user_id'] && $inboxData->reciever_read == "false"):?>
+highLight
+
+                <?endif;?>
+
+                ">
+
+            <!--<a href="javascript:void(0);"><? if($inboxData->subject != ""):?><?=$inboxData->subject?><? else:?>--<? endif;?></a>--> 
+            <div class="main-message-wrapper">
+                <?php $senders = $this->senders;?>
+                <div class="message-frist">
+                    
+                    <img src="<?=BASE_PATH?>uploads/<?=$senders[$inboxData->sender_id];?>" />
+                    
+                </div>
+                
+                <div class="message-second">
+                
+                    <span class="name"><?=$inboxData->Name;?></span><span id="showAlll_<?=$inboxData->id?>" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;} showAllReply(this, '<?=$inboxData->id?>'); " style="margin-left: 50px;display: none;" class="name">Show all</span>
+
+                    <img id="loading_<?=$inboxData->id?>" style="display:none;padding-left: 14px;" src="<?=BASE_PATH?>www/images/wait.gif" />
+                
+                    <span class="message"><?=$inboxData->message; ?></span>
+
+                </div>
+                <div class="message-third afterClr">
+                   
+                    <span class="dateTime"><?=date('Y-m-d H:i', strtotime($inboxData->created))?></span>
+                    <img class="checking" src="<?=BASE_PATH?>www/images/message_check.png"<?php if($inboxData['reciever_read']=="true") echo "style='display: none;'"?>>
+                    <img class="checked" src="<?=BASE_PATH?>www/images/message_checked.png" <?php if($inboxData['reciever_read']=="true") echo "style='display: inline-block;'"?>>
+
+                </div>
+            </div>
+            <ul id="show_data_<?=$inboxData->id?>" class="replyFrm" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;}"></ul>
+
+        </li>
+
+        <div class="clr"></div>        
+
+    </ul>
+
+    <?endforeach;?>
+
+    <div class="clr"></div>
+
+    <?= $this->paginationControl($this->paginator, 'Sliding', 'message/message-paging.html'); ?>            
+
+    <div class="clr"></div>
+
+</div>
+
+<?else:?>
+
+<br /><br /><br /><br />
+
+    <div class="errorMessage1 msgErrDiv"> No message found.</div>
+
+<?endif;?>

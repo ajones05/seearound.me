@@ -1,0 +1,510 @@
+<script type="text/javascript" src="<?=BASE_PATH?>www/scripts/publicNews.js"></script>
+<?php 
+
+function commentTexts($commentTexts){
+
+   $subContent = '';
+
+   $nextLine = 50; //modify for desired width
+   $textCounter = 0;
+   
+   while($textCounter < strlen($commentTexts)){
+        $substring = preg_replace('/\s+?(\S+)?$/', '', substr($commentTexts, $textCounter, $nextLine));
+        $subContent .= $substring."<br>";
+        $textCounter = $textCounter+($nextLine-1);
+   } 
+
+   /*while(strlen($commentTexts)>$textCounter){
+
+        $subContent.=$commentTexts[$textCounter]; 
+
+        if($textCounter == $nextLine){
+
+            $nextLine=$nextLine+50;
+
+            $subContent.="</br>";
+
+        }
+
+        $textCounter++;
+
+    }*/
+
+    return $subContent;
+
+}
+
+?>
+
+<?php $auth = Zend_Auth::getInstance()->getStorage()->read();
+
+  if(count($this->news)) {
+   //echo "<pre>"; print_r($this->news); exit;
+    foreach($this->news as $row) { ?>
+
+      <div id="scrpBox_<?=$row['id']?>" class="scrpBox" onmouseover="toggleBounce('<?=$row['id']?>','<?=$row['user_id']?>');" onmouseout="stopBounce('<?=$row['id']?>',<?=$row['user_id']?>);">
+
+      <ul class="myScrp afterClr" id="newsDiv<?=$row['id']?>">
+
+         <?php if($auth['user_id'] == $row['user_id']) : ?>
+
+         <div class="deteleIcon">
+
+            <img class="crp deteleIcon_img" onclick="deletes(this, 'news', <?=$row['id']?>);" src="<?=BASE_PATH?>www/images/delete-icon.png">
+
+         </div> 
+
+         <?php endif;?>
+
+          
+
+           <!--FOR COUNTING VOTE-->
+
+           
+         
+       
+         <li>
+            <ul class="post">
+                <li class="imgPro"> 
+                    <a href="<?=BASE_PATH?>home/profile/user/<?=$row['user_id']?>">
+
+                    <?php if($row['Profile_image'] != 'null' && $row['Profile_image'] != '') {?>
+
+                            <img <? if(strpos($row['Profile_image'], '://')):?>src="<?=$row['Profile_image']?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$row['Profile_image']?>"<?endif;?> class='smallImage'/>    
+
+                    <?php } else { ?>
+
+                            <img src="<?=BASE_PATH?>/www/images/img-prof40x40.jpg" class='smallImage'/>    
+
+                    <?php } ?>
+
+                    </a>
+                </li>
+                <li>
+                    <div class="post-top">
+                        <a class="title" href="<?=BASE_PATH?>home/profile/user/<?=$row['user_id']?>"><?=ucfirst($row['Name'])?></a> 
+                        <span class="post-date">
+                            
+                             <?=date("d F Y h:i a", strtotime($row['time']));?>
+
+                        <!--<a style="font-size: 9px;color: #0068C4;" href="<?=BASE_PATH?>info/news/nwid/<?=$row['id']?>">Details</a>-->
+
+                        </span>
+                        <?php if($row['id']) { ?>
+
+                        <span class="message_number" id="message_success_<?=$row['id']?>">
+
+                          <?php if(!isset($row['news_count'])){ $row['news_count']=0; ?>
+
+                            <?=$row['news_count']; ?>
+
+                         <?php } else { ?>
+
+                            <?=$row['news_count'];?>
+
+                        </span>
+
+                           <?php }  
+                           
+                           } ?>
+
+                         <!-- VOTING COUNTING ENDS-->
+
+                         <?php if($auth['user_id']!=$row['user_id']):?>
+                            <?php if ($row['news_count']== 0) { ?>
+                                <img class="crp" id="img1_<?=$row['id']?>" onclick="voting(this, 'news', <?=$row['id']?>,<?=$auth['user_id']?>);" src="<?=BASE_PATH?>www/images/thumsup_voted_gray.png">
+                            <?php } else {?>
+                                <img class="crp" id="img1_<?=$row['id']?>" onclick="voting(this, 'news', <?=$row['id']?>,<?=$auth['user_id']?>);" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg">
+                            <?php  }?>
+                            <img class="crp" id="img2_<?=$row['id']?>" style="display:none" onclick="voting(this, 'news', <?=$row['id']?>,<?=$auth['user_id']?>);" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg">
+                            <div id="thumbs_up1_<?=$row['id']?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
+
+                                <span id="message_success_5" style="color: rgb(51, 204, 0);">
+
+                                <img src="<?=BASE_PATH?>www/images/correct_small.gif">
+
+                                 Thanks!  
+
+                                </span>
+
+                            </div>
+
+                          <div id="thumbs_up2_<?=$row['id']?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
+
+                                <span id="message_success_5" style="color: rgb(51, 204, 0);">
+
+                                 Already-Voted
+
+                                </span>
+
+                           </div>
+
+                         <?php endif; ?>
+                         <?php if($auth['user_id']==$row['user_id']):?>
+                             <?php if ($row['news_count']==0) {?>  
+                                <img class="crp" id="img1_<?=$row['id']?>" onclick="alert('You can not vote your own post!');" src="<?=BASE_PATH?>www/images/thumsup_voted_gray.png">
+                              <?php } else {?>
+                                <img class="crp" id="img1_<?=$row['id']?>" onclick="alert('You can not vote your own post!');" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg">
+                              <? } ?>  
+                         <?php endif; ?>
+ 
+                    </div>
+                    <div class="post-bottom">
+                        <p>
+
+                         <?=$this->linkClickable(nl2br(htmlspecialchars(substr($row['news'],0,350))));?>
+                        </p> 
+                    
+                    </div>
+                    
+                </li>
+                <li class="clr"></li>
+            </ul>
+        </li>
+        <?if($row['images']) :?>        
+        <li class="cmnti">
+
+            
+            <div>
+
+                <?if(file_exists(realpath('.').'/newsimages/'.$row['images'])):?>
+
+                    <?list( $source_image_width, $source_image_height, $source_image_type ) = getimagesize(realpath('.').'/newsimages/'.$row['images']);?>
+
+                <?else:?>
+
+                    <?$source_image_width = ''?>
+
+                    <?$source_image_height = ''?>
+
+                <?endif?>
+
+                <!--<img onclick="openImage('<?=$row['images']?>','<?=$source_image_width?>', '<?=$source_image_height?>');" class="Image-Popup-Class" src="<?=BASE_PATH?>newsimages/<?=$row['images']?>" style="padding: 10px;cursor: pointer;">-->
+                    <img onclick="openImage('<?=$row['images']?>','<?=$source_image_width?>', '<?=$source_image_height?>');" class="Image-Popup-Class" src="<?=BASE_PATH?>tbnewsimages/<?=$row['images']?>" style="cursor: pointer;width:100%;">
+
+            </div> 
+
+            <?endif;?>
+            <?if(strlen($row['news'])> 350){?>
+            <span>
+            
+                <span id="morecontent_<?=$row['id']?>" style="display: none;">
+
+                    <?=$this->linkClickable(nl2br(htmlspecialchars(substr($row['news'],350,strlen($row['news'])))))?>
+
+                </span>
+
+                <span>
+
+                    <a id="moreButton_<?=$row['id']?>" href="javascript:void(0)" class='commentFont' onclick="showMoreNews(this,'<?=$row['id']?>')">...More</a>
+
+                </span>            
+
+            </span>
+            <?}?>
+
+            
+
+        </li>
+        <li class="post-comment">
+            <?php $getInside = false; if(count($this->comments)) {  ?>
+                                 
+                <?php foreach($this->comments[$row['id']] as $commentRow) {if(isset($commentRow['news_id']) && $row['id'] == $commentRow['news_id']) { $getInside = true;?>
+                <?}}}?>
+                <?if(!$getInside){?>
+                    <?if($this->isLogin){?>
+                        <span id="comment_text_<?=$row['id']?>" onclick="showCommentField(<?=$row['id']?>);" style="cursor:pointer;color: #4276cd;">Comment</span>
+                <?} else {?>
+                    <span class="login-popup-class" style="color: #4276cd;">Comment</span> 
+                <?}?>
+            <?}?>     
+        </li>
+    </ul>
+    <div  class="dur">
+                    <span class="floatR"> 
+                        <span style="display: block; float: left;">Share this Post:</span>
+                        <a class="crp" onclick="fbshare('scrpBox_<?=$row['id']?>','<?=BASE_PATH?>tbnewsimages/<?=$row['images']?>','<?=$row['news']?>','<?=BASE_PATH?>info/news/nwid/<?=$row['id']?>')">
+                            <img src="<?=BASE_PATH?>www/images/facebook.png" style="width: 25px; height: 25px;" />
+                        </a>
+                       <!-- <a class="twitter-share" data-count="none" data-related="anywhere:The Javascript API" data-text="<?=nl2br(htmlspecialchars($this->newsData->news))?>" data-via="3Bandar" data-url="none" href="javascript:void(0);" onclick="twitterShare(this);" >
+                            <img height="20" src="<?=BASE_PATH?>www/images/twitter.png" />
+                        </a> -->
+                       <? if($this->isLogin):?>
+                       <!-- <a class="crp Message-Popup-Class cboxElement" onclick="clearErrors();user_id=2;$('#message').val($.trim($('#<?=$row['news']?>').html()));">-->
+                        <a class="crp Message-Popup-Class cboxElement" onclick="clearErrors('<?=$row['id']?>');user_id=2;$('#message').val($.trim($('#<?=$row['news']?>').html()));">
+                            <img src="<?=BASE_PATH?>www/images/email.png" style="width: 25px; height: 25px;" />
+                        
+                        </a> 
+                        <?else:?>
+                        <a class="login-popup-class crp">
+                            <img src="<?=BASE_PATH?>www/images/email.png" />
+                        </a> 
+                        <?endif;?>                
+                    </span>
+        
+        <div class="clr"></div>
+    </div>            
+    <ul id="comment_list_<?=$row['id']?>" <?if($this->commentCount[$row['id']]) { ?> class="cmntRow afterClr" <?}?> >
+    <?if($this->commentCount[$row['id']]) { ?>
+
+        <?php if($this->commentCount[$row['id']] > 2) {?>
+
+            <li class="viewCount"> 
+                
+
+            <?if($this->filter != 'all'){?>
+
+                <div onclick="getComments(<?=$row['id']?>);" id="commentTotal_<?=$row['id']?>" class="commentField" style="cursor:pointer;">View all <?=$this->commentCount[$row['id']]?> comments </div>
+
+            <?}?>  
+
+            </li> 
+
+        <?php } ?>
+
+        
+
+        <?php $getInside = false; if(count($this->comments)) {  ?>
+
+            <?php foreach($this->comments[$row['id']] as $commentRow) {
+
+                if(isset($commentRow['news_id']) && $row['id'] == $commentRow['news_id']) { $getInside = true;?>
+
+        <li id="comment_<?=$commentRow['id']?>" class="cmntList">
+
+            <div class="imgPro">
+
+                    <a href="<?=BASE_PATH?>home/profile/user/<?=$commentRow['user_id']?>" style="z-index:9999;">
+
+                    <?php if($commentRow['Profile_image']) {?> 
+
+                            <img <? if(strpos($commentRow['Profile_image'], '://')):?>src="<?=$commentRow['Profile_image']?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$commentRow['Profile_image']?>"<?endif;?> />
+
+                    <?php } else { ?>
+
+                            <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg"/>
+
+                    <?php } ?>   
+
+                    </a>
+
+           </div>
+
+            <ul>
+
+                <?php if($auth['user_id'] == $commentRow['user_id']) { ?>
+
+                    <?if($this->filter != 'all'){?>
+
+                        <div class="deteleIcon">
+
+                            <img id='img1' class="crp deteleIcon_img" src="<?=BASE_PATH?>/www/images/delete-icon.png" onclick="deletes(this, 'comments', <?=$commentRow['id']?>);" />
+
+                        </div>
+
+                    <?}?>
+
+                 <?php }?>
+
+                 
+
+                  <?php if($auth['user_id'] != $commentRow['user_id']) { ?>
+
+                  
+
+                 <?php }?>
+
+                
+
+                <li class="title">
+                    <div class="title-wrapper">
+
+                    <a href="<?=BASE_PATH?>home/profile/user/<?=$commentRow['user_id']?>" style="z-index:9999;text-decoration: none;"><?=ucfirst($commentRow['user_name'])?>:</a>
+                    <span class="cmnt">
+
+                        <?$commentData = substr($commentRow['comment'],0,250)?>
+
+                        <? $filter_comment = $this->linkClickable(commentTexts($commentData));
+                        $filter_comment = str_replace("<br>", " ", $filter_comment);
+                        $filter_comment = str_replace("<br/>", " ", $filter_comment);
+                        $filter_comment = str_replace("</br>", " ", $filter_comment);
+                        echo $filter_comment;
+                        ?>
+
+
+
+                        <?if(strlen($commentRow['comment'])>250):?>
+
+                            <span>
+
+                                <a id="moreButton_<?=$commentRow['id']?>" href="javascript:void(0)" class='commentFont' onclick="showMoreComments(this,'<?=$commentRow['id']?>')">...More</a>
+
+                                <span id="morecomments_<?=$commentRow['id']?>" style="display: none;">
+
+                                <?$commentData = substr($commentRow['comment'],250,strlen($commentRow['comment']))?>
+
+                                <?echo $this->linkClickable(commentTexts($commentData));?>
+
+                                </span>
+
+                            </span>
+
+                        <?endif?>
+                    </span>
+                    </div>
+
+                </li>
+
+                
+
+                <li class="dur">
+                    <p><?=date("d F Y h:i a", strtotime($commentRow['commTime']));?></p>
+
+                </li>
+
+            </ul>
+            <div class="clr"></div>
+
+           
+
+        </li>
+
+        <?php } } } ?>
+
+            <li  id="commentTextarea_<?=$row['id']?>" class="cmntList-last afterClr">
+
+                <ul class="inpCmnt afterClr">
+                     
+                        <span style="display: block; text-align: center;">
+                            <img id="rpl_loading_<?=$row['id']?>" src="<?=BASE_PATH?>/www/images/wait.gif" style="display: none;">
+                        </span>
+                        <li class="imgPro">
+
+                            <?if($this->auth["pro_image"]){?> 
+
+                                <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="smallImage"/> 
+
+                            <? } else { ?>
+
+                                <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="smallImage"/>
+
+                            <? } ?>
+
+                        </li>
+                        <li class="inpCmnt-last">
+
+                            <textarea id="comment<?=$row['id']?>" placeholder="Write a Comment" class="textAreaClass" onkeydown="textLimit(250, this);" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea(<?=$row['id']?>);"></textarea>
+
+                        </li>
+                        <div class="clr"></div>
+                </ul>
+
+            </li>
+
+        <?} else {?>
+
+           
+
+            <ul id="commentTextarea_<?=$row['id']?>" class="cmntRow afterClr" style="display: none;">
+
+                 <li id='tempDiv_<?=$row['id']?>' class="cmntList-last" style="margin-top: 0; border-top: none;">
+
+                    <ul class="inpCmnt afterClr">
+                        <span>
+                            <img id="rpl_loading_<?=$row['id']?>"  src="<?=BASE_PATH?>www/images/wait.gif" style="margin-bottom: 0px; float: right; margin-right: 131px; margin-top: 9px; display: none;">
+                        </span>
+
+                        <li class="imgPro">
+
+                            <?if($this->auth["pro_image"]){?> 
+
+                                <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="smallImage"/> 
+
+                            <? } else { ?>
+
+                                <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="smallImage"/>
+
+                            <? } ?>
+
+                        </li>
+
+
+
+                        <li class="inpCmnt-last">
+
+                            <textarea id="comment<?=$row['id']?>" class="textAreaClass" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea(<?=$row['id']?>);"></textarea>
+
+                        </li>
+                        <div class="clr"></div>
+
+                    </ul>
+
+                </li>
+
+            </ul>
+
+        <?}?>
+
+        
+
+    </ul>
+
+</div>
+
+    
+
+<?php }  ?>
+
+
+
+<?} else { ?>
+
+    <div class="newsDiv" style="border:none; text-align:center;">
+
+        <div id="noNews" style="margin:50px 0 50px 0">
+
+            <!--<img height="80" width="225" src="<?=BASE_PATH?>www/images/no-record.jpeg" />-->
+            <span style="font-size:25px;color:#FC7567;font-weight: bold;">Be the first to post in this area!</span>
+        </div>
+
+    </div>
+
+<?php } ?>
+
+<div id="pagingDiv" class="pagination"></div>
+
+
+
+<script type="text/javascript">
+
+    $(document).ready(function(){
+
+        $(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"});
+        $(".Message-Popup-Class").colorbox({width:"40%",height:"45%", inline:true, href:"#Message-Popup_Email"},function(){$('html, body').animate({ scrollTop: 0 }, 0);});
+	$('html, body').animate({ scrollTop: 0 }, 0);
+     });
+</script>
+<script type="text/javascript">
+          $(document).ready(function(){
+               /*$('.title-wrapper span.cmnt').each(function(){
+                   var content = $(this).html();
+                   content.replace("<br>", "&nbsp");
+                   content.replace("</br>", "&nbsp");
+                   content.replace("<br/>", "&nbsp");
+                   content.replace("<br />", "&nbsp");
+                   $(this).html(content);
+               });*/
+               $( ".scrpBox" ).hover(function() {
+                       $(this).find(".deteleIcon").each(function(){
+                            $(this).css("display", "block");
+                       });
+                   }, function() {
+                       $(this).find(".deteleIcon").each(function(){
+                            $(this).css("display", "none");
+                       });   
+                   }
+                   );
+               });
+</script>
+
+    

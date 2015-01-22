@@ -1,0 +1,173 @@
+<?php 
+function commentTexts($commentTexts){
+   $subContent = '';
+   $textCounter = 0;
+   $nextLine = 50;  
+    
+   while(strlen($commentTexts)>$textCounter){
+        $subContent.=$commentTexts[$textCounter]; 
+        if($textCounter == $nextLine){
+            $nextLine=$nextLine+50;
+            $subContent.="</br>";
+        }
+        $textCounter++;
+    }
+    return $subContent;
+}
+?>
+<?php $auth = Zend_Auth::getInstance()->getStorage()->read();
+if(count($this->news)) { 
+    foreach($this->news as $row) {?>
+     <div class="scrpBox" onmouseover="toggleBounce('<?=$row['id']?>','<?=$row['user_id']?>');" onmouseout="stopBounce('<?=$row['id']?>',<?=$row['user_id']?>);">
+        <ul class="myScrp afterClr" id="newsDiv<?=$row['id']?>" >
+            <li class="imgPro">
+                <a href="<?=BASE_PATH?>home/profile/user/<?=$row['user_id']?>" style="z-index:9999;">
+                    <?php if($row['Profile_image'] != 'null' && $row['Profile_image'] != '') {?>
+                        <img <? if(strpos($row['Profile_image'], '://')):?>src="<?=$row['Profile_image']?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$row['Profile_image']?>"<?endif;?> class='smallImage'/>	
+                    <?php } else { ?>
+                        <img src="<?=BASE_PATH?>/www/images/img-prof40x40.jpg" class='smallImage'/>	
+                    <?php } ?>
+                </a>
+            </li>
+            <li class="title">
+                <a style="z-index:9999;color: #0068C4;text-decoration: none;" href="<?=BASE_PATH?>home/profile/user/<?=$row['user_id']?>"><?=ucfirst($row['Name'])?></a>
+            </li>
+            <li class="cmnti">
+                <?=nl2br(htmlspecialchars(substr($row['news'],0,350)));?>
+                <?if($row['images']) :?>
+                    <div>
+                        <?if(file_exists(realpath('.').'/newsimages/'.$row['images'])):?>
+                            <?list( $source_image_width, $source_image_height, $source_image_type ) = getimagesize(realpath('.').'/newsimages/'.$row['images']);?>
+                        <?else:?>
+                            <?$source_image_width = ''?>
+                            <?$source_image_height = ''?>
+                        <?endif?>
+                        <img onclick="openImage('<?=$row['images']?>','<?=$source_image_width?>', '<?=$source_image_height?>');" class="Image-Popup-Class" src="<?=BASE_PATH?>tbnnewsimages/<?=$row['images']?>" style="cursor: pointer;width:100%;">
+                    </div> 
+                <?endif;?>
+              
+                <?if(strlen($row['news'])> 350){?>
+                    <span>
+                        <a id="moreButton_<?=$row['id']?>" href="javascript:void(0)" class='commentFont' onclick="showMoreNews(this,'<?=$row['id']?>')">...More</a>
+                    </span>
+                    <span id="morecontent_<?=$row['id']?>" style="display: none;">
+                        <?=nl2br(htmlspecialchars(substr($row['news'],350,strlen($row['news']))))?>
+                    </span>
+                <?}?>
+            </li>
+            <li class="dur">
+                <span >
+                    <?=$row['time'];?>&nbsp;<?php $getInside = false; if(count($this->comments)) {  ?>
+                    <?php foreach($this->comments[$row['id']] as $commentRow) {
+                        if(isset($commentRow['news_id']) && $row['id'] == $commentRow['news_id']) { $getInside = true;?><?}}}?><?if(!$getInside){?><?if($this->isLogin){?><span id="comment_text_<?=$row['id']?>" onclick="showCommentField(<?=$row['id']?>);" style="cursor:pointer;color: #0069D6;">Comment</span><?} else {?><span class="login-popup-class" style="color: #0069D6;">Comment</span> <?}?><?}?>
+                </span>
+            </li>
+        </ul>
+        <ul  id="comment_list_<?=$row['id']?>" <?if($this->commentCount[$row['id']]) { ?> class="cmntRow afterClr" <?}?>>
+        <?if($this->commentCount[$row['id']]) { ?>
+
+
+                <?php if($this->commentCount[$row['id']] > 2) {?>
+                <li class="viewCount"> 
+                    <?if($this->filter != 'all'){?>
+                        <div onclick="getComments(<?=$row['id']?>);" id="commentTotal_<?=$row['id']?>" class="commentField" style="cursor:pointer;">
+                                View all <?=$this->commentCount[$row['id']]?> comments
+                        </div>
+                    <?}?>  
+                </li> 
+                <?php } ?>
+
+            <?php $getInside = false; if(count($this->comments)) {  ?>
+                <?php foreach($this->comments[$row['id']] as $commentRow) {
+                    if(isset($commentRow['news_id']) && $row['id'] == $commentRow['news_id']) { $getInside = true;?>
+            <li id="comment_<?=$commentRow['id']?>" class="cmntList">
+
+                <ul>
+                    <?php if($auth['user_id'] == $commentRow['user_id']) { ?>
+                                <?if($this->filter != 'all'){?>
+                                    <div class="deteleIcon">
+                                        <img src="<?=BASE_PATH?>/www/images/delete-icon.png" onclick="deleteComment('<?=$commentRow['id']?>')" style="display: none;"/>
+                                    </div>
+                                        <?}?>
+                    <?php }?>
+                    <li class="imgPro">
+                        <a href="<?=BASE_PATH?>home/profile/user/<?=$commentRow['user_id']?>" style="z-index:9999;">
+                                                        <?php if($commentRow['Profile_image']) {?> 
+                                                                <img <? if(strpos($commentRow['Profile_image'], '://')):?>src="<?=$commentRow['Profile_image']?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$commentRow['Profile_image']?>"<?endif;?> style="width:35px;height:35px;"/>
+                                                        <?php } else { ?>
+                                                                <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" style="width:35px;height:35px;"/>
+                                                        <?php } ?>   
+                                                    </a>
+                    </li>
+                    <li class="title">
+                        <a style="z-index:9999;color: #0068C4;text-decoration: none;" href="<?=BASE_PATH?>home/profile/user/<?=$commentRow['user_id']?>"><?=ucfirst($commentRow['user_name'])?></a>
+                    </li>
+                    <li class="cmnt">
+                            <?$commentData = substr($commentRow['comment'],0,250)?>
+                            <?echo commentTexts($commentData)?> 
+
+                            <?if(strlen($commentRow['comment'])>250):?>
+                                    <span><a id="moreButton_<?=$commentRow['id']?>" href="javascript:void(0)" class='commentFont' onclick="showMoreComments(this,'<?=$commentRow['id']?>')">...More</a><span id="morecomments_<?=$commentRow['id']?>" style="display: none;">
+                                        <?$commentData = substr($commentRow['comment'],250,strlen($commentRow['comment']))?>
+                                        <?echo commentTexts($commentData)?> 
+                                    </span>
+                            <?endif?>
+
+                    </li>
+                    <li class="dur">
+                        <?=$commentRow['commTime']?>
+                    </li>
+                </ul>
+
+            </li>
+            <?php } } } ?>
+                <li  id="commentTextarea_<?=$row['id']?>" class="cmntList afterClr">
+                    <ul class="inpCmnt afterClr">
+                            <li class="imgPro">
+                                <?if($this->auth["pro_image"]){?> 
+                                    <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="smallImage"/> 
+                                <? } else { ?>
+                                    <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="smallImage"/>
+                                <? } ?>
+                            </li>
+
+                            <li class="">
+                                <textarea id="comment<?=$row['id']?>" class="login-popup-class textAreaClass" onkeydown="$(this).trigger('click');" onkeyup="$(this).trigger('click');"></textarea>
+                            </li>
+                    </ul>
+                </li>
+            <?} else {?>
+
+                <ul  id="commentTextarea_<?=$row['id']?>" class="cmntRow afterClr" style="display: none;">
+                    <li id='tempDiv_<?=$row['id']?>' class="cmntList">
+                            <ul class="inpCmnt afterClr">
+                                <li class="imgPro">
+                                    <?if($this->auth["pro_image"]){?> 
+                                        <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="smallImage"/> 
+                                    <? } else { ?>
+                                        <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="smallImage"/>
+                                    <? } ?>
+                                </li>
+
+                                <li class="">
+                                    <textarea id="comment<?=$row['id']?>" class="login-popup-class textAreaClass" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea(<?=$row['id']?>);"></textarea>
+                                </li>
+                            </ul>
+                        </li>
+                </ul>
+            <?}?>
+
+        </ul>
+    </div>
+    
+<?php }  ?>
+
+<?} else { ?>
+    <div class="newsDiv" style="border:none; text-align:center;">
+        <div id="noNews" style="margin:50px 0 50px 0">
+            <img height="80" width="225" src="<?=BASE_PATH?>www/images/no-record.jpeg" />
+        </div>
+    </div>
+<?php } ?>
+<div id="pagingDiv" class="pagination"></div>
+    

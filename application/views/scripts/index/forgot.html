@@ -1,0 +1,32 @@
+<div class="centerData">
+    <div id="forForm" class="forForm">
+        <div class="forFormbgTop"></div>
+            <?if(isset($this->forgotsuccess)):?>
+            <div style="font-size: 16px;padding: 20px;">A link to change password has been sent to your email address.
+                        please check your email in a few minutes.
+                        If you don't receive it, please also check your spam box.
+            </div>
+            <script type="text/javascript">
+                window.setTimeout("window.location='<?=BASE_PATH?>'; ",20000);
+            </script>
+            <?else:?>
+            <form method="post" class="forFrm">
+                <ul class="forFormUl">
+                    <span class="formTitle">
+                        Forgot password
+                    </span>
+                    <li class="forFormLi">
+                        <input type="text" name="email" id="email" value="<?=$this->request->getPost('email')?>" class="forFormInput" placeholder="Email id" />
+                    </li>
+                    <?if($this->forgoterror) :?>
+                        <div class="errors floatL"><?=$this->forgoterror?></div><br>
+                    <?endif;?>
+                </ul><br />
+                <div class="findiv floatL">
+                    <input class="btnBlueRpt" type="submit" value="Done" />&nbsp;&nbsp;<a class="hypDecNone" href="<?=BASE_PATH?>"><input class="btnBlueRpt" type="button" value="Cancel" /></a>
+                </div><br />
+            </form>
+            <?endif;?>
+        <div class="forFormbgBott"></div>
+    </div>
+</div>

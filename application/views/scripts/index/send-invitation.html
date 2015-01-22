@@ -1,0 +1,197 @@
+
+
+
+<style type="text/css">
+/* popup_box DIV-Styles*/
+#popup_box { 
+	display:none; /* Hide the DIV */
+	position:fixed;  
+	_position:absolute; /* hack for internet explorer 6 */  
+	height:100px;  
+	width:400px;  
+	background:#F7F8F9;  
+	left: 35%;
+	top: 200px;
+	z-index:9999; /* Layering ( on-top of others), if you have lots of layers: I just maximized, you can change it yourself */
+	margin-left: 15px;  
+	
+	/* additional features, can be omitted */
+	border:1px solid #CCCCCC;  	
+	padding:15px;  
+	font-size:15px;  
+	-moz-box-shadow: 0 0 5px #CCCCCC;
+	-webkit-box-shadow: 0 0 5px #CCCCCC;
+	box-shadow: 0 0 5px #CCCCCC;
+	
+}
+
+#container {
+	background: #d2d2d2; /*Sample*/
+	width:100%;
+	height:100%;
+}
+
+a{  
+cursor: pointer;  
+text-decoration:none;  
+} 
+
+/* This is for the positioning of the Close Link */
+#popupBoxClose {
+	font-size:20px;  
+	line-height:15px;  
+	right:5px;  
+	top:5px;  
+	position:absolute;  
+	color:#6fa5e2;  
+	font-weight:500;  	
+}
+</style>
+
+<script type="text/javascript">
+	function unloadPopupBox() {	// TO Unload the Popupbox
+			$('#popup_box').fadeOut("slow");
+			$("#container").css({ // this is just for style		
+				"opacity": "1"  
+			}); 
+		}	
+		
+		function loadPopupBox() {	// To Load the Popupbox
+			$('#popup_box').fadeIn("slow");
+			$("#container").css({ // this is just for style
+				"opacity": "0.3"  
+			}); 		
+		}
+	$(document).ready( function() {
+	
+		// When site loaded, load the Popupbox First
+		//loadPopupBox();
+	
+		$('#popupBoxClose').click( function() {			
+			unloadPopupBox();
+		});
+		
+		$('#container').click( function() {
+			unloadPopupBox();
+		});
+
+		
+		/**********************************************************/
+		
+	});
+</script>
+<div class="loginCopyArea appendClr">
+    <div class="regForm">
+        <h2  class="appendClr" style="padding: 30px 0 53px; color:#FEA427;margin-top: 63px;">
+            Sign up for an invite to join HereSpy*
+        </h2>
+        <div id="regForm">
+        <!--    <form id="reg_form" class="form" method="post" name="reg_form" action="/herespy/index/send-invitation">-->
+            <ul class="frm">
+                <li>
+                    <input id="Name" name="Email_id" type="text" placeholder="Email" value="<?=$this->request->getParam('Email_id')?>" />
+                </li>                  
+            </ul>  
+            <table cellpadding="0" width="100%">
+                <tr>
+                    <td style="height: 40px; width:100%; text-align: left;">
+                        <span class="errors" style="float:left;" id="err"></span>
+                        <img style="display:none;" id="loader" src="<?=BASE_PATH?>www/images/wait.gif" width="25" height="25" />
+                    </td>
+                </tr>
+                <tr><td style="text-align: center;"><img class="crp" src="<?=BASE_PATH?>www/images/send-invite.png" id="selfInvite" style="position: relative;"/></td></tr>
+            </table>     
+          <!--   </form> -->
+        </div>
+        <div style="margin-top: 50px;">
+            <span style="color:#FFA524; font-weight: bold; font-size: 14px;">*Or you can ask a friend to invite you</span>
+        </div>
+    </div>
+    <div class="loginRightCol" style="margin: 170px 0 0 100px;">
+            <h2>HereSpy</h2>
+            Lets you see what's 
+            happening near you and talk
+            to other people in the area 
+    </div>
+</div>
+
+<!-- code for location popup -->
+<span class="Popup-Class"></span>
+<div style="display: none;">
+    <div id="Location-Popup">
+        <table width="100%" height="100%">
+            <tr>
+                <td width="100%" height="10%" align="center" style="text-align:center;">
+                    <div style="font-weight: bold; font-size: 18px;color: #8CBEFE;"> Enter your address or chose your location on the map</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div>
+                        <input type="hidden" class="registerField" id="address" name="address" value="" style="display: inline;"/>
+                    </div><br />
+                    <div id="mapSection1" class="normalScreen" style="height: 420px;"></div>						
+                </td>
+            </tr>
+            <tr>
+                <td width="100%" height="10%" align="center" style="text-align:center;"><br />
+                    <label style="font-size: 12px; font-weight: bold;">Address : </label><input id="searchAddres" type="text" class="" placeholder="Enter sddress" />&nbsp;&nbsp;
+                    <label style="font-size: 12px; font-weight: bold;">City : </label><input id="searchCity" type="text" class="" placeholder="Enter city" />&nbsp;&nbsp;
+                    <label style="font-size: 12px; font-weight: bold;">State : </label><input id="searchState" type="text" class="" placeholder="Enter state" />&nbsp;&nbsp;
+                    <input type="button" onclick="changeUserAddress('draw');" class="btnBlueRpt" value="Search" />
+                </td>
+            </tr>
+            <tr>
+                <td width="100%" height="10%" align="center" style="text-align:center;"><br />
+                    <input type="button" onclick="locationDone()" class="btnBlueRpt" value="Done" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="button" onclick="closePopup();" class="btnBlueRpt" value="Cancel" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>	
+<!-- end of location popup -->
+ 
+<!-- code for displaying popup on success -->
+<div id="popup_box">	<!-- OUR PopupBox DIV-->
+    <h1 style="position:relative; top:20px; color:green;">Thank you for requesting an invite to HereSpy, we'll be sending out more soon!</h1>
+    <a id="popupBoxClose"><img src="<?=BASE_PATH?>www/images/delete-icon.png" /></a>	        
+</div>
+<!-- displaying popup on success code ends here -->
+<script type="text/javascript">
+   
+    $('#selfInvite').click(sendInvitation);
+    function sendInvitation()
+    {
+        $('#popupBoxClose').trigger('click');
+        $('#sent').hide();
+        $('#err').html('');
+        $('#confirm').hide();
+        $('#loader').show();
+        var email = $('#Name').val();
+        var url =baseUrl+"index/index";
+        $.ajax({
+            url  : url,
+            type : 'post',
+            data :{Email_id:email},
+            success:returnInvitationStatus
+        });
+    }
+    	
+    function returnInvitationStatus(msg){
+        var msg = $.parseJSON(msg);
+        
+        if(msg && msg.success){
+            $('#sent').show();
+            $('#confirm').hide();
+            $('#loader').hide();
+            loadPopupBox();
+        }
+        else if(msg && msg.errors){
+            $('#sent').hide();
+            $('#err').html(msg.errors);            
+            $('#confirm').hide();
+            $('#loader').hide();
+        }
+    }    
+</script>

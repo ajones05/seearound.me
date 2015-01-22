@@ -1,0 +1,33 @@
+<?if(count($this->data) > 0) :?>
+	<div class="invtFrndList">
+		<?foreach($this->data as $row) :?>
+			<div class="invtFrndList">
+				<ul class="invtFrndRow afterClr">
+					<li class="img">
+						<a href="<?=BASE_PATH?>home/profile/user/<?=$row->id?>">
+							<?php if($row->Profile_image != 'null' && $row->Profile_image != '') {?> 
+								<img class="small" <? if(strpos($row->Profile_image, '://')):?>src="<?=$row->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$row->Profile_image?>"<?endif;?> style='width:55px;height:55px;'/>
+							<?php } else { ?>
+								<img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" style='width:55px;height:55px;'/>
+							<?php } ?>
+						</a>
+					</li>
+					<li class="name"> 
+						<?=$row->Name?>          
+						<span class="loc">
+							<?=$row->address?>    
+						</span>
+						<input class="curPnt requestInput" type="button" value="Accept" onclick="allow(this,<?=$row->fid?>);" />	
+						<input class="curPnt requestInput" type="button" value="Deny" onclick="deny(this,<?=$row->fid?>);" />&nbsp;&nbsp;
+						<img class="imgAlowDeny" width="50" height="20" src="http://localhost/here-spy/www/images/loader.gif" style="margin-right: 108px;">
+					</li>
+				</ul>
+			</div>
+			<div class="clr"></div>
+		<? endforeach;?>
+	</div>
+<?else:?>
+	<img style="padding-top:222px; margin-left:385px;" height="80" width="250" src="<?=BASE_PATH?>www/images/no-record.jpeg" />
+<?endif;?>
+
+    

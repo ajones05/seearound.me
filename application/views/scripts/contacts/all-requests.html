@@ -1,0 +1,90 @@
+<h3 class="topHdGrayB12"><img width="21" height="17" alt="My Connections" class="tIcn" src="<?=BASE_PATH?>www/images/icn-myconn-w.gif"> Friend Requests:</h3>
+<?if(count($this->data) > 0) :?>
+	<div class="invtFrndList">
+		<?foreach($this->data as $index => $row) :?>
+			<div class="invtFrndList">
+				<ul class="invtFrndRow afterClr">
+					<li class="img">
+						<a href="<?=BASE_PATH?>home/profile/user/<?=$row->id?>">
+							<?php if($row->Profile_image != 'null' && $row->Profile_image != '') {?> 
+								<img class="small" <? if(strpos($row->Profile_image, '://')):?>src="<?=$row->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$row->Profile_image?>"<?endif;?> style='width:55px;height:55px;'/>
+							<?php } else { ?>
+								<img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" style='width:55px;height:55px;'/>
+							<?php } ?>
+						</a>
+					</li>
+					<li class="name"> 
+						<?=$row->Name?> <a style="float:right;margin-right: -57px; font-size:12px;text-decoration:none;" href="javascript:void(0);" onclick="userOnMap('<?=$index?>', this, '<?=$row->latitude?>', '<?=$row->longitude?>','<?=$row->Profile_image?>');" >View on map</a>         
+						<span id="loc_<?=$index?>" class="loc">
+							<?=$row->address?>    
+						</span>
+						<input class="curPnt requestInput" type="button" value="Accept" onclick="allow(this,<?=$row->fid?>);" />	
+						<input class="curPnt requestInput" type="button" value="Deny" onclick="deny(this,<?=$row->fid?>);" />&nbsp;&nbsp;
+						<img class="imgAlowDeny" width="50" height="20" src="<?=BASE_PATH?>www/images/loader.gif" style="margin-right: 108px;">
+					</li>
+				</ul>
+			</div>
+			<div class="clr"></div>
+		<? endforeach;?>
+	</div>
+<?else:?>
+	<img style="margin-left: 96px;padding-top: 134px;" height="80" width="250" src="<?=BASE_PATH?>www/images/no-record.jpeg" />
+<?endif;?>
+<script type="text/javascript">
+	$(document).ready(function(){
+		var profileLat = userLatitude;
+		var profileLng = userLongitude;
+		profileMap(profileLat, profileLng,'','');
+		setHeight('.eqlCH');
+	});
+	var reqMarker; 
+	var reqInfoWindow;
+	function userOnMap(numb,thisone, profileLat, profileLng, image) {
+		var position;
+		if(reqMarker) {
+			reqMarker.setMap(null);
+			reqMarker = null;
+			position = new google.maps.LatLng(userLatitude, userLongitude);
+			map.setCenter(position);
+		}
+		if(reqInfoWindow) {
+			reqInfoWindow.close();
+			reqInfoWindow = null;
+		}
+		var contentString = '<table><tbody><tr><td valign="middle">'+
+				$("#loc_"+numb).html()+
+			'</td><td valign="middle">&nbsp;';
+			if (image) { 
+    		if(image.indexOf('://') > 0) {
+    			contentString += '<img width="55" height="55" src="' + image + '"  style="width:35px;height:35px;"/>';
+    		}else {
+    			contentString += '<img width="55" height="55" src="'+baseUrl+'uploads/' + image + '"  style="width:35px;height:35px;"/>';
+    		}
+    	}else contentString += '<img width="55" height="55" src="'+baseUrl+'www/images/img-prof40x40.jpg"  style="width:35px;height:35px;"/>';
+			contentString += '</td></tr></tbody></table>';
+		if(profileLat == "" && profileLng == "") {
+	
+		} else {
+			position = new google.maps.LatLng(profileLat, profileLng);
+			reqMarker = new google.maps.Marker({
+				map:map,
+				draggable:false,
+				animation: google.maps.Animation.DROP,
+				position: position,
+				icon: baseUrl+'www/images/icons/icon_2.png',
+				height:24,
+				width:36
+			});
+			map.setCenter(position);
+			reqInfoWindow = new google.maps.InfoWindow({
+				content: contentString,
+                                maxWidth: 200,
+				noCloseOnClick : 'true',
+				buttons:{close:{show:0}}
+			});
+			reqInfoWindow.open(map, reqMarker);
+		}
+	}
+</script>
+
+    

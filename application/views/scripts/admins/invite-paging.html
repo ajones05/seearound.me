@@ -1,0 +1,54 @@
+<!--
+See http://developer.yahoo.com/ypatterns/pattern.php?pattern=itempagination
+-->
+<?php if ($this->pageCount): ?>
+<div class="pagination appendClr messagePagingDiv" style="padding: 8px;">
+        <ul>
+            <li>
+            <!-- First page link -->
+            <?php if (isset($this->previous)): ?>
+                <a class="active" href="<?=$this->url();?>?page=<?=$this->first?>">
+                    First
+                </a> 
+            <?php else: ?>
+                <a href="javascript:void(0);">First</a> 
+            <?php endif; ?>
+            </li>
+            <li>
+            <!-- Previous page link -->
+            <?php if (isset($this->previous)): ?>
+                <a class="active" href="<?=$this->url();?>?page=<?=$this->previous?>">
+                    &laquo; Previous
+                </a> 
+            <?php else: ?>
+                <a href="javascript:void(0);">&laquo; Previous</a> 
+            <?php endif; ?>
+            </li>
+            <li>
+            <!-- Next page link -->
+            <?php if (isset($this->next)): ?>
+                <a class="active" href="<?=$this->url();?>?page=<?=$this->next?>">
+                    Next &raquo;
+                </a> 
+            <?php else: ?>
+                <a href="javascript:void(0);">Next &raquo;</a> 
+            <?php endif; ?>
+            </li>
+            <li>
+            <!-- Last page link -->
+            <?php if (isset($this->next)): ?>
+                <a class="active" href="<?=$this->url();?>?page=<?=$this->last?>">
+                    Last
+                </a>
+            <?php else: ?>
+            <a href="javascript:void(0);">Last</a>
+            <?php endif; ?>
+            </li>
+        </ul>
+    </div>
+<style>
+    a{
+        text-decoration: none;
+    }
+</style>
+<?php endif; ?>

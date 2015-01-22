@@ -1,0 +1,476 @@
+<script type="text/javascript">
+
+    if(userLatitude == "" && userLongitude == "" ) { 
+
+        userLatitude = geoip_latitude();
+
+        userLongitude = geoip_longitude();
+
+    }    
+
+    var selectedDate = '';
+
+    var selectedYear = '';
+
+    var selectedMonth = '';
+
+    <?if($this->user_data->Birth_date):?>
+
+       <?$birthdate = explode('-', $this->user_data->Birth_date)?>
+
+        selectedDate = Number('<?=sprintf("%02d", $birthdate[2])?>');
+
+        selectedYear = Number('<?=$birthdate[0]?>');
+
+        selectedMonth = Number('<?=$birthdate[1]?>');
+
+    <?endif?>
+
+    window.onload=function(){
+
+        populatedropdown("daydropdown", "monthdropdown", "yeardropdown")
+
+    }
+
+    $(document).ready(function() {
+
+        $(".Location-Popup-Class").colorbox({width:"70%",height:"", inline:true, href:"#Location-Popup"},function(){ 
+
+            $("#searchAddres").val("");
+
+            
+            relatedMap($("#RLatitude").val(),$("#RLongitude").val()); 
+
+            $('html, body').animate({ scrollTop: 0 }, 0);
+
+        });
+
+        profileMap(userLatitude, userLongitude,'','');
+
+        setHeight('.eqlCH');
+
+        
+
+        $('#imageButton').click(function() {
+
+            //var content = "<form enctype='multipart/form-data' action='<?=BASE_PATH?>home/image-upload' id='imageform' method='POST'>"+
+
+              //  "<input type='file' id='ImageFile' name='ImageFile' accept='image/*'/>"+
+
+               // "<br/>"+
+
+               // "<div class='answers'></div></form>";
+
+            //boxy = new Boxy(content, {title: "Upload Image"});
+
+            $('#ImageFile').trigger('click');
+
+        });
+
+
+
+        $('#ImageFile').live('change', function() { 
+
+            //boxy.hide();
+
+            $(".proImgChange").toggle();
+
+            $("#imageform").ajaxForm({
+
+                success : function(data){
+
+                    $(".proImgChange").toggle();
+
+                    data = $.parseJSON(data);
+
+                    var html ='<img src="'+data.url+'" class="imgProf"/>';
+
+                    $("#image_upload_field").html(html);
+
+                }
+
+            }).submit();            
+
+        });	
+
+
+
+        $("#imageSection").mouseover(function(){
+
+            $("#imageButton").show();
+
+        });	
+
+
+
+        $("#imageSection").mouseout(function(){
+
+            $("#imageButton").hide();
+
+        });	
+
+    });
+
+    
+
+    function locationDone() {
+
+        if($("#Location").val()) {
+
+            closePopup();
+
+            $("#RLatitude").val(commonMap2.centerPoint.lat());
+
+            $("#RLongitude").val(commonMap2.centerPoint.lng());
+
+            commonMap.centerPoint = commonMap2.centerPoint;
+
+            commonMap.getCenterAddress(commonMap2.centerPoint,"CHANGE");
+
+        }else {
+
+            alert("Please select location form map");
+
+        }
+
+    }	
+
+</script>
+
+<? if($this->auth['latitude'] == "" && $this->auth['longitude'] == ""):?>
+
+    <div id="location_error_div" class="errorMessage1">
+
+        Please select your location to proceed.
+
+    </div>
+
+<? endif;?>	
+
+<h3 class="topHdGrayB12">Edit Profile Info</h3>
+
+<div id="userDiv" class="leftCol" >
+
+         <div class="profDtl"> 
+
+             <?if($this->publicProfile) :?>
+
+             <div class="profile-img">
+                <a style="z-index:9999;" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>">
+
+                     <span id="image_upload_field">
+
+                         <?php if($this->user_data->Profile_image != 'null' && $this->user_data->Profile_image != '') {?> 
+
+                         <img <? if(strpos($this->user_data->Profile_image, '://')):?>src="<?=$this->user_data->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$this->user_data->Profile_image?>"<?endif;?> class="imgProf" />
+
+                         <?php } else { ?>
+
+                         <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="imgProf"/>
+
+                         <?php } ?>
+
+                     </span>
+
+                 </a> 
+             </div>
+             <div class="profile-describe afterClr">
+                 <a class="hypDecNone" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>"><h3 class="name"><?php echo ucfirst($this->user_data->Name);?></h3></a>
+
+                 <p class="loc"><?php //echo ucfirst($this->user_data->address);?>
+                 <?php 
+                    $string = (strlen($this->user_data->address) > 50) ? substr($this->user_data->address,0,50).'...' : $this->user_data->address;
+                    echo ucfirst($string);
+                  ?>
+                 
+                 </p>
+
+             </div>
+             <?else :?>
+                 <div class="profile-img">
+                    <a style="z-index:9999;" href="<?=BASE_PATH?>home/profile">
+
+                             <span id="image_upload_field">
+
+                                 <?if($this->auth["pro_image"]){?> 
+
+                                     <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="imgProf"/> 
+
+                                 <? } else { ?>
+
+                                     <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="imgProf"/>
+
+                                 <? } ?>
+
+                             </span>
+
+                    </a> 
+                 </div>
+                 <div class="profile-describe afterClr">   
+                     <a class="hypDecNone" href="<?=BASE_PATH?>home/profile"><h3 class="name"><?php echo ucfirst($this->auth['user_name']);?></h3></a>
+
+                     <p class="loc"><?php //echo ucfirst($this->auth['address']);?>
+                          <?php 
+                            //echo ucfirst($this->auth['address']);
+                            $string = (strlen($this->auth['address']) > 50) ? substr($this->auth['address'],0,50).'...' : $this->auth['address'];
+                            echo ucfirst($string); ?>
+                     </p>
+                 </div>
+             <?endif;?>                    
+
+         </div>
+ 
+ </div>
+
+ <ul class="editProfInfoTopNav">
+
+    <li class="txtBold">Profile Picture</li>
+
+    <li>
+
+        <div style="height: 1px; width: 1px;"> 
+
+            <form enctype='multipart/form-data' action='<?=BASE_PATH?>home/image-upload' id='imageform' method='POST'>
+
+                <input style="height: 0px; width: 1px;background-color: white;color: white;" type='file' id='ImageFile' name='ImageFile' accept='image/*'/>                
+
+            </form>
+
+        </div>
+
+        <a id="imageButton" href="javascript:void(0);" class="btnBlue">Choose New File </a>
+
+    </li>
+
+    <li>
+
+        <img src="<?=BASE_PATH?>www/images/wait.gif" class="proImgChange" />
+
+    </li>
+
+    <li class="afterClr">
+
+        <div class='answers'></div>
+
+    </li>
+
+</ul>
+
+ <form method="post">
+
+    <ul class="editProfInfoForm afterClr">
+
+        <li>
+
+            <label>Email Address</label>
+
+            <div class="afterClr" style="float: right; display: inline-block; width: 300px;">
+                <input type="text" name="Email_id" value="<?=$this->user_data->Email_id?>" style="float: none;"/>
+
+                <?if($this->errors['Email_id']):?>
+
+                <span class="errors">
+
+                    <?=$this->errors['Email_id']?>
+
+                </span>
+
+                <?endif;?>
+
+                <span style="margin-top: 5px;">
+
+                    <input type="checkbox" class="wAuto" name="allow" <?if($this->user_data->public_profile):?>checked="true"<?endif;?>/>
+
+                    Allow other users to see your Email address?
+
+                </span>
+                <div class="clr"></div> 
+            </div>
+        </li>
+
+        <li>
+
+            <label>Name</label>
+
+            <input type="text" value="<?=$this->user_data->Name?>" name="Name" />
+
+            <?if($this->errors['Name']):?>
+
+            <span class="errors">
+
+                <?=$this->errors['Name']?>
+
+            </span>
+
+            <?endif;?>
+            
+            <div class="clr"></div>
+
+        </li>
+
+        <li>
+
+            <label>Gender</label>
+
+            <select name="Gender" id="">
+
+                <option value="Male" <?if(ucfirst($this->user_data->Gender) == "Male"):?> selected="true" <?endif;?>> Male</option>
+
+                <option value="Female" <?if(ucfirst($this->user_data->Gender) == "Female"):?> selected="true" <?endif;?>> Female</option>
+
+            </select>
+            
+            <div class="clr"></div>
+            
+        </li>
+
+        <li>
+
+            <label>
+
+                <blockquote>
+
+                    <p>Interest</p>
+
+                </blockquote>
+
+            </label>
+
+            <input name="Activityes" type="text" value="<?=$this->user_data->Activities?>" />
+            <div class="clr"></div>
+
+        </li>
+
+        <li>
+
+            <label>Location</label>
+
+            <input type="text" value="<?=$this->user_data->address?>" name="Location" id="Location" class="Location-Popup-Class" />
+
+            <?if($this->errors['Location']):?>
+
+            <span class="errors">
+
+                <?=$this->errors['Location']?>
+
+            </span>
+
+            <?endif;?>
+
+            <input type="hidden" name="RLatitude" id="RLatitude" value="<?=$this->user_data->latitude?>" />
+
+            <input type="hidden" name="RLongitude" id="RLongitude" value="<?=$this->user_data->longitude?>" />
+            <div class="clr"></div>
+
+        </li>
+
+        <li>
+
+            <label>Date of Birth</label>
+
+            <span class="dob appendClr">
+
+                <select id="monthdropdown" name="monthdropdown" class="selectClass" onchange="updateDate(this.value,'month')"></select> 
+
+                <select id="daydropdown" name="daydropdown" class="selectClass" onchange="updateDate(this.value,'day')"></select> 
+
+                <select id="yeardropdown" name="yeardropdown"  class="selectClass" onchange="updateDate(this.value,'year')"></select> 
+
+            </span>
+
+            <input type="hidden" name="url" value="<?=$this->request->getParam('url')?$this->request->getParam('url'):''?>" />
+            <div class="clr"></div>
+
+        </li>
+
+    </ul>
+
+    <div class="btnBarM20">
+
+        <input type="submit" value="Apply"  class="btnBlueRptType2" style="margin-right:8%"/><input type="button" onclick="window.location.href = '<?=BASE_PATH?>home/profile'" value="Cancel" class="btnBlueRptType2" />
+
+    </div>
+
+</form>
+
+ <!-- Code for Profile picture -->
+
+    
+
+ <!-- end of profile picture-->
+
+
+
+<!-- code for location popup -->
+
+<div style="display: none;z-index:9999;">
+
+    <div id="Location-Popup">
+
+        <table width="100%" height="100%">
+
+            <!--<tr>
+
+                <td width="100%" height="10%" align="center" style="text-align:center;">
+
+                    <div style="font-weight: bold; font-size: 18px;color: #8CBEFE;"> Enter your address or chose your location on the map</div>
+
+                </td>
+
+            </tr>-->  
+
+            <tr>
+
+                <td>
+
+                    <div>
+
+                        <input type="hidden" class="registerField" id="address" name="address" value="" style="display: inline;"/>
+
+                    </div>
+
+                    <div id="mapSection" class="normalScreen" style="height: 420px;"></div>						
+
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td width="100%" height="10%" align="center" style="text-align:center; padding: 13px 0; position: relative;">
+
+                    <!--<label style="font-size: 12px; font-weight: bold;">Address : </label>-->
+                    <input id="searchAddres" class="profilemap-address" type="text" placeholder="Enter your Address" />
+
+                    <!--<label style="font-size: 12px; font-weight: bold;">City : </label><input id="searchCity" type="text" class="" placeholder="Enter city" />
+
+                    <label style="font-size: 12px; font-weight: bold;">State : </label><input id="searchState" type="text" class="" placeholder="Enter state" />-->
+                    <img class="profilemap-srh-img" onclick="searchloactionOnMap('editProfile');;" src="<?=BASE_PATH?>www/images/map_search.png">
+
+                    <!--<input type="button" onclick="searchloactionOnMap('editProfile');" class="btnBlueRpt" value="Search" />-->
+                    
+                    <input id="useprofileaddress" type="button" onclick="locationDone()" class="btnBlueRpt" value="Use This Address" />
+                    
+                    <img id="waitingAddress" src="<?=BASE_PATH?>www/images/wait.gif" style="display: none;" />
+
+                </td>
+
+            </tr>
+
+            <!--<tr>
+
+                <td width="100%" height="10%" align="center" style="text-align:center">
+
+                    <input type="button" onclick="locationDone()" class="btnBlueRpt" value="Use This Address" />
+
+                    <input type="button" onclick="closePopup();" class="btnBlueRpt" value="Cancel" />
+
+                </td>
+
+            </tr>-->
+
+        </table>
+
+    </div>
+
+</div>	

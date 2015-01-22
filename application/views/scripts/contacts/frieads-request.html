@@ -1,0 +1,113 @@
+<script type="text/javascript">
+    function makeFriend(num, sender, reciever, action) { 
+        if(sender && reciever) {
+            $.ajax({
+                url : baseUrl+'contacts/make-friend',
+                type: 'post',
+                data: {sender : sender,  reciever : reciever, action : action},
+                success : function(obj) {
+                    obj = $.parseJSON(obj);
+                    if(obj.type == "friend") {
+                        var html = '<span style="cursor: pointer;" onclick="makeFriend('+num+','+(obj.data).sender_id+', '+(obj.data).reciever_id+', \'unfriend\');">Friend</span>';
+                        $("#friendStatus_"+num).html(html);
+                    }else if(obj.type == "unfriend") {
+                        var html = '<span style="cursor: pointer;" onclick="makeFriend('+num+','+(obj.data).sender_id+', '+(obj.data).reciever_id+', \'friend\');">Blocked</span>';
+                        $("#friendStatus_"+num).html(html);
+                    }else if(obj.type == "delete") {
+                        $("#friendStatus_"+num).parent().parent().remove();
+                    }
+                }
+            });
+        }
+    }
+    
+    function makeFriendFb(num, sender, reciever, action) {
+        if(sender && reciever) {
+            $.ajax({
+                url : baseUrl+'contacts/make-friend-fb',
+                type: 'post',
+                data: {sender : sender,  reciever : reciever, action : action},
+                success : function(obj) {
+                    obj = $.parseJSON(obj);
+                    if(obj.type == "friend") {
+                        var html = '<span style="cursor: pointer;" onclick="makeFriend('+num+','+(obj.data).sender_id+', '+(obj.data).reciever_id+', \'unfriend\');">Friend</span>';
+                        $("#friendStatus_"+num).html(html);
+                    }else if(obj.type == "unfriend") {
+                        var html = '<span style="cursor: pointer;" onclick="makeFriend('+num+','+(obj.data).sender_id+', '+(obj.data).reciever_id+', \'friend\');">Blocked</span>';
+                        $("#friendStatus_"+num).html(html);
+                    }else if(obj.type == "delete") {
+                        $("#friendStatus_"+num).parent().parent().remove();
+                    }
+                }
+            });
+        }
+    }
+    
+</script>
+<br /><br />
+<table style="border: 1px solid #000">
+    <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Delete</th>
+    </tr>
+    <? $i = 0; if(count($this->fblist) > 0):?>
+        <?foreach($this->fblist as $row):?> 
+            <tr>
+                <td>
+                    <a href="<?=BASE_PATH?>home/profile/user/<?=$row->id?>">
+                        <?php if($row->Profile_image != 'null' && $row->Profile_image != '') {?> 
+                        <img <? if(strpos($row->Profile_image, '://')):?>src="<?=$row->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$row->Profile_image?>"<?endif;?> style="width:auto;height:50px;"/>
+                        <?php } else { ?>
+                            <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" style="width:auto;height:50px;"/>
+                        <?php } ?>
+                    </a>
+                </td>
+                <td><?=$row->Name?></td>
+                <td>
+                    <div id="friendStatus_<?=$i?>">
+                        <?if($row->status == '1'):?>
+                        <span style="cursor: pointer;" onclick="makeFriendFb(<?=$i?>, <?=$row->sender_id?>, <?=$row->reciever_nw_id?>, 'unfriend');">Friend</span>
+                        <?elseif($row->status == '2'):?>
+                        <span style="cursor: pointer;" onclick="makeFriendFb(<?=$i?>, <?=$row->sender_id?>, <?=$row->reciever_nw_id?>, 'friend');">Blocked</span>
+                        <?else:?>
+                        <span style="cursor: pointer;" onclick="makeFriendFb(<?=$i?>, <?=$row->sender_id?>, <?=$row->reciever_nw_id?>, 'friend');">Make Friend</span>
+                        <?endif;?>
+                    </div>
+                </td>
+                <td><span style="cursor: pointer;" onclick="makeFriendFb(<?=$i?>, <?=$row->sender_id?>, <?=$row->reciever_nw_id?>, 'delete');">Delete</span></td>
+            </tr>
+            <?$i++?>
+        <?endforeach;?>
+    <?endif;?>
+    <?if(count($this->splist) > 0):?>
+        <?foreach($this->splist as $row):?>
+            <tr>
+                <td>
+                    <a href="<?=BASE_PATH?>home/profile/user/<?=$row->id?>">
+                        <?php if($row->Profile_image != 'null' && $row->Profile_image != '') {?> 
+                        <img <? if(strpos($row->Profile_image, '://')):?>src="<?=$row->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$row->Profile_image?>"<?endif;?> style="width:auto;height:50px;"/>
+                        <?php } else { ?>
+                            <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" style="width:auto;height:50px;"/>
+                        <?php } ?>
+                    </a>
+                </td>
+                <td><?=$row->Name?></td>
+                <td>
+                    <div id="friendStatus_<?=$i?>">
+                        <?if($row->status == '1'):?>
+                        <span style="cursor: pointer;" onclick="makeFriend(<?=$i?>, <?=$row->sender_id?>, <?=$row->reciever_id?>, 'unfriend');">Friend</span>
+                        <?elseif($row->status == '2'):?>
+                        <span style="cursor: pointer;" onclick="makeFriend(<?=$i?>, <?=$row->sender_id?>, <?=$row->reciever_id?>, 'friend');">Blocked</span>
+                        <?else:?>
+                        <span style="cursor: pointer;" onclick="makeFriend(<?=$i?>, <?=$row->sender_id?>, <?=$row->reciever_id?>, 'friend');">Accept</span>
+                        <?endif;?>
+                    </div>
+                </td>
+                <td><span style="cursor: pointer;" onclick="makeFriend(<?=$i?>, <?=$row->sender_id?>, <?=$row->reciever_id?>, 'delete');">Deny</span></td>
+            </tr>
+            <?$i++?>
+        <?endforeach;?>
+    <?endif;?>
+</table>

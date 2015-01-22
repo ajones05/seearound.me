@@ -1,0 +1,78 @@
+<div class="loginCopyArea appendClr">
+    <div class="regSucc">
+		<table width="100%" style="height:100%">
+            <tr align="center"> 
+                <td width="50%" style="vertical-align:top;" align="center"><br /> <br /> <br /> 
+                    <? if($this->success):?>
+                        <div style="min-height:300px;font-size:12px; font-weight:bold">Your invitation has sent successfully.</div>
+                    <?elseif($this->eroors):?>
+                        <span style="min-height:300px;font-size:16px; font-weight:bold;color:#5B5BFF;">An error has occured.><br />
+                    <? endif;?>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- code for location popup -->
+
+<div style="display: none;">
+    <div id="Location-Popup">
+        <table width="100%" height="100%">
+            <tr>
+                <td width="100%" height="10%" align="center" style="text-align:center;">
+                    <div style="font-weight: bold; font-size: 18px;color: #8CBEFE;"> Enter your address or chose your location on the map</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div>
+                        <input type="hidden" class="registerField" id="address" name="address" value="" style="display: inline;"/>
+                    </div><br />
+                    <div id="mapSection1" class="normalScreen" style="height: 420px;"></div>						
+                </td>
+            </tr>
+            <tr>
+                <td width="100%" height="10%" align="center" style="text-align:center;"><br />
+                    <label style="font-size: 12px; font-weight: bold;">Address : </label><input id="searchAddres" type="text" class="" placeholder="Enter sddress" />&nbsp;&nbsp;
+                    <label style="font-size: 12px; font-weight: bold;">City : </label><input id="searchCity" type="text" class="" placeholder="Enter city" />&nbsp;&nbsp;
+                    <label style="font-size: 12px; font-weight: bold;">State : </label><input id="searchState" type="text" class="" placeholder="Enter state" />&nbsp;&nbsp;
+                    <input type="button" onclick="changeUserAddress('draw');" class="btnBlueRpt" value="Search" />
+                </td>
+            </tr>
+            <tr>
+                <td width="100%" height="10%" align="center" style="text-align:center;"><br />
+                    <input type="button" onclick="locationDone()" class="btnBlueRpt" value="Done" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="button" onclick="closePopup();" class="btnBlueRpt" value="Cancel" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>	
+<!-- end of location popup -->
+
+<script>
+    $(document).ready(function(){
+		$(".Location-Popup-Class").colorbox({width:"70%",height:"85%", inline:true, href:"#Location-Popup"},function(){
+			$('html, body').animate({ scrollTop: 0 }, 0); 
+			$("#address").val("");
+			$("#Location").val("");
+			$("#RLatitude").val("");
+			$("#RLongitude").val("");
+                        $("#searchAddres").val("");
+                        $("#searchCity").val("");
+                        $("#searchState").val("");
+			initializeMap('search'); 
+		});
+	});
+	
+	function locationDone() {
+		if($("#address").val()) {
+                    $("#Location").val($("#address").val());
+                    closePopup();
+		} else {
+                    alert("Please select location form map");
+		}
+	}
+	
+</script>

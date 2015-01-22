@@ -1,0 +1,46 @@
+/* v2.0 | 20110126
+
+http://meyerweb.com/eric/tools/css/reset/
+
+  License: none (public domain)
+*/
+.loginerror{
+	font:Verdana, Arial, Helvetica, sans-serif; 
+	color: #EC0000 !important;
+    font-size: 14px !important;
+    padding: 1px;
+	width: 229px;
+}
+
+.fbdiv{
+	float: right;
+    height: 24px;
+    margin-right: 60px;
+}
+
+.regSub{
+    width: 100%;
+    padding: 6px 0;
+    font-size: 18px;
+ 
+}
+.regSubChange{
+    margin-top:20px;
+    margin-left: 320px;
+}
+.regSubFor{
+    margin-top:20px;
+    margin-right: 426px;
+}
+.fbImageMw{
+    padding: 0px 20px 0px 30px;
+}
+.findiv{
+	max-width: 200px;
+}
+#Location-Popup input.inputErrorBorder{
+	border:1px solid  #FF0000;
+}
+.inputErrorBorder{
+    border:1px solid  #FF0000;
+}

@@ -1,0 +1,76 @@
+<h3 class="topHdGrayB12"><img src="<?=BASE_PATH?>www/images/icn-myconn-w.gif" width="21" height="17" class="tIcn" alt="Approve Connections" />  Connections</h3>
+<div id="inviteMain2">
+    <div class="fbFrndsLeftCol" style="width: 538px;">
+        <div class="fbFrndsBar">
+            <ul class="afterClr">
+                <li class="txtBold floatL">Approve invitation</li>
+                <li class="floatR"></li>
+                <li><img id="waitImage" style="margin-left: 91px;display: none;" src="<?=BASE_PATH?>www/images/wait.gif" /></li>
+            </ul>
+        </div>    
+        <div id="invite_div" class="invtFrndSec">
+            <div class="invtFrndList">
+                <?php if(count($this->users) > 0) :?>
+                    <?php foreach ($this->users as $user) :?>
+                    <div class="invtFrndList">
+                        <ul class="invtFrndRow afterClr">
+                            <li class="name"><?=$user->self_email?></li>
+                            <li class="btnCol" onclick="inviteUser(this, '<?=$user->self_email?>', 'approve');">
+                                <a href="javascript:void(0);">Invite</a>
+                            </li>
+                            <li class="btnCol" onclick="inviteUser(this, '<?=$user->self_email?>', 'remove');">
+                                <a href="javascript:void(0);">Deny</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="clr"></div>
+                    <?php endforeach;?>
+                <?php else:?>
+                    <div id="norecorddiv" class="invtFrndList">
+                        <div style="padding: 20px; text-align: center;font-weight: bold; font-size: 13px;">
+                            No new invite
+                        </div>
+                    </div>
+                <?php endif;?>
+                <div id="norecorddiv" class="invtFrndList" style="display:none">
+                    <div style="padding: 20px; text-align: center;font-weight: bold; font-size: 13px;">
+                        No new invite
+                    </div>
+                </div>
+                <div class="clr"></div>
+                    <?= $this->paginationControl($this->paginator, 'Sliding', 'admins/invite-paging.html'); ?>            
+                <div class="clr"></div>
+            </div>        
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function inviteUser(thisone, email, status) {
+        if(status == 'remove') {
+            if(!confirm('Are you sure to delete?')) {
+                return false;
+            } 
+        }
+        $('#waitImage').show();
+        $.ajax({
+            type: 'post',
+            url : baseUrl+'admins/index',
+            data : {email:email, status:status},
+            success : function (data) {
+                data = $.parseJSON(data);
+                if(data && data.approve) {
+                    $(thisone).parent().parent().remove();
+                } else if(data && data.remove) {
+                    $(thisone).parent().parent().remove();
+                } else {
+                    alert('Oops! there are some error');
+                }
+                if(data && data.totalRows == 0) { 
+                    $('#norecorddiv').show();
+                    $('.pagination').hide();
+                }
+                $('#waitImage').hide();
+            }
+        });
+    }
+</script>

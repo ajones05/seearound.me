@@ -1,0 +1,36 @@
+<?$comments = $this->request->getParam('comments','null');?>
+<?php $getInside = false; if(count($comments)) {  ?>
+<?php foreach($comments as $commentRow) {
+ if(isset($commentRow['news_id'])) { $getInside = true;?>
+     <li  id="comment_<?=trim($commentRow['id'])?>" class="cmntList afterClr">
+        <ul>
+            <li class="imgPro">
+                <a href="<?=BASE_PATH.'home/profile/user/'.$commentRow['user_id']?>" style="z-index:9999;">
+                    <?php if($commentRow['Profile_image']) {?> 
+                        <img <? if(strpos($commentRow['Profile_image'], '://')):?>src="<?=$commentRow['Profile_image']?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$commentRow['Profile_image']?>"<?endif;?> style="width:35px;height:35px;"/>
+                    <?php } else { ?>
+                        <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" style="width:35px;height:35px;"/>
+                    <?php } ?>   
+                </a>
+            </li>
+            <li class="title">
+                <?=ucfirst($commentRow['user_name'])?>
+            </li>
+            <li class="cmnt">
+                <?if(strlen($commentRow['comment'])>255):?>
+                    <span>
+                        <a id="moreButton_<?=$commentRow['id']?>" href="javascript:void(0)" class='commentFont' onclick="showMoreComments(this,'<?=$commentRow['id']?>')">...More</a>
+                        <span id="morecomments_<?=$commentRow['id']?>" style="display: none;">
+                            <?=substr($commentRow['comment'],255,strlen($commentRow['comment']))?>
+                        </span>
+                    </span>
+                <?else:?>
+                    <?=$commentRow['comment']?>
+                <?endif?>
+            </li>
+            <li class="dur">
+                <?=$commentRow['commTime']?>
+            </li>
+        </ul>
+    </li>
+ <?php } } } ?>

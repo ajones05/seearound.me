@@ -1,0 +1,42 @@
+<table width="637" border="0" align="center" cellpadding="0" cellspacing="0" style="color: #373737;font-family: Tahoma,Verdana,sans-serif,Arial, Helvetica;background-color: #FFFFFF;margin-left: 0px;margin-top: 0px;margin-right: 0px;margin-bottom: 0px;">
+    
+    <tr style="background-color:#8CBEFE">
+      <td width="133" height="34"><img src="<?=BASE_PATH?>/www/images/logo.jpg"></td>
+      <td width="504">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2" align="left" valign="top" bgcolor="#F3F8FC">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2" align="left" valign="top" bgcolor="#F3F8FC">
+          <table width="605" border="0" align="center" cellpadding="0" cellspacing="0">
+            <tr>
+                <td width="484" style="font-size:14px;letter-spacing:1px;font-weight: bold;color: #000000;">
+                    <p>Hello!<br></p>                </td>
+                <td width="121" style="font-size:12px;line-height:14px;color:#000000;letter-spacing:0.6px;padding-top: 5px;padding-bottom: 5px;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="font-size:12px;line-height:14px;color:#000000;letter-spacing:0.6px;padding-top: 5px;padding-bottom: 5px;"><?=$this->message?></td>
+            </tr>
+            <?php if($this->adminPart == "yes"):?>
+            <tr>
+                <td colspan="2" style="font-size:12px;line-height:14px;color:#000000;letter-spacing:0.6px;padding-top: 5px;padding-bottom: 5px;"><p>Sincerely,</p>
+                    <p style="font-weight:bold;"><?//=$this->adminName?><br><?//=date('M d, Y')?></p>
+                    <p style="font-weight:bold;"><?=$this->response?><br><br></p>                
+                </td>
+            </tr>
+            <?php else:?>
+            <tr>
+                <td colspan="2" style="font-size:12px;line-height:14px;color:#000000;letter-spacing:0.6px;padding-top: 5px;padding-bottom: 5px;">
+                    <p>&nbsp;</p>                    
+                </td>
+            </tr>
+            <?php endif;?>
+        </table>      
+      </td>
+    </tr>
+    
+    <tr>
+      <td height="10" colspan="2" align="left" valign="top">&nbsp;</td>
+    </tr>
+</table>

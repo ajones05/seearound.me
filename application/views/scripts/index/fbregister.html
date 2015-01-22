@@ -1,0 +1,443 @@
+<script>
+	/*$(document).ready(function(){
+
+if(!Modernizr.input.placeholder){
+
+$('[placeholder]').focus(function() {
+	  var input = $(this);
+	  if (input.val() == input.attr('placeholder')) {
+		input.val('');
+		input.removeClass('placeholder');
+	  }
+	}).blur(function() {
+	  var input = $(this);
+	  if (input.val() == '' || input.val() == input.attr('placeholder')) {
+		input.addClass('placeholder');
+		input.val(input.attr('placeholder'));
+	  }
+	}).blur();
+	$('[placeholder]').parents('form').submit(function() {
+	  $(this).find('[placeholder]').each(function() {
+		var input = $(this);
+		if (input.val() == input.attr('placeholder')) {
+		  input.val('');
+		}
+	  })
+	});
+
+}
+
+});*/
+</script>
+<style type="text/css">
+	.fb_button_text{
+		min-width:45px;
+		word-wrap:nowrap;
+	}
+	.errors{
+		color: #FF5959 !important;
+		font-size: 12px;
+		list-style:none;
+		margin-left:56px;
+		padding:2px;
+		width:250px;
+		text-align:left;
+		float:left;
+	}
+	li{
+		color:#FF0000;
+	}
+</style>
+<style type="text/css">
+<!--
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+}
+-->
+</style>
+<style>
+a {
+	color: #000;
+	text-decoration: none;
+}
+a:hover {
+	color: #F60;
+}
+p {
+	margin: 0 0 2em;
+}
+h1, h2, h3 {
+	line-height: 110%;
+}
+h1 {
+	font: bold 80% Arial, Helvetica, sans-serif;
+	text-transform: uppercase;
+	margin: 0 0 2px;
+	color: #999;
+}
+h2 {
+	margin: 0 0 8px;
+}
+h3 {
+	border-top: solid 2px #ccc;
+	margin: 40px 0 15px;
+	padding-top: 10px;
+}
+.credits {
+	color: #999;
+	font: italic 90% "Times New Roman", Times, serif;
+}
+.credits a {
+	color: #666;
+}
+
+form p {
+	margin: 0 0 15px;
+}
+
+/************************************************************************************
+FORM STYLE BEGIN
+*************************************************************************************/
+
+/* input styles */
+input, 
+textarea, 
+input[type=search] {
+	background: #f4f4f4;
+	border: solid 1px #a3a3a3;
+	padding: 5px 10px;
+	font: 15px "Times New Roman", Times, serif;
+	-webkit-box-shadow: inset 0 2px 3px rgba(0,0,0,.1);
+	-moz-box-shadow: inset 0 2px 3px rgba(0,0,0,.1);
+	box-shadow: inset 0 2px 3px rgba(0,0,0,.1);
+	-webkit-border-radius: 0px;
+	-moz-border-radius: 0px;
+	border-radius: 0px;
+	-webkit-appearance: none; /* reset webkit search style */
+}
+
+/* input:focus styles */
+input[type=text]:focus, 
+textarea:focus,
+input[type=search]:focus {
+	background: #fff;
+	border-color: #333;
+	outline: none; /* remove outline */
+}
+
+/* set field width */
+input[type=text], input[type="search"], input[type="password"] {
+	width: 265px;
+	height:35px;
+	font-size:17px;
+	font-weight:300;
+	border: 1px solid #A3A3A3;
+}
+textarea{
+	width: 265px;
+	height:60px;
+	font-size:17px;
+	font-weight:300;
+	border: 1px solid #A3A3A3 !important;
+}
+/* fallback placeholder */
+.placeholder {
+	color: #bbb;
+}
+/* webkit placeholder */
+::-webkit-input-placeholder {
+	color: #bbb;
+}
+/* moz placeholder */
+:-moz-placeholder {
+	color: #bbb;
+}
+
+/* remove webkit search input decoration and cancel button */
+input[type="search"]::-webkit-search-decoration, 
+input[type="search"]::-webkit-search-cancel-button {
+	display: none;
+}
+
+.loginInput{
+	border: 1px solid #CCCCCC !important;
+    border-radius: 3px 3px 3px 3px !important;
+    color: gray !important;
+    display: inline-block !important;
+    font-size: 13px !important;
+    height: 22px !important;
+    line-height: 18px !important;
+    padding: 4px !important;
+    width: 218px !important;
+	height:26px!important;
+}
+
+</style>
+<script type="text/javascript">
+	var emailError = 0;
+	var emailVal;
+	function emailValidation() {
+		$('#email_error').html('<img src="'+baseUrl+'public/www/images/waiting.gif"/>');
+		var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+		var email = $.trim($('#emailField').val());
+		if(email == '') {
+			$('#email_error').html('Enter the email id');
+			emailVal = emailError = 1;
+		} else if(!emailReg.test(email)) {
+			$('#email_error').html('Enter the valid email id');
+			emailVal = emailError = 2;
+		} else {
+			$.post(baseUrl+'index/email-check/', {'email': email}, returnEmailVal, "text");
+		}
+		function returnEmailVal(obj) {
+			var json = JSON.parse(obj);
+			if(json.errors) {
+				$('#email_error').html('Email id already exist');
+				emailVal = emailError = 3;
+			}else {
+				$('#email_error').html('');
+				emailVal = emailError = 0;
+			}
+		}
+	}
+			
+	function checkUserId(that){
+		$('#userid_error').html('<img src="'+baseUrl+'public/www/images/waiting.gif"/>');
+		var userid = $.trim(that);
+		
+		if(userid != ''){
+			$(document).ready(function(){
+				$.post(baseUrl+'index/check-userid/', {'user_id': userid }, returnUserId, "text");
+			});
+		} else {
+			$('#userid_error').html('');
+			$('#userid_error').html('Enter your desire user id');
+		}
+	}
+	
+	var userIdNotError = true;
+	function returnUserId(obj){
+		var json = JSON.parse(obj);
+		$('#userid_error').html('');
+		//$('#userid_error').html(json.result);
+		if(json.error == 0){
+			userIdNotError = true;
+			$('#userid_error').css('color','#0066FF');
+			$('#userid_error').html('User id available');
+		} else if(json.error == 1){
+			userIdNotError = false;
+			$('#userid_error').css('color','#FF0000');
+			$('#userid_error').html('Choose another user id');
+		} else if(json.error == 2){
+			userIdNotError = false;
+			$('#userid_error').css('color','#FF0000');
+			$('#userid_error').html('Enter the user id');
+		}
+	}
+    
+    function captchaValidation() {
+        var captcha_id = $("#captcha-id").attr('value');
+        var captcha_input = $("#captcha-input").attr('value');
+        var validateCaptcha;
+        
+        $.ajax({
+			type: "POST",
+			url: baseUrl+"captcha/check-captcha",
+			data: {
+				id: captcha_id ,
+				input: captcha_input
+			},
+			success: function (msg) { 
+    			msg = JSON.parse(msg);
+               	if(msg.html) {			
+    				document.getElementById('captcha-div').innerHTML = msg.html ;
+    			}
+    			if (msg.valid == 'true') {
+    				document.getElementById('captcha_error').style.display = "none";
+                    registrationProcess(1);
+    			} else if (msg.valid == 'false') {
+    				validateCaptcha = 2;
+    				document.getElementById('captcha_error').style.display = "block"
+    				document.getElementById('captcha_error').innerHTML = "<span style='color:#FF0000'>Incorrect captcha value</span>";
+                    registrationProcess(2);
+    			}   
+			}     
+		});
+    }
+	
+	function registrationValidation() {
+	    captchaValidation();
+    }
+    
+    function registrationProcess(captchavalidate) {
+        clearError();
+        emailValidation();
+        var name = $.trim($('#nameField').val());
+       	var email = $.trim($('#emailField').val());
+        var pass = $.trim($('#passField').val());
+        var repass = $.trim($('#repassField').val());
+        var state = $.trim($('#stateField').val());
+        var userid = $.trim($('#useridField').val());
+        var countryName = $('#countryField option:selected').text();
+        var address =  $.trim($('#address').val());
+		
+       	if(name != '' && emailVal == 0 && pass != '' && repass != '' && address != '' && userIdNotError && captchavalidate == 1) {
+			if(pass == repass ) {
+				$(document).ready(function(){
+				    $.post(baseUrl+'index/registration/', 
+					{ 'name': name, 'email': email, 'pass': pass, 'countryName': countryName, 'state': state, 'address':address,'latt': userLatitude, 'long': userLongitude,'userid':userid},
+					 returnRegistration, "text");
+				});
+			} else {
+				$('#repass_error').html('Both password not matched.');
+			}
+		} else {
+			if(pass == '') $('#pass_error').html('Enter the password');
+			if(repass == '') $('#repass_error').html('Enter the repassword');
+			if(name == '') $('#name_error').html('Enter your name');
+			//if(state == '') $('#state_error').html('Select your state');
+            if(address == '') $('#address_error').html('Enter your address');
+		}
+	}
+	
+	function returnRegistration(obj) { 
+		var json = JSON.parse(obj);
+		if(json && json.success) {
+			window.location.href = json.redirect;
+		}
+	}
+	
+	var emailval = 0;
+	function emailLoginValidation() {
+		emailval = 0;
+		var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+		var email = $.trim($('#emailLogin').val());
+                if(email == '') {
+			return emailval = 1;
+		} else if(!emailReg.test(email)) {
+			return emailval = 2;
+		} else {
+			return emailval = 0;
+		}
+	}
+	
+	function loginValidation(){
+		clearError();
+		var emailValid = emailLoginValidation();
+		var email = $.trim($('#emailLogin').val());
+                var pass  = $.trim($('#passwordLogin').val());
+		if(email != '' && pass != ''){
+			 $(document).ready(function(){
+			 $.post(baseUrl+'index/login/', {'email': email, 'pass': pass}, returnLogin, "text");
+			});
+		} else {
+                    if(email == '')     $('#emailLogin').css('border','1px solid red');
+                    else if(pass == '') $('#passwordLogin').css('border','1px solid red');
+		}
+	}
+	
+	function returnLogin(obj){
+		var jsonObj = JSON.parse(obj);
+                if(jsonObj.error == 0) {
+			alert(window.location.href = jsonObj.redirect);
+		}else if(jsonObj.error == 1) {
+			$('#loginError').html('Invalid login detail');
+		}else if(jsonObj.error == 2) {
+			$('#loginError').html('Inactive account');
+		}
+	}
+	
+	function clearError() {
+		$('#loginError').html('');
+		$('#name_error').html('');
+		$('#email_error').html('');
+		$('#pass_error').html('');
+		$('#repass_error').html('');
+		$('#gender_error').html('');
+		$('#street_error').html('');
+		$('#city_error').html('');
+		$('#state_error').html('');
+		$('#zip_error').html('');
+		$('#country_error').html('');
+		$('#userid_error').html('');
+		$('#address_error').html('');
+		$('#emailLogin').css('border','1px solid #7F9DB9');
+		$('#passwordLogin').css('border','1px solid #7F9DB9');
+	}
+    
+    function selectedState(thisOne) {
+        $('#useAddress').attr('disabled','disabled');
+        var str = "";
+        $("#"+thisOne.id+" option:selected").each(function () {
+                str += $(this).text() + " ";
+        });
+        
+        if(thisOne.value) {
+            getPlaceByAddress(str+",USA",'centerpoint'); 
+            $("#address").attr('value','');
+            $("#addressField").show();
+        } else {
+            $("#address").attr('value','');
+            $("#addressField").hide();
+        }
+    }
+    
+    function fillAddress() {
+        
+         $("#cboxClose").trigger('click');
+		 $("#address").attr('value',$("#currentAddress").attr('value'));
+    }
+	$(document).ready(function(e){
+		$('#passwordLogin , #emailLogin').bind('keypress', function(event) {
+		   var code = (event.keyCode ? event.keyCode : event.which);
+			if(code===13){
+				loginValidation();
+			}
+		});  
+		$('#captcha-input,#repassField,#passField,#emailField,#nameField').bind('keypress', function(event) {
+		   var code = (event.keyCode ? event.keyCode : event.which);
+			if(code===13){
+				registrationValidation();
+			}
+		});    
+	});
+	
+	
+</script>
+<table width="100%" style="height:100%">
+    <tr class="header">
+        <td style="background:#E8E8D8">
+            <table width="100%">
+                    <tr>
+                        <td width="36%" colspan="4">
+                            <div align="left" style="padding-right:20px;">
+                                <a style="color:none;text-decoration:none;" href="<?=BASE_PATH?>">
+                                    <div class="header">HereSpy</div>
+                                </a>						
+                            </div>				    
+                        </td>
+                        <td>
+
+                        </td>
+                    </tr>
+            </table>		
+        </td>
+    </tr> 
+    <tr>
+        <td width="100%">
+            <div align="center" style="text-align:center;width:28%;height:800px;margin-left:513px;">
+                <br /><br /><br /><br />
+                <h3>Please click on <b>FB login</b> to register with facebook.</h3>
+                <div id="fb_login" perms="email,user_birthday" class="fb-login-button" onlogin="FbCallback();" >Fb login</div>	
+            </div>
+            
+        </td>                 
+    </tr>
+    <tr class="footer">
+        <td colspan="2">&nbsp;</td>
+    </tr>
+</table>
+

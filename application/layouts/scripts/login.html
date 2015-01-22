@@ -1,0 +1,674 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+
+    <head>
+
+
+        <? $auth = Zend_Auth::getInstance()->getStorage()->read();?>
+
+
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+
+        <title>Here Spy</title>
+
+
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/colorbox.css"/>
+
+
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/boxy.css"/>
+
+
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery-ui.css"/>
+
+
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/reset.css"/>
+
+
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/global.css"/>
+
+
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/login.css"/>
+		
+		<!-- custom scrollbar stylesheet -->
+	    <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery.mCustomScrollbar.css"/>
+		
+		
+	
+
+
+        <script language="javascript" type="text/javascript">
+
+
+            var baseUrl = "<?=BASE_PATH?>";
+           
+            var geoiplatitude  = <?php echo LATITUDE_VAR; ?>;
+            
+            var geoiplongitude = <?php echo LONGITUDE_VAR; ?>;
+
+            var userLatitude = "<?=$this->auth['latitude'];?>";
+
+
+            var userLongitude = "<?=$this->auth['longitude'];?>";
+
+
+            var isLogin = "<?=$this->isLogin?>";
+
+
+            var user_id = "<?=$this->auth['user_id']?>";
+
+
+            var user_id = "<?=$this->auth['user_id']?>";
+
+            var returnUrl = "<?=$this->request->getParam('url')?$this->request->getParam('url'):''?>";
+        </script>
+
+
+        <script language="javascript" type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.js"></script>
+
+
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
+
+
+        <!-- <script language="javascript" type="text/javascript" src="http://j.maxmind.com/app/geoip.js"></script> -->
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery-ui.min.js"></script>
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/infobubble.js"></script>
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/customDatepicker.js"></script>
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.colorbox.js"></script>
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/json2.js"></script>
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.boxy.js"></script>
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.form.js"></script>
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/main.js"></script>
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js"></script>
+
+
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js"></script>
+
+        <!-- custom scrollbar plugin -->
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.mCustomScrollbar.js"></script>
+
+
+    </head>
+
+
+    <body class="bgRegForm">
+
+
+        <div id="fb-root"></div>
+
+
+        <div style="display: none;"></div>
+
+
+        <div class="uprBar">
+
+
+            <div class="loginHdr appendClr">
+
+                   
+                <a href="<?=BASE_PATH?>">
+
+                    <img src="<?=BASE_PATH?>www/images/logo.png" style="height: auto;width:200px;margin: 8px 0px 8px 3px;"/>
+                    <!--<img src="<?=BASE_PATH?>www/images/text.png" class="siteLogo"  width="193" height="31" />-->
+
+
+                </a>
+
+
+                <ul class="loginForm">
+
+
+                    <li>
+
+
+                        <span id="loginError" class="loginerror"></span>
+
+
+                    </li>
+
+
+                    <li>
+
+
+                        <input id="emailLogin" type="text" placeholder="Email Address" value="<?=$this->emailLogin?>" tabindex="1"/>
+
+
+                        <span>
+                            <span> Keep me logged in </span>
+                            <input class="afterClr" id="remember" name="remember" type="checkbox" <?if($this->request->getCookie("keepLogin")) :?>checked="true"<?endif;?> tabindex="4"/>
+                        </span>
+
+
+                    </li>
+
+
+                    <li>
+
+
+                        <input id="passwordLogin" type="password" placeholder="Password" value="<?=$this->passwordLogin?>" tabindex="2"/>
+
+
+                        <a class="hypDecNone" href="<?=BASE_PATH?>index/forgot"><span>Forgot your password?</span></a>
+
+
+                    </li>
+
+
+                    <li class="btn afterClr">
+
+
+                        <!--<input class="floatL" type="image" onclick="loginValidation();" src="<?=BASE_PATH?>www/images/btn-login.gif" tabindex="3"/> -->
+                        <input class="floatL" type="submit" onclick="loginValidation();" value="Login" tabindex="3"/> 
+                        <!--<img width="70" height="26" alt="FB Login" src="<?=BASE_PATH?>/www/images/btn-fbLogin.gif" onclick="fbLogin();" style="cursor: pointer;" />-->
+
+
+                    </li>
+
+
+                        
+
+
+                </ul>
+
+
+            </div>
+
+
+        </div>
+
+
+        <div align="center" class="mainContainer brdrNone">
+
+
+            <?=$this->layout()->content;?>
+
+
+        </div>
+
+        <div class="opacity-dev"></div>
+        <div class="special-footer">
+
+
+            <div class="loginFtr">
+
+
+                <ul>
+
+                     <li>
+
+
+                        <a href="<?=BASE_PATH?>info/about-us">About</a>
+
+
+                    </li>
+
+                    
+                    <!--    <li>
+
+
+                        <a href="<?=BASE_PATH?>info/terms">Terms Of Service</a>
+
+
+                    </li>
+                    
+                    <li>
+
+
+                        <a href="<?=BASE_PATH?>info/privacy">Privacy Policy</a>
+
+
+                    </li> -->
+                    
+                    <li class="tems-of-service-popup"  style="cursor: pointer;">
+
+
+                       <a style="color:#FFFFFF;cursor:pointer">Terms Of Service</a>
+
+
+                   </li>
+
+
+
+                    <li class="privacy-policy-popup" style="cursor: pointer;">
+    
+    
+                        <p style="color:#FFFFFF;cursor: pointer;font-size:14px;font-weight:bold;">Privacy Policy</p>
+    
+    
+                    </li>
+
+
+                    <li>
+    
+    
+                        <span class="copyRight ftrCopyRight">@ Copyright 2014 SeeAround.me  </span>
+    
+    
+                    </li>
+                    
+                    <li class="clr"></li>
+
+
+                </ul>
+
+
+            </div>  
+
+
+        </div>
+
+
+        
+
+
+        <!-- code for popups div start here -->
+
+
+        
+
+
+        <input type="button" id="locationButton" style="display: none;" class="Location-Popup-Class" />
+
+
+        <div style="display: none;">
+
+
+            <div id="Map-Popup-id">
+
+
+            <div style="height: 100%; width: 100%; position: relative; background-color: rgb(229, 227, 223); overflow: hidden;" id="mapSection" class="mapScreen"></div>
+
+
+                <div align="center" style="width: 100%;">
+
+
+                    <input class="btnBlueRpt" id="useAddress" type="button" disabled="disabled" value="Use this address" onClick="fillAddress()"/>
+
+
+                    <input class="btnBlueRpt" id="useNewAddress" type="button" disabled="disabled" value="Use this address" onClick="fillUserAddress()"/>
+
+
+                    <input type="hidden"  id="currentAddress" name="currentAddress"/>
+
+
+                    <input class="btnBlueRpt" id="closeOpenPopup" class='btn primary' type="button" value="Cancel Search" onClick="closePopup();"/>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        
+
+
+        <!-- code for making location popup -->
+
+
+        <div style="display: none;">
+
+
+            <div id="Location-Popup-id">
+
+
+                <div align="center" style="width: 100%;">
+
+
+                    <b>
+
+
+                        You've moved the map quite a bit, do you still want to post from your location? If you want to post from a new location, click Cancel and then change your location on the map.
+
+
+                    </b>
+
+
+                    <br />
+
+
+                    <br />
+
+
+                    <input id="changeLocation" type="button" class='btn primary' value="Post" onClick="closeCurrentPopup()"/>
+
+
+                    <input id="closeLocationPopup" class='btn primary' type="button" value="Cancel" onClick="closeThisPopup();" />
+
+
+                </div>
+
+
+            </div>
+
+
+            <div id="sliderImages" style="display: none;">
+
+
+                <img id="downImage" src="<?=BASE_PATH?>/www/images/map_arrow_down.png" class="clickableImage" onClick="changeMapCenter(180,.5)"/>
+
+
+                <img id="upImage" src="<?=BASE_PATH?>/www/images/map_arrow_up.png" class="clickableImage" onClick="changeMapCenter(0,.5)"/>
+
+
+                <img id="rightImage" src="<?=BASE_PATH?>/www/images/map_arrow_right.png" class="clickableImage" onClick="changeMapCenter(90,.5)"/>
+
+
+                <img id="leftImage" src="<?=BASE_PATH?>/www/images/map_arrow_left.png" class="clickableImage" onClick="changeMapCenter(270,.5)"/>
+
+
+            </div>
+
+
+            <div id="zoomController" style="display: none;">
+
+
+                <table style="height:50px;width:50px;">
+
+
+                    <tr>
+
+
+                        <td><img id="zoomIn" src="<?=BASE_PATH?>/www/images/zoom_in.png" class="clickableImage" onClick="changeMapZoom('in')"/></td>
+
+
+                    </tr>
+
+
+                    <tr>
+
+
+                        <td><img id="zoomOut" src="<?=BASE_PATH?>/www/images/zoom_out.png" class="clickableImage" onClick="changeMapZoom('out')"/></td>
+
+
+                    </tr>
+
+
+                </table>
+
+
+            </div>
+
+
+
+
+
+        </div>
+
+
+        <!-- location popup code ends here -->
+
+
+
+
+
+        <!-- Code for message popups -->
+
+
+        <div style="display: none;">
+
+
+            <div style="display:none;"><input type="button" class="Thanks-Popup-Class" id="thanksButton" /></div>
+
+
+            <div id="Thanks-Popup">
+
+
+                <table width="100%">
+
+
+                    <tr>
+
+
+                        <td colspan="2">&nbsp;</td>
+
+
+                    </tr>    
+
+
+                    <tr>
+
+
+                        <td colspan="2">
+
+
+                            <div align="center">
+
+
+                                <span style="color:#33CC00" id="messageSuccess" >
+
+
+                                    <img src="<?=BASE_PATH?>www/images/correct.gif" />
+
+
+                                        &nbsp;Message sent successful
+
+
+                                </span>
+
+
+                            </div>
+
+
+                        </td>
+
+
+                    </tr>
+
+
+                </table>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- Code for send message popup -->
+
+
+        
+
+
+        <div style="display: none;">
+
+
+            <div id="Message-Popup">
+
+
+                <img style="vertical-align:middle;" src="<?=BASE_PATH?>www/images/mail_send.gif" />
+
+
+                <span style="font-size:18px;font-weight:800;margin-left:150px; margin-bottom:10px;">Send Message</span>
+
+
+                <center>
+
+
+                    <div style="text-align:center; width:500px;">
+
+
+                        <table width="50%">
+
+
+                                <tbody id="messageForm">
+
+
+                                <tr>
+
+
+                                    <td valign="top">
+
+
+                                        <b>Subject :</b>
+
+
+                                    </td>
+
+
+                                    <td>
+
+
+                                        <input type="text" id="subject" name="subject" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter subject..."/><br />
+
+
+                                        <span style="margin-left:0px;" class="errorField" id="subject_error"></span>
+
+
+                                    </td>
+
+
+                                </tr>
+
+
+                                <tr>
+
+
+                                    <td valign="top">
+
+
+                                        <b>Message :</b>
+
+
+                                    </td>
+
+
+                                    <td>
+
+
+                                        <textarea id="message" name="message" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter message..."></textarea><br />
+
+
+                                        <span style="margin-left:0px;" class="errorField" id="message_error"></span>
+
+
+                                    </td>
+
+
+                                </tr>
+
+
+                                <tr>
+
+
+                                    <td colspan="2" style="text-align:center;">
+
+
+                                        <input id="closeLocationPopup" class='btn primary' type="button" value="Send" onClick="message();"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+                                        <input type="button" onClick="closePopup();" class='btn primary' value="Cancel" />
+
+
+                                    </td>
+
+
+                                </tr>
+
+
+                            </tbody>
+
+
+                        </table>	
+
+
+                    </div>
+
+
+                </center>
+
+
+            </div>
+
+
+        </div>
+
+
+
+
+
+        <div style="display: none;">
+
+
+            <div id="login-id" style="padding:10px;">
+
+
+                <table cellpadding="10" cellspacing="10" align="center">
+
+
+                    <tr>
+
+
+                        <td><div align="center"><b>Please Login to post comment</b><br /><div align="center" style="margin-top: 10px;"><a href="<?=BASE_PATH?>here-spy-index"><input type="button" value="Login"/></a></div></td>
+
+
+                    </tr>
+
+
+                    <tr>
+
+
+                        <td><div align="center"><b style="color: blue;">or</b><br /><b style="margin-top: 10px;">Register with us</b></div></td>
+
+
+                    </tr>
+
+
+                    <tr>
+
+
+                        <td><div align="center"><a href="<?=BASE_PATH?>here-spy-index"><input type="button" value="Register"/></a></div></td>
+
+
+                    </tr>
+
+
+                </table>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- End for popups div --> 
+
+
+        
+
+
+        
+
+
+    </body>
+
+
+</html>
+
+

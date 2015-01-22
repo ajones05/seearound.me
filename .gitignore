@@ -1,0 +1,8 @@
+/newsimages/*
+!/newsimages/index.html
+/tbnewsimages/*
+!/tbnewsimages/index.html
+/uploads/*
+!/uploads/index.html
+/www/upload/*
+!/www/upload/index.html
