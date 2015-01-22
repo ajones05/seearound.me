@@ -165,19 +165,12 @@
 
 <ul class="viewForm" style="width:100%; margin-left: 0px;">
 
-    <li>
-        <label>
-            Email Address
-        </label>
-
-
-        <span>
-            <?php if ($this->auth['user_id'] == $this->reciever || $this->profile): ?>
-                <?=$this->user_data->Email_id?>
-            <?php endif; ?>
-        </span>
-
-    </li>
+	<?php if ($this->auth['user_id'] == $this->reciever || $this->profile): ?>
+	<li>
+		<label>Email Address</label>
+		<span><?=$this->user_data->Email_id?></span>
+	</li>
+	<?php endif; ?>
 
   
 
