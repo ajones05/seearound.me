@@ -28,7 +28,9 @@ class GeneralController extends  My_Controller_Action_Abstract
 
     }
 
-    
+    public function confirmationAction()
+    {
+    }
 
     public function logoutAction()
 

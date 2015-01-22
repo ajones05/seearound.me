@@ -89,7 +89,7 @@ class IndexController extends My_Controller_Action_Abstract {
 
                     $firstLoginResponseData = $this->firstLoginAction($data);
 
-                    $this->message = $this->view->action("index", "general", array());
+                    $this->message = $this->view->action("confirmation", "general", array());
 
                     $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
 
