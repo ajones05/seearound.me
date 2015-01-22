@@ -1,16 +1,17 @@
-<?php $auth = Zend_Auth::getInstance()->getStorage()->read(); ?>
 <script type="text/javascript" src="http://twitter.com/javascripts/blogger.js"></script>
 <style>.cmnt {font-size: 12px;}</style>
 <div class="scrpBox_new">
     <ul class="myScrp afterClr user_post">
-      <?php if(isset($auth['user_id'])): ?>
+		<?php if ($this->auth): ?>
          <div class="deteleIcon1">
-            <?php if($this->userNewsId == $auth['user_id']) { ?>
+            <?php if ($this->userNewsId == $this->auth['user_id']): ?>
             <img class="crp1 user_post_icon" onclick="deletes(this, 'news', <?=newsId?>);" src="<?=BASE_PATH?>www/images/delete-icon.png">
-         <?php } else { }?>
+			<?php endif; ?>
          </div>
+		 <?php endif; ?>
          <li>
             <ul class="post">
+				<?php if ($this->auth): ?>
                 <li class="imgPro">
                     <a href="<?=BASE_PATH?>home/profile/user/<?=$this->newsData->uid?>" style="z-index:9999;">
                     <?php if($this->newsData->image != 'null' && $this->newsData->image != '') :?>
@@ -19,8 +20,10 @@
                             <img id="userImage" src="<?=BASE_PATH?>/www/images/img-prof40x40.jpg" class='smallImage'/> 
                     <?php endif; ?>
                     </a>
-                </li>   
+                </li>
+				<?php endif; ?>
                 <li>
+					<?php if ($this->auth): ?>
                     <div class="post-top">
                         <a class="title" href="<?=BASE_PATH?>home/profile/user/<?=$this->newsData->uid?>" style="z-index:9999;color: #0068C4;text-decoration: none;"><?=$this->newsData->Name?></a> 
                         <span class="post-date"><?=date("d F Y h:i a", strtotime($this->newsTime));?></span>
@@ -40,24 +43,25 @@
                             
                          <div id="thumbsup_blck" class="deteleIcon12" style="display:inline;">
                           <?php if($this->newsVote == 0) { ?>      
-                                <img id="img1_<?=$this->newsId?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted_gray.png" <?php if($this->userNewsId != $auth['user_id']) { ?> onclick="voting(this, 'news', '<?=$this->newsId?>' ,<?=$auth['user_id']?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
+                                <img id="img1_<?=$this->newsId?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted_gray.png" <?php if($this->userNewsId != $this->auth['user_id']) { ?> onclick="voting(this, 'news', '<?=$this->newsId?>' ,<?=$this->auth['user_id']?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
                           
                           <?php } else { ?>     
                                 
-                                <img id="img1_<?=$this->newsId?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if($this->userNewsId != $auth['user_id']) { ?> onclick="voting(this, 'news', '<?=$this->newsId?>' ,<?=$auth['user_id']?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
+                                <img id="img1_<?=$this->newsId?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if($this->userNewsId != $this->auth['user_id']) { ?> onclick="voting(this, 'news', '<?=$this->newsId?>' ,<?=$this->auth['user_id']?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
                                 
                           <?php } ?> 
-                                <img id="img2_<?=$this->newsId?>" class="crp" style="display: none" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if($this->userNewsId != $auth['user_id']) { ?> onclick="voting(this, 'news', '<?=$this->newsId?>' ,<?=$auth['user_id']?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
+                                <img id="img2_<?=$this->newsId?>" class="crp" style="display: none" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if($this->userNewsId != $this->auth['user_id']) { ?> onclick="voting(this, 'news', '<?=$this->newsId?>' ,<?=$this->auth['user_id']?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
                          </div>
-                         <?php endif;?>
+                         
                            
-                         <?php if(!isset($auth['user_id'])): ?>
+                         <?php if(!isset($this->auth['user_id'])): ?>
                          <div id="thumbsup_blck" class="deteleIcon12" style="display:inline;">
                             <img id="img1" class="voting-popup-class" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg">
                          </div>
                          <?php endif;?>
 
                     </div>
+					<?php endif; ?>
                     <div class="post-bottom">
                         <div id="newsDataDiv"><p><?=nl2br(htmlspecialchars($this->newsData->news))?></p></div>
                     </div>
