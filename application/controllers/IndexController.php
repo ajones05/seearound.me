@@ -78,31 +78,14 @@ class IndexController extends My_Controller_Action_Abstract {
 
                 if ($row = $newsFactory->registration($data)) {
 
-                    $url = BASE_PATH . "index/reg-confirm/id/" . $row->id . "/q/" . $row->Conf_code;
+                    $this->view->activate_url = BASE_PATH . "index/reg-confirm/id/" . $row->id . "/q/" . $row->Conf_code;
                     // Code to sending mail to reciever
 
                     $this->to = $row->Email_id;
 
-                    $this->subject = "Here Spy new Registration";
+                    $this->subject = "SeeAround.me Registration";
 
                     $this->from = 'admin@herespy.com:Admin';
-
-                    //$message = "Thank you for registring with us. Please click on activation link to activate yor account:: <a href='$url'>$url</a>";
-
-                    $message = "I want to personally welcome you to SeeAround.me.A few years ago I was frustrated and surprised that there was no easy way to see or share local information publicly. As a result I began this personal project, which I?m happy is finally live. I hope you have a great experience, but it is still a work in progress! If you have any questions or feedback, please email me any time ata@seearound.me.";
-
-                    $message .= "<br/><br/>Please click this link to activate your account: [<a href='$url'>$url</a>] If you can?t click the link, you can copy and paste it into your browser.";
-
-                    $message .="<br/><br/><b>Thanks!</b><br/><b>Andrew</b>";
-
-
-                    $this->view->name = $row->Name;
-
-                    $this->view->message = "<p align='justify'>$message</p>";
-
-                    $this->view->adminName = "Admin";
-
-                    $this->view->response = "Here Spy";
 
                     $firstLoginResponseData = $this->firstLoginAction($data);
 
