@@ -11,7 +11,7 @@
              <img src="http://www.herespy.com//www/images/img-prof40x40.jpg" class="smallImage" />
            <?php } ?>
        </a>
-       <a class="user-name" href="<?=BASE_PATH?>home/profile"> <?=$this->auth["user_name"]?></a>
+       <a class="user-name" title="<?php echo $this->auth["user_name"]; ?>" href="<?=BASE_PATH?>home/profile"><?php echo My_StringHelper::stringLimit($this->auth["user_name"], 10, '...'); ?></a>
    
     </li>
    
