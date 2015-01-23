@@ -95,23 +95,52 @@
     
     public function getotheruserprofileAction()
     {
-        $userTable = new Application_Model_User();
-        $userID = trim($_REQUEST['other_user_id']);
-        $getProfileDetails = $userTable->getUserProfile($userID);
-        
-        $response = new stdClass();
-           if(isset($getProfileDetails)){
-             $response->status ="SUCCESS";
-             $response->message = "Profile Detail";
-             $response->result = $getProfileDetails->toArray(); 
-             echo(json_encode($response)); exit;
-           } else {
-             $response->status = "FAILED";
-             $response->message="Profile Detail";
-             $response->result = $getProfileDetails->toArray(); 
-             echo(json_encode($response)); exit;
-         } 
-         
+		$user_id = $this->getRequest()->getQuery('user_id');
+		$other_user_id = $this->getRequest()->getQuery('other_user_id');
+
+		$response = array(
+			'message' => 'Profile Detail',
+		);
+
+		try
+		{
+			if ($other_user_id == null)
+			{
+				throw new RuntimeException('Parameter other_user_id cannot be blank', -1);
+			}
+
+			$userModel = new Application_Model_User();
+			$other_user = $userModel->getUserProfile($other_user_id);
+
+			if (!count($other_user))
+			{
+				throw new RuntimeException('Incorrect other_user_id id: ' . var_export($other_user_id, true), -1);
+			}
+
+			if ($user_id != null)
+			{
+				$user = $userModel->getUserProfile($user_id);
+
+				if (!count($user))
+				{
+					throw new RuntimeException('Incorrect user_id id: ' . var_export($user, true), -1);
+				}
+
+				$friendsModel = new Application_Model_Friends();
+
+				$result = $friendsModel->getStatus($user_id, $other_user_id);
+				$response['friends'] = count($result) && $result->status == 1 ? 1 : 0;
+			}
+
+			$response['status'] = 'SUCCESS';
+			$response['result'] = $other_user->toArray();
+		}
+		catch (Exception $e)
+		{
+			$response['status'] = 'FAILED';
+		}
+
+		die(Zend_Json::encode($response));
     }
 
     
