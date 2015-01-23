@@ -1,6 +1,5 @@
 <div class="centerData">
     <div id="forForm" class="forForm">
-        <div class="forFormbgTop"></div>
             <?if(isset($this->forgotsuccess)):?>
             <div style="font-size: 16px;padding: 20px;">A link to change password has been sent to your email address.
                         please check your email in a few minutes.
@@ -11,29 +10,26 @@
             </script>
             <?else:?>
             <form method="post" class="forFrm">
+				<span class="formTitle">Forgot your password? Enter your email address and hit submit to be sent a link to create a new one</span>
                 <ul class="forFormUl">
-                    <span class="formTitle">
-                        Forgot password
-                    </span>
                     <li class="forFormLi">
-                        <input type="text" name="email" id="email" value="<?=$this->request->getPost('email')?>" class="forFormInput" placeholder="Email id" />
+                        <input type="text" name="email" id="email" value="<?=$this->request->getPost('email')?>" class="forFormInput" placeholder="Email Address" />
+						<span style="font-size: 30px;position: absolute;right: 7px;top: 7px;">*</span>
                     </li>
-                    <?if($this->forgoterror) :?>
-                        <div class="errors floatL"><?=$this->forgoterror?></div><br>
-                    <?endif;?>
                 </ul>
-				<br />
-                <div>
+				<?if($this->forgoterror) :?>
+				<div class="errors floatL"><?=$this->forgoterror?></div><br>
+				<?endif;?>
+                <div style="margin-top:10px;">
 					<div class="floatR" style="margin-left:10px;">
-						<input style="padding:5px;width:110px;" class="blueButton" type="submit" value="Submit" />
+						<input style="width:110px;" class="blueButton" type="submit" value="Submit" />
 					</div>
 					<a class="hypDecNone floatR" href="<?php echo BASE_PATH; ?>">
-						<input style="padding:5px;width:110px;" class="blueButton" type="button" value="Cancel" />
+						<input style="width:110px;" class="blueButton" type="button" value="Cancel" />
 					</a>
                 </div>
 				<br />
             </form>
             <?endif;?>
-        <div class="forFormbgBott"></div>
     </div>
 </div>

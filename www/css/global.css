@@ -699,7 +699,9 @@ table tr td input { border: 1px solid #d7d7d7;}
 .loginForm li span input{ float: left; display: inline-block; width:auto; height:auto; margin-top: 2px;}
 
 
-.loginForm li.btn input, .blueButton{cursor: pointer ; border:0; height:auto; margin-top:0px; ;vertical-align:middle; color: #fff; font: normal 18px Lato-Bold; background: #668cd5; padding:19px 40px; width: auto;} 
+.loginForm li.btn input {cursor: pointer ; border:0; height:auto; margin-top:0px; ;vertical-align:middle; color: #fff; font: normal 18px Lato-Bold; background: #668cd5; padding:19px 40px; width: auto;} 
+
+.blueButton{background-color: #3366cc;border: 0 none;color: #ffffff;cursor: pointer;overflow: visible;padding: 6px 0 7px;width: 100%;font: 18px Lato-Bold;}
 
 .loginCopyArea{margin:0px;}
 
@@ -752,17 +754,17 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 .centerData{padding:162px 0 100px 58px;}
 
-.formTitle{font-size:16px;}
+.formTitle{color: #4d4a49;font-size: 23px;}
 
-.forForm{background:url(../images/bg-login-rpt.gif) left top repeat-y;width:534px;}
+.forForm{background-color:#EFEEEE;width:410px;padding: 10px 10px 25px;}
 
 .forFrm{padding:20px;}
 
 .forFormUl{}
 
-.forFormLi{border:1px solid #e3e4e5; background:#f8f8f8; margin-top:20px; padding:0 10px;}
+.forFormLi{margin-top:10px;position: relative;}
 
-.forFormInput{border:0; width:90%; padding:10px 0; background:#f7f8f9; color:#969696;}
+.forFormInput{border:1px solid #d7d7d7; width:94.5%; padding:9px 10px; background:#fff; font: 15px lato-LightItalic; color:#afafaf;}
 
 .forFormbgTop{background:url(../images/bg-login-top.gif) no-repeat left top; height:39px;}
 
