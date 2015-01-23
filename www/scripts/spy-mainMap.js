@@ -5,6 +5,11 @@ function MainMap(opt_options) {
     this.createMap();
     this.changedLatitude = null;
     this.changedLongitude = null;
+
+	if (typeof this.showInfoWindow  === 'undefined'){
+		this.showInfoWindow = true;
+	}
+
     return this;
  };
 
@@ -1439,7 +1444,9 @@ MainMap.prototype.addressMarker = function(markerPosition,markerIcon,markerConte
 
     var me = this;
 
-    this.addressWindow(markerContent);
+	if (this.showInfoWindow) {
+		this.addressWindow(markerContent);
+	}
 
         google.maps.event.addListener(this.movingMarker, "dragend", function(event){
         

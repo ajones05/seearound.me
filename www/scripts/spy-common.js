@@ -145,7 +145,8 @@ function profileMapOther(lat,lng,type,dataToShowOther){
 	    profileImage:profileImage,
         markerType:'nonDragable',
         isMapDragable:'dragable',
-        showMapElement:false
+        showMapElement:false,
+		showInfoWindow: false
      });
  }
 
