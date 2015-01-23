@@ -46,7 +46,10 @@
 
 
 
-
+.post-login {
+	text-align: center;
+	padding: 19px 10px;
+}
 
 .loginMsg{
 
@@ -60,7 +63,9 @@
 
 }
 
-
+.post-login .loginMsg {
+	margin-left: 0;
+}
 
 .loginPopup{text-align:center;}		
 

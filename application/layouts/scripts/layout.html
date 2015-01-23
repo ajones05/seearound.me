@@ -8,7 +8,7 @@
         <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery-ui.css"/>
         <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/reset.css"/>
         <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/global.css?1"/>
-        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/layout.css"/>
+        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/layout.css?1"/>
 		<!-- custom scrollbar stylesheet -->
 	    <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery.mCustomScrollbar.css"/>
 		
@@ -594,31 +594,16 @@
 
         <!-- login and registration poup -->
         <div style="display: none;">
-            <div id="login-id">
-                <span class="loginMsg">Please Login to post comment</span>
+            <div id="login-id" class="post-login">
+                <span class="loginMsg">Please register or log in to do that.</span>
                 <div class="loginPopup">
                     <ul>
                         <li>
-                            <?php if($this->returnUrl) :?> 
-                            <a class="hypDecNone" href="<?=BASE_PATH?>?url=<?=$this->returnUrl?>"><input onclick="goLoc('?url=<?=$this->returnUrl?>');" style="width:70px;" class="btnBlueRpt" type="button" value="Login"/></a>
-                            <?php else :?>
-                            <a class="hypDecNone" href="<?=BASE_PATH?>"><input onclick="goLoc('');" style="width:70px;" class="btnBlueRpt" type="button" value="Login"/></a>
-                            <?php endif;?>
+                            <a class="hypDecNone" href="<?=BASE_PATH?><?php if ($this->returnUrl): ?>?url=<?php echo $this->returnUrl; endif; ?>">
+								<input style="width:70px;" class="btnBlueRpt" type="button" value="OK" />
+							</a>
                         </li>
-                        <li>
-                            <span style="color: blue; font-size:17px;">or</span>
-                        </li>
-                        <li>
-                            <span style="margin-top: 10px;font-size: 15px;">Register with us</b></span>
-                        </li>
-                        <li>
-                            <?php if($this->returnUrl) :?> 
-                            <a class="hypDecNone" href="<?=BASE_PATH?>?url=<?=$this->returnUrl?>"><input onclick="goLoc('?url=<?=$this->returnUrl?>');" style="width:80px;" class="btnBlueRpt" type="button" value="Register"/></a>
-                            <?php else :?>
-                            <a class="hypDecNone" href="<?=BASE_PATH?>"><input onclick="goLoc('');" style="width:70px;" class="btnBlueRpt" type="button" value="Register"/></a>
-                            <?php endif;?>
-                        </li>                    
-                    </ul>
+                     </ul>
                 </div>
             </div>
         </div>

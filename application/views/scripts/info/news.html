@@ -148,7 +148,7 @@
             address: "<?=$this->newsData->address?>"
         };
         newsMap("<?=$this->newsData->latitude?>","<?=$this->newsData->longitude?>", data); 
-        $(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"},function(){
+        $(".login-popup-class").colorbox({width:"26%",height:"20%", inline:true, href:"#login-id"},function(){
             $('html, body').animate({ scrollTop: 0 }, 0); 
         });
         $(".voting-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#voting-id"},function(){
