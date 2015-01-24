@@ -22,7 +22,7 @@ class Application_Model_User extends My_Db_Table_Abstract {
 
     protected $_dependentTables = array('Application_Model_News', 'Application_Model_Comments');
 
-    protected $_instance = null;
+    protected static $_instance = null;
 
     protected $_filters = array(
 
@@ -501,8 +501,25 @@ class Application_Model_User extends My_Db_Table_Abstract {
         }   
    }
 
+	/**
+	 * Checks if user id valid.
+	 *
+	 * @param	integer	$user_id
+	 * @param	mixed	$user
+	 *
+	 * @return	boolean
+	 */
+	public static function checkId($user_id, &$user)
+	{
+		if ($user_id == null)
+		{
+			return false;
+		}
 
-    
+		$user = self::getInstance()->findRow($user_id);
+
+		return $user != null;
+	}
 
 }
 
