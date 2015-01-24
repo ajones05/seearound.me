@@ -40,6 +40,10 @@ class GeneralController extends  My_Controller_Action_Abstract
     {
     }
 
+	public function messageNotificationAction()
+	{
+	}
+
     public function logoutAction()
 
     {

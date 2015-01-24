@@ -255,8 +255,9 @@ class MessageController extends My_Controller_Action_Herespy
                 
 
                 $this->view->name = $user_data->Name;
-
-                $this->view->message = "<p align='justify'> ".$this->auth['user_name']." has sent you a message on HereSpy.<br><br><b>Subject:</b> " .$data['user']['subject']."<br><br><b>Message:</b> " .$data['user']['message']."<br><br>Please log in to HereSpy to reply to this message:".BASE_PATH." Please do not reply to this email</p>";
+                $this->view->sender_name = $this->auth['user_name'];
+                $this->view->mail_subject = $data['user']['subject'];
+                $this->view->mail_body = $data['user']['subject'];
 
                 $this->view->adminName = "Admin";
 
@@ -270,7 +271,7 @@ class MessageController extends My_Controller_Action_Herespy
 
                 $this->subject = $data['user']['subject'];  
 
-                $this->message = $this->view->action("index","general",array());
+                $this->message = $this->view->action("message-notification","general",array());
 
                 $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
 
