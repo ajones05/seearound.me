@@ -358,13 +358,12 @@ class ContactsController extends My_Controller_Action_Herespy
                 $this->subject = "Friend invitation";
                 $this->to = $mailValues->recieverEmail;
                 $this->from = $mailValues->senderEmail.':'.$mailValues->senderName;
-                $message = "$mailValues->senderName has sent you an invitation to connection on HereSpy: <a href='".BASE_PATH."' >".BASE_PATH."</a>";
+                $this->view->senderName = $mailValues->senderName;
                 $this->view->name = $mailValues->recieverName;
-                $this->view->message = "<p align='justify'>$message</p>";
                 $this->view->adminPart = "no";
                 $this->view->adminName = "Admin";
                 $this->view->response = "Here Spy";
-                $this->message = $this->view->action("index","general",array());
+                $this->message = $this->view->action("friend-invitation","general",array());
             }
         }
         if($sendMail) {
