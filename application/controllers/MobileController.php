@@ -95,8 +95,8 @@
     
     public function getotheruserprofileAction()
     {
-		$user_id = $this->getRequest()->getQuery('user_id');
-		$other_user_id = $this->getRequest()->getQuery('other_user_id');
+		$user_id = $this->_request->getParam('user_id');
+		$other_user_id = $this->_request->getParam('other_user_id');
 
 		$response = array(
 			'message' => 'Profile Detail',
