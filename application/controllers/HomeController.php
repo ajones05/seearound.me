@@ -1039,7 +1039,7 @@ class HomeController extends My_Controller_Action_Herespy {
         $newsId = $this->_getParam('news_id');
         $userId = $this->_getParam('user_id');
 
-        if (strpos($comments, "'") > 0 || strpos($comments, "<") > 0 || strpos($comments, ">") > 0) {
+        if (strpos($comments, "<") > 0 || strpos($comments, ">") > 0) {
             $response->commentId = '';
             $response->image = '';
             die(Zend_Json_Encoder::encode($response));
