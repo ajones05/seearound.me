@@ -229,7 +229,7 @@ class HomeController extends My_Controller_Action_Herespy {
         $lat    = $this->_getParam('latitude');
         $lng    = $this->_getParam('longitude');
  
-        if (strpos($res, "'") > 0 || strpos($res, "<") > 0 || strpos($res, ">") > 0) {
+        if (strpos($res, "<") > 0 || strpos($res, ">") > 0) {
             $response->news = array();
             $response->id = "";
             $response->image = "";
