@@ -23,8 +23,18 @@ class IndexController extends My_Controller_Action_Abstract {
 
 
     public function indexAction() {
+		$bootstrap = $this->getInvokeArg('bootstrap');
+		$userAgent = $bootstrap->getResource('useragent');
+		$userAgent->getDevice();
 
-      
+		if ($userAgent->getBrowserType() === 'mobile')
+		{
+			$this->view->layout()->setLayout('mobile');
+			$this->_helper->viewRenderer->setViewSuffix('mobile.html');
+
+			return true;
+		}
+
         $this->view->layout()->setLayout('login');
 
         $response = new stdClass();
