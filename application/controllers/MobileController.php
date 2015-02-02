@@ -1,21 +1,9 @@
 <?php
- /**
-   * Class for Android and I Phone Web Service API
-   *
-   * @category   API
-   * @package    MobilieController
-   * @author     Successive Softwares @DIN
-   * @copyright  Here Spy
-   * @version    Relesae 1.0
-   * @link       http://www.herespy.com/mobile/----
+/**
+ * Mobile API class.
  */
- 
- class MobileController extends Zend_Controller_Action {
-     public function init(){
-       
-     }
-     
-     
+class MobileController extends Zend_Controller_Action
+{
     /**
       * Function to authenticate user against email and password credentials 
       * 
@@ -1139,6 +1127,4 @@
               return $miles;
             }
     }
-     
- } ?>
- 
+}
