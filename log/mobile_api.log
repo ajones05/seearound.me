@@ -1,0 +1,156 @@
+2015-02-02T15:49:59+02:00 INFO (6): /mobile/index?email=yuriyag@gmail.com&pass=test12345678
+>> array (
+  'email' => 'yuriyag@gmail.com',
+  'pass' => 'test12345678',
+)
+<< array (
+  'id' => '271',
+  'User_id' => 'NULL',
+  'Name' => 'Yuriy Kurilyuk',
+  'Email_id' => 'yuriyag@gmail.com',
+  'Old_email' => NULL,
+  'Password' => 'f5fbc6fe84c365315f491d4275c2f2e5d3c60f25684e1d62e7e9fe63abf8d0d8',
+  'Birth_date' => NULL,
+  'Creation_date' => '2015-01-31 16:05:00',
+  'Update_date' => '2015-01-31 16:05:00',
+  'Profile_image' => NULL,
+  'Status' => 'active',
+  'Network_id' => NULL,
+  'Conf_code' => '',
+  'is_admin' => 'false',
+  'Token' => NULL,
+  'address' => 'Noida',
+  'latitude' => '28.58',
+  'longitude' => '77.33',
+)
+2015-02-02T16:09:31+02:00 INFO (6): /mobile/index?email=yuriyag@gmail.com&pass1=
+>> array (
+  'email' => 'yuriyag@gmail.com',
+  'pass1' => '',
+)
+<< 'NOT AUTHENTICATED'
+2015-02-02T16:09:51+02:00 INFO (6): /mobile/index?email=yuriyag@gmail.com&pass=test12345678
+>> array (
+  'email' => 'yuriyag@gmail.com',
+  'pass' => 'test12345678',
+)
+<< array (
+  'id' => '271',
+  'User_id' => 'NULL',
+  'Name' => 'Yuriy Kurilyuk',
+  'Email_id' => 'yuriyag@gmail.com',
+  'Old_email' => NULL,
+  'Password' => 'f5fbc6fe84c365315f491d4275c2f2e5d3c60f25684e1d62e7e9fe63abf8d0d8',
+  'Birth_date' => NULL,
+  'Creation_date' => '2015-01-31 16:05:00',
+  'Update_date' => '2015-01-31 16:05:00',
+  'Profile_image' => NULL,
+  'Status' => 'active',
+  'Network_id' => NULL,
+  'Conf_code' => '',
+  'is_admin' => 'false',
+  'Token' => NULL,
+  'address' => 'Noida',
+  'latitude' => '28.58',
+  'longitude' => '77.33',
+)
+2015-02-02T16:09:53+02:00 INFO (6): /mobile/index?email=yuriyag@gmail.com&pass=test12345678
+>> array (
+  'email' => 'yuriyag@gmail.com',
+  'pass' => 'test12345678',
+)
+<< array (
+  'id' => '271',
+  'User_id' => 'NULL',
+  'Name' => 'Yuriy Kurilyuk',
+  'Email_id' => 'yuriyag@gmail.com',
+  'Old_email' => NULL,
+  'Password' => 'f5fbc6fe84c365315f491d4275c2f2e5d3c60f25684e1d62e7e9fe63abf8d0d8',
+  'Birth_date' => NULL,
+  'Creation_date' => '2015-01-31 16:05:00',
+  'Update_date' => '2015-01-31 16:05:00',
+  'Profile_image' => NULL,
+  'Status' => 'active',
+  'Network_id' => NULL,
+  'Conf_code' => '',
+  'is_admin' => 'false',
+  'Token' => NULL,
+  'address' => 'Noida',
+  'latitude' => '28.58',
+  'longitude' => '77.33',
+)
+2015-02-02T16:10:05+02:00 INFO (6): /mobile/index?email=yuriyag@gmail.com&pass=test12345678
+>> array (
+  'email' => 'yuriyag@gmail.com',
+  'pass' => 'test12345678',
+)
+<< array (
+  'id' => '271',
+  'User_id' => 'NULL',
+  'Name' => 'Yuriy Kurilyuk',
+  'Email_id' => 'yuriyag@gmail.com',
+  'Old_email' => NULL,
+  'Password' => 'f5fbc6fe84c365315f491d4275c2f2e5d3c60f25684e1d62e7e9fe63abf8d0d8',
+  'Birth_date' => NULL,
+  'Creation_date' => '2015-01-31 16:05:00',
+  'Update_date' => '2015-01-31 16:05:00',
+  'Profile_image' => NULL,
+  'Status' => 'active',
+  'Network_id' => NULL,
+  'Conf_code' => '',
+  'is_admin' => 'false',
+  'Token' => NULL,
+  'address' => 'Noida',
+  'latitude' => '28.58',
+  'longitude' => '77.33',
+)
+2015-02-02T16:46:41+02:00 INFO (6): /mobile/index?email=yuriyag@gmail.com&pass=test12345678
+>> array (
+  'email' => 'yuriyag@gmail.com',
+  'pass' => 'test12345678',
+)
+<< array (
+  'id' => '271',
+  'User_id' => 'NULL',
+  'Name' => 'Yuriy Kurilyuk',
+  'Email_id' => 'yuriyag@gmail.com',
+  'Old_email' => NULL,
+  'Password' => 'f5fbc6fe84c365315f491d4275c2f2e5d3c60f25684e1d62e7e9fe63abf8d0d8',
+  'Birth_date' => NULL,
+  'Creation_date' => '2015-01-31 16:05:00',
+  'Update_date' => '2015-01-31 16:05:00',
+  'Profile_image' => NULL,
+  'Status' => 'active',
+  'Network_id' => NULL,
+  'Conf_code' => '',
+  'is_admin' => 'false',
+  'Token' => NULL,
+  'address' => 'Noida',
+  'latitude' => '28.58',
+  'longitude' => '77.33',
+)
+2015-02-02T16:47:48+02:00 INFO (6): /mobile/index?email=yuriyag@gmail.com&pass=test12345678
+>> array (
+  'email' => 'yuriyag@gmail.com',
+  'pass' => 'test12345678',
+)
+<< array (
+  'id' => '271',
+  'User_id' => 'NULL',
+  'Name' => 'Yuriy Kurilyuk',
+  'Email_id' => 'yuriyag@gmail.com',
+  'Old_email' => NULL,
+  'Password' => 'f5fbc6fe84c365315f491d4275c2f2e5d3c60f25684e1d62e7e9fe63abf8d0d8',
+  'Birth_date' => NULL,
+  'Creation_date' => '2015-01-31 16:05:00',
+  'Update_date' => '2015-01-31 16:05:00',
+  'Profile_image' => NULL,
+  'Status' => 'active',
+  'Network_id' => NULL,
+  'Conf_code' => '',
+  'is_admin' => 'false',
+  'Token' => NULL,
+  'address' => 'Noida',
+  'latitude' => '28.58',
+  'longitude' => '77.33',
+)

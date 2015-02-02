@@ -40,4 +40,16 @@ class My_Validate
 	{
 		return preg_match("/-?\d+(\.\d+)?/", $value) && abs($value) <= 180;
 	}
+
+	/**
+	 * Checks if string is empty.
+	 *
+	 * @param	mixed	$value
+	 *
+	 * @return	boolean
+	 */
+	public static function emptyString($value)
+	{
+		return !is_string($value) || trim($value) === '';
+	}
 }

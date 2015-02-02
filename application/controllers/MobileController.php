@@ -4,32 +4,93 @@
  */
 class MobileController extends Zend_Controller_Action
 {
+	/**
+     * @var	Zend_Log
+     */
+	protected $_logger;
+
     /**
-      * Function to authenticate user against email and password credentials 
-      * 
-      * @return Json Response for authentication
-      */
-     public function indexAction(){
-         $username = $this->_request->getParam('email');
-         $password = $this->_request->getParam('pass');
-         $userTable   = new Application_Model_User();
-         $newsFactory = new Application_Model_NewsFactory();
-         $data   = array();
-         $data['email'] =  $username;
-         $data['pass']  = md5($password);
-         $returnvalue  = $newsFactory->loginDetail($data);
-      
-         if(isset($returnvalue)){
-            $returnvalue  = $returnvalue->toArray();
-            die(Zend_Json_Encoder::encode($returnvalue));
-         } else {
-           $response = array();
-           $response = "NOT AUTHENTICATED";
-           die(Zend_Json_Encoder::encode($response));
-        }
-     }
-     
-   
+     * Initialize object
+     *
+     * @return void
+     */
+    public function init()
+    {
+		$writer = new Zend_Log_Writer_Stream(ROOT_PATH . '/log/mobile_api.log');
+		$this->_logger = new Zend_Log($writer);
+    }
+
+	/**
+	 * Authenticate user action.
+	 *
+	 * @return void
+	 */
+	public function indexAction()
+	{
+		$response = array();
+
+		try
+		{
+			$email = $this->_request->getParam('email');
+
+			if (My_Validate::emptyString($email))
+			{
+				throw new RuntimeException('Email cannot be blank', -1);
+			}
+
+			if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+			{
+				throw new RuntimeException('Incorrect email address: ' . var_export($email, true), -1);
+			}
+
+			$pass = $this->_request->getParam('pass');
+
+			if (My_Validate::emptyString($pass))
+			{
+				throw new RuntimeException('Password cannot be blank', -1);
+			}
+
+			$newsFactory = new Application_Model_NewsFactory();
+
+			$return = $newsFactory->loginDetail(array('email' => $email), 'tocheck');
+
+			if (!$return)
+			{
+				throw new RuntimeException('Incorrect user email', -1);
+			}
+
+			if ($return->id > 243)
+			{
+				$user = $newsFactory->loginDetail(array(
+					'email' => $email,
+					'pass' => hash('sha256', $pass),
+				));
+			}
+			else
+			{
+				$user = $newsFactory->loginDetail(array(
+					'email' => $email,
+					'pass' => md5($pass),
+				));
+			}
+
+			if (!$user)
+			{
+				throw new RuntimeException('Incorrect user email or password', -1);
+			}
+
+			$response = $user->toArray();
+		}
+		catch (Exception $e)
+		{
+			$response = 'NOT AUTHENTICATED';
+		}
+
+		$this->_logRequest($response);
+
+		die(Zend_Json_Encoder::encode($response));
+	}
+
      /**
       * Function to retreive friend list '
       * 
@@ -1127,4 +1188,16 @@ class MobileController extends Zend_Controller_Action
               return $miles;
             }
     }
+
+	/**
+	 * Writes to log rurrent request and response
+	 *
+	 * @param	string	$response
+	 *
+	 * @return	void
+	 */
+	protected function _logRequest($response)
+	{
+		$this->_logger->info($_SERVER['REQUEST_URI'] . "\n>> " . var_export($_REQUEST, true) . "\n<< " . var_export($response, true));
+	}
 }
