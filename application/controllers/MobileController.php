@@ -5,20 +5,20 @@
 class MobileController extends Zend_Controller_Action
 {
 	/**
-     * @var	Zend_Log
-     */
+	 * @var	Zend_Log
+	 */
 	protected $_logger;
 
-    /**
-     * Initialize object
-     *
-     * @return void
-     */
-    public function init()
-    {
+	/**
+	 * Initialize object
+	 *
+	 * @return void
+	 */
+	public function init()
+	{
 		$writer = new Zend_Log_Writer_Stream(ROOT_PATH . '/log/mobile_api.log');
 		$this->_logger = new Zend_Log($writer);
-    }
+	}
 
 	/**
 	 * Authenticate user action.
