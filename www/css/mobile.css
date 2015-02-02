@@ -88,16 +88,18 @@ table {
 	width: 300px;
 	margin: 10px auto 5px;
 	height: 50px;
+	text-align: right;
 }
 .input-mobile input[type="text"] {
 	border: none;
 	height: 48px;
 	display: inline-block;
-	width: 221px;
+	width: 210px;
 	vertical-align: top;
 	padding-left: 15px;
 	color:#666;
 	font:italic 20px 'Lato', sans-serif;
+	float: left;
 }
 .input-mobile input[type="submit"] {
 	height: 50px;
@@ -106,4 +108,6 @@ table {
 	background: #3366cc url('../images/mobile/submit-btn-mobile.png') no-repeat center center;
 	border: none;
 	background-size: 60%;
+	float: right;
+	border-radius: 0;
 }
