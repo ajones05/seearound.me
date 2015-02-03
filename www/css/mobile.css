@@ -92,19 +92,18 @@ table {
 }
 .input-mobile input[type="text"] {
 	border: none;
-	height: 48px;
-	display: inline-block;
 	width: 210px;
 	vertical-align: top;
 	padding-left: 15px;
 	color:#666;
-	font:italic 20px 'Lato', sans-serif;
+	font:italic 20px/44px 'Lato', sans-serif;
 	float: left;
+	border-radius: 0;
+	background: none;
 }
 .input-mobile input[type="submit"] {
 	height: 50px;
 	width: 60px;
-	display: inline-block;
 	background: #3366cc url('../images/mobile/submit-btn-mobile.png') no-repeat center center;
 	border: none;
 	background-size: 60%;
