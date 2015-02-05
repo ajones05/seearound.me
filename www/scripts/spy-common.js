@@ -512,125 +512,70 @@ function addNews() {
 *  longitude : longitude of the point,
 *  type : INTIALIZE for initialization of new map, OTHER : to change on current map}
 */
-function latestNews(latitude,longitude,type){
-   
-    $.ajaxSetup({async:false});
-    var url = baseUrl+"home/get-latest-news";
-    $.post(
-        url,
-        {
-            'user_id':user_id,
-            'latitude': latitude,
-            'longitude':longitude	
-        },
-        function(obj){
-            obj = JSON.parse(obj);
-            var flag = true;
-            var resultObj = obj.result;
-            var dataToReturn = null; 
-            if(resultObj.length) {
-              	for(i in resultObj) {
-              	 if(resultObj[i]['user_id'] == user_id){
-              	    if((Number(userLatitude).toFixed(4) == Number(resultObj[i]['latitude']).toFixed(4))&&(Number(userLongitude).toFixed(4)==Number(resultObj[i]['longitude']).toFixed(4))){
-        				dataToReturn = {name:resultObj[i]['Name'],id:0,news:"This is me!",userImage:resultObj[i]['Profile_image'],user_id:resultObj[i]['user_id']};
-                        break;
-                    }
-                  }  
-                }
-            } 
-           
-            if(!dataToReturn) {
-               dataToReturn = {name:userName,id:0,news:"This is me!",userImage:imagePath,user_id:user_id};
-            }
-           console.log("news");
-            if(type == 'INITIAL') {
-                console.log("initial");
-    	        commonMap = new MainMap({
-                       mapElement : document.getElementById('map_canvas'),
-                       centerPoint : centerPoint,
-                       icon:MainMarker1,
-                       centerData:dataToReturn,
-                       mapType:"MAIN",
-                       markerType:'nonDragable',
-                       isMapDragable:'dragable',
-                       showMapElement:true
-                });
-				
-            } else {
-                commonMap.createMarker(centerPoint,MainMarker1,'center',dataToReturn);
-            }
-                        getAllNearestPoint(userLatitude,userLongitude,0.8,false);             
-			
-        },
-        "html"
-    )  
-    $.ajaxSetup({async:true});
+function latestNews(latitude, longitude, type){
+	var dataToReturn = {
+		id: 0,
+		name: userName,
+		news: 'This is me!',
+		userImage: imagePath,
+		user_id: user_id
+	};
+
+	if (type == 'INITIAL'){
+		commonMap = new MainMap({
+			mapElement: document.getElementById('map_canvas'),
+			centerPoint: centerPoint,
+			icon: MainMarker1,
+			centerData: dataToReturn,
+			mapType: 'MAIN',
+			markerType: 'nonDragable',
+			isMapDragable: 'dragable',
+			showMapElement: true
+		});
+	} else {
+		commonMap.createMarker(centerPoint, MainMarker1, 'center', dataToReturn);
+	}
+
+	getAllNearestPoint(userLatitude, userLongitude, 0.8, false);
 }
 
-function reinitializeCenterData(latitude,longitude){
-    $.ajaxSetup({async:false});
-    $(document).find("#mainContent_0").each(function(){
-           $(this).attr('currentDiv',1);
-    })
-    var url = baseUrl+"home/get-latest-news";
-    $.post(
-        url,
-        {
-         'user_id':user_id,
-         'latitude': latitude,
-         'longitude':longitude	
-        },
-        function(obj){
-            obj = JSON.parse(obj);
-            var flag = true;
-            var resultObj = obj.result;
-            var markerContent = null; 
-            
-            if(resultObj.length) {
-              	for(i in resultObj) {
-              	 if(resultObj[i]['user_id'] == user_id){
-              	    if((Number(userLatitude).toFixed(4) == Number(resultObj[i]['latitude']).toFixed(4))&&(Number(userLongitude).toFixed(4)==Number(resultObj[i]['longitude']).toFixed(4))){
-                        markerContent = {
-                            name:resultObj[i]['Name'],
-                            id:0,news:"This is me!",
-                            userImage:resultObj[i]['Profile_image'],
-                            user_id:resultObj[i]['user_id']
-                        };
-                          break;
-                    }
-                  }  
-                }
-            } 
-           
-            if(!markerContent) {
-               markerContent = {name:userName,id:0,news:"This is me!",userImage:imagePath,user_id:user_id};
-            }
-             var me = commonMap;
-             var currentBubble = (me.bubbleArray[0]);
-             if(currentBubble){
-                 currentBubble.newsId = new Array();
-                 currentBubble.user_id[0] = markerContent.user_id;
-                 currentBubble.user_id.length = 1;
-                 currentBubble.total = 0;
-                 currentBubble.currentNewsId = markerContent.id; 
-                 currentBubble.divContent =  me.createContent(markerContent.userImage,markerContent.name,markerContent.news,1,'first',0,markerContent.id,true);
-                 currentBubble.contentArgs[0] = ([markerContent.userImage,markerContent.name,markerContent.news,1,'first',0,markerContent.id]);
-                 currentBubble.contentArgs.length = 1;
-             } else {
-                var bubbleData = new Object({
-                    infobubble:"",
-                    newsId:new Array(),
-                    user_id:new Array(markerContent.user_id),
-                    currentNewsId:markerContent.id,
-                    divContent:me.createContent(markerContent.userImage,markerContent.name,markerContent.news,1,'first',0,markerContent.id,true),
-                    contentArgs:new Array([markerContent.userImage,markerContent.name,markerContent.news,1,'first',0,markerContent.id]),
-                    total:1
-                 });
-                 me.bubbleArray.push(bubbleData);
-             }
-            
-        }
-   );
+function reinitializeCenterData(latitude, longitude){
+	$(document).find("#mainContent_0").each(function(){
+		$(this).attr('currentDiv',1);
+	});
+
+	var markerContent = {
+		id: 0,
+		name: userName,
+		news: 'This is me!',
+		userImage: imagePath,
+		user_id: user_id
+	};
+
+	var me = commonMap;
+	var currentBubble = (me.bubbleArray[0]);
+	if (currentBubble){
+		currentBubble.newsId = new Array();
+		currentBubble.user_id[0] = markerContent.user_id;
+		currentBubble.user_id.length = 1;
+		currentBubble.total = 0;
+		currentBubble.currentNewsId = markerContent.id; 
+		currentBubble.divContent =  me.createContent(markerContent.userImage,markerContent.name,markerContent.news,1,'first',0,markerContent.id,true);
+		currentBubble.contentArgs[0] = ([markerContent.userImage,markerContent.name,markerContent.news,1,'first',0,markerContent.id]);
+		currentBubble.contentArgs.length = 1;
+	} else {
+		var bubbleData = new Object({
+			infobubble:"",
+			newsId:new Array(),
+			user_id:new Array(markerContent.user_id),
+			currentNewsId:markerContent.id,
+			divContent:me.createContent(markerContent.userImage,markerContent.name,markerContent.news,1,'first',0,markerContent.id,true),
+			contentArgs:new Array([markerContent.userImage,markerContent.name,markerContent.news,1,'first',0,markerContent.id]),
+			total:1
+		});
+
+		me.bubbleArray.push(bubbleData);
+	}
 }
 
 function toggleBounce(newsId,user_id){

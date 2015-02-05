@@ -683,117 +683,30 @@ function addNews() {
 */
 
 function latestNews(latitude,longitude,type){
+	dataToReturn = {
+		name: userName,
+		id: user_id,
+		news: "No News",
+		userImage: imagePath,
+		user_id: user_id
+	};
 
-    $.ajaxSetup({async:false});
+	if (type == 'INITIAL'){
+		commonMap = new MainMap({
+			mapElement : document.getElementById('map_canvas'),
+			centerPoint : centerPoint,
+			icon:MainMarker1,
+			centerData:dataToReturn,
+			mapType:"MAIN",
+			markerType:'nonDragable',
+			isMapDragable:'dragable',
+			showMapElement:true
+		});
+	} else {
+		me.createMarker(centerPoint,MainMarker1,'center',dataToReturn);
+	}
 
-    var url = baseUrl+"home/get-latest-news";
-
-    $.post(
-
-        url,
-
-        {
-
-            'user_id':user_id,
-
-            'latitude': latitude,
-
-            'longitude':longitude	
-
-        },
-
-        function(obj){
-
-            obj = JSON.parse(obj);
-
-            var flag = true;
-
-            var resultObj = obj.result;
-
-            var dataToReturn = null; 
-
-            if(resultObj.length) {
-
-              	for(i in resultObj) {
-
-              	 if(resultObj[i]['user_id'] == user_id){
-
-              	   
-
-              	    if((Number(userLatitude).toFixed(4) == Number(resultObj[i]['latitude']).toFixed(4))&&(Number(userLongitude).toFixed(4)==Number(resultObj[i]['longitude']).toFixed(4))){
-
-        				dataToReturn = {name:resultObj[i]['Name'],id:resultObj[i]['id'],news:resultObj[i]['news'],userImage:resultObj[i]['Profile_image'],user_id:resultObj[i]['user_id']};
-
-                        break;
-
-                    }
-
-                  }  
-
-                }
-
-            } 
-
-           
-
-            if(!dataToReturn) {
-
-               dataToReturn = {name:userName,id:user_id,news:"No News",userImage:imagePath,user_id:user_id};
-
-            }
-
-          
-
-            if(type == 'INITIAL') {
-
-    	        commonMap = new MainMap({
-
-                       mapElement : document.getElementById('map_canvas'),
-
-                       centerPoint : centerPoint,
-
-                       icon:MainMarker1,
-
-                       centerData:dataToReturn,
-
-                       mapType:"MAIN",
-
-                       markerType:'nonDragable',
-
-                       isMapDragable:'dragable',
-
-                       showMapElement:true
-
-                });
-
-				
-
-            } else {
-
-                me.createMarker(centerPoint,MainMarker1,'center',dataToReturn);
-
-            }
-
-			
-
-			
-
-			getAllNearestPoint(userLatitude,userLongitude,0.8);             
-
-			
-
-        },
-
-        "html"
-
-    )  
-
-    $.ajaxSetup({async:true});
-
-	
-
-	
-
+	getAllNearestPoint(userLatitude,userLongitude,0.8);             
 }
 
 
