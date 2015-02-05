@@ -483,9 +483,7 @@ function setThisHeight(height){
 /*
 * Function to add new news on the news post area
 */
-//var fl = 0;
 function addNews() {
-       //fl = 1;
    	if($('#newsPost').val().indexOf("<") > 0 || $('#newsPost').val().indexOf(">") > 0){
 		alert("You enter invalid text");
 		return false;
@@ -825,7 +823,7 @@ function showAddNews(obj){
 function showAlert(){
     alert('You can not vote your own post.');
 }
-/* showalert() function ends */
+
 /*
 * Function to change news content when new news is posted
 * @param {bubbleArrayIndex : index of the div where news has to change,
@@ -846,18 +844,11 @@ function changeNewsContent(bubbleArrayIndex,newsPosition,jsdata,news,type){
         news = concatinateNews(news,jsdata.id);
         $("#userName"+bubbleArrayIndex+"_"+newsPosition).html(userName);
         $("#news"+bubbleArrayIndex+"_"+newsPosition).html(news);
-        //commonMap.bubbleArray[bubbleArrayIndex].currentNewsId = jsdata.id;
         UpdatedContent = commonMap.changeContent($("#mainContent_"+bubbleArrayIndex).html(),bubbleArrayIndex,Number((commonMap.bubbleArray[bubbleArrayIndex]).total),jsdata.id);
-    //    if(type == 'ADDED')
-//            hideShowPreviousNextButton(['prevDiv_','nextDiv_'],['none','none'],bubbleArrayIndex); //'block' in previous version
      } else {
         news = concatinateNews(news,jsdata.id);
         $("#userName"+bubbleArrayIndex+"_"+newsPosition).html(userName);
         $("#news"+bubbleArrayIndex+"_"+newsPosition).html(news);
-        //commonMap.bubbleArray[bubbleArrayIndex].currentNewsId = jsdata.id;
- //       if(type == 'ADDED')
- //           hideShowPreviousNextButton(['prevDiv_','nextDiv_'],['none','none'],bubbleArrayIndex); //'block' in previous version
-
         UpdatedContent = commonMap.changeContent($("#contentUpdator").html(),bubbleArrayIndex,Number((commonMap.bubbleArray[bubbleArrayIndex]).total),jsdata.id);
      }
     var currentBubble = commonMap.bubbleArray[0];
@@ -891,27 +882,6 @@ function changeNewsContent(bubbleArrayIndex,newsPosition,jsdata,news,type){
 
 
 function changeBubbleContent(bubbleArrayIndex,newsPosition,jsdata,news,type){
-  //   $("#contentUpdator").html(commonMap.bubbleArray[bubbleArrayIndex].divContent);
-//     var UpdatedContent = '';
-//     if((currentIdOfMarker==0)&&(previousBubble)){
-//        news = concatinateNews(news,jsdata.id);
-//        $("#userName"+bubbleArrayIndex+"_"+newsPosition).html(userName);
-//        $("#news"+bubbleArrayIndex+"_"+newsPosition).html(news);
-//        commonMap.bubbleArray[bubbleArrayIndex].currentNewsId = jsdata.id;
-//        UpdatedContent = commonMap.changeContent($("#mainContent_"+bubbleArrayIndex).html(),bubbleArrayIndex,Number((commonMap.bubbleArray[bubbleArrayIndex]).total),jsdata.id);
-//    //    if(type == 'ADDED')
-////            hideShowPreviousNextButton(['prevDiv_','nextDiv_'],['none','none'],bubbleArrayIndex); //'block' in previous version
-//     } else {
-//        news = concatinateNews(news,jsdata.id);
-//        $("#userName"+bubbleArrayIndex+"_"+newsPosition).html(userName);
-//        $("#news"+bubbleArrayIndex+"_"+newsPosition).html(news);
-//        commonMap.bubbleArray[bubbleArrayIndex].currentNewsId = jsdata.id;
-// //       if(type == 'ADDED')
-// //           hideShowPreviousNextButton(['prevDiv_','nextDiv_'],['none','none'],bubbleArrayIndex); //'block' in previous version
-//
-//        UpdatedContent = commonMap.changeContent($("#contentUpdator").html(),bubbleArrayIndex,Number((commonMap.bubbleArray[bubbleArrayIndex]).total),jsdata.id);
-//     }
-//     $("#contentUpdator").html("");
     var currentBubble = commonMap.bubbleArray[0];
     currentBubble.newsId = array_unshift_assoc(currentBubble.newsId,0,jsdata.id);
     currentBubble.user_id = array_unshift_assoc(currentBubble.user_id,0,jsdata.user_id);
@@ -1013,121 +983,6 @@ function showResult(res,pageNumber) {
     }
 }
 
-      /*  for(jsdataCounter in res){
-            paginationFlag = false;
-           // if((jsdataCounter>=startPage)&&(jsdataCounter<=endPage)) {
-            if(1){
-                paginationFlag = true;
-                jsdata = res[jsdataCounter];
-                 html += '<div id="scrpBox_'+jsdata[0].id+'" class="scrpBox" onmouseover="toggleBounce('+jsdata[0].id+','+jsdata[0].user_id+');" onmouseout="stopBounce('+jsdata[0].id+','+jsdata[0].user_id+');"><ul class="myScrp afterClr" id="newsDiv'+jsdata[0].id+'" >'+ 
-                                                '<div class="deteleIcon">'+
-                                                    '<img class="crp" style="float:right;margin-right: 10px;" onclick="deletes(this, \'news\', '+jsdata[0].id+');" src="'+baseUrl+'www/images/delete-icon.png">'+
-                                                '</div>'+
-            					'<li class="imgPro">'+
-            							'<a href="'+baseUrl+'home/profile/user/'+jsdata[0].user_id+'">';
-                if (jsdata[0].Profile_image) { 
-            		if(jsdata[0].Profile_image.indexOf('://') > 0) {
-            			html += '<img src="' + jsdata[0].Profile_image + '"  style="width:35px;height:35px;"/></a>';
-            		}else {
-            			html += '<img src="'+baseUrl+'uploads/' + jsdata[0].Profile_image + '"  style="width:35px;height:35px;"/></a>';
-            		}
-            	}else html += '<img src="'+baseUrl+'www/images/img-prof40x40.jpg"  style="width:35px;height:35px;"/></a>';
-                
-                                 html+='</li>'+
-            						
-            							'<li class="title"><a style="z-index:9999;color: #0068C4;text-decoration: none;" href="'+baseUrl+'home/profile/user/'+jsdata[0].user_id+'">'+jsdata[0].Name+'</a></li><li class="cmnt">';
-										if(jsdata[0].images) {
-										var imageUplaoded = baseUrl+'tbnnewsimages/'+(jsdata[0].images);
-										var newImg = new Image();
-										
-										newImg.src = baseUrl+'newsimages/'+(jsdata[0].images);
-										jsdata[0].source_image_width  = newImg.width;
-										jsdata[0].source_image_height = newImg.height;
-										html+='<div><img onclick="openImage(\''+(jsdata[0].images)+'\', '+jsdata[0].source_image_width+', '+jsdata[0].source_image_height+');" class="Image-Popup-Class" src="'+imageUplaoded+'" style="max-width: 320px;max-height :225px; padding: 10px;cursor: pointer;"></div>'; 
-    								}
-										
-										//html +=linkClickable(jsdata[0].news.substring(0,255));
-                                         if(jsdata[0].news.length>255) {
-                                              html+='<span><a id="moreButton_'+jsdata[0].id+'" href="javascript:void(0)" onclick="showMoreNews(this,'+jsdata[0].id+')">....More</a><span id="morecontent_'+jsdata[0].id+'" style="display:none">'+linkClickable(jsdata[0].news.substring(255,jsdata[0].news.length))+'</span></li>';
-                                         }
-                                     html+='<li class="dur">';
-                                     if(!jsdata[0].comments){
-                                            html+='&nbsp;<span id="comment_text_'+jsdata[0].id+'" style="cursor:pointer;color: #0069D6;" onclick="showCommentField('+jsdata[0].id+');">Comment&nbsp;&nbsp;</span>';
-                                     }
-                                     html+= jsdata[0].time+'&nbsp;&nbsp;<a style="font-size: 9px;color: #0068C4;" href="'+baseUrl+'info/news/nwid/'+jsdata[0].id+'">Details</a></li>'+
-            						'</ul>'+
-                					'<ul id="comment_list_'+jsdata[0].id+'"'; 
-                                    if(jsdata[0].comments){
-                                       html+= ' class="cmntRow afterClr" ';
-                                    } 
-                                    // html+=">"+linkClickable(jsdata[0].comments);
-            						   
-                                       if(!jsdata[0].comments){
-                                            html+= '<ul id="commentTextarea_'+jsdata[0].id+'"'+
-                                            'style="display:none;" class="cmntRow afterClr" ';
-                                        } else {
-                                              html+= '<li id="commentTextarea_'+jsdata[0].id+'"'+
-                                              'class="cmntList afterClr" ';
-                                        }
-                                        html+='>';
-                                        if(!jsdata[0].comments){
-                                             html+='<li id="tempDiv_'+jsdata[0].id+'" class="cmntList">';
-                                        } 
-                                        html+='<ul class="inpCmnt afterClr">'+
-                                         '<span>'+
-                                            '<img id="rpl_loading_'+jsdata[0].id+'"  style="margin-bottom: -6px; float: right; margin-right: 155px; display: none; margin-top:11px;" src="'+baseUrl+'www/images/wait.gif">'+
-                                         '</span>'+  
-                                        '<li class="imgPro">'+
-                                        '<a href="'+baseUrl+'home/profile/user/'+jsdata[0].user_id+'">';
-                                    if (imagePath) { 
-                                		if(imagePath.indexOf('://') > 0) {
-                                			html += '<img src="' + imagePath + '"  style="width:35px;height:35px;"/></a>';
-                                		}else {
-                                			html += '<img src="'+baseUrl+'uploads/' + imagePath + '"  style="width:35px;height:35px;"/></a>';
-                                		}
-                                	}else html += '<img src="'+baseUrl+'www/images/img-prof40x40.jpg"  style="width:35px;height:35px;"/></a>';
-                                    
-                                     html+='</li><li class="cmnt">'+
-                							'<textarea id="comment'+jsdata[0].id+'" class="textAreaClass" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea('+jsdata[0].id+');" placeholder="Write comments..."></textarea>'+
-                					
-                                
-            				'</li></ul></li>';
-                             if(!jsdata[0].comments){
-                                html+='</ul></ul>';
-                             } else {
-                                 html+= '</li>';
-                             }
-                            html+='</div>';
-                            
-               
-            	$("#newsData").html($("#newsData").html()+html);
-                $(".Image-Popup-Class").colorbox({width:"60%",height:"80%", inline:true, href:"#Image-Popup"},function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});
-                var point = new google.maps.LatLng(parseFloat(jsdata[0].latitude),parseFloat(jsdata[0].longitude));
-                var data = {name:jsdata[0].Name,id:jsdata[0].id,news:jsdata[0].news,userImage:jsdata[0].Profile_image,user_id:jsdata[0].user_id};
-                commonMap.createMarker(point,UserMarker1,'other',data);
-            }
-         }  */
-         
-      /*   var paginationDiv;
-         if(!paginationFlag){
-                paginationDiv='<div id="pagingDiv"><div class="postClass" align="center"  onclick="paging('+pageNumber+');"><b style="margin-right:127px;">Older Posts</b></div><div style="display:none;" class="postClass" align="center"><img src="'+baseUrl+'www/images/wait.gif" /></div></div>';
-                             
-         } else {
-            paginationDiv = '';
-         }
-          
-          $("#waitingBar").remove();
-          $("#newsData").append(paginationDiv);
-         
-          $('#newsPost').val('');
-          $('#noNews').html('');
-          if($("#newsData").height()>714)
-          setThisHeight(Number($("#newsData").height())+100);
-    }  
-    
-} */
-
-
 /*
 * Function to get show more news when
 * clicked on the More.. link
@@ -1219,9 +1074,7 @@ function resizeArea(id, thisone){
 					 	obj = JSON.parse(obj);
 						$('#comment'+id).val('');
 						$('#comment'+id).blur();
-                     //   if($('#rpl_loading_'+id).val()){
-//                            alert('higjgdfjdfskgjdhjdfjfjgdsj');
-//                        }
+
                         $('#rpl_loading_'+id).hide();
 						
                         var commentArea = $("#commentTextarea_"+id).html();
@@ -1321,14 +1174,7 @@ $('#searchText').keyup(function() {
 
 }
 
-  $('#searchText').keydown(function (e){
-            if(e.keyCode == 13){
-                //alert('you pressed enter ^_^');
-                //searchLatest(); 
-            } 
-  })
   function searchLatest(){
-     //alert('here');
      if(controller == 'home' && action == 'index') {
      searchData('0',false,'selected',false);  
      } else{
@@ -1427,9 +1273,7 @@ function searchData(user_id,flag,filter,circleCenterFlag) {
                	    if(distance(new google.maps.LatLng(userLatitude,userLongitude),new google.maps.LatLng(resultObj[i][0]['latitude'],resultObj[i][0]['longitude']),'F') != 0){
                	        commonMap.createMarkersOnMap(resultObj[i],bubblePocketNumber++,markerIcon);
                     } else {
-                        //if(resultObj[i].length>1){
                             commonMap.createMarkersOnMap(resultObj[i],0,markerIcon);
-                        //}
                     }
 				}
 		 
@@ -1469,8 +1313,7 @@ function fillUserAddress() {
     userLatitude  = commonMap2.centerPoint.lat();
     userLongitude = commonMap2.centerPoint.lng();
     centerPoint   = commonMap2.centerPoint;
-   //commonMap.changeMapCenter(commonMap2.centerPoint);
-   
+
      $.ajaxSetup({async:false});
         $.post(
     		baseUrl+"home/change-address",
@@ -1507,31 +1350,7 @@ function fillPostLocationAddress(){
         userLatitude  = commonMap2.centerPoint.lat();
         userLongitude = commonMap2.centerPoint.lng();
         centerPoint   = commonMap2.centerPoint;
-   
-   //commonMap.changeMapCenter(commonMap2.centerPoint);
-   /*
-      $.ajaxSetup({async:false});
-              $.post(
-            		baseUrl+"home/change-post-location",
-                    {
-                            address:commonMap2.centerData,
-                            latitude:userLatitude,
-                            longitude:userLongitude
-                    },
-                    function(response){
-                       response =  JSON.parse(response);
-                       $("#userDiv").find('p').each(function(){
-                            if($(this).attr('class')=='loc'){
-                                $(this).html(commonMap2.centerData);
-                            }
-                       })
-            		   initialize();	   
-            		},
-                    'html'
-               ); 
-          $("#waitingAddress").hide();
-          $.ajaxSetup({async:true});
-    */
+
      var news = $.trim($('#newsPost').val());
          news = news.replace("http://", " "); 
          news = news.replace("https://", " "); 
@@ -1566,8 +1385,6 @@ function goToHome(){
 */
 function fillAddress() {
 	$("#cboxClose").trigger('click');
-    //userLatitude = commonMap2.centerPoint.lat();
-    //userLongitude = commonMap2.centerPoint.lng();
     userLatitude = commonMap2.changedLatitude;
     userLongitude = commonMap2.changedLongitude;
     centerPoint = new google.maps.LatLng(userLatitude,userLongitude);
@@ -1687,26 +1504,14 @@ function hideMoreButton(thisone) {
 
 function searchloactionOnMap(type) {
 	var searchaddr = $("#searchAddres").val();
-	//var searchcity = $("#searchCity").val();
-//	var searchstate = $("#searchState").val();
+
 	if(searchaddr == ""){
 		$("#searchAddres").addClass("inputErrorBorder");
 		return;
 	} else {
 		$("#searchAddres").removeClass("inputErrorBorder");
 	}
-	//if(searchcity == ""){
-//		$("#searchCity").addClass("inputErrorBorder");
-//		return;
-//	} else {
-//		$("#searchCity").removeClass("inputErrorBorder");
-//	}
-//	if(searchstate == ""){
-//		$("#searchState").addClass("inputErrorBorder");
-//		return;
-//	} else {
-//		$("#searchState").removeClass("inputErrorBorder");
-//	}
+
 	var geocoder;
 	var searchLat, searchLng; 
 	geocoder = new google.maps.Geocoder();
@@ -1714,12 +1519,7 @@ function searchloactionOnMap(type) {
 	if(searchaddr) {
 		sAddress += searchaddr+', ';
 	}
-	//if(searchcity) {
-//		sAddress += searchcity+', ';
-//	}
-//	if(searchstate) {
-//		sAddress += searchstate;
-//	}
+
 	geocoder.geocode( { 'address': sAddress}, function(results, status) { 
 		if (status == google.maps.GeocoderStatus.OK) {
 			searchLat = results[0].geometry.location.lat();
@@ -1731,8 +1531,6 @@ function searchloactionOnMap(type) {
 		else{
 			alert("Sorry! We are unable to find this location.");
 			$("#searchAddres").val("");
-	//		$("#searchCity").val("");
-//			$("#searchState").val("");
 		}
 		
 	});
@@ -1756,7 +1554,6 @@ function getImgSize(imgSrc)
 	newImg.src = imgSrc;
 	curHeight = newImg.height;
 	curWidth = newImg.width;
-	//alert(curHeight+','+curWidth+','+imgSrc);
 }
 
 
@@ -1772,8 +1569,6 @@ function showHideDivContent(type,bubbleCounter){
                 me.bubbleArray[bubbleCounter].currentNewsId = me.bubbleArray[bubbleCounter].newsId[showHideCounter-1];
                 $("#content"+bubbleCounter+"_1").html(content);
                 $("#detail_"+bubbleCounter).html("<a href='http://here-spy/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
-                 //$("#content"+bubbleCounter+"_"+showHideCounter).show();
-        
             } else {
                $("#nextDiv_"+bubbleCounter).hide(); 
                showHideCounter = Number(me.bubbleArray[bubbleCounter].contentArgs.length);
@@ -1781,18 +1576,16 @@ function showHideDivContent(type,bubbleCounter){
                 me.bubbleArray[bubbleCounter].currentNewsId = me.bubbleArray[bubbleCounter].newsId[showHideCounter-1];
                 $("#content"+bubbleCounter+"_1").html(content);
                 $("#detail_"+bubbleCounter).html("<a href='http://here-spy/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
-               //$("#content"+bubbleCounter+"_"+showHideCounter).show();
             }
            
         } else {
-            $("#nextDiv_"+bubbleCounter).show(); //.hide() in previous version
+            $("#nextDiv_"+bubbleCounter).show();
             showHideCounter--;
             if(showHideCounter > 1){
                  var content = me.createOtherContent(me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][0],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][1],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][2],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][3],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][4],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][5],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][6],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][7],true);
                  me.bubbleArray[bubbleCounter].currentNewsId = me.bubbleArray[bubbleCounter].newsId[showHideCounter-1];
                 $("#content"+bubbleCounter+"_1").html(content);
                 $("#detail_"+bubbleCounter).html("<a href='http://here-spy/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
-                 //$("#content"+bubbleCounter+"_"+showHideCounter).show();
             } else {
                 $("#prevDiv_"+bubbleCounter).hide(); 
                 showHideCounter = 1;
@@ -1800,7 +1593,6 @@ function showHideDivContent(type,bubbleCounter){
                 me.bubbleArray[bubbleCounter].currentNewsId = me.bubbleArray[bubbleCounter].newsId[showHideCounter-1];
                 $("#content"+bubbleCounter+"_1").html(content);
                 $("#detail_"+bubbleCounter).html("<a href='http://here-spy/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
-               // $("#content"+bubbleCounter+"_"+showHideCounter).show();
             }
         }
         if(bubbleCounter == 0){
@@ -1849,9 +1641,6 @@ function changeHomeLocation(flag) {
 					   if(flag == 'draw'){
 						   map.setCenter(latlng);
 						   relatedMap(latlng.lat(), latlng.lng());
-						   //rLatitude = latlng.lat();
-						   //rLongitude = latlng.lng();
-						   //getPlaceByLatitue(latlng,'draw');
 					   }
                     }
                 } else {
