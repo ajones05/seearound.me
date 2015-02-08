@@ -1,3 +1,17 @@
+<?php
+$geoip = My_Ip::getCity();
+
+if ($geoip && isset($geoip->location->latitude) && isset($geoip->location->longitude))
+{
+	$geoip_lat = $geoip->location->latitude;
+	$geoip_lng = $geoip->location->longitude;
+}
+else
+{
+	$geoip_lat = 0;
+	$geoip_lng = 0;
+}
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
@@ -44,10 +58,10 @@
 
 
             var baseUrl = "<?=BASE_PATH?>";
-           
-            var geoiplatitude  = <?php echo LATITUDE_VAR; ?>;
-            
-            var geoiplongitude = <?php echo LONGITUDE_VAR; ?>;
+
+			var geoiplatitude  = <?php echo $geoip_lat; ?>;
+
+			var geoiplongitude = <?php echo $geoip_lng; ?>;
 
             var userLatitude = "<?=$this->auth['latitude'];?>";
 

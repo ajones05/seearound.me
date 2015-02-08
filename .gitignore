@@ -7,3 +7,6 @@
 /www/upload/*
 !/www/upload/index.html
 /log/*
+/vendor/*
+/includes/*
+/composer.lock
