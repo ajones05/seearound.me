@@ -1,8 +1,4 @@
 <ul class="scrpRow appendClr afterClr">
-    <!--<li class="paddingB10">
-        Share with people around you:
-    </li>-->
-   
     <li class="imgPro">
        <a class="user-img" href="<?=BASE_PATH?>home/profile">
             <?php if(isset($this->auth['pro_image'])) { ?>
@@ -14,27 +10,15 @@
        <a class="user-name" title="<?php echo $this->auth["user_name"]; ?>" href="<?=BASE_PATH?>home/profile"><?php echo My_StringHelper::stringLimit($this->auth["user_name"], 10, '...'); ?></a>
    
     </li>
-   
-   <!--changed  textarea on a9 feb-->
    <li class="bgTxtArea"> 
-        <!--<span> 
-            <a href="<?=BASE_PATH?>home/profile" id="myProfLink_1">
-             <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="" style="height:35px;width:35px;margin-left:-140px;"/>
-             <span class="floatL marginT imgmsg"> <?=$this->auth["user_name"]?> </span>
-            </a>
-          </span>-->
        <textarea id="newsPost" class="textAreaClassPost" placeholder="Share something from your current location..."  onkeyup="textLimit(500, this);" onfocus="clearpostField(this)"></textarea>
       
         <div id='tempContainor'></div>
 
         <div id="postOptionId" style="margin-right: 4px;margin-top:-5px;display:none;">
             <input type="button" value="Post" class="floatR marginT10 btnBlueRpt post"  onclick="addNews()"/>
-        
-            <!--<input type="button" value="Post From Another Location" class="floatR marginT10 btnBlueRpt" style="height:21px; margin-right:10px;" onclick="addNews()"/>-->
           
             <input type="button" class="Change-Post-Location-Popup-Class btnBlueRpt cboxElement" value="Post From Different Location" id="postlocationButton" />
-           
-            <!--<span class="floatR marginT10 imgmsg">Add Image</span>-->
        
             <input id="uploader" type="button" class="floatR marginT10 crp imgInput" style="margin-right:10px;"/> 
         
@@ -53,7 +37,7 @@
        <img src='<?=BASE_PATH?>www/images/LoadingBar.gif'/>
 
 </div>
-<!-- position changes on 14-03-2013 previous code was style="position: relative; height: 100%;margin-left:-57px;width:147%" -->
+
 <div id="newsData" align="left" style="position: relative; height: 100%;width:100%">
 
    
@@ -83,37 +67,6 @@
         );
 
     }
-    
-//    
-//    $("#mydivPost").focusin(function() {
-//          $('#postOptionId').show();
-//          $('#newsPost').attr('placeholder','');
-//     });
-//     $("#mydivPost").focusout(function() {
-//          //$('#postOptionId').hide();
-//           $('#newsPost').attr('placeholder','Share something from your current location');
-//     });
-//
-    
-   /*Work also for IE */ 
-  /*
-   function clearpostField(that){
-     
-      $('#postOptionId').show();
-      $('#newsPost').attr('placeholder','');
-       fl=1;
-    }
-    
-    
-    
-   $('#newsPost').on('blur', function() {
-           $('#newsPost').attr('placeholder','Share something from your current location');
-           if($('#newsPost').val().length<=0 && fl!=0) {
-          if($('#newsPost').val().length<=0 && fl!=0) {
-              $('#postOptionId').hide();
-             fl=0;
-        } 
-    }); */       
 
      function clearpostField(that){
           $('#postOptionId').show();
@@ -122,10 +75,5 @@
     
        $('#newsPost').on('blur', function() {
                $('#newsPost').attr('placeholder','Share something from your current location');
-               //if($('#newsPost').val().length<=0 && fl!=0) {
-             // if($('#newsPost').val().length<=0 && fl!=0) {
-                 // $('#postOptionId').hide();
-             // } 
         });      
 </script>
-

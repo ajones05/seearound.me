@@ -82,20 +82,30 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract {
         return $this->fetchAll($select); 
          
     }
-    
-    public function getCommentCountOfNews($newsId = null){
-       $select = $this->select()
-                  ->from('comments', array('count(*) as comment_count'))
-                  ->where('news_id=?', $newsId);
-       $resultSet = $this->fetchAll($select); 
-       $resultSet = $resultSet->toArray();
-       if($resultSet){
-        return $resultSet[0]['comment_count'];
-       } else {
-        return 0;
-       }
-   }
-   
+
+	/**
+	 * Returns comments count by news ID.
+	 *
+	 * @param	integer	$news_id
+	 *
+	 * @return	integer
+	 */
+	public function getCommentCountOfNews($news_id)
+	{
+		$result = $this->fetchRow(
+			$this->select()
+				->from('comments', array('count(*) as comment_count'))
+				->where('news_id=?', $news_id)
+		); 
+
+		if ($result)
+		{
+			return $result->comment_count;
+		}
+
+		return 0;
+	}
+
    public function getCommentsByUser($newsId,$userId) {
         $select = $this->select()
                   ->from('comments', array('news_id'))
@@ -112,7 +122,3 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract {
    }
   
 }
-
-
-
-?>

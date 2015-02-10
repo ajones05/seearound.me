@@ -390,13 +390,6 @@ if($this->user_data->id && $this->auth['user_id'] && $this->user_data->id == $th
              <?php } else { ?>
                  profileMapOther(profileLat, profileLng,'',dataToReturnOther);
              <?php } ?>
-            
-            
-            <?if($this->publicProfile):?>
- 
-                 searchProfileData();
-
-            <?endif;?>
 
                setHeight('.eqlCH');
 
@@ -465,42 +458,6 @@ if($this->user_data->id && $this->auth['user_id'] && $this->user_data->id == $th
     }
 
 }    
-
-    
-
-function searchProfileData() {
-
-    $('#loading').show();
-
-    $('#newsData').html("");
-
-    var searchText = $.trim($("#searchText").val());
-
-    var radious = 0.8;
-
-    var filter = 'selected';
-
-    var ulat = "<?=$this->user_data->latitude?>";
-
-    var ulng = "<?=$this->user_data->longitude?>";
-
-    var user = "<?=$this->user_data->id?>";
-
-    $.ajax({
-
-        url : baseUrl+"general/search-news",
-
-        type : "post",
-
-        data : {searchText : searchText, latitude: ulat, longitude : ulng, user_id : user,radious:radious,filter:filter },
-
-        success : updateNewsData
-
-    });
-
-}
-
-    
 
 function updateNewsData(obj) { 
 

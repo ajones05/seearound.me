@@ -1,5 +1,6 @@
+var ERROR_MESSAGE = 'Internal server error';
+var NEWS_LIMIT = 15;
 var commonMap;
-var circleSize = "0.8";
 var map;
 var circle;
 var bubbleContent = null;
@@ -12,9 +13,9 @@ var paginationResultObject = null;
 var markerArray = new Array();
 var previousBox = null;
 var popupCloseTimer = 0;
-var globalStart=null;
+var globalStart = 0;
 var otherProfileExist = 0;
-var isScrollable  = 1;
+
 /*
 * Set of variables contains the map icon
 */
@@ -56,8 +57,8 @@ function friendMapInitialize() {
 function initialize() {
     mapMoved = false;
     centerPoint = new google.maps.LatLng(userLatitude,userLongitude);
-  	latestNews(userLatitude,userLongitude,'INITIAL');
-    
+  	latestNews();
+
     var input = document.getElementById('searchAddresHome');
     var autocomplete = new google.maps.places.Autocomplete(input);
     var input2 = document.getElementById('Change-searchAddresHome');
@@ -100,8 +101,6 @@ var commonMap2 = null;
 * Function to set the profile map
 * @param {lat : latitude,lng : longitude}
 */
-var commonMap;
-
 
 function profileMap(lat,lng,type,dataToShow){
     var profileImage = '';
@@ -225,35 +224,12 @@ function distance(firstPoint,secondPoint,unit){
 /*****                                          Function to Change map center on slide                                                 *****/
 /*******************************************************************************************************************************************/
 
-
-var windowScrollingAgent = 0;
-var scrollingCounter = 15;
-function loadMorePosts()
-{  
-  if(windowScrollingAgent) {
-     
-     scrollingCounter += 15;  
-     nextPage(scrollingCounter,"ALL");
-     
-  } else {
-    
-    nextPage(15,"ALL");
-    windowScrollingAgent = 1;
-  }
- 
-  $(window).bind('scroll', bindScroll);
-}
-
-
  function bindScroll(){
-   if($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
+   if($(window).scrollTop() + $(window).height() > $(document).height() - 400) {
        $(window).unbind('scroll');
-        loadMorePosts();
+        getAllNearestPoint();
    }  
 }
- 
-$(window).scroll(bindScroll);
-
 
 function changeMapCenter(brng,dist){
     var centerOfMap = (commonMap.map).getCenter();
@@ -262,176 +238,106 @@ function changeMapCenter(brng,dist){
 }
 
 /*******************************************************************************************************************************************/
-var searchTxt = '';
-function getAllNearestPoint(latitude,longitude,radious,circleFlag){
+
+function getAllNearestPoint(centerPosition){
+    var divToFocus = false;
+
+	if (globalStart > 0){
+		divToFocus = $("#newsData div:last-child > ul");
+	} else {
+		commonMap.clearMarkers();
+		$("#newsData").html('');
+	}
+
+    if (previousBubble){
+        previousBubble.close();
+    }
+
+	reinitializeCenterData(userLatitude,userLongitude);
+
     showNewsScreen();
     removePaginationDiv();
-    searchTxt = '';
-    $("#newsData").html("");    
-    if(searchTxt == $("#searchText").val()){
-        commonMap.flushMap('CENTER');
-    }
-    if(!radious){
-       circleSize = radious = (Number($("#radious").html()) > 0)?(Number($("#radious").html())):0.8;
-       if(circleFlag){
-           if(commonMap.circle){
-                latitude = commonMap.circle.getCenter().lat();
-                longitude = commonMap.circle.getCenter().lng();
-           }
-       }
-    }
 
-    var url = baseUrl+"home/get-nearby-points";
-	 $.ajaxSetup({async:true});
-        $.post(
-            url,
-            {
-                'user_id':user_id,	
-                'latitude': latitude,
-                'longitude':longitude,
-                'radious':radious,
-                'search_txt':searchTxt,
-                'fromPage':0,
-                'endPage':16
-            },
-            function(obj){
-	        hideNewsScreen();
-                obj = JSON.parse(obj);
-                var flag = true;
-                var resultObj = obj.result;
-                var timing = obj.timing;
-                
-              
-                $("#newsData").html(obj.html);
-                $("#waitingBar").remove();
-                if(obj.paging==0){
-                 //do nothing
-                } else {
-                    var pagingDiv = '<div id="pagingDiv"><div align="center" onclick=nextPage(15,"ALL") class="postClass"><b>Older Posts</b></div></div>';
-                $("#newsData").append(pagingDiv);
-                }
-                paginationResultObject = resultObj;
-                var NoOfResult = 0;
-                var bubblePocketNumber = 1;
-               
-                if(obj.size==0){
-
-                } else {
-                    isScrollable = 1;
-                }
-               
-               	for(i in resultObj) {
-               	    var markerIcon = UserMarker1;
-               	    if(distance(new google.maps.LatLng(userLatitude,userLongitude),new google.maps.LatLng(resultObj[i][0]['latitude'],resultObj[i][0]['longitude']),'F') != 0){
-               	        commonMap.createMarkersOnMap(resultObj[i],bubblePocketNumber++,markerIcon);
-                    } else {
-                        commonMap.createMarkersOnMap(resultObj[i],0,markerIcon);
-                    }
-               	}
-                    $(".Image-Popup-Class").colorbox({width:"60%",height:"80%", inline:true, href:"#Image-Popup"},function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});  
-                    if($("#newsData").height()>714)
-                    setThisHeight(Number($("#newsData").height())+100);
-            },
-            "html"
-        )
-	 	if($('#searchText').val()) {
-			searchData('0',true,'selected',false);
+	if (!centerPosition){
+		if (commonMap.circle){
+			centerPosition = [
+				commonMap.circle.getCenter().lat(),
+				commonMap.circle.getCenter().lng()
+			];
+		} else {
+			centerPosition = [
+				userLatitude,
+				userLongitude
+			];
 		}
-        $.ajaxSetup({async:false});
- 
+	}
+
+	$.ajax({
+		url: baseUrl + 'home/get-nearby-points',
+		data: {
+			user_id: user_id,
+			latitude: centerPosition[0],
+			longitude: centerPosition[1],
+			radious: getRadius(),
+			search_txt: $('#searchText').val(),
+			filter: $('#filter_type').val(),
+			fromPage: globalStart
+		},
+		type: 'POST',
+		dataType: 'json',
+		async: true
+	}).done(function(response){
+		if (response && response.status){
+			hideNewsScreen();
+			paginationResultObject = true;
+
+			if (response.result.length){
+				globalStart += response.result.length;
+
+				var scrollPosition = [
+					self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+					self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
+				];
+
+				window.scrollTo(scrollPosition[0], scrollPosition[1]);
+
+				$("#newsData").append(response.html);
+
+				if (response.result.length == NEWS_LIMIT){
+					$(window).scroll(bindScroll);
+				}
+
+				window.scrollTo(scrollPosition[0], scrollPosition[1])
+
+				commonMap.createMarkersOnMap1(response.result, UserMarker1);
+
+				$(".Image-Popup-Class").colorbox({
+					width: "60%",
+					height: "80%",
+					inline: true,
+					href: "#Image-Popup"
+				}, function(){
+					$.colorbox.resize({
+						width: imageWidth + 'px',
+						height: imageHeight + 'px'
+					});
+				});
+			} else {
+				$("#newsData").append(response.html);
+			}
+
+			if ($("#newsData").height() > 714){
+				setThisHeight(Number($("#newsData").height())+100);
+			}
+		} else if (response){
+			alert(response.error.message);
+		} else {
+			alert(ERROR_MESSAGE);
+		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
+	});
 }
-
-
-
-function nextPage(pageNumber,filter){
-    globalStart= pageNumber; 
-    showLoadingScreen();
-    removePaginationDiv();
-    var searchTxt = '';
-
-    circleSize = radious = (Number($("#radious").html()) > 0)?(Number($("#radious").html())):0.8;
-    if(commonMap.circle){
-        latitude  = commonMap.circle.getCenter().lat();
-        longitude = commonMap.circle.getCenter().lng();
-    }
-    
-    var searchText = filter;
-    var url = baseUrl+"home/search-nearest-news";
-    if(filter == 'ALL'){
-        url = baseUrl+"home/get-nearby-points";
-        searchText = "";
-    }
-    var totalDiv = ($("#newsData div[class=scrpBox]").length);
-    var divToFocus = null;
-    $("#newsData div:nth-child("+(totalDiv-1)+")").find('ul').each(function(){
-        if(!divToFocus)
-            divToFocus = $(this).attr('id');
-    });
-    
-	$.ajaxSetup({async:false});
-        $.post(
-            url,
-            {
-                'user_id':user_id,	
-                'latitude': latitude,
-                'longitude':longitude,
-                'radious':radious,
-                'search_txt':"",
-                'filter':searchText,
-                'fromPage':pageNumber,
-                'endPage':16
-            },
-            function(obj){
-                hideNewsScreen();
-                obj = JSON.parse(obj);
-                var flag = true;
-                var resultObj = "";
-                if(filter == 'ALL')
-                    resultObj = obj.result;
-                else
-                   resultObj = obj.markerData;  
-                   var timing = obj.timing;
-                $("#waitingBar").remove();
-               	$("#newsData").append(obj.html);
-            
-                pageNumber = pageNumber+15;
-                if(obj.size==0){
-                
-                } else {
-                    isScrollable = 1;
-                }
-               
-                if(obj.size>15)
-                 var pagingDiv = '<div id="pagingDiv" <div align="center" onclick=nextPage('+pageNumber+',"'+filter+'") class="postClass"><b>Older Posts</b></div></div>';
-                 $("#newsData").append(pagingDiv);
-                 paginationResultObject = resultObj;
-                 var NoOfResult = 0;
-                 var bubblePocketNumber = 1;
-               
-               	for(i in resultObj) {
-               	    var markerIcon = UserMarker1;
-               	    if(distance(new google.maps.LatLng(userLatitude,userLongitude),new google.maps.LatLng(resultObj[i][0]['latitude'],resultObj[i][0]['longitude']),'F') != 0){
-               	        commonMap.createMarkersOnMap(resultObj[i],bubblePocketNumber++,markerIcon);
-                    } else {
-                            commonMap.createMarkersOnMap(resultObj[i],0,markerIcon);
-                    }
-               	} 
-				$(".Image-Popup-Class").colorbox({width:"60%",height:"80%", inline:true, href:"#Image-Popup"},function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});  
-				if($("#newsData").height()>714)
-                     setThisHeight(Number($("#newsData").height())+100);
-            },
-            "html"
-         )
-	 	if($('#searchText').val()) {
-			searchData('0',true,'selected',false);
-		}
-                
-         if(divToFocus){
-             $.scrollTo( "#"+divToFocus,0, {offset: {top:-0, left:-100} }  ); 
-         }
-      	 $.ajaxSetup({async:false});
-         return false;
-    }
 
 /*
 * Function to change the height of left and right container
@@ -483,6 +389,7 @@ function addNews() {
     				          var formattedAddress = results[0].formatted_address;
                               if($('#fileNm').html() != ""){  
                                   $("#tempContainor").html(formContainor); 
+								  // TODO: fix
                                   $("#mainForm").attr('action',baseUrl+'home/add-news?news='+news+'&latitude='+userLatitude+'&longitude='+userLongitude+'&address='+formattedAddress); 
                                   $("#mainForm").submit();
                                   $('#loading').hide();
@@ -512,7 +419,7 @@ function addNews() {
 *  longitude : longitude of the point,
 *  type : INTIALIZE for initialization of new map, OTHER : to change on current map}
 */
-function latestNews(latitude, longitude, type){
+function latestNews(){
 	var dataToReturn = {
 		id: 0,
 		name: userName,
@@ -521,22 +428,18 @@ function latestNews(latitude, longitude, type){
 		user_id: user_id
 	};
 
-	if (type == 'INITIAL'){
-		commonMap = new MainMap({
-			mapElement: document.getElementById('map_canvas'),
-			centerPoint: centerPoint,
-			icon: MainMarker1,
-			centerData: dataToReturn,
-			mapType: 'MAIN',
-			markerType: 'nonDragable',
-			isMapDragable: 'dragable',
-			showMapElement: true
-		});
-	} else {
-		commonMap.createMarker(centerPoint, MainMarker1, 'center', dataToReturn);
-	}
+	commonMap = new MainMap({
+		mapElement: document.getElementById('map_canvas'),
+		centerPoint: centerPoint,
+		icon: MainMarker1,
+		centerData: dataToReturn,
+		mapType: 'MAIN',
+		markerType: 'nonDragable',
+		isMapDragable: 'dragable',
+		showMapElement: true
+	});
 
-	getAllNearestPoint(userLatitude, userLongitude, 0.8, false);
+	getAllNearestPoint([userLatitude, userLongitude]);
 }
 
 function reinitializeCenterData(latitude, longitude){
@@ -717,21 +620,7 @@ function showAddNews(obj){
                 changeNewsContent(0,1,jsdata,news,'ADDED');
             }
       }
-      
-      $.ajax({
-		url : baseUrl+'home/news-pagging',
-		type : 'post',
-		data : {lat : userLatitude, lng : userLongitude},
-		success : function(data) {
-			removePaginationDiv();
-			var data = $.parseJSON(data);
-			$("#waitingBar").remove();
-			if(data.paging) {
-	        	var pagingDiv = '<div id="pagingDiv">'+data.paging+'</div>';
-				$("#newsData").append(pagingDiv);
-			}
-		}
-	 });
+
 	 clearUpload();
      reinitilizeUpload();
      location.reload();
@@ -868,34 +757,17 @@ function removePaginationDiv(){
 }
 
 /*
-* Function to show more news and comments when clicked on 
-* pagination button also includes new pagination
-* @param {pageNumber : page number,filter : type of filter}
-*/
-function paging(pageNumber,filter){ 
-         showResult(paginationResultObject,pageNumber);
-}
-
-/*
 * Function to show more news and comments when first post a meassge than clicked on 
 * pagination button also includes new pagination
-* @param {res : pagination result object,pageNumber : current page number}
+* @param {res : pagination result object,}
 */
-function showResult(res,pageNumber) {
-   var jsdata;
-   var html 
-    if(res){
+function showResult() {
+    if(paginationResultObject){
     	$('#buttonPost').removeAttr("disabled");
         $('#newsPost').css('height','36');
         $('#newsPost').val('');
-        
-        var startPage = ((pageNumber-1)*15)+1;
-        var endPage   = (pageNumber*15);
-            pageNumber++;
-        var paginationFlag = true;
-        globalStart = globalStart+16;
-        nextPage(globalStart,'ALL'); //globalStart variable is now assigned with value of startpage variable  from NextPage function just increment it by value of 16 points to correct result parsing after posting a post.
-                                     // No need to execute following commented code
+
+        getAllNearestPoint();
     }
 }
 
@@ -1070,137 +942,22 @@ function showMoreComments(thisOne,currId){
     $('#morecomments_'+currId).show();
 }
 
-/*
-* Function to get the key value
-*/
-function myElapsedFunction(){
-var delay = (function(){
-  var timer = 0;
-  return function(callback, ms){
-    clearTimeout (timer);
-    timer = setTimeout(callback, ms);
-  };
-})();
-
-$('#searchText').keyup(function() {
-    delay(function(){
-    searchData('0',false,'selected',false);  
-  }, 1000 );
-});
-
-}
-
   function searchLatest(){
      if(controller == 'home' && action == 'index') {
-     searchData('0',false,'selected',false);  
+		globalStart = 0; 
+     getAllNearestPoint();
      } else{
         window.location= baseUrl+'home/index/sv/'+$('#searchText').val();
      }
   }
 
 function getKeycodes(direct) {
-	var keycode = '';
-	if(direct) {
-		if(controller == 'home' && action == 'index') {
-			searchData('0',false,'selected',false);
-		} else {
-			window.location = baseUrl+'home/index/sv/'+$('#searchText').val();
-		}
-	} else { 
-		$('#searchText').bind('keyup', function(event) {
-			if(controller == 'home' && action == 'index') {
-				keycode = event.keyCode;
-				if(keycode === 13){
-				   searchData('0',false,'selected',false);
-				}
-			} else {
-				keycode = event.keyCode;
-				if(keycode === 13){
-				    window.location = baseUrl+'home/index/sv/'+$('#searchText').val();
-				}
-			}
-		});
+	if (controller == 'home' && action == 'index'){
+		globalStart = 0;
+		getAllNearestPoint();
+	} else {
+		window.location = baseUrl+'home/index/sv/'+$('#searchText').val();
 	}
-}
-
-/*
-* Function to search the data
-* @param {user_id : id of the user, flag : {true,false} to detect radious,
-* filter : type of the filter like userinterest, search etc..}
-*/
-function searchData(user_id,flag,filter,circleCenterFlag) {
-    commonMap.clearMarkers();
-    if(previousBubble){
-        previousBubble.close();
-    }
-	if(searchTxt == $("#searchText").val()){
-		commonMap.flushMap('CENTER');
-	}
-	var searchText = $("#searchText").val();
-	searchText     = $.trim(searchText); 
-	$('#loading').show();
-	$('#newsData').html("");
-    var radious = '';
-    if(flag){
-      radious  = (Number($("#radious").html()) > 0)?Number($("#radious").html()):0.8;  
-    } 
-    var url = baseUrl+"home/search-nearest-news/";
-    var circleLat  = "";
-    var circleLong = "";
-    
-    if(commonMap.circle){
-        circleLat  = commonMap.circle.getCenter().lat();
-        circleLong = commonMap.circle.getCenter().lng();
-    } else {
-       circleLat =  userLatitude;
-       circleLong = userLongitude;
-    }
-    
-    reinitializeCenterData(userLatitude,userLongitude);
-	$.ajaxSetup({async:true});
-        $.post(
-            url,
-            {
-		'searchText' : searchText, 
-                'latitude': circleLat, 
-                'longitude' : circleLong, 
-                'user_id' : user_id,
-                'radious':radious,
-                'filter':filter
-            },
-            function(obj){
-		  $('#loading').hide();
-                  obj = JSON.parse(obj);
-		var flag = true;
-                var resultObj = obj.markerData;
-                var timing = obj.timing;
-		paginationResultObject = resultObj;
-                $("#newsData").html(obj.html);
-                $("#waitingBar").remove();
-	        if(obj.size>15)
-                var pagingDiv = '<div id="pagingDiv" <div align="center" onclick=nextPage(15,"'+filter+'") class="postClass"><b>Older Posts</b></div></div>';
-                $("#newsData").append(pagingDiv);
-		$(".Image-Popup-Class").colorbox({width:"60%",height:"80%", inline:true, href:"#Image-Popup"},function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});
-
-				//Create markers of post
-	        var bubblePocketNumber = 1;
-               	for(i in resultObj) {
-               	    var markerIcon = UserMarker1;
-               	    if(distance(new google.maps.LatLng(userLatitude,userLongitude),new google.maps.LatLng(resultObj[i][0]['latitude'],resultObj[i][0]['longitude']),'F') != 0){
-               	        commonMap.createMarkersOnMap(resultObj[i],bubblePocketNumber++,markerIcon);
-                    } else {
-                            commonMap.createMarkersOnMap(resultObj[i],0,markerIcon);
-                    }
-				}
-		 
-                    $("#addNewsDiv").hide();
-		    $("#SearchParameter").show();
-	            $("#searchTextDiv").html($("#searchText").val());
-								
-            },
-            "html"
-        )
-		 $.ajaxSetup({async:true});
 }
 
 /*
@@ -1283,19 +1040,6 @@ function fillPostLocationAddress(){
    
  }
 
-
-/*
-* Function to reinitialize map at its orignal lat lon
-*/
-function goToHome(){
-	searchText = '';
-    if(previousBubble)
-        previousBubble.close();
-    previousBubble = null;
-    commonMap.map.setCenter(new google.maps.LatLng(userLatitude,userLongitude));
-    commonMap.onMapDragen('CENTER'); 
-}
-
 /*
 * Function to change the current location of user
 */
@@ -1361,17 +1105,6 @@ function showHideDiv(type,bubbleCounter){
         $("#mainContent_"+bubbleCounter).attr('currentDiv',showHideCounter);
 }
 
-/* Function to change the circle size and related points on the basis of slider
-* @param null
-*/
-
-function changeCircle() { 
-    newCenterPoint = commonMap.map.getCenter();
-    commonMap.onMapDragen('CENTER');
-    $("#slider").slider("enable");
-}
-
-
 /* Function to chack the value length of text area and remove the extra characters
 * @param val (value of text area), textLimit(Lenght of characters of text area) 
 * @return null
@@ -1397,18 +1130,21 @@ function textLimit(textLimit, thisone) {
 * Function to initialize the map silider
 */      
 function sliderInitialization(){
-    $("#slider").slider({max:1.5,min:.5,step:0.1,value:circleSize,animate: true}).bind( "slidestop", function(event, ui) { if(ui.value == 1)
-            ui.value = "1.0";circleSize = Number(ui.value);$("#slider").slider("disable");changeCircle();});
-    $("#slider").slider({max:1.5,min:.5,step:0.1,value:circleSize,animate: true}).bind( "slide", function(event, ui) {
-		$("#loading").show();																								  
-        if(ui.value == "1") {
-            ui.value = "1.0";
-        }
-        $("#radious").html(ui.value); 
-        circleSize = Number(ui.value);
-    }); 
+	$("#slider")
+		.slider({
+			max: 1.5,
+			min: 0.5,
+			step: 0.1,
+			value: getRadius(),
+			animate: true
+		})
+		.bind("slidestop", function(event, ui){
+			commonMap.onMapDragen('CENTER');
+		})
+		.bind("slide", function(event, ui){
+			$("#radious").html(ui.value == 1 ? '1.0' : ui.value);
+		});
 }
-
 
 function hideMoreButton(thisone) {
     $(thisone).html("");
@@ -1527,14 +1263,6 @@ function array_unshift_assoc($arr, $key, $val)
     return $temp;
 }
 
-
-function sendLink(thisone,action){
-    var pageLink = $(thisone).attr('name');
-    $.post(baseUrl+"home/change-link",{"pageLink":pageLink},function(data){
-        window.location = data;
-    })
-}
-
 function changeHomeLocation(flag) {
 	var userAddress = '';
 	var searchaddr = $("#searchAddresHome").val();
@@ -1624,4 +1352,14 @@ function linkClickable(replaceText)
 
     return replacedText
 
+}
+
+function getRadius(){
+	var radius = Number($("#radious").html());
+
+	if (radius > 0){
+		return radius;
+	}
+
+	return 0.8;
 }

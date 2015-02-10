@@ -263,22 +263,24 @@ class Application_Model_Voting extends My_Db_Table_Abstract {
         }
         return $row->id;
     }
-   
-   function isNewsLikedByUser($newsId,$userId){
-        $votingTable = new Application_Model_Voting();
-        $sel = $votingTable->select()->from('votings', array('*'))
-                ->where('user_id=?', $userId)
-                ->where('news_id=?', $newsId)
-                ->where('news_count=?', 1);
-                
-        $fetch = $votingTable->fetchRow($sel);
-        if($fetch->news_count){
-            return "Yes";
-        } else {
-            return "No";
-        }
-   }
 
+	/**
+	 * Checks if news is liked by user.
+	 *
+	 * @param	integer	$news_id
+	 * @param	integer	$user_id
+	 *
+	 * @return	string
+	 */
+	public function isNewsLikedByUser($news_id, $user_id)
+	{
+        $result = $this->fetchRow(
+			$this->select()
+                ->where('user_id=?', $user_id)
+                ->where('news_id=?', $news_id)
+                ->where('news_count=?', 1)
+		);
+
+		return $result != null;
+	}
 }
-
-?>

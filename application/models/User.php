@@ -1,16 +1,64 @@
 <?php
+/**
+ * User row model class.
+ */
+class Application_Model_UserRow extends My_Db_Table_Row_Abstract
+{
+	/**
+	 * Returns list of user interests.
+	 *
+	 * @return	array
+	 */
+	public function parseInterests()
+	{
+		$result = array();
 
+		$activities = trim($this->Activities);
 
+		if ($activities !== '')
+		{
+			$interest = explode(',', $activities);
 
-class Application_Model_UserRow extends My_Db_Table_Row_Abstract {
+			foreach ($interest as $_interest)
+			{
+				$_interest = trim($_interest, ' \"\'');
+							
+				if ($_interest !== '')
+				{
+					$result[] = $_interest;
+				}
+			}
+		}
 
-    
+		return $result;
+	}
 
+	/**
+	 * Returns user profile image.
+	 *
+	 * @return	array
+	 */
+	public function getProfileImage($default)
+	{
+		if (trim($this->Profile_image !== ''))
+		{
+			if (strpos($this->Profile_image, '://'))
+			{
+				return $this->Profile_image;
+			}
+
+			return BASE_PATH . 'uploads/' . $this->Profile_image;
+		}
+
+		return $default;
+	}
 }
 
-
-
-class Application_Model_User extends My_Db_Table_Abstract {
+/**
+ * User model class.
+ */
+class Application_Model_User extends My_Db_Table_Abstract
+{
 
 
 
@@ -516,11 +564,34 @@ class Application_Model_User extends My_Db_Table_Abstract {
 			return false;
 		}
 
-		$user = self::getInstance()->findRow($user_id);
+		$db = self::getInstance();
+
+		$user = $db->fetchRow(
+			$db->select()
+				->setIntegrityCheck(false)
+				->from($db, '*')
+				->joinLeft(
+					'user_profile',
+					'user_data.id = user_profile.user_id',
+					array(
+						'user_profile.public_profile',
+						'user_profile.Activities',
+						'user_profile.Looking_for',
+						'user_profile.Gender'
+					)
+				)
+				->joinLeft(
+					'address',
+					'user_data.id = address.user_id',
+					array(
+						'address.address',
+						'address.latitude',
+						'address.longitude'
+					)
+				)
+				->where('user_data.id =?', $user_id)
+		);
 
 		return $user != null;
 	}
-
 }
-
-?>

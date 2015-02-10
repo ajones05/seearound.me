@@ -63,14 +63,12 @@ $(document).ready(function(){
 * Function to clear the upload div form and iframe
 */      
 function clearUpload() {
-    //$('#tempContainor').html("");
     $('#fileNm').html("");
     var ufchilds = $("#mainForm").children();
     $(ufchilds[0]).val("");
 }
 
 
-var formObject = ''; //To store the uploader form object
 var formContainor = ''; //To store the uploader form parent containor
 
 /*
@@ -79,7 +77,6 @@ var formContainor = ''; //To store the uploader form parent containor
 $(document).ready(function(){
     upclick({
         element: 'uploader',
-        action: baseUrl+'home/add-news/',
         onstart: function(filename) {
             var uploadedImage = filename.split('\\');
             var imageRealName = uploadedImage[uploadedImage.length-1];
@@ -100,18 +97,11 @@ $(document).ready(function(){
 			}
         },
         oncomplete: function(response_data)
-            {
-                showAddNews(response_data);
-            }
+        {
+           showAddNews(response_data);
+        }
     });
 });
-
-/*
-* Function to fill the loading image when image gets uploaded
-*/
-function fillImage(){
-    //$('#fileNm').html("<div id='loading' align='center'><img src='"+baseUrl+"www/images/LoadingBar.gif'/></div>");
-}
 
 /*
 * Function to reinitialize uploader for the next accesss
@@ -119,7 +109,6 @@ function fillImage(){
 function reinitilizeUpload() {
      upclick({
         element: 'uploader',
-        action: baseUrl+'home/add-news/',
         onstart: function(filename) {
             var uploadedImage = filename.split('\\');
             var imageRealName = uploadedImage[uploadedImage.length-1];

@@ -1,5 +1,4 @@
 $(document).ready(function(){
-    console.log('included');
     var width = screen.width,
     height = screen.height;
     setInterval(function () {
@@ -32,8 +31,6 @@ function searchPlaceBy(){
 
 
 function showNewsScreen() {
-
-    $("#loading").height(Number($("#newsData").height())+Number(200));
 
     $("#loading").width($("#newsData").width());
 
@@ -91,21 +88,6 @@ $(document).ready(function() {
         }, 0);
     });
 
-    if($('#Location-Popup-id')) {
-
-        $(".Location-Popup-Class").colorbox({
-            width:"40%",
-            height:"26%", 
-            inline:true, 
-            href:"#Location-Popup-id"
-        },function(){
-            $('html, body').animate({
-                scrollTop: 0
-            }, 0);
-        });
-
-    }
-
     $('#imageUploader').click(function(event) {
 
         $('#uploadImage').click();
@@ -113,36 +95,6 @@ $(document).ready(function() {
     });	
 
 });
-
-function changeLocationAddress() {
-
-    userLatitude = centerPoint.lat();
-
-    userLongitude = centerPoint.lng();
-
-    changeLatLng(changedAddress,userLatitude,userLongitude, 'addNews');
-
-    $('#cboxClose').trigger('click');
-
-}
-
-
-
-function closeCurrentPopup() {
-
-    mapMoved = false;
-
-    if(commonMap)
-
-        commonMap.mapMoved = false;
-
-    closeThisPopup();
-
-    addNews();
-
-}
-
-
 
 function closeThisPopup() {
 

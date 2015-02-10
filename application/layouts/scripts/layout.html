@@ -17,6 +17,8 @@ else
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>Here Spy</title>
+	<?php echo $this->headScript(); ?>
+
 	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/colorbox.css"/>
 	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/boxy.css"/>
 	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery-ui.css"/>
@@ -43,7 +45,7 @@ else
 	var userLongitude = "<?=$this->auth['longitude'];?>";
 	var userPosition = new google.maps.LatLng(userLatitude,userLongitude);
 	var isLogin = "<?=$this->isLogin?>";
-	var isFbLogin = "<?=$this->auth['is_fb_login']?>";
+	var isFbLogin = "<?php echo !empty($this->auth['is_fb_login']); ?>";
 	var user_id = "<?=$this->auth['user_id']?>";
 	var reciever_userid =  "<?=$this->reciever?>";
 	var userName = "<?=$this->auth['user_name']?>";
@@ -73,13 +75,8 @@ else
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/areaCircle.js"></script>
-	<?php if ($this->type != 'NEW'): ?>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-common.js?1"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-mainMap.js?1"></script>
-	<?php else: ?>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/common.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/mainMap.js"></script>
-	<?php endif; ?>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/upclick.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.autogrowtextarea.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.scrollTo-min.js"></script>
@@ -121,9 +118,34 @@ else
 			} 
 		});
 
-		<?php if ($this->current_menu != ""): ?>
-		searchData('<?php echo $this->auth['user_id']; ?>', true,'<?php echo $this->current_menu; ?>');
-		<?php endif; ?>
+		// TODO: remove
+		$('#filter_all').click(function(e){
+			e.preventDefault();
+			$('#filter_type').val('').change();
+		});
+
+		// TODO: remove
+		$('#filter_my').click(function(e){
+			e.preventDefault();
+			$('#filter_type').val('Myconnection').change();
+		});
+
+		// TODO: remove
+		$('#filter_interests').click(function(e){
+			e.preventDefault();
+			$('#filter_type').val('Interest').change();
+		});
+
+		// TODO: remove
+		$('#filter_friends').click(function(e){
+			e.preventDefault();
+			$('#filter_type').val('Friends').change();
+		});
+
+		$('#filter_type').change(function(){
+			globalStart = 0;
+			getAllNearestPoint();
+		});
 	});
 	</script>
 </head>
@@ -143,7 +165,7 @@ else
                 <li class="midCol">
                     <span class="sIcn">
                         <?php if(!$this->message) :?>
-                        <input type="text" id="searchText"   value="<?=$this->request->getParam('sv', null)?>"placeholder="Search posts..."/>
+                        <input type="text" id="searchText" value="<?=$this->request->getParam('sv', null)?>" placeholder="Search posts..." />
                         <img src="<?=BASE_PATH?>www/images/icn-search.png" alt="Search" onclick="getKeycodes(true);"/>
                         <?php endif;?>
                     </span>
@@ -237,19 +259,25 @@ else
                               <span class="result" style="text-align: left;color: #8d8d8d; font: normal 15px lato-lightItalic;padding: 5px 0px 4px 15px;"></span>
                           </a>
                        </dt>
-                  
+
                        <dd style="margin-left:0px;">
                            <ul style="display: none;z-index:99999;" id="ulglobal" >
-                               <li><a href="javascript:getAllNearestPoint('<?=$this->auth['latitude'];?>','<?=$this->auth['longitude'];?>',null,true)"><b>View All</b></a></li>
-                               <li><a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'selected')" ><b>Mine Only</b></a></li> 
-                               <li><a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'interest')"><b>My Interests</b></a></li>
-                              <li><a href="javascript:searchData('<?=$this->auth['user_id']?>',true,'friends')"><b>Friends</b></a></li>
+                               <li><a id="filter_all" href="#"><b>View All</b></a></li>
+                               <li><a id="filter_my" href="#" ><b>Mine Only</b></a></li> 
+                               <li><a id="filter_interests" href="#"><b>My Interests</b></a></li>
+                              <li><a id="filter_friends" href="#"><b>Friends</b></a></li>
                            </ul>
                        </dd>
                        
     			    </dl>
     			</div>
 		  </div>
+			<select name="type" id="filter_type">
+				<option value="">View All</option>
+				<option value="Myconnection">Mine Only</option>
+				<option value="Interest">My Interests</option>
+				<option value="Friends">Friends</option>
+			</select>
       <?php  } ?>       
           <?php if(!isset($this->friendListExist) && !isset($this->myprofileExist) && !isset($this->newsDetailExist) && !isset($this->myeditprofileExist)) { ?>
                 <div class="gMapSec">

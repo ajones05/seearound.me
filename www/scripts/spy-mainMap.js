@@ -53,18 +53,11 @@ MainMap.prototype.createMap = function(){
      var styles = [{
         featureType: "all",
         elementType: "geometry",
-         /*stylers: [ 
-             { saturation:6 }, 
-             { lightness: 35 },
-             { gamma: 0.95 }  
-          ] */
-        
         stylers: [ 
           { saturation: 5 }, 
           { lightness: 45 },
           { gamma: 0.85 }  
         ] 
-       
       }];
     
     
@@ -105,7 +98,6 @@ MainMap.prototype.createMap = function(){
      });
 
     if(me.mapType == 'MAIN') {
-     
          google.maps.event.addListener(map, 'zoom_changed', function() {
 
          	if (map.getZoom() < 13){
@@ -128,29 +120,6 @@ MainMap.prototype.createMap = function(){
                 sliderInitialization();
 
 			}
-
-			var currentUrl =  String(document.URL).split("/");
-
-			if(currentUrl[currentUrl.length-1] == 'search'){
-
-				selectLink($("#links li:nth-child(2)").find("a"),false);
-
-				$("#links li:nth-child(2)").find("a").trigger('click');
-
-				searchData(user_id,false,'selected');
-
-			} else if(currentUrl[currentUrl.length-1] == 'friend') {
-
-				selectLink($("#links li:nth-child(2)").find("a"),false);
-
-				$("#links li:nth-child(4)").find("a").trigger('click');
-
-				searchData(user_id,false,'myconnection');
-
-			}
-
-		
-
         });
 
 		
@@ -340,6 +309,109 @@ MainMap.prototype.createMarkersOnMap = function(dataForMarkers,myPosition,marker
 
 }
 
+MainMap.prototype.createMarkersOnMap1 = function(dataForMarkers, markerIcon){
+	var me = this;
+
+	for (i in dataForMarkers){
+		var markerPosition = new google.maps.LatLng(parseFloat(dataForMarkers[i]['latitude']), parseFloat(dataForMarkers[i]['longitude'])),
+			resultPosition = this.findPrevious(markerPosition),
+			markerContent = {
+				id: dataForMarkers[i]['id'],
+				news: dataForMarkers[i]['news'],
+				user_id: dataForMarkers[i]['user_id'],
+				name: dataForMarkers[i]['user']['name'],
+				userImage: dataForMarkers[i]['user']['image']
+			};
+
+		if (resultPosition == -1){
+			var marker = new google.maps.Marker({
+				map: this.map,
+				position: markerPosition,
+				map: this.map,
+				draggable: false,
+				icon: this.createIcon(markerIcon)
+			});
+
+			this.marker.push(marker);
+			markerArray.push(marker);
+			bubbleContent = me.bubbleArray;
+
+			me.bubbleArray.push(this.createInfoWindow(
+				marker,
+				markerContent.name,
+				markerContent.news,
+				markerContent.id,
+				markerContent.userImage,
+				markerContent.user_id
+			));
+		} else {
+			var previousPosition = resultPosition;
+
+			if (resultPosition == 0){
+				if (!me.bubbleArray[previousPosition].newsId.length){
+					var currentBubble = me.bubbleArray[previousPosition];
+
+					currentBubble.newsId[0] = markerContent.id;
+					currentBubble.user_id[0] = markerContent.user_id;
+					currentBubble.total = 1;
+					currentBubble.currentNewsId = markerContent.id;
+
+					me.bubbleArray[previousPosition].divContent = me.createContent(
+						markerContent.userImage,
+						markerContent.name,
+						markerContent.news,
+						1,
+						'first',
+						previousPosition,
+						markerContent.id,
+						true
+					);
+
+					me.bubbleArray[previousPosition].contentArgs[0] = [
+						markerContent.userImage,
+						markerContent.name,
+						markerContent.news,
+						1,
+						'first',
+						previousPosition,
+						markerContent.id
+					];
+				}
+			}
+
+			if (me.findData(me.bubbleArray[previousPosition].newsId, markerContent.id, 'CHECK')){
+				var currentBubble = me.bubbleArray[previousPosition];
+
+				currentBubble.newsId.push(markerContent.id);
+				currentBubble.user_id.push(markerContent.user_id);
+				currentBubble.total++;
+
+				me.bubbleArray[previousPosition].divContent = me.createContent(
+					me.bubbleArray[previousPosition].contentArgs[0][0],
+					me.bubbleArray[previousPosition].contentArgs[0][1],
+					me.bubbleArray[previousPosition].contentArgs[0][2],
+					me.bubbleArray[previousPosition].contentArgs[0][3],
+					me.bubbleArray[previousPosition].contentArgs[0][4],
+					me.bubbleArray[previousPosition].contentArgs[0][5],
+					me.bubbleArray[previousPosition].contentArgs[0][6],
+					me.bubbleArray[previousPosition].contentArgs[0][7],
+					false
+				);
+
+				me.bubbleArray[previousPosition].contentArgs.push([
+					markerContent.userImage,
+					markerContent.name,
+					markerContent.news,
+					++currentBubble.total,
+					'second',
+					previousPosition,
+					markerContent.id
+				]);
+			}
+		}
+	}
+}
+
 MainMap.prototype['createMarkersOnMap'] = MainMap.prototype.createMarkersOnMap;
 
 MainMap.prototype.createMarker = function(markerPosition,markerIcon,type,markerContent){
@@ -388,7 +460,7 @@ MainMap.prototype.createMarker = function(markerPosition,markerIcon,type,markerC
 
             circle = new AreaCircle({
 
-                    radious:Number(circleSize),
+                    radious:getRadius(),
 
                     center:markerPosition
 
@@ -1035,7 +1107,7 @@ MainMap.prototype.createImageDom = function(type,id,className,src,angle) {
 
        spanDom.style['color'] = '#4276cd';
 
-       spanDom.innerHTML = circleSize;
+       spanDom.innerHTML = getRadius();
 
        secDiv.appendChild(spanDom);
 
@@ -1199,84 +1271,24 @@ MainMap.prototype['changeMapZoom'] = MainMap.prototype.changeMapZoom;
 
 
 MainMap.prototype.onMapDragen = function(type){
+	globalStart = 0;
 
-   
+	if (type == 'FRIENDS'){
+		// TODO: fix
+		var userPosition = this.map.getCenter();
+		getAllNearestFriends(userPosition.lat(), userPosition.lng(), getRadius());		
+	} else {
+		this.flushMap(type);
 
-   if(type != 'FRIENDS'){
-
-        showNewsScreen();
-
-        var me = this;
-
-        var newCenterPoint = me.flushMap(type);
-
-        var doDefault = true;
-
-        $("#links").find("a").each(function(){
-
-           if($(this).attr('class') == 'blue'){
-
-                doDefault = filterByArea(user_id,$(this).html());
-
-           } 
-
-        });
-
-
-
-        if(doDefault){
-
-            if(type == 'ALL')
-
-                latestNews(userLatitude,userLongitude,'INITIAL');
-
-            if(type == 'CENTER')
-
-                getAllNearestPoint(newCenterPoint.lat(),newCenterPoint.lng(),Number($("#radious").html()),true);
-
-        }
-
-    } else {
-
-        var userPosition = this.map.getCenter();
-
-        getAllNearestFriends(userPosition.lat(),userPosition.lng(),Number($("#radious").html()));
-
-    }
-
-    //hideNewsScreen();
-
+		if (type == 'ALL'){
+			latestNews();
+		} else if (type == 'CENTER'){
+			getAllNearestPoint();
+		}
+	}
 }
 
 MainMap.prototype['onMapDragen'] = MainMap.prototype.onMapDragen;
-
-
-
-function filterByArea(user_id,linkText){
-
-   
-
-    if(linkText == 'View All')
-
-        return true;
-
-    if(linkText == 'Mine only')
-
-        searchData(user_id,true,'selected',true);
-
-    if(linkText == 'My Interests' )
-
-        searchData(user_id,true,'interest',true);
-
-    if(linkText == 'My Connections' )
-
-        searchData(user_id,true,'myconnection',true);
-
-    return false;
-
-}
-
-
 
 MainMap.prototype.flushMap = function(type){
 

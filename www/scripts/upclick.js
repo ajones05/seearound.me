@@ -141,7 +141,6 @@ function upclick(params)
             var onchange_callback =
                 function(e)
                 {
-                    fillImage();
                     // empty filename check
                     if (!input.value)
                         return;
@@ -150,7 +149,6 @@ function upclick(params)
                     var onstart = params['onstart'];
                     if (onstart)
                         onstart(input.value);
-                    formObject = form;
                     formContainor = container;
                     //form.submit();
                 };

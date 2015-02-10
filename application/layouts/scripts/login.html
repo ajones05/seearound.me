@@ -298,13 +298,6 @@ else
 
         <!-- code for popups div start here -->
 
-
-        
-
-
-        <input type="button" id="locationButton" style="display: none;" class="Location-Popup-Class" />
-
-
         <div style="display: none;">
 
 
@@ -336,109 +329,6 @@ else
 
 
         </div>
-
-
-        
-
-
-        <!-- code for making location popup -->
-
-
-        <div style="display: none;">
-
-
-            <div id="Location-Popup-id">
-
-
-                <div align="center" style="width: 100%;">
-
-
-                    <b>
-
-
-                        You've moved the map quite a bit, do you still want to post from your location? If you want to post from a new location, click Cancel and then change your location on the map.
-
-
-                    </b>
-
-
-                    <br />
-
-
-                    <br />
-
-
-                    <input id="changeLocation" type="button" class='btn primary' value="Post" onClick="closeCurrentPopup()"/>
-
-
-                    <input id="closeLocationPopup" class='btn primary' type="button" value="Cancel" onClick="closeThisPopup();" />
-
-
-                </div>
-
-
-            </div>
-
-
-            <div id="sliderImages" style="display: none;">
-
-
-                <img id="downImage" src="<?=BASE_PATH?>/www/images/map_arrow_down.png" class="clickableImage" onClick="changeMapCenter(180,.5)"/>
-
-
-                <img id="upImage" src="<?=BASE_PATH?>/www/images/map_arrow_up.png" class="clickableImage" onClick="changeMapCenter(0,.5)"/>
-
-
-                <img id="rightImage" src="<?=BASE_PATH?>/www/images/map_arrow_right.png" class="clickableImage" onClick="changeMapCenter(90,.5)"/>
-
-
-                <img id="leftImage" src="<?=BASE_PATH?>/www/images/map_arrow_left.png" class="clickableImage" onClick="changeMapCenter(270,.5)"/>
-
-
-            </div>
-
-
-            <div id="zoomController" style="display: none;">
-
-
-                <table style="height:50px;width:50px;">
-
-
-                    <tr>
-
-
-                        <td><img id="zoomIn" src="<?=BASE_PATH?>/www/images/zoom_in.png" class="clickableImage" onClick="changeMapZoom('in')"/></td>
-
-
-                    </tr>
-
-
-                    <tr>
-
-
-                        <td><img id="zoomOut" src="<?=BASE_PATH?>/www/images/zoom_out.png" class="clickableImage" onClick="changeMapZoom('out')"/></td>
-
-
-                    </tr>
-
-
-                </table>
-
-
-            </div>
-
-
-
-
-
-        </div>
-
-
-        <!-- location popup code ends here -->
-
-
-
-
 
         <!-- Code for message popups -->
 

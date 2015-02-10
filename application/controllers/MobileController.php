@@ -596,208 +596,225 @@ class MobileController extends Zend_Controller_Action
            echo(json_encode($response)); exit;    
         }
     }
-    
 
-      /**
-      * Function to calculate time difference '
-      * 
-      * @return time difference 
-      */
-    public function time_ago_calculate ($tm, $rcs = 0) {
-        $cur_tm = time(); 
-        $dif = $cur_tm - strtotime($tm);
-        $pds = array('second','minute','hour','day','week','month','year','decade');
-        $lngh = array(1,60,3600,86400,604800,2630880,31570560,315705600);
+	/**
+	 * List neares news action.
+	 * 
+	 * @return	void
+	 */
+	public function requestNearestAction()
+	{
+		$response = array();
 
-        for ($v = count($lngh) - 1; ($v >= 0) && (($no = $dif / $lngh[$v]) <= 1); $v--);
-          if ($v < 0)
-            $v = 0;
-        $_tm = $cur_tm - ($dif % $lngh[$v]);
+		try
+		{
+			$user_id = $this->_getParam('user_id');
 
-        $no = ($rcs ? floor($no) : round($no)); // if last denomination, round
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user id: ' . var_export($user_id, true), -1);
+			}
 
-        if ($no != 1)
-          $pds[$v] .= 's ago';
-        $x = $no . ' ' . $pds[$v];
+			$latitude = $this->_getParam('latitude');
 
-        if (($rcs > 0) && ($v >= 1))
-          $x .= ' ' . $this->time_ago($_tm, $rcs - 1);
+			if (My_Validate::emptyString($latitude))
+			{
+				throw new RuntimeException('Latitude cannot be blank', -1);
+			}
 
-        return $x;
-    }
+			if (!My_Validate::latitude($latitude))
+			{
+				throw new RuntimeException('Incorrect latitude value: ' . var_export($latitude, true), -1);
+			}
 
+			$longitude = $this->_getParam('longitude');
 
-    
-     /**
-      * Function to find news near current user based on user's lat lng '
-      * 
-      * @return returns success or failed with result data set (json encoded message).
-      */
-    public function requestNearestAction() {
-        $response  = new stdClass();
-        $commentTable = new Application_Model_Comments();
-        $userId    = $_REQUEST['userId'];
-        $latitude  = $_REQUEST['latitude'];
-        $longitude = $_REQUEST['longitude'];
-        $radious   = $_REQUEST['radious'];
-        $startPage = $_REQUEST['fromPage']; 
-        $endPage   = $_REQUEST['endPage'];
-        $searchTxt =''; 
-       
-        /* $userId    = 8; $latitude  = 28.449949482031496; $longitude = 77.49491019824222; $radious   = 1.1; $startPage = 0; $endPage   = 16;$searchTxt = ''; */
-        //$this->view->userImage = Application_Model_User::getImage($userId);
-        $newsFactory = new Application_Model_NewsFactory();
-        $votingTable = new Application_Model_Voting();
-        $commentTable = new Application_Model_Comments();
-        if ($radious) {
-             //$result = $this->findNearestPoint($latitude, $longitude, $radious, $searchTxt, null, $startPage, $endPage);
-             $result = $this->findNearestPoint($latitude, $longitude, $radious, $searchTxt, null, $startPage, $endPage);
-             foreach($result as $index=>$resultSet){
-                         $result[$index]['comment_count']  = $commentTable->getCommentCountOfNews($resultSet['id']);
-                         $result[$index]['created_date'] =   $this->time_ago_calculate($resultSet['created_date']);
-                         $result[$index]['distance_from_source'] =  $this->getPostDistance(trim($latitude),trim($longitude),trim($resultSet['latitude']),trim($resultSet['longitude']),"M");
-                         $result[$index]['isLikedByUser'] =   $votingTable->isNewsLikedByUser($resultSet['id'],$userId);
-                        // $result[$index]['isCommentByUser'] =   $commentTable->getCommentsByUser($resultSet['id'],$userId);
-             }
-             
-         } else {
-             //$result = $this->findNearestPoint($latitude, $longitude, 1, $searchTxt, null, $startPage, $endPage);
-             $result = $this->findNearestPoint($latitude, $longitude, 1, $searchTxt, null, $startPage, $endPage);
-             foreach($result as $index=>$resultSet){
-                         $result[$index]['comment_count']  = $commentTable->getCommentCountOfNews($resultSet['id']);
-                         $result[$index]['created_date'] =   $this->time_ago_calculate($resultSet['created_date']);
-                         $result[$index]['distance_from_source'] =   $this->getPostDistance(trim($latitude),trim($longitude),trim($resultSet['latitude']),trim($resultSet['longitude']),"M");
-                         $result[$index]['isLikedByUser'] =   $votingTable->isNewsLikedByUser($resultSet['id'],$userId);
-                       //  $result[$index]['isCommentByUser'] =   $commentTable->getCommentsByUser($resultSet['id'],$userId);
-              }
-            
-         }
-         
-        $response = new stdClass();
-        if(isset($result)){
-            $response->status ="SUCCESS";
-            $response->message = "Nearest point data rendered successfully";
-            $response->result = $result; 
-            echo(json_encode($response)); exit;
-         } else {
-            $response->status = "FAILED";
-            $response->message="Nearest point data could not be render successfully";
-            $response->result = $result; 
-            echo(json_encode($response)); exit;
-        }
-    }
-    
+			if (My_Validate::emptyString($longitude))
+			{
+				throw new RuntimeException('Longitude cannot be blank', -1);
+			}
 
-    /**
-     * Function to retreive individual user posts
-     * 
-     * *@return returns json encode response 
-     */
-  public function mypostsAction(){
-      $response   = new stdClass();
-      //echo "<pre>"; print_r($_REQUEST); exit;
-      $latitude   = $_REQUEST['latitude'];
-      $longitude  = $_REQUEST['longitude'];
-      $searchText = $_REQUEST['searchText'] ? $_REQUEST['searchText'] : null;
-      $radious    = trim($_REQUEST['radious']) ? trim($_REQUEST['radious']) : '0.8';
-      $fromPage   = $_REQUEST['fromPage'] ? $_REQUEST['fromPage'] : 0;
-      $toPage     = $_REQUEST['endPage'] ? $_REQUEST['endPage'] : 16;
-      $filter     = $_REQUEST['filter'];
-      $userId     = $_REQUEST['user_id'];  
-      
-      
-     /* $latitude   = 28.594908; $longitude = 77.320160; $searchText = ''; $radious    =  0.8;
-        $fromPage   = 0;$toPage     = 16;$filter = 'All'; $userId = 8; */
-      
-      $newsFactory = new Application_Model_NewsFactory();
-      $commentTable = new Application_Model_Comments();
-      $votingTable = new Application_Model_Voting();
-       if ($filter == 'All') {
-            // $toPage = 500;
-            //$result = $this->findSearchingNearestPoint($latitude, $longitude, $radious, $searchText, $userId, $fromPage, $toPage);
-              $result = $this->findNearestPoint($latitude, $longitude, $radious, $searchText, null, $fromPage, $toPage);
-              foreach($result as $index=>$resultSet){
-                         $result[$index]['comment_count']  = $commentTable->getCommentCountOfNews($resultSet['id']);
-                         $result[$index]['created_date'] =   $this->time_ago_calculate($resultSet['created_date']);
-                         $result[$index]['distance_from_source'] =   $this->getPostDistance(trim($latitude),trim($longitude),trim($resultSet['latitude']),trim($resultSet['longitude']),"M");
-                         $result[$index]['isLikedByUser'] =   $votingTable->isNewsLikedByUser($resultSet['id'],$userId);
-                       // $result[$index]['isCommentByUser'] =   $commentTable->getCommentsByUser($resultSet['id'],$userId);
-              }
-        } else { if ($filter == 'Interest') {
-                $interest = Application_Model_User::getUserInterest($userId);
-                $interest = explode(",", $interest);
-                $i = 0;
-                $where = '(';
-                foreach ($interest as $interestValue) {
-                    if (($i > 0) && (trim($where) != '('))
-                        $where .= ' or ';
+			if (!My_Validate::longitude($longitude))
+			{
+				throw new RuntimeException('Incorrect longitude value: ' . var_export($longitude, true), -1);
+			}
 
-                    if (trim($interestValue))
-                       $where .= ' t1.news like "%' . trim($interestValue) . '%"  ';
-                    $i++;
-                }
+			$radius = $this->_getParam('radious', 1);
 
-                if (trim($where) != '(')
-                    $where .= ')';
-                else
-                    $where = 'NULL';
+			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
+			{
+				throw new RuntimeException('Incorrect radius value: ' . var_export($radius, true), -1);
+			}
 
-                $response->interest = count($interest);
-                $result = $this->findSearchingInterest($latitude, $longitude, $radious, $where, $userId, $fromPage, $toPage);
-                    foreach($result as $index=>$resultSet){
-                         $result[$index]['comment_count']  = $commentTable->getCommentCountOfNews($resultSet['id']);
-                         $result[$index]['created_date'] =   $this->time_ago_calculate($resultSet['created_date']);
-                         $result[$index]['distance_from_source'] =   $this->getPostDistance(trim($latitude),trim($longitude),trim($resultSet['latitude']),trim($resultSet['longitude']),"M");
-                         $result[$index]['isLikedByUser'] =   $votingTable->isNewsLikedByUser($resultSet['id'],$userId);
-                       //  $result[$index]['isCommentByUser'] =   $commentTable->getCommentsByUser($resultSet['id'],$userId);
-                    }
-                $resultVote = $this->findNewsVoting($userId, 0, 1000);
-            } else if ($filter == 'Myconnection') {
-                $result = $this->findMyConnectionMessage($latitude, $longitude, $radious, $searchText, $userId, $fromPage, $toPage);
-                    foreach($result as $index=>$resultSet){
-                         $result[$index]['comment_count']  = $commentTable->getCommentCountOfNews($resultSet['id']);
-                         $result[$index]['created_date'] =   $this->time_ago_calculate($resultSet['created_date']);
-                         $result[$index]['distance_from_source'] =   $this->getPostDistance(trim($latitude),trim($longitude),trim($resultSet['latitude']),trim($resultSet['longitude']),"M");
-                         $result[$index]['isLikedByUser'] =   $votingTable->isNewsLikedByUser($resultSet['id'],$userId);
-                       //  $result[$index]['isCommentByUser'] =   $commentTable->getCommentsByUser($resultSet['id'],$userId);
-                    }
-                $resultVote = $this->findNewsVoting($userId, 0, 1000);
-            } else if ($filter == 'Friends') {
-                $result = $this->findSearchingMyFriends($latitude, $longitude, $radious, $searchText, $userId, $fromPage, $toPage);
-                    foreach($result as $index=>$resultSet){
-                         $result[$index]['comment_count']  = $commentTable->getCommentCountOfNews($resultSet['id']);
-                         $result[$index]['created_date'] =   $this->time_ago_calculate($resultSet['created_date']);
-                         $result[$index]['distance_from_source'] =   $this->getPostDistance(trim($latitude),trim($longitude),trim($resultSet['latitude']),trim($resultSet['longitude']),"M");
-                         $result[$index]['isLikedByUser'] =   $votingTable->isNewsLikedByUser($resultSet['id'],$userId);
-                       //  $result[$index]['isCommentByUser'] =   $commentTable->getCommentsByUser($resultSet['id'],$userId);
-                    }
-                $resultVote = $this->findNewsVoting($userId, 0, 1000);
-            } else {
-                $result = $this->findSearchingNearestPoint($latitude, $longitude, $radious, $searchText, $userId, $fromPage, $toPage);
-                    foreach($result as $index=>$resultSet){
-                         $result[$index]['comment_count']  = $commentTable->getCommentCountOfNews($resultSet['id']);
-                         $result[$index]['created_date'] =   $this->time_ago_calculate($resultSet['created_date']);
-                         $result[$index]['distance_from_source'] =   $this->getPostDistance(trim($latitude),trim($longitude),trim($resultSet['latitude']),trim($resultSet['longitude']),"M");
-                         $result[$index]['isLikedByUser'] =   $votingTable->isNewsLikedByUser($resultSet['id'],$userId);
-                       //   $result[$index]['isCommentByUser'] =   $commentTable->getCommentsByUser($resultSet['id'],$userId);
-                    }
-                $resultVote = $this->findNewsVoting($userId , 0, 1000);
-            }
-        }
-        
-         if(isset($result)){
-              $response->status ="SUCCESS";
-              $response->message = "Posts rendred successfully";
-              $response->result = $result;
-              echo(json_encode($response)); exit;
-         } else {
-               $response->status ="FAILED";  
-               $response->message = "Posts rendring failed";
-               $response->result = $result; 
-              echo(json_encode($response)); exit;
-         }
-    }
-    
+			$fromPage = $this->_getParam('fromPage', 0);
+
+			if (!My_Validate::digit($fromPage) || $fromPage < 0)
+			{
+				throw new RuntimeException('Incorrect fromPage value: ' . var_export($fromPage, true), -1);
+			}
+
+			$newsTable = new Application_Model_News;
+
+			$result = $newsTable->findByLocation($latitude, $longitude, $radius, 15, $fromPage);
+
+			if (count($result))
+			{
+				$commentTable = new Application_Model_Comments;
+				$votingTable = new Application_Model_Voting;
+
+				$result = $result->toArray();
+
+				foreach ($result as &$row)
+				{
+					$row['created_date'] = My_Time::time_ago($row['created_date']);
+					$row['comment_count'] = $commentTable->getCommentCountOfNews($row['id']);
+					$row['isLikedByUser'] = $votingTable->isNewsLikedByUser($row['id'], $user->id) ? 'Yes' : 'No';
+				}
+
+				$response['result'] = $result;
+			}
+
+			$response['status'] = 'SUCCESS';
+			$response['message'] = 'Nearest point data rendered successfully';
+		}
+		catch (Exception $e)
+		{
+			$response['status'] = 'FAILED';
+			$response['message'] = 'Nearest point data could not be render successfully';
+
+			// TODO: remove
+			$response['result'] = null;
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+	}
+
+	/**
+	 * List user posts action.
+	 *
+	 * @return	void
+	 */
+	public function mypostsAction()
+	{
+		$response = array();
+
+		try
+		{
+			$user_id = $this->_getParam('user_id');
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user id: ' . var_export($user_id, true), -1);
+			}
+
+			$latitude = $this->_getParam('latitude');
+
+			if (My_Validate::emptyString($latitude))
+			{
+				throw new RuntimeException('Latitude cannot be blank', -1);
+			}
+
+			if (!My_Validate::latitude($latitude))
+			{
+				throw new RuntimeException('Incorrect latitude value: ' . var_export($latitude, true), -1);
+			}
+
+			$longitude = $this->_getParam('longitude');
+
+			if (My_Validate::emptyString($longitude))
+			{
+				throw new RuntimeException('Longitude cannot be blank', -1);
+			}
+
+			if (!My_Validate::longitude($longitude))
+			{
+				throw new RuntimeException('Incorrect longitude value: ' . var_export($longitude, true), -1);
+			}
+
+			$radius = $this->_getParam('radious', 0.8);
+
+			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
+			{
+				throw new RuntimeException('Incorrect radius value: ' . var_export($radius, true), -1);
+			}
+
+			$fromPage = $this->_getParam('fromPage', 0);
+
+			if (!My_Validate::digit($fromPage) || $fromPage < 0)
+			{
+				throw new RuntimeException('Incorrect fromPage value: ' . var_export($fromPage, true), -1);
+			}
+
+			$newsTable = new Application_Model_News;
+			$select = $newsTable->select();
+
+			$keywords = $this->_getParam('searchText');
+
+			if (!My_Validate::emptyString($keywords))
+			{
+				$select->where('news LIKE ?', $keywords . '%');
+			}
+
+			$filter = $this->_getParam('filter');
+
+			switch ($filter)
+			{
+				case 'Interest':
+					$interests = $user->parseInterests();
+					$response['interest'] = count($interests);
+					$result = $newsTable->findByLocationAndInterests($latitude, $longitude, $radius, 15, $fromPage, $interests, $select);
+					break;
+				case 'Myconnection':
+					$result = $newsTable->findByLocationAndUser($latitude, $longitude, $radius, 15, $fromPage, $user, $select);
+					break;
+				case 'Friends':
+					$result = $newsTable->findByLocationInFriends($latitude, $longitude, $radius, 15, $fromPage, $user, $select);
+					break;
+				case 'All':
+				case null:
+					$result = $newsTable->findByLocation($latitude, $longitude, $radius, 15, $fromPage, $select);
+					break;
+				default:
+					throw new RuntimeException('Incorrect filter value: ' . var_export($filter, true), -1);
+			}
+
+			if (count($result))
+			{
+				$commentTable = new Application_Model_Comments;
+				$votingTable = new Application_Model_Voting;
+
+				$result = $result->toArray();
+
+				foreach ($result as &$row)
+				{
+					$row['created_date'] = My_Time::time_ago($row['created_date']);
+					$row['comment_count'] = $commentTable->getCommentCountOfNews($row['id']);
+					$row['isLikedByUser'] = $votingTable->isNewsLikedByUser($row['id'], $user->id) ? 'Yes' : 'No';
+				}
+
+				$response['result'] = $result;
+			}
+			else
+			{
+				// TODO: remove
+				$response['result'] = null;
+			}
+
+			$response['status'] = 'SUCCESS';
+			$response['message'] = 'Posts rendred successfully';
+		}
+		catch (Exception $e)
+		{
+			$response['status'] = 'FAILED';
+			$response['message'] = 'Posts rendring failed';
+
+			// TODO: remove
+			$response['result'] = null;
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+	}
+
     /**
      * Function to retreive total comments posted on a news
      * 
@@ -951,242 +968,6 @@ class MobileController extends Zend_Controller_Action
              $response->resonfailed = 'Sorry unable to vote';
              echo(json_encode($response)); exit; 
         } 
-    }
-    
-    
-    /**
-      * Function to call stored procedure to find nearest point based on user's lat,lng
-      * 
-      * @return returns resuls set data based on user's lat lng.
-      */
-    public function findNearestPoint($latitude, $longitude, $radious, $text, $only = null, $startPage = 0, $endPage = 16) {
-        try {
-            $db = Zend_Registry::getInstance()->get('db');
-            if ($only) {
-                $query = "CALL eventsnear_updated(" . $latitude . "," . $longitude . "," . $radious . ",'" . $text . "'," . $only . "," . $startPage . "," . $endPage . ")";
-            } else {
-                $query = "CALL eventsnear_updated(" . $latitude . "," . $longitude . "," . $radious . ",'" . $text . "',null," . $startPage . "," . $endPage . ")";
-            }
-            $stmt = $db->query($query, array(1));
-            $returnArray = $stmt->fetchAll();
-            $stmt->closeCursor();
-            return($returnArray);
-       
-        } catch (Exception $e) {
-            print_r($e->getMessage());
-            exit;
-        }
-     }
-     
-    /**
-     * Function to find nearest point
-     * 
-     * *@return returns json encode response 
-     */
-     public function findSearchingNearestPoint($latitude, $longitude, $radious, $searchText, $userId, $startPage = 0, $endPage = 16) {  
-        try {
-            $db = Zend_Registry::getInstance()->get('db');
-            $db->beginTransaction();
-              $query = "CALL searcheventsnear_updated(" . $latitude . "," . $longitude . "," . $radious . ",'" . $searchText . "','" . $userId . "'," . $startPage . "," . $endPage . ")";
-              //echo $query; exit;
-              $stmt = $db->query($query, array(1));
-              $returnArray = $stmt->fetchAll();
-              $stmt->closeCursor();
-              if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                $db->closeConnection();
-              }
-            return($returnArray);
-         } catch (Exception $e) {
-             print_r($e->getMessage());
-            exit;
-        }
-    }
-    
-    
-    /**
-     *  function for getting number of votes hits recieved by a particulaer news or post.
-     * *@coded by: D
-     * *@created:20-09-2013
-     */
-   function findNewsVoting($user_id, $startPage = 0, $endPage = 10000) {
-      try {
-            $db = Zend_Registry::getInstance()->get('db');
-            if ($user_id) {
-                $query = "CALL votingcount(" . $user_id . "," . $startPage . "," . $endPage . ")";
-            } else {
-                $query = "CALL votingcount(" . $user_id . "," . $startPage . "," . $endPage . ")";
-            }
-
-            $stmt = $db->query($query, array(1));
-            $returnArray = $stmt->fetchAll();
-            $stmt->closeCursor();
-            return($returnArray);
-        } catch (Exception $e) {
-            print_r($e->getMessage());
-            exit;
-        }
-    }
-    
-    /**
-     * Function to find friends of user
-     * 
-     * *@return returns json encode response 
-     */
-    function findSearchingMyFriends($latitude, $longitude, $radious, $searchText, $userId, $startPage = 0, $endPage = 16) {
-      
-        try {
-            $tableFriends = new Application_Model_Friends();
-            $friendsList = $tableFriends->getTotalFriends($userId);
-            $in = 'NULL';
-            if ($friendsList) {
-                foreach ($friendsList as $index => $list) {
-                    if ($index == 0) {
-                        $in = $list->id;
-                        if ($in == '') {
-                            $in = 0;
-                        }
-                     } else {
-                        $in .= "," . $list->id;
-                    }
-                }
-            }
-            
-            if ($searchText == '') {
-                $searchText = 'NULL';
-            }
-        
-            $db = Zend_Registry::getInstance()->get('db');
-            $db->beginTransaction();
-           
-
-           /* if ($searchText == 'NULL' || $searchText == 'null') {
-                 $query = "CALL searchfriendsnews_updated(" . $latitude . "," . $longitude . "," . $radious . ",null,'" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-               
-             } else {
-                 $query = "CALL searchfriendsnews_updated(" . $latitude . "," . $longitude . "," . $radious . ",'" . $searchText . "','" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-               
-                 
-            } */
-
-
-
-            if ($searchText == 'NULL' || $searchText == 'null') {
-                 $query = "CALL searchfriendsnews_updated(" . $latitude . "," . $longitude . "," . $radious . ",null,'" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-                 //$query = "CALL searchfriendsnews_1(" . $latitude . "," . $longitude . "," . $radious . ",null,'" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-             } else {
-                 $query = "CALL searchfriendsnews_updated(" . $latitude . "," . $longitude . "," . $radious . ",'" . $searchText . "','" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-                 //$query = "CALL searchfriendsnews_1(" . $latitude . "," . $longitude . "," . $radious . ",'" . $searchText . "','" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-                 
-            }
-
-
-
-
-            $stmt = $db->query($query, array(1));
-            $returnArray = $stmt->fetchAll();
-            $stmt->closeCursor();
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                $db->closeConnection();
-            }
-            return($returnArray);
-        } catch (Exception $e) {
-            print_r($e->getMessage());
-            exit;
-        }
-    }
-    
-
-
-
-    /**
-     * Function to find friends of user
-     * 
-     * *@return returns json encode response 
-     */
-    function findMyConnectionMessage($latitude, $longitude, $radious, $searchText, $userId, $startPage = 0, $endPage = 16) {
-        try {
-            $in = $userId;
-            if ($searchText == '') {
-                $searchText = 'NULL';
-            }
-        
-            $db = Zend_Registry::getInstance()->get('db');
-            $db->beginTransaction();
-          
-            if ($searchText == 'NULL' || $searchText == 'null') {
-                 $query = "CALL searchfriendsnews_updated(" . $latitude . "," . $longitude . "," . $radious . ",null,'" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-                 //$query = "CALL searchfriendsnews_1(" . $latitude . "," . $longitude . "," . $radious . ",null,'" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-             } else {
-                 $query = "CALL searchfriendsnews_updated(" . $latitude . "," . $longitude . "," . $radious . ",'" . $searchText . "','" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-                 //$query = "CALL searchfriendsnews_1(" . $latitude . "," . $longitude . "," . $radious . ",'" . $searchText . "','" . $userId . "','" . $in . "'," . $startPage . "," . $endPage . ")";
-                 
-            }
-
-
-            $stmt = $db->query($query, array(1));
-            $returnArray = $stmt->fetchAll();
-            $stmt->closeCursor();
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                $db->closeConnection();
-            }
-            return($returnArray);
-        } catch (Exception $e) {
-            print_r($e->getMessage());
-            exit;
-        }
-    }
-
-
-    /**
-     * Function to find interest  of  a user
-     * 
-     * *@return returns json encode response 
-     */
-    public function findSearchingInterest($latitude, $longitude, $radious, $searchText, $userId, $startPage = 0, $endPage = 16) {
-        try {
-             $db = Zend_Registry::getInstance()->get('db');
-             $db->beginTransaction();
-             $query = "CALL searchinterestsnear_updated(" . $latitude . "," . $longitude . "," . $radious . ",'" . $searchText . "','" . $userId . "'," . $startPage . "," . $endPage . ")"; //echo $query;
-             $stmt = $db->query($query, array(1));
-             $returnArray = $stmt->fetchAll();
-             $stmt->closeCursor();
-
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-              $db->closeConnection();
-            }
-
-            return($returnArray);
-        } catch (Exception $e) {
-            print_r($e->getMessage());
-            exit;
-        }
-    }
-
-    /**
-     * Function get distance of post from logined user location
-     * 
-     * *@return Distance between two LatLng
-     *  @param int $latitudeFrom   Source latitude of logined user
-     *  @param int $longitudeFrom  Source longitude of logined user
-     *  @param int $latitudeTo     Post latitude of any user within defined circle
-     *  @param int $longitudeTo    Post longitudeTo of any user within defined circle
-     *  @return distance between two lat lng
-     */
-    function getPostDistance($lat1, $lon1, $lat2, $lon2, $unit) {
-        $theta = $lon1 - $lon2;
-        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
-        $dist = acos($dist);
-        $dist = rad2deg($dist);
-        $miles = $dist * 60 * 1.1515;
-        $unit = strtoupper($unit);
-
-        if ($unit == "K") {
-          return ($miles * 1.609344);
-        } else if ($unit == "N") {
-            return ($miles * 0.8684);
-          } else {
-              return $miles;
-            }
     }
 
 	/**

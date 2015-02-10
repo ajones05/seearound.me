@@ -9,7 +9,7 @@
     //Next page
         ?>
         <!--<div class="row show-grid">
-		<div class="postClass" align='center' onclick="paging(<?=$this->pageNumber?>,'<?=$this->filter?>')">
+		<div class="postClass" align='center' onclick="showResult(<?=$this->pageNumber?>,'<?=$this->filter?>')">
 			Older Posts
 		</div>
 	</div>-->
@@ -17,9 +17,9 @@
   <div class="row show-grid">
     
        <div id="pagingDiv" class="pagination"></div>
-        <!--<div class="postClass" align='center' onclick="paging(<?=$this->pageNumber?>,'<?=$this->filter?>')">-->
+        <!--<div class="postClass" align='center' onclick="showResult(<?=$this->pageNumber?>,'<?=$this->filter?>')">-->
         
-        <div class="postClass" align='center' onclick="paging(<?=$this->pageNumber?>,'ALL')"> 
+        <div class="postClass" align='center' onclick="showResult(<?=$this->pageNumber?>,'ALL')"> 
 	    <b style="margin-left:-119px;">	Older Posts </b>
         </div>
         

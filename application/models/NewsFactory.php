@@ -344,23 +344,6 @@ class Application_Model_NewsFactory {
         imagedestroy( $thumbnail_gd_image );
     }
 
-
-    public function userCircle($latitude,$longitude){
-        try {
-            $db = Zend_Registry::getInstance()->get('db');
-            $db->beginTransaction();
-            $query = "CALL eventsnear(".$latitude.",".$longitude.",1)";
-            $stmt = $db->query($query); 
-            $userCircle = $stmt->fetchAll();
-            $stmt->closeCursor();
-            $db->closeConnection();
-        } catch(Exception $e) {
-            $userCircle = '';
-            print_r($e->getMessage());
-        }
-        return $userCircle;
-    }
-
     public function userlatlong($userId){
         $user = new Application_Model_User();
         $select = $user->select()->setIntegrityCheck(false)
@@ -681,42 +664,36 @@ class Application_Model_NewsFactory {
         return $row->id; 
     }
 
-    function getCommentByNewsId($newsId)
-    {
-
-        $newsFactory = new Application_Model_NewsFactory();
-        $commenttotal = $newsFactory->countComments($newsId);
-        $commentCount = $commenttotal-2;
-
+	/**
+	 *
+	 *
+	 * @param	integer	$news_id
+	 * @param	integer	$total
+	 *
+	 * @return	array
+	 */
+	public function getCommentByNewsId($news_id, $total)
+	{
         $commentTable = new Application_Model_Comments();
-        $sel = $commentTable->select()->setIntegrityCheck(false)
-                ->from('comments', array('*'))
-                ->join('user_data','user_data.id = comments.user_id',array('user_name' =>'user_data.Name','Profile_image'))
-                ->where('comments.news_id = ?', $newsId)
-                ->where('comments.isdeleted = ?', '0')
-                ->order('comments.created_at');
-        if($commenttotal > 2)
-                $sel->limit(2, $commentCount);
-                $fetch = $commentTable->fetchAll($sel);
 
-        $commArray = array();
-        if(count($fetch)) {
-                $i = 0;
-                foreach($fetch as $row) {
-                        $commArray[$i]['id'] 		= $row['id'];
-                        $commArray[$i]['news_id'] 	= $row['news_id'];
-                        $commArray[$i]['comment'] 	= $row['comment'];
-                        $commArray[$i]['user_name']	= $row['user_name'];
-                        $commArray[$i]['user_id']	= $row['user_id'];
-                        $commArray[$i]['Profile_image'] = $row['Profile_image'];
-                        $commArray[$i]['commTime']	= $row['created_at'];//$newsFactory->calculate_time($row['created_at']);
-                        $i++;
-                }
-        }
-        return $commArray;
+        $select = $commentTable->select()
+				->setIntegrityCheck(false)
+                ->from('comments', 'comments.*')
+                ->where('comments.news_id = ?', $news_id)
+                ->where('comments.isdeleted = ?', '0')
+				->joinLeft('user_data', 'comments.user_id = user_data.id', '')
+				->where('user_data.id IS NOT NULL')
+                ->order('comments.created_at');
+
+        if ($total > 2)
+		{
+			$select->limit(2, $total - 2);
+		}
+
+        return $commentTable->fetchAll($select);
     }
 
-    function viewTotalComments($newsId, $offsetValue,$userId=null){
+    function viewTotalComments($newsId, $offsetValue = null,$userId=null){
         
         $newsFactory = new Application_Model_NewsFactory();
         $commentTable = new Application_Model_Comments();
