@@ -17,7 +17,7 @@ $http_host = json_encode(Zend_Controller_Front::getInstance()->getRequest()->get
 
 $this->headScript()->appendScript(<<<JAVASCRIPT
 	var http_host = {$http_host},
-	var facebook_appId = {$config->facebook->appId};
+		facebook_appId = {$config->facebook->appId};
 
 JAVASCRIPT
 , 'text/javascript');
@@ -38,6 +38,7 @@ JAVASCRIPT
 
 
         <title>seearound.me</title>
+		<?php echo $this->headScript(); ?>
 
 
         <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/colorbox.css"/>
