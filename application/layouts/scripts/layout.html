@@ -116,9 +116,13 @@ JAVASCRIPT
 			}
 		});
 
-		$(".menu dd ul li a").click(function(){
-			var text = $(this).html();
-			$(this).closest('dl').find('.result').html(text);
+		$(".menu dd ul li a").click(function(e){
+			e.preventDefault();
+			$('#filter_type').val($(this).prop("hash").substring(1));
+			globalStart = 0;
+			getAllNearestPoint();
+
+			$(this).closest('dl').find('.result').html($(this).html());
 			$(".menu dd ul").hide();
 		});
 
@@ -126,35 +130,6 @@ JAVASCRIPT
 			if (e.keyCode == 13){
 				searchLatest(); 
 			} 
-		});
-
-		// TODO: remove
-		$('#filter_all').click(function(e){
-			e.preventDefault();
-			$('#filter_type').val('').change();
-		});
-
-		// TODO: remove
-		$('#filter_my').click(function(e){
-			e.preventDefault();
-			$('#filter_type').val('Myconnection').change();
-		});
-
-		// TODO: remove
-		$('#filter_interests').click(function(e){
-			e.preventDefault();
-			$('#filter_type').val('Interest').change();
-		});
-
-		// TODO: remove
-		$('#filter_friends').click(function(e){
-			e.preventDefault();
-			$('#filter_type').val('Friends').change();
-		});
-
-		$('#filter_type').change(function(){
-			globalStart = 0;
-			getAllNearestPoint();
 		});
 	});
 	</script>
@@ -273,16 +248,16 @@ JAVASCRIPT
                        <dd style="margin-left:0px;">
                            <ul style="display: none;z-index:99999;" id="ulglobal" >
                                <li><a id="filter_all" href="#"><b>View All</b></a></li>
-                               <li><a id="filter_my" href="#" ><b>Mine Only</b></a></li> 
-                               <li><a id="filter_interests" href="#"><b>My Interests</b></a></li>
-                              <li><a id="filter_friends" href="#"><b>Friends</b></a></li>
+                               <li><a id="filter_my" href="#Myconnection"><b>Mine Only</b></a></li> 
+                               <li><a id="filter_interests" href="#Interest"><b>My Interests</b></a></li>
+                              <li><a id="filter_friends" href="#Friends"><b>Friends</b></a></li>
                            </ul>
                        </dd>
                        
     			    </dl>
     			</div>
 		  </div>
-			<select name="type" id="filter_type">
+			<select class="hide" name="type" id="filter_type">
 				<option value="">View All</option>
 				<option value="Myconnection">Mine Only</option>
 				<option value="Interest">My Interests</option>
