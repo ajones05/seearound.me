@@ -120,6 +120,20 @@ JAVASCRIPT
 				searchLatest(); 
 			} 
 		});
+		
+		$(window).resize(function(){
+			var height, windowHeight = $(window).height();
+				
+			if (windowHeight > 770){
+				height = 500;
+			} else if (windowHeight > 450) {
+				height = windowHeight - 276;
+			} else {
+				height = 150;
+			}
+
+			$('#map_canvas').height(height);
+		}).resize();
 	});
 	</script>
 </head>
@@ -220,7 +234,7 @@ JAVASCRIPT
                <?if(!isset($this->homePageExist)) { ?>
                   <div id="mapDiv" class="rightCol textAlignCenter eqlCH" style="">                
                <? } else { ?>
-                  <div id="mapDiv" class="rightColUpdated textAlignCenter eqlCH" style="margin-left: 0px;">                
+                  <div id="mapDiv" class="rightColUpdated textAlignCenter" style="margin-left: 0px;">                
             <? } ?>
               
           <?php if(!isset($this->friendListExist) && !isset($this->myprofileExist) && !isset($this->newsDetailExist) && !isset($this->message)  && !isset($this->myeditprofileExist)) { ?>
