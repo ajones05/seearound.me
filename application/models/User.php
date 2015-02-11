@@ -40,7 +40,7 @@ class Application_Model_UserRow extends My_Db_Table_Row_Abstract
 	 */
 	public function getProfileImage($default)
 	{
-		if (trim($this->Profile_image !== ''))
+		if (trim($this->Profile_image) !== '')
 		{
 			if (strpos($this->Profile_image, '://'))
 			{
