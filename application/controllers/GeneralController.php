@@ -87,7 +87,7 @@ class GeneralController extends  My_Controller_Action_Abstract
     public function inviteSelfAction()
 
     {   
-
+		$config = Zend_Registry::get('config_global');
         $emailInvites  = new Application_Model_Emailinvites();
 
         $emailToInvite = $emailInvites->returnEmailInvites();
@@ -100,15 +100,15 @@ class GeneralController extends  My_Controller_Action_Abstract
 
                 $this->to = $row->self_email;
 
-                $this->subject = "Here Spy Invitation";
+                $this->subject = "seearound.me Invitation";
 
-                $this->from = 'admin@herespy.com:Admin';
+                $this->from = $config->email->from_email . ':' . $config->email->from_name;
 
                 $this->view->name = $row->self_email;
 
                 
 
-                $message = "To join Here-Spy, please click the link below!<br />".$url;
+                $message = "To join seearound.me, please click the link below!<br />".$url;
 
 
 
@@ -116,7 +116,7 @@ class GeneralController extends  My_Controller_Action_Abstract
 
                 $this->view->adminName = "Admin";
 
-                $this->view->response = "Here Spy";
+                $this->view->response = "seearound.me";
 
                 $this->message = $this->view->action("index","general",array());
 

@@ -131,7 +131,7 @@ class InfoController extends My_Controller_Action_Abstract
                 $this->view->name = $this->auth['user_name'];
                 $this->view->message = "<p align='justify'>$message</p>";
                 $this->view->adminName = "Admin";
-                $this->view->response = "Here Spy";
+                $this->view->response = "seearound.me";
                 $this->message = $this->view->action("index","general",array());
                 $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
                 $response->success = "done";
@@ -166,10 +166,9 @@ class InfoController extends My_Controller_Action_Abstract
                 $this->from = $this->auth['user_email'];
                 $this->subject = "News invitation";
                 $this->view->name = "User";
-                //$this->view->message = "<p align='justify'> $this->name has send you a share link from here-spy $message</p>"; // changes requested by client on the date 7-10-2013
                 $this->view->message = "<p align='justify'> $this->name shared a local update with you -- you can see the post details and location here $message</p>";
                 $this->view->adminName = "Admin";
-                $this->view->response = "Here Spy";
+                $this->view->response = "seearound.me";
                 $this->message = $this->view->action("index","general",array());
                 $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
                 $response->success = "done";

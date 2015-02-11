@@ -22,9 +22,11 @@ abstract class My_Controller_Action_Abstract extends Zend_Controller_Action {
     
     public function _init() 
     {
-        $this->to = "admin@herespy.com";
-        $this->from = "Admin";
-        $this->subject = "Here spy admin";
+		$config = Zend_Registry::get('config_global');
+
+        $this->to = $config->email->from_email;
+        $this->from = $config->email->from_name;
+        $this->subject = "seearound.me";
         $this->message = "";
         $this->attachments = null;
     }

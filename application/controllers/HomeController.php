@@ -508,7 +508,7 @@ class HomeController extends My_Controller_Action_Herespy {
             //$newsRow = $newsTable->getNewsWithDetails($newsId);
             $url = BASE_PATH . "info/news/nwid/" . $newsId;
             $this->from = $this->auth['user_email'] . ':' . $this->auth['user_name'];
-            $this->subject = "Herespy comment on your post";
+            $this->subject = "seearound.me comment on your post";
             $message = $this->auth['user_name'] . " has commented on your post.<br><br>";
             if (strlen($comments) > 100) {
                 $message .= nl2br(htmlspecialchars(substr($comments, 0, 100)));
@@ -520,7 +520,7 @@ class HomeController extends My_Controller_Action_Herespy {
             $this->view->message = "<p align='justify'>$message</p>";
             $this->view->adminPart = "no";
             $this->view->adminName = "Admin";
-            $this->view->response = "Here Spy";
+            $this->view->response = "seearound.me";
             $userArray = array();
             foreach ($commentRows as $row) {
                 if ($row->user_id != $newsRow->user_id && $row->user_id != $userId) {

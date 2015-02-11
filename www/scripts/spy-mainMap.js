@@ -1494,7 +1494,7 @@ MainMap.prototype.addressWindow = function(address){
         parent.children("div").eq(0).children("div").eq(0).css({"border-top-color": "#fff"});
         parent.children("div").eq(0).children("div").eq(2).children("div").eq(0).children("div").eq(0).css({"box-shadow": "none"});
         parent.children("div").eq(0).children("div").eq(2).children("div").eq(1).children("div").eq(0).css({"box-shadow": "none"});
-        parent.children("div").eq(2).children("img").attr("src", "http://herespy.com/www/images/iw_close.gif");
+        parent.children("div").eq(2).children("img").attr("src", "/www/images/iw_close.gif");
         parent.children("div").eq(2).children("img").css({"position": "absolute","left": "2px","top": "0px","width": "11px","height": "11px"});
     }, 2500);
 };

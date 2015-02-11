@@ -4,7 +4,7 @@
             <?php if(isset($this->auth['pro_image'])) { ?>
              <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" />
            <?php } else { ?>
-             <img src="http://www.herespy.com//www/images/img-prof40x40.jpg" class="smallImage" />
+             <img src="/www/images/img-prof40x40.jpg" class="smallImage" />
            <?php } ?>
        </a>
        <a class="user-name" title="<?php echo $this->auth["user_name"]; ?>" href="<?=BASE_PATH?>home/profile"><?php echo My_StringHelper::stringLimit($this->auth["user_name"], 10, '...'); ?></a>

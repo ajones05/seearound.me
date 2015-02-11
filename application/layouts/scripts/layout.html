@@ -1,4 +1,5 @@
 <?php
+$config = Zend_Registry::get('config_global');
 $geoip = My_Ip::getCity();
 
 if ($geoip && isset($geoip->location->latitude) && isset($geoip->location->longitude))
@@ -11,12 +12,21 @@ else
 	$geoip_lat = 0;
 	$geoip_lng = 0;
 }
+
+$http_host = json_encode(Zend_Controller_Front::getInstance()->getRequest()->getHttpHost());
+
+$this->headScript()->appendScript(<<<JAVASCRIPT
+	var http_host = {$http_host},
+	var facebook_appId = {$config->facebook->appId};
+
+JAVASCRIPT
+, 'text/javascript');
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>Here Spy</title>
+	<title>seearound.me</title>
 	<?php echo $this->headScript(); ?>
 
 	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/colorbox.css"/>
@@ -197,7 +207,7 @@ else
                              <?php  if(isset($this->auth['pro_image'])) { ?>
                                <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="imgProf_Header" style="margin-top:-8px;"/>
                               <?php } else { ?>
-                               <img src="http://www.herespy.com//www/images/img-prof40x40.jpg" class="imgProf_Header" style="margin-top:-3px;"/>
+                               <img src="/www/images/img-prof40x40.jpg" class="imgProf_Header" style="margin-top:-3px;"/>
                               <?php } ?>
                               <span style="color:#5d5d5d;">My Profile</span> 
                             </a>

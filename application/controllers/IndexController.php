@@ -23,6 +23,7 @@ class IndexController extends My_Controller_Action_Abstract {
 
 
     public function indexAction() {
+		$config = Zend_Registry::get('config_global');
 		$bootstrap = $this->getInvokeArg('bootstrap');
 		$userAgent = $bootstrap->getResource('useragent');
 		$userAgent->getDevice();
@@ -95,7 +96,7 @@ class IndexController extends My_Controller_Action_Abstract {
 
                     $this->subject = "SeeAround.me Registration";
 
-                    $this->from = 'admin@herespy.com:Admin';
+                    $this->from = $config->email->from_email . ':' . $config->email->from_name;
 
                     $firstLoginResponseData = $this->firstLoginAction($data);
 
@@ -181,6 +182,7 @@ class IndexController extends My_Controller_Action_Abstract {
     
     
   public function wsRegistrationAction() {
+	  $config = Zend_Registry::get('config_global');
         $response = new stdClass();
         $request  = $this->getRequest();
         $userTable    = new Application_Model_User();
@@ -211,34 +213,11 @@ class IndexController extends My_Controller_Action_Abstract {
                  $emailAlreadyExist->result = "No Result";
                  echo(json_encode($emailAlreadyExist)); exit;
          }
-        /* $data = array();   
-            $data['Name'] = $this->_request->getParam('Name');
-            $data['Email_id'] = $this->_request->getParam('Email_id');
-            $data['Password'] = md5($this->_request->getParam('Password'));
-            $data['Location'] = $this->_request->getParam('Location');
-            $data['address'] = $this->_request->getParam('address');
-            $data['latitude'] = $this->_request->getParam('latitude');
-            $data['longitude'] = $this->_request->getParam('longitude');
-            $data['Conf_code'] = '';
-            $data['regType'] = 'herespy';
-            $data['Status'] = 'active'; */
-         
-        /*   $data = array();   
-            $data['Name'] = 'Sakshi';
-            $data['Email_id'] = 'sakshi@gmail.com';
-            $data['Password'] = md5(123);
-            $data['Location'] = 'Greater Noida UP';
-            $data['address'] = 'Gretaer Noida UP';
-            $data['latitude'] = 28.4654539;
-            $data['longitude'] = 77.51101930000004;
-            $data['Conf_code'] = '';
-            $data['regType'] = 'herespy';
-            $data['Status'] = 'active'; */
-        
+
           if($row = $newsFactory->mobileRegistration($data)){
                $this->to      = $row->Email_id;
-               $this->subject = "Here Spy new Registration";
-               $this->from    = 'admin@herespy.com:Admin';  
+               $this->subject = "seearound.me new Registration";
+               $this->from = $config->email->from_email . ':' . $config->email->from_name;
                $this->message = 'Thank you for registring with us.';
                $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
           
@@ -869,6 +848,7 @@ public function wsfbLoginAction(){
     public function resendAction() 
 
     {
+		$config = Zend_Registry::get('config_global');
 
         if($this->getRequest()->isPost()) {
 
@@ -888,9 +868,9 @@ public function wsfbLoginAction(){
 
                     $this->subject = "Re-send activation link";
 
-                    $this->from = 'admin@herespy.com';
+                    $this->from = $config->email->from_email . ':' . $config->email->from_name;
 
-                    $message = "Hi ".$row['Name']."\n\n\n\n Your new activation link is : <a href='$url'>$url</a>\n\n\n\n Admin\nwww.herespy.com";
+                    $message = "Hi ".$row['Name']."\n\n\n\n Your new activation link is : <a href='$url'>$url</a>\n\n\n\n Admin\nwww.seearound.me";
 
                     $this->view->name = $row->Name;
 
@@ -898,7 +878,7 @@ public function wsfbLoginAction(){
 
                     $this->view->adminName = "Admin";
 
-                    $this->view->response = "Here Spy";
+                    $this->view->response = "seearound.me";
 
                     $this->message = $this->view->action("index","general",array());
 
@@ -927,6 +907,7 @@ public function wsfbLoginAction(){
     public function forgotAction()
 
     {
+		$config = Zend_Registry::get('config_global');
 
         $this->view->layout()->setLayout('login');
 
@@ -948,7 +929,7 @@ public function wsfbLoginAction(){
 
                     $this->to   = $row->Email_id;
 
-                    $this->from = "admin@herespy.com";
+                    $this->from = $config->email->from_email . ':' . $config->email->from_name;
 
                     $this->view->forgot_url  = BASE_PATH."index/change-password/pc/yes/em/".urlencode($row->Email_id)."/cd/".urlencode($row->Conf_code);
 
@@ -958,7 +939,7 @@ public function wsfbLoginAction(){
 
                     $this->view->adminName = "Admin";
 
-                    $this->view->response  = "Here Spy";
+                    $this->view->response  = "seearound.me";
 
                     $this->message         = $this->view->action("forgot-password", "general", array());
 

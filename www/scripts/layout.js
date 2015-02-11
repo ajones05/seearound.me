@@ -102,36 +102,12 @@ function closeThisPopup() {
 
 } 
 
-
-
-//240262376048264 167670853347100
-
-var applicationId; 
-
-if(location.host == "localhost") {
-
-    applicationId = 167670853347100;
-
-}else if((location.host == "herespy.com")) {
-
-    applicationId = 241662299268537;
-
-}else if((location.host == "www.herespy.com")) {
-
-    applicationId = 240262376048264;
-
-}else {
-
-    applicationId = 226375340796505;
-
-} 
-
 $(document).ready(function () {
 
     window.fbAsyncInit = function () {
 
         FB.init({
-            appId: applicationId, 
+            appId: facebook_appId, 
             status: true, 
             cookie: true,
 
@@ -225,7 +201,7 @@ function fbLogout(url) {
     if(isFbLogin){
 
         FB.init({
-            appId: applicationId, 
+            appId: facebook_appId, 
             status: true, 
             cookie: true, 
             xfbml: true

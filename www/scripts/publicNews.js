@@ -7,7 +7,7 @@ function newsMap(lat, lng, data) {
      if(data){
         profileImage = data.image;
      } else {
-        profileImage = 'http://www.herespy.com/www/images/img-prof40x40.jpg';
+        profileImage = '/www/images/img-prof40x40.jpg';
      }
      commonMap = new MainMap ({
          mapElement : document.getElementById('map_canvas'),
@@ -260,25 +260,6 @@ function openImage(imageName, w, h) {
 
 var reurl = window.location.href;
 
-/* function fbshare() {     
-
-    var newsVal = $('#newsDataDiv').html(); 
-
-    FB.ui({ 
-
-            method: 'feed',
-
-            name: 'Here Spy',
-
-            link: reurl,
-
-            description: newsVal,
-
-            picture: baseUrl+'www/images/logo.jpg'
-
-    });
-
-} */
  function fbshare(scrpId,imageUrl,messageId,reurlPost) { 
     var newsVal='';
     newsVal+='<b>'+messageId+'</b><br>';
@@ -300,7 +281,7 @@ var reurl = window.location.href;
 
 function twitterShare(thisone) {
 
-   var url = "https://twitter.com/intent/tweet?original_referer="+reurl+"&source=tweetbutton&text="+$('#newsDataDiv').html().substring(0, 120)+"&url=http://herespy.com/info/news/nwid/"+newsId; 
+   var url = "https://twitter.com/intent/tweet?original_referer="+reurl+"&source=tweetbutton&text="+$('#newsDataDiv').html().substring(0, 120)+"&url=http://"+http_host+"/info/news/nwid/"+newsId; 
 
    window.open(url,"twiter Share", "width=500,height=350,top=200px,left=450px");
 
@@ -400,7 +381,7 @@ function publicMessageEmail(scrpId,imageUrl,messageId,reurlPost){
 
  function clearErrors(id) {
     //alert('here');
-   globalVarForEmail ='www.herespy.com/info/news/nwid/'+id+'';
+   globalVarForEmail = http_host + '/info/news/nwid/'+id+'';
     if($('#message')) {		
 
 		$('#message').val("");

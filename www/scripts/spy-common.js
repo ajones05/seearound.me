@@ -107,7 +107,7 @@ function profileMap(lat,lng,type,dataToShow){
      if(dataToShow){
         profileImage = dataToShow.userImage;
      } else {
-        profileImage = 'http://www.herespy.com/www/images/img-prof40x40.jpg';
+        profileImage = '/www/images/img-prof40x40.jpg';
      }
 
      commonMap = new MainMap ({
@@ -129,7 +129,7 @@ function profileMapOther(lat,lng,type,dataToShowOther){
      if(dataToShowOther){
         profileImage = dataToShowOther.userImage;
      } else {
-        profileImage = 'http://www.herespy.com/www/images/img-prof40x40.jpg';
+        profileImage = '/www/images/img-prof40x40.jpg';
      }
 
     commonMap = new MainMap({
@@ -677,7 +677,7 @@ function changeNewsContent(bubbleArrayIndex,newsPosition,jsdata,news,type){
     var content = commonMap.createOtherContent(jsdata.image,userName,news,1,'first',0,jsdata.id);
     $("#mainContent_0").attr('currentDiv',1);
     $("#content0_1").html(content);
-    $("#detail_0").html("<a href='http://here-spy/info/news/nwid/"+jsdata.id+"'>Detail</a>");
+    $("#detail_0").html("<a href='/info/news/nwid/"+jsdata.id+"'>Detail</a>");
     $("#prevDiv_0").hide();
     if(type != 'FIRST')
         $("#nextDiv_0").show();
@@ -1220,14 +1220,14 @@ function showHideDivContent(type,bubbleCounter){
                 var content = me.createOtherContent(me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][0],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][1],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][2],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][3],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][4],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][5],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][6],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][7],true);
                 me.bubbleArray[bubbleCounter].currentNewsId = me.bubbleArray[bubbleCounter].newsId[showHideCounter-1];
                 $("#content"+bubbleCounter+"_1").html(content);
-                $("#detail_"+bubbleCounter).html("<a href='http://here-spy/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
+                $("#detail_"+bubbleCounter).html("<a href='/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
             } else {
                $("#nextDiv_"+bubbleCounter).hide(); 
                showHideCounter = Number(me.bubbleArray[bubbleCounter].contentArgs.length);
                var content = me.createOtherContent(me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][0],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][1],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][2],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][3],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][4],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][5],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][6],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][7],true);
                 me.bubbleArray[bubbleCounter].currentNewsId = me.bubbleArray[bubbleCounter].newsId[showHideCounter-1];
                 $("#content"+bubbleCounter+"_1").html(content);
-                $("#detail_"+bubbleCounter).html("<a href='http://here-spy/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
+                $("#detail_"+bubbleCounter).html("<a href='/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
             }
            
         } else {
@@ -1237,14 +1237,14 @@ function showHideDivContent(type,bubbleCounter){
                  var content = me.createOtherContent(me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][0],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][1],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][2],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][3],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][4],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][5],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][6],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][7],true);
                  me.bubbleArray[bubbleCounter].currentNewsId = me.bubbleArray[bubbleCounter].newsId[showHideCounter-1];
                 $("#content"+bubbleCounter+"_1").html(content);
-                $("#detail_"+bubbleCounter).html("<a href='http://here-spy/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
+                $("#detail_"+bubbleCounter).html("<a href='/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
             } else {
                 $("#prevDiv_"+bubbleCounter).hide(); 
                 showHideCounter = 1;
                 var content = me.createOtherContent(me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][0],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][1],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][2],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][3],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][4],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][5],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][6],me.bubbleArray[bubbleCounter].contentArgs[showHideCounter-1][7],true);
                 me.bubbleArray[bubbleCounter].currentNewsId = me.bubbleArray[bubbleCounter].newsId[showHideCounter-1];
                 $("#content"+bubbleCounter+"_1").html(content);
-                $("#detail_"+bubbleCounter).html("<a href='http://here-spy/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
+                $("#detail_"+bubbleCounter).html("<a href='/info/news/nwid/"+me.bubbleArray[bubbleCounter].newsId[showHideCounter-1]+"'>Detail</a>");
             }
         }
         if(bubbleCounter == 0){

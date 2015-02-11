@@ -228,18 +228,6 @@ class MobileController extends Zend_Controller_Action
                 $data['user']['message']     = $message;
                
                 $user_data = $newsFactory->getUserData($data['user']['receiver_id']);
-           
-               /* ######## MAILING PART LEFT NEED TO BE IMPLEMENT ASAP
-                  $this->view->name = $user_data->Name;
-                  $this->view->message = "<p align='justify'> Your friend has sent you a message on HereSpy.<br><br><b>Subject:</b> " .$data['user']['subject']."<br><br><b>Message:</b> " .$data['user']['message']."<br><br>Please log in to HereSpy to reply to this message:".BASE_PATH." Please do not reply to this email</p>";
-                  $this->view->adminName = "Admin";
-                  $this->view->response = "Here Spy";
-                
-                  $this->to = $user_data->Email_id;
-                  $this->from    = 'noreply@herespy.com:HerespyMessage';
-                  $this->subject =  $data['user']['subject'];  
-                  $this->message =  $data['user']['message']; 
-                  $this->sendEmail($this->to, $this->from, $this->subject, $this->message); */
                   
                $result = $messageTable->saveData($data['user']);
                $response = new stdClass();
@@ -887,51 +875,7 @@ class MobileController extends Zend_Controller_Action
               $response->image  =  Application_Model_User::getImage($userId);
               echo(json_encode($response)); exit;
          }
-     /*
-
-      * Code to send email to every user who made comments @Mailing functionality will be implement ASAP
-        
-     */
-
-      /*  if ($commentRows = $commentTable->getAllCommentUsers($newsId)) {
-            //$newsRow = $newsTable->getNewsWithDetails($newsId);
-            $userEmail = 'dinesh@successivesofwares.com';
-            $userName = 'Dinesh Nagar';            
-            $url = BASE_PATH . "info/news/nwid/" . $newsId;
-            $this->from = $userEmail . ':' . $userName;
-            $this->subject = "Herespy comment on your post";
-            $message = $this->auth['user_name'] . " has commented on your post.<br><br>";
-            if (strlen($comments) > 100) {
-                $message .= nl2br(htmlspecialchars(substr($comments, 0, 100)));
-            } else {
-                $message .= nl2br(htmlspecialchars($comments)) . "<br>";
-            }
-
-            $message .= "<br><br>View the comments for this post: <a href='$url'>$url</a>";
-            $this->view->message = "<p align='justify'>$message</p>";
-            $this->view->adminPart = "no";
-            $this->view->adminName = "Admin";
-            $this->view->response = "Here Spy";
-            $userArray = array();
-            foreach ($commentRows as $row) {
-                if ($row->user_id != $newsRow->user_id && $row->user_id != $userId) {
-                    $userArray[] = $row->user_id;
-                    $this->to = $row->email;
-                    $this->view->name = $row->name;
-                    $this->message = $this->view->action("index", "general", array());
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-                }
-            }
-
-            if (!in_array($newsRow->id, $userArray) && $newsRow->user_id != $userId) {
-                $this->to = $newsRow->email;
-                $this->view->name = $newsRow->name;
-                $this->message = $this->view->action("index", "general", array());
-                $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-            }
-        }
-        die(Zend_Json_Encoder::encode($response));  */
-    }
+     }
     
     /**
      * Function to add like to a news

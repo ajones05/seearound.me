@@ -26,6 +26,7 @@ class ContactsController extends My_Controller_Action_Herespy
     
     public function invitesAction() 
     {
+		$config = Zend_Registry::get('config_global');
         $this->view->hideRight = true;
         $inviteStatus = new Application_Model_Invitestatus();
         $newsFactory = new Application_Model_NewsFactory();
@@ -53,13 +54,13 @@ class ContactsController extends My_Controller_Action_Herespy
                     $url = BASE_PATH."home/profile/user/".$this->auth['user_id'];
                     $this->to = $emails[$i-1];
                     $this->from = $this->auth['user_email'].':'.$this->auth['user_name'];
-                    $this->subject = "Herespy connect request";
-                    $message = $this->auth['user_name']." wants to connect with you on herespy.com. Please visit the link below to view ".$this->auth['user_name']." public profile.<br><a href='$url'>$url</a>";
+                    $this->subject = "seearound.me connect request";
+                    $message = $this->auth['user_name']." wants to connect with you on seearound.me. Please visit the link below to view ".$this->auth['user_name']." public profile.<br><a href='$url'>$url</a>";
                     $this->view->name = $userRow->Name;
                     $this->view->message = "<p align='justify'>$message</p>";
                     $this->view->adminPart = "no";
                     $this->view->adminName = "Admin";
-                    $this->view->response = "Here Spy";
+                    $this->view->response = "seearound.me";
                     $this->message = $this->view->action("index","general",array());
                     $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
                     /*
@@ -67,14 +68,14 @@ class ContactsController extends My_Controller_Action_Herespy
                      */
                     $url = BASE_PATH."home/profile/user/".$userRow->id;
                     $this->to = $this->auth['user_email'];
-                    $this->from = "admin@herespy.com:Admin";
+					$this->from = $config->email->from_email . ':' . $config->email->from_name;
                     $this->subject = "User already registered";
-                    $message = $emails[$i-1]." is already register with herespy.com  Please visit the link below to view ".$userRow->Name." public profile.<br><a href='$url'>$url</a>";
+                    $message = $emails[$i-1]." is already register with seearound.me  Please visit the link below to view ".$userRow->Name." public profile.<br><a href='$url'>$url</a>";
                     $this->view->name = $this->auth['user_name'];
                     $this->view->message = "<p align='justify'>$message</p>";
                     $this->view->adminPart = "no";
                     $this->view->adminName = "Admin";
-                    $this->view->response = "Here Spy";
+                    $this->view->response = "seearound.me";
                     $this->message = $this->view->action("index","general",array());
                     $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
                     $alreadyUser++;
@@ -89,13 +90,13 @@ class ContactsController extends My_Controller_Action_Herespy
                     $row[] = $emailInvites->createRow($data)->save();
                     $this->to = $emails[$i-1];
                     $this->from = $this->auth['user_email'].':'.$this->auth['user_name'];
-                    $this->subject = "Herespy join request";
+                    $this->subject = "seearound.me join request";
                     $message = $emailMessage."<br><br>Please visit the link below to join $name.<br><a href='$url'>$url</a>"; //echo $message; exit;
                     $this->view->name = $emails[$i-1];
                     $this->view->message = "<p align='justify'>$message</p>";
                     $this->view->adminPart = "no";
                     $this->view->adminName = "Admin";
-                    $this->view->response = "Here Spy";
+                    $this->view->response = "seearound.me";
                     $this->message = $this->view->action("index","general",array());
                     $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
                     $inviteStatusData->invite_count = $inviteStatusData->invite_count-1;
@@ -219,7 +220,7 @@ class ContactsController extends My_Controller_Action_Herespy
             $this->to = $mailValues->recieverEmail;
             $this->from = $this->auth['user_email'].':'.$this->auth['user_name'];
             $this->view->name = $mailValues->recieverName;
-            $this->subject = "Herespy connect request";
+            $this->subject = "seearound.me connect request";
             $data = array(
                 "reciever_id" => $reciewerRow->id,
                 "sender_id" => $this->auth['user_id'],
@@ -232,12 +233,12 @@ class ContactsController extends My_Controller_Action_Herespy
                 $resultData['reciever_nw_id'] = $nwId;
             }
             $response->data = $resultData;
-            $message = $this->auth['user_name']." wants to connect with you on herespy.com. Please visit the link below to view ".$this->auth['user_name']." public profile.<br><a href='$url'>$url</a>";
+            $message = $this->auth['user_name']." wants to connect with you on seearound.me. Please visit the link below to view ".$this->auth['user_name']." public profile.<br><a href='$url'>$url</a>";
             
             $this->view->message = "<p align='justify'>$message</p>";
             $this->view->adminPart = "no";
             $this->view->adminName = "Admin";
-            $this->view->response = "Here Spy";
+            $this->view->response = "seearound.me";
             $this->message = $this->view->action("index","general",array());
             $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
         }
@@ -304,12 +305,12 @@ class ContactsController extends My_Controller_Action_Herespy
                     $this->to = $mailValues->senderEmail;
                     $this->from = $mailValues->recieverEmail.':'.$mailValues->recieverName;
                     $this->subject = "Friend approval";
-                    $message = "$mailValues->recieverName has confirmend your friend request on herespy.";
+                    $message = "$mailValues->recieverName has confirmend your friend request on seearound.me.";
                     $this->view->name = $mailValues->senderName;
                     $this->view->message = "<p align='justify'>$message</p>";
                     $this->view->adminPart = "no";
                     $this->view->adminName = "Admin";
-                    $this->view->response = "Here Spy";
+                    $this->view->response = "seearound.me";
                     $this->message = $this->view->action("index","general",array());
                 }else if($action == "unfriend") {
                     $row->status = 2;
@@ -319,28 +320,11 @@ class ContactsController extends My_Controller_Action_Herespy
                     $response->type = "unfriend";
                     $response->data = $row->toArray();
                     $sendMail = false;
-                    /*$this->subject = "Friend blocked";
-                    $message = "$mailValues->recieverName has blocked you form his friend list on herespy.";
-                    $this->view->name = $mailValues->senderName;
-                    $this->view->message = "<p align='justify'>$message</p>";
-                    $this->view->adminName = "Admin";
-                    $this->view->response = "Here Spy";
-                    $this->message = $this->view->action("index","general",array()); */
                 }else if($action == "delete") {
                     $row->delete();
                     $response->done = "yes";
                     $response->type = "delete";
                     $mailValues = $tableUser->recordForEmail($sender, $reciever);
-                    /*$this->to = $mailValues->senderEmail;
-                    $this->from = $mailValues->recieverEmail.':'.$mailValues->recieverName;
-                    $this->subject = "Friend remove";
-                    $message = "$mailValues->recieverName has removed you form his friend list  on herespy.";
-                    $this->view->name = $mailValues->senderName;
-                    $this->view->message = "<p align='justify'>$message</p>";
-                    $this->view->adminPart = "no";
-                    $this->view->adminName = "Admin";
-                    $this->view->response = "Here Spy";
-                    $this->message = $this->view->action("index","general",array()); */
                 }
             } else {
                 $data = array(
@@ -362,7 +346,7 @@ class ContactsController extends My_Controller_Action_Herespy
                 $this->view->name = $mailValues->recieverName;
                 $this->view->adminPart = "no";
                 $this->view->adminName = "Admin";
-                $this->view->response = "Here Spy";
+                $this->view->response = "seearound.me";
                 $this->message = $this->view->action("friend-invitation","general",array());
             }
         }
@@ -530,12 +514,12 @@ class ContactsController extends My_Controller_Action_Herespy
             $this->to = $mailValues->senderEmail;
             $this->from = $mailValues->recieverEmail.':'.$mailValues->recieverName;
             $this->subject = "Friend request confirmed";
-            $message = "$mailValues->recieverName has confirmed your firend request on herespy.";
+            $message = "$mailValues->recieverName has confirmed your firend request on seearound.me.";
             $this->view->name = $mailValues->senderName;
             $this->view->message = "<p align='justify'>$message</p>";
             $this->view->adminPart = "no";
             $this->view->adminName = "Admin";
-            $this->view->response = "Here Spy";
+            $this->view->response = "seearound.me";
             $this->message = $this->view->action("index","general",array());
             $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
             
@@ -563,12 +547,12 @@ class ContactsController extends My_Controller_Action_Herespy
                 $this->to = $mailValues->senderEmail;
                 $this->from = $mailValues->recieverEmail.':'.$mailValues->recieverName;
                 $this->subject = "Friend request denyed";
-                $message = "$mailValues->recieverName has deny your firend request on herespy.";
+                $message = "$mailValues->recieverName has deny your firend request on seearound.me.";
                 $this->view->name = $mailValues->senderName;
                 $this->view->message = "<p align='justify'>$message</p>";
                 $this->view->adminPart = "no";
                 $this->view->adminName = "Admin";
-                $this->view->response = "Here Spy";
+                $this->view->response = "seearound.me";
                 $this->message = $this->view->action("index","general",array());
                 $this->sendEmail($this->to, $this->from, $this->subject, $this->message); 
                 $row->delete();
@@ -597,33 +581,10 @@ class ContactsController extends My_Controller_Action_Herespy
             if($row = $tableFriends->fetchRow($select)) {
                 if($row->sender_id == $this->auth['user_id']) {
                     $response->success = "done";                    
-                    /*$mailValues = $tableUser->recordForEmail($row->sender_id, $row->reciever_id);
-                    $this->to = $mailValues->recieverEmail;
-                    $this->from = $mailValues->senderEmail.':'.$mailValues->senderName;
-                    $this->subject = "Friend removed";
-                    $message = "$mailValues->senderName has deleted your firend request on herespy.";
-                    $this->view->name = $mailValues->recieverName;
-                    $this->view->message = "<p align='justify'>$message</p>";
-                    $this->view->adminPart = "no";
-                    $this->view->adminName = "Admin";
-                    $this->view->response = "Here Spy";
-                    $this->message = $this->view->action("index","general",array());
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message); */
                     $row->delete();
                 } elseif($row->reciever_id == $this->auth['user_id']) {
                     $response->success = "done";                    
                     $mailValues = $tableUser->recordForEmail($row->sender_id, $row->reciever_id); 
-                    /*$this->to = $mailValues->senderEmail;
-                    $this->from = $mailValues->recieverEmail.':'.$mailValues->recieverName;
-                    $this->subject = "Friend removed";
-                    $message = "$mailValues->recieverName has deleted your firend request on herespy.";
-                    $this->view->name = $mailValues->senderName;
-                    $this->view->message = "<p align='justify'>$message</p>";
-                    $this->view->adminPart = "no";
-                    $this->view->adminName = "Admin";
-                    $this->view->response = "Here Spy";
-                    $this->message = $this->view->action("index","general",array());
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message); */
                     $row->delete();
                 } else {
                     $response->errors = "Sorry! you can not delete this friend.";

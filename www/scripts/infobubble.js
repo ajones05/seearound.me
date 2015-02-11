@@ -219,7 +219,7 @@ InfoBubble.prototype.buildDom_ = function() {
   close.style['margin'] = this.px(5);
   close.style['zIndex'] = this.baseZIndex_ + 1;
   close.style['cursor'] = 'pointer';
-  close.src = 'http://herespy.com/www/images/iw_close.gif';
+  close.src = '/www/images/iw_close.gif';
 
   var that = this;
   google.maps.event.addDomListener(close, 'click', function() {

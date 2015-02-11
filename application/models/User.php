@@ -251,7 +251,7 @@ class Application_Model_User extends My_Db_Table_Abstract
 
 				if($row = $userTable->fetchRow($select)) {
 
-					$errors['Email_id'] = 'This email is already registered with herespy.com';
+					$errors['Email_id'] = 'This email is already registered with seearound.me';
 
 				}
 

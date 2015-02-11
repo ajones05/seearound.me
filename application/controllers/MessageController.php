@@ -218,6 +218,7 @@ class MessageController extends My_Controller_Action_Herespy
 
     public function sendAction() { 
 
+		$config = Zend_Registry::get('config_global');
         $response = new stdClass();
 
         $data = array();
@@ -261,13 +262,13 @@ class MessageController extends My_Controller_Action_Herespy
 
                 $this->view->adminName = "Admin";
 
-                $this->view->response = "Here Spy";
+                $this->view->response = "seearound.me";
 
                 
 
                 $this->to = $user_data->Email_id;
 
-                $this->from = 'noreply@herespy.com:HerespyMessage';
+                $this->from = $config->email->noreply;
 
                 $this->subject = $data['user']['subject'];  
 
