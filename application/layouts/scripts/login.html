@@ -1,17 +1,6 @@
 <?php
 $config = Zend_Registry::get('config_global');
-$geoip = My_Ip::getCity();
-
-if ($geoip && isset($geoip->location->latitude) && isset($geoip->location->longitude))
-{
-	$geoip_lat = $geoip->location->latitude;
-	$geoip_lng = $geoip->location->longitude;
-}
-else
-{
-	$geoip_lat = 0;
-	$geoip_lng = 0;
-}
+$geoip = My_Ip::geolocation();
 
 $http_host = json_encode(Zend_Controller_Front::getInstance()->getRequest()->getHttpHost());
 
@@ -70,9 +59,9 @@ JAVASCRIPT
 
             var baseUrl = "<?=BASE_PATH?>";
 
-			var geoiplatitude  = <?php echo $geoip_lat; ?>;
+			var geoiplatitude  = <?php echo $geoip[0]; ?>;
 
-			var geoiplongitude = <?php echo $geoip_lng; ?>;
+			var geoiplongitude = <?php echo $geoip[1]; ?>;
 
             var userLatitude = "<?=$this->auth['latitude'];?>";
 

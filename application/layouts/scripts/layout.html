@@ -1,17 +1,6 @@
 <?php
 $config = Zend_Registry::get('config_global');
-$geoip = My_Ip::getCity();
-
-if ($geoip && isset($geoip->location->latitude) && isset($geoip->location->longitude))
-{
-	$geoip_lat = $geoip->location->latitude;
-	$geoip_lng = $geoip->location->longitude;
-}
-else
-{
-	$geoip_lat = 0;
-	$geoip_lng = 0;
-}
+$geoip = My_Ip::geolocation();
 
 $http_host = json_encode(Zend_Controller_Front::getInstance()->getRequest()->getHttpHost());
 
@@ -48,8 +37,8 @@ JAVASCRIPT
 	<script language="javascript" type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
 	<script language="javascript" type="text/javascript">
-	var geoiplatitude  = <?php echo $geoip_lat; ?>;
-	var geoiplongitude = <?php echo $geoip_lng; ?>;
+	var geoiplatitude  = <?php echo $geoip[0]; ?>;
+	var geoiplongitude = <?php echo $geoip[1]; ?>;
 	var baseUrl = "<?=BASE_PATH?>";
 	var userLatitude = "<?=$this->auth['latitude'];?>";
 	var userLongitude = "<?=$this->auth['longitude'];?>";

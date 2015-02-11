@@ -57,4 +57,23 @@ class My_Ip
 			return false;
 		}
 	}
+
+	/**
+	 * Returns user geolocation by IP address.
+	 *
+	 * @return	array
+	 */
+	public static function geolocation()
+	{
+		$city = self::getCity();
+
+		if ($city && isset($city->location->latitude) && isset($city->location->longitude))
+		{
+			return array($city->location->latitude, $city->location->longitude);
+		}
+
+		$config = Zend_Registry::get('config_global');
+
+		return array($config->geolocation->lat, $config->geolocation->lng);
+	}
 }
