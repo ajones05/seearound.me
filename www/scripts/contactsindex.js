@@ -119,7 +119,7 @@ function inviteFbFriend(friend, name) {
 function sendFbMessage(obj) {
     obj = $.parseJSON(obj); 
     if(obj && obj.data) {
-        FB.init({appId: applicationId, status: true, cookie: true, xfbml: true});
+        FB.init({appId: facebook_appId, status: true, cookie: true, xfbml: true});
         FB.ui({
                 method: "send",
                 name: "Herespy",
