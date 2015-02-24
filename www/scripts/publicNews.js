@@ -3,7 +3,7 @@ var infoBubble = "";
 
 function newsMap(lat, lng, data) {
     var profileImage = '';
-    console.log(data);
+
      if(data){
         profileImage = data.image;
      } else {
@@ -19,52 +19,6 @@ function newsMap(lat, lng, data) {
          isMapDragable:'dragable',
          showMapElement:false
      });
-/*	var myOptions = {
-
-		center: new google.maps.LatLng(lat, lng),
-
-		zoom: 13,
-
-		mapTypeId: google.maps.MapTypeId.ROADMAP
-
-	};
-
-	var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-
-	var position = new google.maps.LatLng(lat, lng);
-
-	var marker = new google.maps.Marker({
-
-		map:map,
-
-		draggable:false,
-
-		position: position,
-
-		icon: (data.id == user_id)?(baseUrl+'www/images/icons/icon_1.png'):(baseUrl+'www/images/icons/icon_3.png'),
-
-		height:24,
-
-		width:36
-
-	});
-
-	google.maps.event.addListener(marker, 'click', function(){ 
-
-		newsinfo(map, marker, lat, lng, data);
-
-	});
-
-	var newsCircle = new AreaCircle({
-
-			radious:1.5,
-
-			center:position
-
-	});
-
-	newsCircle.polyArea.setMap(map);//newsCircle.makeCircle();*/
-
 }
 
 function newsinfo(map, marker, lat, lng, data) {
@@ -128,90 +82,6 @@ function newsinfo(map, marker, lat, lng, data) {
    
 
 }
-
-
-
-function viewAllComments(nwid, thisone) {
-
-	$(thisone).hide();
-
-	$.ajax({
-
-		url:baseUrl+'info/get-Total-Comments',
-
-		type:'post',
-
-		data:{news_id:nwid},
-
-		success : function(data) {
-
-			data = $.parseJSON(data);
-
-			$(".cmntRow").html(data.comments);
-
-			setThisHeight(Number($("#midColLayout").height()));
-
-			$(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"}, function() {
-
-			   $('html, body').animate({ scrollTop: 0 }, 0);     
-
-			});
-
-			
-
-		}
-
-	});
-
-}
-
-
-
-function openImage_old(imageName, w, h) { 
-
-	if(w==0 && h==0) {
-
-		var newImg = new Image();										
-
-		newImg.src = baseUrl+'newsimages/'+imageName;
-
-		w = newImg.width;
-
-		h = newImg.height;
-
-	}
-
-	$("#imagePopup").attr('src', '');
-
-    $('html, body').animate({ scrollTop: 0 }, 0);
-
-        aaa =w;
-
-		if(Number(w) < 400) {
-
-			imageWidth = Number(w)+40;
-
-		} else {
-
-			imageWidth = w;
-
-		}
-
-		if(Number(h) < 400) {
-
-			imageHeight = Number(h)+40;
-
-		} else {
-
-			imageHeight = h;  
-
-		}
-
-    $("#imagePopup").attr('src', baseUrl+"newsimages/"+imageName);
-
-}
-
-
 
 function openImage(imageName, w, h) { 
  	if(w==0 && h==0) {

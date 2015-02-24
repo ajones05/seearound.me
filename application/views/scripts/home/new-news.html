@@ -1,6 +1,7 @@
 <?php
 if (count($this->news)):
 	$comentsModel = new Application_Model_Comments;
+	$votingModel = new Application_Model_Voting;
 
 	$isLogin = !empty($this->auth['user_id']);
 
@@ -28,11 +29,7 @@ if (count($this->news)):
 			continue;
 		}
 
-		// TODO: fix
-		if (!isset($row['news_count']))
-		{
-			$row['news_count'] = 0;
-		}
+		$row['news_count'] = $votingModel->findCountByNewsId($row['id']);
 ?>
 <div id="scrpBox_<?php echo $row['id']; ?>" class="scrpBox" onmouseover="toggleBounce('<?php echo $row['id']; ?>','<?php echo $user->id?>');" onmouseout="stopBounce('<?php echo $row['id']; ?>',<?php echo $user->id; ?>);">
 	<ul class="myScrp afterClr" id="newsDiv<?php echo $row['id']; ?>">
@@ -137,7 +134,7 @@ if (count($this->news)):
 		<?php if ($this->commentCount[$row['id']] > 2): ?>
 		<li class="viewCount">
 			<?php if ($this->filter != 'all'): ?>
-			<div onclick="getComments(this);" class="commentField"><?php echo $comentsModel->viewMoreLabel($this->commentCount[$row['id']], $comentsModel::NEWS_LIMIT); ?></div>
+			<div onclick="getComments(this);" class="commentField"><?php echo $comentsModel->viewMoreLabel($this->commentCount[$row['id']], $comentsModel->news_limit); ?></div>
 			<?php endif; ?>
 		</li>
 		<?php

@@ -17,75 +17,40 @@ class InfoController extends My_Controller_Action_Abstract
         }
         /* Initialize action controller here */
     }
-    public function newsAction(){
+
+	/**
+	 * News details action.
+	 *
+	 * @return void
+	 */
+    public function newsAction()
+	{
         $this->view->layout()->setLayout('layout');
         $this->view->hideRight = false;
         $this->view->publicMessage = true;
         $this->view->newsDetailExist = true;
-        if(!$this->auth['user_id']) {
-            $this->view->publicProfile = true;
+
+		$news_id = $this->_request->getParam('nwid');
+
+		if (!Application_Model_News::checkId($news_id, $news) ||
+			!Application_Model_User::checkId($news->user_id, $news_user))
+        {
+			$this->_redirect(BASE_PATH);
         }
-        /*
-         * Getting news id from url
-         */
-        $this->view->newsId = $newsId = $this->_request->getParam("nwid", null);
-        /*
-         * setting return url
-         */
-        $this->view->returnUrl = BASE_PATH.'info/news/nwid/'.$newsId;
-        /*
-         * Creationg instance of model class 
-         */
-        $newTable    = new Application_Model_News();
-        $newsFactory = new Application_Model_NewsFactory();
-        $userTable   = new Application_Model_User();
-        
-        if($newsId) {
-            /*
-             * getting news record in the base of news id
-             */
-            $select = $newTable->select()->setIntegrityCheck(false)
-                    ->from("news")
-                    ->joinLeft("user_data", "user_data.id = news.user_id", array("uid"=>"id","Name", "image"=>"Profile_image"))
-                    //->joinLeft("address", "address.user_id = user_data.id", array("address","latitude","longitude")) // previous code changes done on 07-10-2013
-                    ->joinLeft("address", "address.user_id = user_data.id", array("address"))
-                    ->where("news.id =? ", $newsId);                                                                                                
-            if($this->view->newsData      = $newsRow = $newTable->fetchRow($select)) {
-               $this->view->user_data     = $newsFactory->getUser(array("user_data.id" => $newsRow->uid)); 
-               $this->view->newsTime      = $newsFactory->calculate_time($newsRow->created_date); 
-               $this->view->commentData   = $newsFactory->viewTotalComments($newsRow->id);
-               $this->view->totalcomments = Application_Model_Comments::getInstance()->getCountByNewsId($newsRow->id);
-        /*
-         * getting total number ogf vote for particular news id.
-        */ 
-              $votingsTable = new Application_Model_Voting();
-              $selectQuery  = $votingsTable->countIndividualNewsVote($newsId);
-              $this->view->newsVote = $selectQuery;
-        /*
-         * getting corresponding user with respect to news id
-         * 
-         */  
-              if(isset($this->auth['user_id'])){
-              $selectData   = $newTable->existUserId($newsId,$this->auth['user_id']); 
-             // echo "<pre>"; print_r($selectData); exit;
-              $this->view->userNewsId = $selectData;      
-              }
-            
-            } else {
-                /*
-                * Handling invalid url call
-                */
-               $this->_redirect(BASE_PATH);
-            }
-            
-        } else {
-            /*
-             * Handling invalid url call
-             */
-            $this->_redirect(BASE_PATH);
-        }
+
+		$this->view->news = $news;
+		$this->view->news_user = $news_user;
+		$this->view->returnUrl = BASE_PATH . 'info/news/nwid/' . $news->id;
+
+		$this->view->comentsModel = new Application_Model_Comments;
+
+		$this->view->comments = $this->view->comentsModel->findAllByNewsId($news->id, 5);
+		$this->view->totalcomments = $this->view->comentsModel->getCountByNewsId($news->id);
+		$this->view->newsVote = Application_Model_Voting::getInstance()->findCountByNewsId($news->id);
+
+		$this->view->headScript()->prependFile('/www/scripts/publicNews.js');
     }
-    
+
     public function getTotalCommentsAction()
     {
         $response = new stdClass();

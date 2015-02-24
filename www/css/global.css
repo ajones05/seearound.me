@@ -222,6 +222,9 @@ img.image_delete {cursor: pointer; width: 12px; margin-top: 2px; margin-left: 10
 
 .scrpBox_new .bottom{border-bottom:none}
 
+.scrpBox_new .cmnt {
+	font-size: 12px;
+}
 
 /*.scrpRow{border-bottom: 1px solid #D3DDE6;margin-left: -76px;padding: 10px 53px;width: 100%;}*/
 .scrpRow{border-bottom: 1px solid #d7d7d7; margin-left: 0px; padding: 8px 0px 6px; width: 100%; background: #f1f1f1;}

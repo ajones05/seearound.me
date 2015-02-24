@@ -1,137 +1,118 @@
-<script type="text/javascript" src="http://twitter.com/javascripts/blogger.js"></script>
-<style>.cmnt {font-size: 12px;}</style>
-<div class="scrpBox_new">
-    <ul class="myScrp afterClr user_post">
+<?php
+$isLogin = !empty($this->auth['user_id']);
+
+$auth_pro_image = BASE_PATH . 'www/images/img-prof40x40.jpg';
+
+if ($isLogin)
+{
+	$auth_user_id = $this->auth['user_id'];
+
+	if (!Application_Model_User::checkId($auth_user_id, $auth_user))
+	{
+		return false;
+	}
+
+	$auth_pro_image = $auth_user->getProfileImage($auth_pro_image);
+}
+else
+{
+	$auth_user_id = null;
+}
+?>
+<div class="scrpBox scrpBox_new" id="scrpBox_<?php echo $this->news->id; ?>">
+	<ul class="myScrp afterClr user_post">
 		<?php if ($this->auth): ?>
-         <div class="deteleIcon1">
-            <?php if ($this->userNewsId == $this->auth['user_id']): ?>
-            <img class="crp1 user_post_icon" onclick="deletes(this, 'news', <?=newsId?>);" src="<?=BASE_PATH?>www/images/delete-icon.png">
+		<div class="deteleIcon1">
+            <?php if ($this->news->id == $auth_user_id): ?>
+			<img class="crp1 user_post_icon" onclick="deletes(this, 'news', <?php echo $this->news->id; ?>);" src="<?php echo BASE_PATH; ?>www/images/delete-icon.png" />
 			<?php endif; ?>
-         </div>
-		 <?php endif; ?>
-         <li>
-            <ul class="post">
-                <li class="imgPro">
-                    <a href="<?=BASE_PATH?>home/profile/user/<?=$this->newsData->uid?>" style="z-index:9999;">
-                    <?php if($this->newsData->image != 'null' && $this->newsData->image != '') :?>
-                    <img id="userImage" <? if(strpos($this->newsData->image, '://')):?>src="<?=$this->newsData->image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$this->newsData->image?>"<?endif;?> class='smallImage'/>    
-                    <?php else : ?>
-                            <img id="userImage" src="<?=BASE_PATH?>/www/images/img-prof40x40.jpg" class='smallImage'/> 
-                    <?php endif; ?>
-                    </a>
-                </li>
-                <li>
+		</div>
+		<?php endif; ?>
+		<li>
+			<ul class="post">
+				<li class="imgPro">
+					<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $this->news->id; ?>" style="z-index:9999;">
+						<img id="userImage" src="<?php echo $auth_pro_image; ?>" class="smallImage" /> 
+					</a>
+				</li>
+				<li>
 					<?php if ($this->auth): ?>
                     <div class="post-top">
-                        <a class="title" href="<?=BASE_PATH?>home/profile/user/<?=$this->newsData->uid?>" style="z-index:9999;color: #0068C4;text-decoration: none;"><?=$this->newsData->Name?></a> 
-                        <span class="post-date"><?=date("d F Y h:i a", strtotime($this->newsTime));?></span>
-                        <span class="message_number" id="message_success_<?=$this->newsId?>"><?=$this->newsVote?></span>
-                        <div id="thumbs_up1_<?=$this->newsId?>"  style="float: right; margin-right: -46px; margin-top: 22px;display:none;">
+                        <a class="title" href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $this->news->id; ?>" style="z-index:9999;color: #0068C4;text-decoration: none;"><?=$this->news_user->Name?></a> 
+                        <span class="post-date"><?php echo date("d F Y h:i a", strtotime($this->news->created_date));?></span>
+                        <span class="message_number" id="message_success_<?=$this->news->id?>"><?=$this->newsVote?></span>
+                        <div id="thumbs_up1_<?=$this->news->id?>"  style="float: right; margin-right: -46px; margin-top: 22px;display:none;">
                             <span id="message_success" style="color: rgb(51, 204, 0);">
-                            <img src="<?=BASE_PATH?>/www/images/correct_small.gif">
-                             Thanks!  
-                            </span>
+                            <img src="<?php echo BASE_PATH; ?>/www/images/correct_small.gif">Thanks!</span>
                          </div>
-                            
-                         <div id="thumbs_up2_<?=$this->newsId?>"  style="float: right; margin-right: -46px; margin-top: 22px;display:none;">
-                            <span id="message_success" style="color: rgb(51, 204, 0);">
-                             Already-Voted
-                            </span>
+                         <div id="thumbs_up2_<?=$this->news->id?>"  style="float: right; margin-right: -46px; margin-top: 22px;display:none;">
+                            <span id="message_success" style="color: rgb(51, 204, 0);">Already-Voted</span>
                          </div>
-                            
                          <div id="thumbsup_blck" class="deteleIcon12" style="display:inline;">
                           <?php if($this->newsVote == 0) { ?>      
-                                <img id="img1_<?=$this->newsId?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted_gray.png" <?php if($this->userNewsId != $this->auth['user_id']) { ?> onclick="voting(this, 'news', '<?=$this->newsId?>' ,<?=$this->auth['user_id']?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
-                          
+                                <img id="img1_<?=$this->news->id?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted_gray.png" <?php if ($this->news->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
                           <?php } else { ?>     
-                                
-                                <img id="img1_<?=$this->newsId?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if($this->userNewsId != $this->auth['user_id']) { ?> onclick="voting(this, 'news', '<?=$this->newsId?>' ,<?=$this->auth['user_id']?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
-                                
+                                <img id="img1_<?=$this->news->id?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if ($this->news->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
                           <?php } ?> 
-                                <img id="img2_<?=$this->newsId?>" class="crp" style="display: none" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if($this->userNewsId != $this->auth['user_id']) { ?> onclick="voting(this, 'news', '<?=$this->newsId?>' ,<?=$this->auth['user_id']?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
+                                <img id="img2_<?=$this->news->id?>" class="crp" style="display: none" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if ($this->news->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
                          </div>
-                         
-                           
-                         <?php if(!isset($this->auth['user_id'])): ?>
+                         <?php if(!isset($auth_user_id)): ?>
                          <div id="thumbsup_blck" class="deteleIcon12" style="display:inline;">
                             <img id="img1" class="voting-popup-class" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg">
                          </div>
                          <?php endif;?>
-
                     </div>
 					<?php endif; ?>
-                    <div class="post-bottom">
-                        <div id="newsDataDiv"><p><?=nl2br(htmlspecialchars($this->newsData->news))?></p></div>
-                    </div>
-                </li>
-                <li class="clr"></li>
-            </ul>
-         </li> 
+					<div class="post-bottom">
+						<div id="newsDataDiv"><p><?php echo nl2br(htmlspecialchars($this->news->news)); ?></p></div>
+					</div>
+				</li>
+				<li class="clr"></li>
+			</ul>
+		</li>
          <li class="cmnt">
-            <?php if($this->newsData->images) :?>
-                <?if(file_exists(realpath('.').'/newsimages/'.$this->newsData->images)):?>
-                    <?list($source_image_width, $source_image_height, $source_image_type ) = getimagesize(realpath('.').'/newsimages/'.$this->newsData->images);?>
+            <?php if($this->news->images) :?>
+                <?if(file_exists(realpath('.').'/newsimages/'.$this->news->images)):?>
+                    <?list($source_image_width, $source_image_height, $source_image_type ) = getimagesize(realpath('.').'/newsimages/'.$this->news->images);?>
                 <?else:?>
                     <?$source_image_width = ''?>
                     <?$source_image_height = ''?>
                 <?endif?>
                 <div>
-                    <img onclick="openImage('<?=$this->newsData->images?>', '<?=$source_image_width?>', '<?=$source_image_height?>');" class="Image-Popup-Class" src="<?=BASE_PATH?>tbnewsimages/<?=$this->newsData->images?>" style="width: 100%;height: auto; cursor: pointer;">
+                    <img onclick="openImage('<?=$this->news->images?>', '<?=$source_image_width?>', '<?=$source_image_height?>');" class="Image-Popup-Class" src="<?=BASE_PATH?>tbnewsimages/<?=$this->news->images?>" style="width: 100%;height: auto; cursor: pointer;">
                 </div> 
             <?php endif;?>
-            
          </li>
     </ul>
-    <?php if($this->totalcomments > 5) :?>
-        <div class="dur" style="height: 25px;"></div>
-    <?php endif;?>
-    
-    <ul class="cmntRow afterClr">
-        <?php if($this->totalcomments > 5) :?>
+	<?php if($this->totalcomments > 5) :?>
+	<div class="dur" style="height: 25px;"></div>
+	<?php endif;?>
+	<ul class="cmntRow afterClr">
+        <?php if($this->totalcomments > 5): ?>
         <li class="viewCount">
-            <div class="viewCount crp" onclick="viewAllComments('<?=$this->newsData->id?>', this);"> View all <label id="totalCommentView"><?=$this->totalcomments?></label> comments</div>
-        </li>    
-        <?php endif;?>
-        <?php foreach($this->commentData as $comments) :?>
-        <li class="cmntList">
-            <div class="imgPro">
-                <a href="<?=BASE_PATH?>home/profile/user/<?=$comments['user_id']?>" style="z-index:9999;">
-                <?php if($comments['Profile_image'] != 'null' && $comments['Profile_image'] != '') {?>
-                <img id="userImage" <? if(strpos($comments['Profile_image'], '://')):?>src="<?=$comments['Profile_image']?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$comments['Profile_image']?>"<?endif;?> class='smallImage'/>    
-                <?php } else { ?>
-                        <img id="userImage" src="<?=BASE_PATH?>/www/images/img-prof40x40.jpg" class='smallImage'/>    
-                <?php } ?>
-                </a>
-            </div>
-            <ul>
-               <li class="title">
-                    <div class="title-wrapper">
-                        <a href="<?=BASE_PATH?>home/profile/user/<?=$comments['user_id']?>" style="z-index:9999;color: #4276cd;text-decoration: none;"><?=$comments['user_name']?></a>
-                        <span class="cmnt"><?=$comments['comment']?></span>
-                    </div>
-               </li>
-               <li class="dur"><p><?=date("d F Y h:i a", strtotime($comments['commTime']));?></p></li>
-            </ul>
-            <div class="clr"></div>
+			<div onclick="getComments(this);" class="commentField"><?php echo $this->comentsModel->viewMoreLabel($this->totalcomments, $this->comentsModel->news_limit); ?></div>
         </li>
-        <?php endforeach;?>
+        <?php
+		endif;
+
+		for ($i = count($this->comments) - 1; $i >= 0; $i--)
+		{
+			echo My_ViewHelper::render('home/comment-item.html', array('comment' => $this->comments[$i]));
+		}
+		?>
         <li class="cmntList-last">
             <ul class="inpCmnt afterClr">
                <span style="display: block; text-align: center;">
-                 <img id="rpl_loading_<?=$this->newsData->id?>"  src="<?=BASE_PATH?>www/images/wait.gif" style="margin-bottom: -6px; display: none;float: right; margin-right:226px;margin-top:11px;">
+                 <img id="rpl_loading_<?=$this->news->id?>"  src="<?=BASE_PATH?>www/images/wait.gif" style="margin-bottom: -6px; display: none;float: right; margin-right:226px;margin-top:11px;">
                </span>
                <li class="imgPro">
-                    <?if($this->auth["pro_image"]){?> 
-                        <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="smallImage"/> 
-                    <? } else { ?>
-                        <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="smallImage"/>
-                    <? } ?>
+					<img id="userImage" src="<?php echo $auth_pro_image; ?>" class="smallImage" />
                </li>
                <li class="inpCmnt-last">
                     <?php if($this->isLogin) :?>
-                     <textarea id="comment<?=$this->newsData->id?>" class="textAreaClass" placeholder="Write a Comment" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea('<?=$this->newsData->id?>', this);"></textarea>
+                     <textarea id="comment<?=$this->news->id?>" class="textAreaClass" placeholder="Write a Comment" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea('<?=$this->news->id?>', this);"></textarea>
                     <?php else:?>
-                     <textarea id="comment<?=$row['id']?>" class="login-popup-class textAreaClass" placeholder="Write a Comment" onkeydown="$(this).trigger('click');" onkeyup="$(this).trigger('click');"></textarea>
+                     <textarea id="comment<?=$this->news->id?>" class="login-popup-class textAreaClass" placeholder="Write a Comment" onkeydown="$(this).trigger('click');" onkeyup="$(this).trigger('click');"></textarea>
                     <?php endif;?>
                </li>
                <div class="clr"></div>
@@ -142,20 +123,27 @@
 <script type="text/javascript">
     $(document).ready(function(){
         var data = {
-            name : "<?=$this->newsData->Name?>",
-            image : $("#userImage").attr('src'),
-            id : "<?=$this->newsData->uid?>",
-            address: "<?=$this->newsData->address?>"
+            name: <?php echo json_encode($this->news_user->Name); ?>,
+            image: $("#userImage").attr('src'),
+            id: <?php echo $this->news->id; ?>,
+            address: <?php echo json_encode($this->news->Address); ?>
         };
-        newsMap("<?=$this->newsData->latitude?>","<?=$this->newsData->longitude?>", data); 
+
+        newsMap("<?php echo $this->news->latitude; ?>","<?php echo $this->news->longitude; ?>", data); 
+
         $(".login-popup-class").colorbox({width:"26%",height:"20%", inline:true, href:"#login-id"},function(){
             $('html, body').animate({ scrollTop: 0 }, 0); 
         });
+
         $(".voting-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#voting-id"},function(){
             $('html, body').animate({ scrollTop: 0 }, 0); 
         });
+
         setThisHeight(Number($("#midColLayout").height()+20));
-        $(".Image-Popup-Class").colorbox({width:"60%",height:"80%", inline:true, href:"#Image-Popup"},function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});
+
+        $(".Image-Popup-Class").colorbox({width:"60%",height:"80%", inline:true, href:"#Image-Popup"},
+			function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});
+
         $(".user_post").hover(
             function() {
                 $(this).find("img.user_post_icon").css("display","block");
@@ -164,7 +152,5 @@
               }
         );
     });
-    var newsId = "<?=$this->newsId?>";
+    var newsId = "<?php echo $this->news->id; ?>";
 </script>
-<script type="text/javascript" src="<?=BASE_PATH?>www/scripts/publicNews.js"></script>
-    

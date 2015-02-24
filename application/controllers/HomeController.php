@@ -564,7 +564,7 @@ class HomeController extends My_Controller_Action_Herespy {
 			}
 
 			$comentsTable = new Application_Model_Comments;
-			$comments = $comentsTable->findAllByNewsId($news_id, $comentsTable::NEWS_LIMIT, $limitstart);
+			$comments = $comentsTable->findAllByNewsId($news_id, $comentsTable->news_limit, $limitstart);
 
 			if (count($comments))
 			{
@@ -573,11 +573,11 @@ class HomeController extends My_Controller_Action_Herespy {
 					$response['data'][] = My_ViewHelper::render('home/comment-item.html', array('comment' => $comment));
 				}
 
-				$count = max($comentsTable->getCountByNewsId($news_id) - ($limitstart + $comentsTable::NEWS_LIMIT), 0);
+				$count = max($comentsTable->getCountByNewsId($news_id) - ($limitstart + $comentsTable->news_limit), 0);
 
 				if ($count)
 				{
-					$response['label'] = $comentsTable->viewMoreLabel($count, $comentsTable::NEWS_LIMIT);
+					$response['label'] = $comentsTable->viewMoreLabel($count, $comentsTable->news_limit);
 				}
 			}
 

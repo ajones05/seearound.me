@@ -230,6 +230,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
 				->joinLeft('user_data', 'news.user_id = user_data.id', '')
 				->where('user_data.id IS NOT NULL')
 				->having('distance_from_source < ' . $radius . ' OR distance_from_source IS NULL')
+				->order('news.id DESC')
 				->limit($limit, $limitstart)
 		);
 

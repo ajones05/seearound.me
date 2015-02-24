@@ -4,7 +4,12 @@ class Application_Model_VotingRow extends Zend_Db_Table_Abstract {
     
 }
 
-class Application_Model_Voting extends My_Db_Table_Abstract {
+class Application_Model_Voting extends My_Db_Table_Abstract
+{
+	/**
+	 * @var	Application_Model_Voting
+	 */
+	protected static $_instance;
 
     protected $_name = 'votings';
     protected $_primary = array('id');
@@ -224,25 +229,24 @@ class Application_Model_Voting extends My_Db_Table_Abstract {
             }
         }
     }
-    
-    
 
-    public function countIndividualNewsVote($news_id) {
-        $votingTable = new Application_Model_Voting();
-        $select1 = $votingTable->select()->from('votings', array('*'))
-                ->where('news_id=?', $news_id)->where('news_count=?', 1);
-        $fetch = $votingTable->fetchAll($select1);
-        return count($fetch);
-    }
+	/**
+	 * Returns voiting count by news ID.
+	 *
+	 * @param	integer	$news_id
+	 *
+	 * @return	integer
+	 */
+    public function findCountByNewsId($news_id)
+	{
+		$result = $this->fetchRow(
+			$this->select()
+				->from($this, 'COUNT(*) as voting_count')
+				->where('news_id=?', $news_id)
+				->where('news_count=?', 1)
+		);
 
-    public function existUserId($news_id) {
-        $votingTable = new Application_Model_Voting();
-        $select2 = $votingTable->select->from('votings', array('*'))
-                ->where('news_id=?', $news_id);
-
-        $fetch = $votingTable->fetchRow($select2);
-        // echo "<pre>"; print_r($fetch); exit;
-        return $fetch;
+		return $result->voting_count;
     }
 
     function firstNewsExistence($action, $action_id, $userid) {
