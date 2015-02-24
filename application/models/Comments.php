@@ -10,9 +10,17 @@ class Application_Model_CommentsRow extends My_Db_Table_Row_Abstract {
 
 
 
-class Application_Model_Comments extends Zend_Db_Table_Abstract {
+class Application_Model_Comments extends Zend_Db_Table_Abstract
+{
+	/**
+	 * @var	Application_Model_Comments
+	 */
+	protected static $_instance;
 
-
+	/**
+	 * @var	integer
+	 */
+	const NEWS_LIMIT = 10;
 
  	protected $_name     = 'comments';
 
@@ -54,25 +62,28 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract {
 
         
 
-    function getAllCommentUsers($newsId = null)
+	/**
+	 * Returns notify
+	 *
+	 *
+	 *
+	 * @reutrn	array
+	 */
+    public function getAllCommentUsers($news_id, array $except_user_ids)
     {
+		$select = $this->select()
+			->setIntegrityCheck(false)
+			->from($this, 'user_data.*')
+			->joinLeft('user_data', 'comments.user_id = user_data.id')
+			->where('comments.news_id =?', $news_id)
+			->group('comments.user_id'); 
 
-        if($newsId) {
+		foreach ($except_user_ids as $user_id)
+		{
+			$select->where('comments.user_id <>?', $user_id);
+		}
 
-            $select = $this->select()->setIntegrityCheck(false)
-
-                    ->from($this)
-
-                    ->joinLeft('user_data', 'comments.user_id = user_data.id', array(email=>'Email_id', name => 'Name'))
-
-                    ->where('comments.news_id =?', $newsId)
-
-                    ->group('comments.user_id'); 
-
-            return $this->fetchAll($select);
-
-        } 
-
+		return $this->fetchAll($select);
     }
     
     public function getCommentOfAllNews(){
@@ -90,7 +101,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract {
 	 *
 	 * @return	integer
 	 */
-	public function getCommentCountOfNews($news_id)
+	public function getCountByNewsId($news_id)
 	{
 		$result = $this->fetchRow(
 			$this->select()
@@ -120,5 +131,51 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract {
              return "No";
         }
    }
-  
+
+	/**
+	 * Finds records by news ID.
+	 *
+	 * @param	integer	$news_id
+	 * @param	integer	$limit
+	 * @param	integer	$limitstart
+	 *
+	 * @return	array
+	 */
+	public function findAllByNewsId($news_id, $limit, $limitstart = 0)
+	{
+		return $this->fetchAll(
+			$this->select()
+				->from($this, 'comments.*')
+				->where('news_id=?', $news_id)
+				->where('isdeleted!=?', 1)
+				->joinLeft('user_data', 'comments.user_id = user_data.id', '')
+				->where('user_data.id IS NOT NULL')
+				->order('comments.id DESC')
+				->group('comments.id')
+				->limit($limit, $limitstart)
+		);
+	}
+
+	public function viewMoreLabel($count, $limit)
+	{
+		$label = 'View ';
+
+		if ($count <= $limit)
+		{
+			$label .= $count . ' more';
+		}
+		else
+		{
+			$label .= 'previous';
+		}
+
+		$label .= ' comment';
+
+		if ($count != 1)
+		{
+			$label .= 's';
+		}
+
+		return $label;
+	}
 }

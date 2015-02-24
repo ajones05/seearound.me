@@ -4,6 +4,9 @@ $geoip = My_Ip::geolocation();
 
 $http_host = json_encode(Zend_Controller_Front::getInstance()->getRequest()->getHttpHost());
 
+// TODO: update jquery
+$this->headScript()->prependFile('/www/scripts/jquery.js');
+
 $this->headScript()->appendScript(<<<JAVASCRIPT
 	var http_host = {$http_host},
 		facebook_appId = {$config->facebook->appId};
@@ -34,7 +37,6 @@ JAVASCRIPT
 	}
 	</style>
 	<?php endif; ?>
-	<script language="javascript" type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
 	<script language="javascript" type="text/javascript">
 	var geoiplatitude  = <?php echo $geoip[0]; ?>;

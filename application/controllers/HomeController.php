@@ -410,10 +410,9 @@ class HomeController extends My_Controller_Action_Herespy {
 					throw new RuntimeException('Incorrect filter value: ' . var_export($filter, true), -1);
 			}
 
-			$newsFactory = new Application_Model_NewsFactory();
+			$commentTable = new Application_Model_Comments();
 
 			$result = $result->toArray();
-
 			$commentCount = array();
 			$commentRow = array();
 
@@ -424,8 +423,8 @@ class HomeController extends My_Controller_Action_Herespy {
 					throw new RuntimeException('Incorrect user ID: ' . var_export($row['user_id']), -1);
 				}
 
-				$commentCount[$row['id']] = $newsFactory->countComments($row['id']);
-				$commentRow[$row['id']] = $newsFactory->getCommentByNewsId($row['id'], $commentCount[$row['id']]);
+				$commentCount[$row['id']] = $commentTable->getCountByNewsId($row['id']);
+				$commentRow[$row['id']] = $commentTable->findAllByNewsId($row['id'], 2);
 
 				$row['user'] = array(
 					'name' => ucwords($news_user->Name),
@@ -471,96 +470,123 @@ class HomeController extends My_Controller_Action_Herespy {
         $this->_helper->layout()->disableLayout();
     }
 
-    public function addNewCommentsAction() {
-        
-        $commentTable = new Application_Model_Comments();
-        $newsTable = new Application_Model_News();
-        $response = new stdClass();
-        $comments = $this->_getParam('comments');
-        $newsId = $this->_getParam('news_id');
-        $userId = $this->_getParam('user_id');
+    public function addNewCommentsAction()
+	{
+		$response = array();
 
-        if (strpos($comments, "<") > 0 || strpos($comments, ">") > 0) {
-            $response->commentId = '';
-            $response->image = '';
-            die(Zend_Json_Encoder::encode($response));
-        }
-        
-        $newsRow = $newsTable->getNewsWithDetails($newsId);
-        $newsFactory = new Application_Model_NewsFactory();
+		try
+		{
+			$identity = Zend_Auth::getInstance()->getIdentity();
 
-        if ($comments != '') {
-            $id = $newsFactory->addComments($comments, $newsId, $userId);
-              $votingTable = new Application_Model_Voting();
-             $score = $votingTable->measureLikeScore('news', $newsId, $userId);
-        }
+			if (!$identity)
+			{
+				throw new RuntimeException('Session expired', -1);
+			}
 
-        $response->commentId = $id;
-        $response->image = Application_Model_User::getImage($userId);
+			if (!Application_Model_User::checkId($identity['user_id'], $user))
+			{
+				throw new RuntimeException('Incorrect user ID: ' . var_export($identity['user_id']), -1);
+			}
 
-        /*
+			$news_id = $this->_getParam('news_id');
 
-         * Code to send email to every user who made comments
+			if (!Application_Model_News::checkId($news_id, $news))
+			{
+				throw new RuntimeException('Incorrect news ID: ' . var_export($news_id), -1);
+			}
 
-         */
+			$comments = $this->_getParam('comments');
 
-        if ($commentRows = $commentTable->getAllCommentUsers($newsId)) {
-            //$newsRow = $newsTable->getNewsWithDetails($newsId);
-            $url = BASE_PATH . "info/news/nwid/" . $newsId;
-            $this->from = $this->auth['user_email'] . ':' . $this->auth['user_name'];
-            $this->subject = "seearound.me comment on your post";
-            $message = $this->auth['user_name'] . " has commented on your post.<br><br>";
-            if (strlen($comments) > 100) {
-                $message .= nl2br(htmlspecialchars(substr($comments, 0, 100)));
-            } else {
-                $message .= nl2br(htmlspecialchars($comments)) . "<br>";
-            }
+			if (trim($comments) === '' || strpos($comments, '<') > 0 || strpos($comments, '>') > 0)
+			{
+				throw new RuntimeException('Incorrect comment', -1);
+			}
 
-            $message .= "<br><br>View the comments for this post: <a href='$url'>$url</a>";
-            $this->view->message = "<p align='justify'>$message</p>";
-            $this->view->adminPart = "no";
-            $this->view->adminName = "Admin";
-            $this->view->response = "seearound.me";
-            $userArray = array();
-            foreach ($commentRows as $row) {
-                if ($row->user_id != $newsRow->user_id && $row->user_id != $userId) {
-                    $userArray[] = $row->user_id;
-                    $this->to = $row->email;
-                    $this->view->name = $row->name;
-                    $this->message = $this->view->action("index", "general", array());
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-                }
-            }
+			$newsFactory = new Application_Model_NewsFactory();
+			$comment_id = $newsFactory->addComments($comments, $news->id, $user->id);
 
-            if (!in_array($newsRow->id, $userArray) && $newsRow->user_id != $userId) {
-                $this->to = $newsRow->email;
-                $this->view->name = $newsRow->name;
-                $this->message = $this->view->action("index", "general", array());
-                $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-            }
-        }
-        die(Zend_Json_Encoder::encode($response));
-    }
+			$votingTable = new Application_Model_Voting();
+			$votingTable->measureLikeScore('news', $news->id, $user->id);
 
-    public function getTotalCommentsAction() {
+			$commentTable = new Application_Model_Comments();
+			$comment_users = $commentTable->getAllCommentUsers($news->id, array($user->id, $news->user_id));
 
-        $response = new stdClass();
+			$subject = 'SeeAroundme comment on your post';
+			$body = My_Email::renderBody('comment-notify', array(
+				'news' => $news,
+				'user' => $user,
+				'comment' => $comments
+			));
 
-        $newsId = $this->_getParam('news_id');
+			if (count($comment_users))
+			{
+				foreach ($comment_users as $row)
+				{
+					My_Email::send(array($row->Name => $row->Email_id), $subject, array('body' => $body));
+				}
+			}
 
+			if ($news->user_id != $user->id)
+			{
+				Application_Model_User::checkId($news->user_id, $news_user);
+				My_Email::send(array($news_user->Name => $news_user->Email_id), $subject, array('body' => $body));
+			}
 
+			$response['status'] = 1;
+			$response['commentId'] = $comment_id;
+		}
+		catch (Exception $e)
+		{
+			$response['status'] = 0;
+		}
 
-        $newsFactory = new Application_Model_NewsFactory();
+		die(Zend_Json_Encoder::encode($response));
+	}
 
-        $comments = $newsFactory->viewTotalComments($newsId);
+    public function getTotalCommentsAction()
+	{
+		$response = array();
 
-        $this->view->comments = $comments;
+		try
+		{
+			$news_id = $this->_getParam('news_id');
 
-        $this->view->newsId = $newsId;
+			if (!Application_Model_News::checkId($news_id, $news))
+			{
+				throw new RuntimeException('Incorrect news ID');
+			}
 
-        $html = $this->view->action('total-comments', 'home', array());
+			$limitstart = $this->_getParam('limitstart');
 
-        $response->comments = $html;
+			if (!My_Validate::digit($limitstart))
+			{
+				throw new RuntimeException('Incorrect limitstart value');
+			}
+
+			$comentsTable = new Application_Model_Comments;
+			$comments = $comentsTable->findAllByNewsId($news_id, $comentsTable::NEWS_LIMIT, $limitstart);
+
+			if (count($comments))
+			{
+				foreach ($comments as $comment)
+				{
+					$response['data'][] = My_ViewHelper::render('home/comment-item.html', array('comment' => $comment));
+				}
+
+				$count = max($comentsTable->getCountByNewsId($news_id) - ($limitstart + $comentsTable::NEWS_LIMIT), 0);
+
+				if ($count)
+				{
+					$response['label'] = $comentsTable->viewMoreLabel($count, $comentsTable::NEWS_LIMIT);
+				}
+			}
+
+			$response['status'] = 1;
+		}
+		catch (Exception $e)
+		{
+			$response['status'] = 0;
+		}
 
         die(Zend_Json_Encoder::encode($response));
     }
@@ -794,4 +820,3 @@ public function changeAddressAction() {
         }
     }
 }
-

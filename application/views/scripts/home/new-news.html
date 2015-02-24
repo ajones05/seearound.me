@@ -1,5 +1,7 @@
 <?php
 if (count($this->news)):
+	$comentsModel = new Application_Model_Comments;
+
 	$isLogin = !empty($this->auth['user_id']);
 
 	$auth_pro_image = BASE_PATH . 'www/images/img-prof40x40.jpg';
@@ -134,53 +136,15 @@ if (count($this->news)):
 	<?php if ($this->commentCount[$row['id']]): ?>
 		<?php if ($this->commentCount[$row['id']] > 2): ?>
 		<li class="viewCount">
-			<?php if($this->filter != 'all'): ?>
-			<div onclick="getComments(<?php echo $row['id']; ?>);" id="commentTotal_<?php echo $row['id']; ?>" class="commentField" style="cursor:pointer;">View all <?php echo $this->commentCount[$row['id']]; ?> comments</div>
+			<?php if ($this->filter != 'all'): ?>
+			<div onclick="getComments(this);" class="commentField"><?php echo $comentsModel->viewMoreLabel($this->commentCount[$row['id']], $comentsModel::NEWS_LIMIT); ?></div>
 			<?php endif; ?>
 		</li>
 		<?php
-		endif;
-
-		if (count($this->comments)):
-			foreach($this->comments[$row['id']] as $commentRow):
-				Application_Model_User::checkId($commentRow['user_id'], $comment_user);
-		?>
-		<li id="comment_<?php echo $commentRow['id']; ?>" class="cmntList">
-			<div class="imgPro">
-				<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $commentRow['user_id']; ?>" style="z-index:9999;">
-					<img src="<?php echo $comment_user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>"/>
-				</a>
-			</div>
-			<ul>
-				<?php if ($auth_user_id == $commentRow['user_id'] && $this->filter != 'all'): ?>
-				<div class="deteleIcon">
-					<img id="img1" class="crp deteleIcon_img" src="<?php echo BASE_PATH; ?>www/images/delete-icon.png" onclick="deletes(this, 'comments', <?php echo $commentRow['id']; ?>);" />
-				</div>
-				<?php endif; ?>
-				<li class="title">
-					<div class="title-wrapper">
-						<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $commentRow['user_id']; ?>" style="z-index:9999;text-decoration: none;"><?php echo ucfirst($comment_user->Name); ?>:</a>
-						<span class="cmnt">
-							<?php echo str_replace(array('<br>', '<br/>', '</br>'), ' ', My_CommonUtils::linkClickable(My_CommonUtils::commentTexts(substr($commentRow['comment'], 0, 250)))); ?>
-							<?php if(strlen($commentRow['comment'])>250):?>
-							<span>
-								<a id="moreButton_<?php echo $commentRow['id']; ?>" href="javascript:void(0)" class='commentFont' onclick="showMoreComments(this,'<?php echo $commentRow['id']; ?>')">...More</a>
-								<span id="morecomments_<?php echo $commentRow['id']; ?>" style="display: none;">
-									<?php echo My_CommonUtils::linkClickable(My_CommonUtils::commentTexts(substr($commentRow['comment'], 250, strlen($commentRow['comment'])))); ?>
-								</span>
-							</span>
-							<?php endif; ?>
-						</span>
-					</div>
-				</li>
-				<li class="dur">
-					<p><?php echo date("d F Y h:i a", strtotime($commentRow['created_at'])); ?></p>
-				</li>
-			</ul>
-			<div class="clr"></div>
-		</li>
-		<?php
-			endforeach;
+			for ($i = count($this->comments[$row['id']]) - 1; $i >= 0; $i--)
+			{
+				echo My_ViewHelper::render('home/comment-item.html', array('comment' => $this->comments[$row['id']][$i]));
+			}
 		endif;
 		?>
 		<li id="commentTextarea_<?php echo $row['id']; ?>" class="cmntList-last afterClr">

@@ -322,4 +322,26 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
 
 		return $this->findByLocation($lat, $lng, $radius, $limit, $limitstart, $select);
 	}
+
+	/**
+	 * Checks if news id is valid.
+	 *
+	 * @param	integer	$news_id
+	 * @param	mixed	$news
+	 *
+	 * @return	boolean
+	 */
+    public static function checkId($news_id, &$news)
+    {
+		if ($news_id == null)
+		{
+			return false;
+		}
+		
+		$db = self::getInstance();
+
+		$news = $db->fetchRow($db->select()->where('id =?', $news_id));
+
+		return $news != null;
+    }
 }

@@ -655,7 +655,7 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as &$row)
 				{
 					$row['created_date'] = My_Time::time_ago($row['created_date']);
-					$row['comment_count'] = $commentTable->getCommentCountOfNews($row['id']);
+					$row['comment_count'] = $commentTable->getCountByNewsId($row['id']);
 					$row['isLikedByUser'] = $votingTable->isNewsLikedByUser($row['id'], $user->id) ? 'Yes' : 'No';
 				}
 
@@ -776,7 +776,7 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as &$row)
 				{
 					$row['created_date'] = My_Time::time_ago($row['created_date']);
-					$row['comment_count'] = $commentTable->getCommentCountOfNews($row['id']);
+					$row['comment_count'] = $commentTable->getCountByNewsId($row['id']);
 					$row['isLikedByUser'] = $votingTable->isNewsLikedByUser($row['id'], $user->id) ? 'Yes' : 'No';
 				}
 
@@ -843,15 +843,7 @@ class MobileController extends Zend_Controller_Action
         $comments = $_REQUEST['comments'];
         $newsId   = $_REQUEST['news_id'];
         $userId   = $_REQUEST['user_id'];  
-      /* $comments = 'comments test today1'; $newsId = 1510; $userId = 8; */
-      
-     /*  if (strpos($comments, "'") > 0 || strpos($comments, "<") > 0 || strpos($comments, ">") > 0) {
-            $response->commentId = '';
-            $response->image = '';
-            die(Zend_Json_Encoder::encode($response));
-        } */
 
-        //$newsRow = $newsTable->getNewsWithDetails($newsId);
         $newsFactory = new Application_Model_NewsFactory();
         $id = $newsFactory->addComments($comments, $newsId, $userId);
         $commentRowSet = $newsFactory->viewTotalComments($newsId,-1,$userId);

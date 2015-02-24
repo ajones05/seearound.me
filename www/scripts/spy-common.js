@@ -285,7 +285,7 @@ function getAllNearestPoint(centerPosition){
 		},
 		type: 'POST',
 		dataType: 'json',
-		async: true
+		async: false
 	}).done(function(response){
 		if (response && response.status){
 			hideNewsScreen();
@@ -806,20 +806,39 @@ function showCommentField(id) {
 * Function to get commets for unique news
 * @param {newsId : id of the news}
 */
-function getComments(newsId){
-	$.post(
-		baseUrl+"home/get-total-comments",
-		{
-			'news_id' : newsId
+function getComments(target){
+	var news_item = $(target).closest('.scrpBox'),
+		comment_list = $(target).closest('ul');
+
+	$(target).hide();
+
+	$.ajax({
+		type: 'POST',
+		url: baseUrl + 'home/get-total-comments',
+		data: {
+			news_id: news_item.attr('id').replace('scrpBox_', ''),
+			limitstart: comment_list.find('.cmntList').size()
 		},
-		function(obj){
-			obj = JSON.parse(obj);
-			$("#comment_list_"+newsId).html(obj.comments);
-			$("#comment_list_"+newsId).hide();
-			$("#comment_list_"+newsId).fadeIn(1000);
-		},
-		"html"
-	)	
+		dataType : 'json'
+	}).done(function(response){
+		if (response && response.status){
+			if (response.data){
+				for (var i in response.data){
+					$('.viewCount', comment_list).after(response.data[i]);
+				}
+
+				if (response.label){
+					comment_list.effect("highlight", {}, 500, function(){
+						$(target).text(response.label).show();
+					});
+				}
+			}
+		} else {
+			alert(ERROR_MESSAGE);
+		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
+	});
 }
 
 /*
@@ -852,45 +871,40 @@ function resizeArea(id, thisone){
 			var news_id = id;
 			if(comments != '') {
 			    $('#rpl_loading_'+id).show();
-		      	$.ajaxSetup({async:true});
-                $.post(
-					baseUrl+"home/add-new-comments",
-					{
-						'comments':comments, 'news_id':news_id, 'user_id' : user_id
-					},
-					function(obj){
-					 	obj = JSON.parse(obj);
-						$('#comment'+id).val('');
-						$('#comment'+id).blur();
 
+				$.ajax({
+					url: baseUrl + 'home/add-new-comments',
+					data: {
+						comments: comments,
+						news_id: news_id
+					},
+					type: 'POST',
+					dataType: 'json',
+					async: false
+				}).done(function(response){
+					if (response && response.status){
+						$('#comment'+id).val('').blur();
                         $('#rpl_loading_'+id).hide();
-						
+
                         var commentArea = $("#commentTextarea_"+id).html();
-                        if($("#tempDiv_"+id).html()!=null){
+
+                        if ($("#tempDiv_"+id).html()!=null){
                             commentArea = $("#tempDiv_"+id).html();
                         }
+
 						$("#commentTextarea_"+id).remove();
-						var commentData = '<li id="comment_'+obj.commentId +'" class="cmntList afterClr">'+'<div class="imgPro">'
-                                                         if(obj.image) {
-                                                                if(obj.image.indexOf('://') > 0) {
-                                                                    commentData += '<img src="' + obj.image + '/>';
-                                                                }else {
-                                                                    commentData += '<img src="' + baseUrl + 'uploads/' + obj.image + '"/>';
-                                                                }
-                                                            }else {
-                                                                commentData += '<img src="' + baseUrl + 'www/images/img-prof40x40.jpg"/>';
-                                                            }                                                     
-                                                         commentData += '</div>'+
+						var commentData = '<li id="comment_'+response.commentId +'" class="cmntList afterClr">'+
+								'<div class="imgPro"><img src="' + imagePath + '"/></div>'+
                                                     '<ul>'+
                                                         '<div class="deteleIcon">'+
-                                                            '<img class="crp deteleIcon_img" src="' + baseUrl + 'www/images/delete-icon.png" onclick="deletes(this, \'comments\', '+obj.commentId+');" style="float:right;"/>'+
+                                                            '<img class="crp deteleIcon_img" src="' + baseUrl + 'www/images/delete-icon.png" onclick="deletes(this, \'comments\', '+response.commentId+');" style="float:right;"/>'+
                                                         '</div>'+
                                                         '<li class="title">' +
                                                             '<div class="title-wrapper">'+ userName +':' +
                                                             '<span class="cmnt">'+
                                                                 linkClickable(comments.substring(0,255));
                                                                 if(comments.length>255) {comments
-                                                                     commentData+='<a id="moreButton_'+obj.id+'" href="javascript:void(0)" onclick="showMoreComments(this,'+obj.commentId+')">....More</a><span id="morecomments_'+obj.commentId+'" style="display:none">'+comments.substring(255,comments.length)+'</span>';
+                                                                     commentData+='<a id="moreButton_'+response.commentId+'" href="javascript:void(0)" onclick="showMoreComments(this,'+response.commentId+')">....More</a><span id="morecomments_'+response.commentId+'" style="display:none">'+comments.substring(255,comments.length)+'</span>';
                                                                 }
                                                             commentData +='</span>'+'</div>'+   
 						                                '</li>'+
@@ -917,9 +931,12 @@ function resizeArea(id, thisone){
                         if($("#newsData").height()>714)
                                 setThisHeight(Number($("#newsData").height())+100);
                         $('#comment'+id).removeAttr('disabled');
-					},
-					"html"
-				)
+					} else {
+						alert(ERROR_MESSAGE);
+					}
+				}).fail(function(jqXHR, textStatus){
+					alert(textStatus);
+				});
 			}
 		}
        

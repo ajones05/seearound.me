@@ -1,50 +1,23 @@
 <?php 
-if(count($this->comments)) { ?>
-    
-	<?php foreach($this->comments as $commentRow) { ?>
-          <li id="comment_<?=$commentRow['id']?>" class="cmntList">
-                <div class="imgPro">
-                    <?php if($commentRow['Profile_image']) {?>
-                        <img <? if(strpos($commentRow['Profile_image'], '://')):?>src="<?=$commentRow['Profile_image']?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$commentRow['Profile_image']?>"<?endif;?> />
-                    <?php } else {?>
-                        <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" />
-                    <?php }?>
-                </div>
-                <ul>
-                    <li class="title">
-                        <div class="title-wrapper">
-                            <?=$commentRow['user_name']?>:  
-                        <span class="cmnt">
-                        <?=substr($commentRow['comment'],0,250)?>
-                                <?if(strlen($commentRow['comment'])>250):?>
-                                    <span>
-                                        <a href="javascript:void(0)" class='commentFont' onclick="showMoreNews(this,'<?=$commentRow['id']?>')">...more</a>
-                                        <span id="morecontent_<?=$commentRow['id']?>" style="display: none;"><?=substr($commentRow['comment'],250,strlen($commentRow['comment']))?></span>
-                                    </span>
-                                <?endif?>
-                        </span>
-                    </li>
-                    <li class="dur">
-                        <p><?=date("d F Y h:i a", strtotime($commentRow['commTime']));?></p>
-                    </li>
-                </ul>
-                <div class="clr"></div>
-        </li>
- <?php }?>
-    <li  id="commentTextarea_<?=$this->newsId?>" class="cmntList-last afterClr">
-         <ul class="inpCmnt afterClr">
-                <li class="imgPro">
-                    <?if($this->auth["pro_image"]){?> 
-                        <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="smallImage"/> 
-                    <? } else { ?>
-                        <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="smallImage"/>
-                    <? } ?>
-                </li>
-                <li class="inpCmnt-last">
-                    <textarea placeholder="Write a Comment" id="comment<?=$this->newsId?>" class="textAreaClass"  onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea(<?=$this->newsId?>);"></textarea>
-                </li>
-                <div class="clr"></div>
-         </ul>
-    </li>
-<?php }?>
- 
+if(count($this->comments)):
+	foreach($this->comments as $commentRow)
+	{
+		echo My_ViewHelper::render('home/comment-item.html', array('comment' => $commentRow));
+	}
+	?>
+<li id="commentTextarea_<?=$this->newsId?>" class="cmntList-last afterClr">
+	<ul class="inpCmnt afterClr">
+		<li class="imgPro">
+			<?if($this->auth["pro_image"]){?> 
+			<img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="smallImage"/> 
+			<? } else { ?>
+			<img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="smallImage"/>
+			<? } ?>
+		</li>
+		<li class="inpCmnt-last">
+			<textarea placeholder="Write a Comment" id="comment<?=$this->newsId?>" class="textAreaClass"  onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea(<?=$this->newsId?>);"></textarea>
+		</li>
+		<div class="clr"></div>
+	</ul>
+</li>
+<?php endif; ?>

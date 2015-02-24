@@ -664,41 +664,12 @@ class Application_Model_NewsFactory {
         return $row->id; 
     }
 
-	/**
-	 *
-	 *
-	 * @param	integer	$news_id
-	 * @param	integer	$total
-	 *
-	 * @return	array
-	 */
-	public function getCommentByNewsId($news_id, $total)
-	{
-        $commentTable = new Application_Model_Comments();
-
-        $select = $commentTable->select()
-				->setIntegrityCheck(false)
-                ->from('comments', 'comments.*')
-                ->where('comments.news_id = ?', $news_id)
-                ->where('comments.isdeleted = ?', '0')
-				->joinLeft('user_data', 'comments.user_id = user_data.id', '')
-				->where('user_data.id IS NOT NULL')
-                ->order('comments.created_at');
-
-        if ($total > 2)
-		{
-			$select->limit(2, $total - 2);
-		}
-
-        return $commentTable->fetchAll($select);
-    }
-
     function viewTotalComments($newsId, $offsetValue = null,$userId=null){
         
         $newsFactory = new Application_Model_NewsFactory();
         $commentTable = new Application_Model_Comments();
       
-        $commenttotal = $newsFactory->countComments($newsId);
+        $commenttotal = $commentTable->getCountByNewsId($newsId);
       
         $sel = $commentTable->select()->setIntegrityCheck(false)
          ->from('comments', array('*'))
@@ -734,19 +705,6 @@ class Application_Model_NewsFactory {
         }
         
         return $commArray;
-    }
-    
-
-    function countComments($newsId){
-        $commentTable = new Application_Model_Comments();
-        $sel = $commentTable->select()->setIntegrityCheck(false)
-                ->from('comments', array('*', 'count(*) as total'))
-                ->join('user_data','user_data.id = comments.user_id',array('user_name' =>'user_data.Name'))
-                ->where('comments.news_id = ?', $newsId)
-                ->where('comments.isdeleted = ?', '0')
-                ->order('comments.created_at');
-        $fetch = $commentTable->fetchRow($sel);
-        return $fetch->total;
     }
 
     function getUserData($user_id){
@@ -921,7 +879,3 @@ class Application_Model_NewsFactory {
 
 
 }
-
- 
-
-?>

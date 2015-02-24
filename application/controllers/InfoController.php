@@ -54,7 +54,7 @@ class InfoController extends My_Controller_Action_Abstract
                $this->view->user_data     = $newsFactory->getUser(array("user_data.id" => $newsRow->uid)); 
                $this->view->newsTime      = $newsFactory->calculate_time($newsRow->created_date); 
                $this->view->commentData   = $newsFactory->viewTotalComments($newsRow->id);
-               $this->view->totalcomments = $newsFactory->countComments($newsRow->id);
+               $this->view->totalcomments = Application_Model_Comments::getInstance()->getCountByNewsId($newsRow->id);
         /*
          * getting total number ogf vote for particular news id.
         */ 
