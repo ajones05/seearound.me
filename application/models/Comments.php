@@ -20,7 +20,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 	/**
 	 * @var	integer
 	 */
-	const NEWS_LIMIT = 10;
+	const NEWS_LIMIT = 30;
 
  	protected $_name     = 'comments';
 
