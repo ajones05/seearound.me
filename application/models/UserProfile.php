@@ -2,8 +2,8 @@
 
 class Application_Model_UserProfile extends Zend_Db_Table_Abstract
 {
-    protected $_name = 'ew_user_profile';
-    protected $_primary = 'User_ID';
+    protected $_name = 'user_profile';
+
     protected $_instance = null;
 
     public static function getInstance()
