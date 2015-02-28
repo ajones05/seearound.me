@@ -16,7 +16,9 @@ class MobileController extends Zend_Controller_Action
 	 */
 	public function init()
 	{
-		$writer = new Zend_Log_Writer_Stream(ROOT_PATH . '/log/mobile_api.log');
+		$log_path = ROOT_PATH . '/log';
+		is_dir($log_path) || mkdir($log_path, 0700);
+		$writer = new Zend_Log_Writer_Stream($log_path . '/mobile_api_' . date('Y-m-d') . '.log');
 		$this->_logger = new Zend_Log($writer);
 	}
 
@@ -799,6 +801,8 @@ class MobileController extends Zend_Controller_Action
 			// TODO: remove
 			$response['result'] = null;
 		}
+
+		$this->_logRequest($response);
 
 		die(Zend_Json_Encoder::encode($response));
 	}
