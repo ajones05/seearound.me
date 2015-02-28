@@ -233,7 +233,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
 					'IFNULL(TIMESTAMPDIFF(HOUR, created_date, NOW()), 0) as hours',
 					'IFNULL(comments.count, 0) as comments',
 					'IFNULL(votings.count, 0) as votings',
-					'((votings.count+comments.count+1)/((IFNULL(TIMESTAMPDIFF(HOUR, created_date, NOW()), 0)+30)^1.1))*10000 as score',
+					'((IFNULL(votings.count, 0)+IFNULL(comments.count, 0)+1)/((IFNULL(TIMESTAMPDIFF(HOUR, created_date, NOW()), 0)+30)^1.1))*10000 as score',
 					// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
 					'(3959 * acos(cos(radians(' . $lat . ')) * cos(radians(news.latitude)) * cos(radians(news.longitude) - ' .
 						'radians(' . $lng . ')) + sin(radians(' . $lat . ')) * sin(radians(news.latitude)))) AS distance_from_source'
