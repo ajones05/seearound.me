@@ -216,21 +216,34 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
 			$select = $this->select();
 		}
 
+		$comments_subselect = Application_Model_Comments::getInstance()->select()
+			->from('comments', array('news_id', 'COUNT(*) as count'))
+			->group('news_id');
+
+		$votings_subselect = Application_Model_Voting::getInstance()->select()
+			->from('votings', array('news_id', 'news_count', 'COUNT(*) as count'))
+			->where('votings.news_count =?', 1)
+			->group('news_id');
+
 		$result = $this->fetchAll(
 			$select
 				->setIntegrityCheck(false)
 				->from($this, array(
 					'news.*',
+					'IFNULL(comments.count, 0) as comments',
+					'IFNULL(votings.count, 0) as votings',
 					// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
 					'(3959 * acos(cos(radians(' . $lat . ')) * cos(radians(news.latitude)) * cos(radians(news.longitude) - ' .
 						'radians(' . $lng . ')) + sin(radians(' . $lat . ')) * sin(radians(news.latitude)))) AS distance_from_source'
 				))
 				->where('news.latitude IS NOT NULL')
 				->where('news.longitude IS NOT NULL')
-				->joinLeft('user_data', 'news.user_id = user_data.id', '')
+				->joinLeft('user_data', 'news.user_id = user_data.id', array())
 				->where('user_data.id IS NOT NULL')
+				->joinLeft(array('comments' => new Zend_Db_Expr('(' . $comments_subselect . ')')), 'comments.news_id = news.id', array())
+				->joinLeft(array('votings' => new Zend_Db_Expr('(' . $votings_subselect . ')')), 'votings.news_id = news.id', array())
 				->having('distance_from_source < ' . $radius . ' OR distance_from_source IS NULL')
-				->order('news.id DESC')
+				->order(array('votings DESC', 'comments DESC', 'news.id DESC'))
 				->limit($limit, $limitstart)
 		);
 

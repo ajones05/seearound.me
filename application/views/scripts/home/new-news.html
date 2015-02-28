@@ -28,8 +28,6 @@ if (count($this->news)):
 		{
 			continue;
 		}
-
-		$row['news_count'] = $votingModel->findCountByNewsId($row['id']);
 ?>
 <div id="scrpBox_<?php echo $row['id']; ?>" class="scrpBox" onmouseover="toggleBounce('<?php echo $row['id']; ?>','<?php echo $user->id?>');" onmouseout="stopBounce('<?php echo $row['id']; ?>',<?php echo $user->id; ?>);">
 	<ul class="myScrp afterClr" id="newsDiv<?php echo $row['id']; ?>">
@@ -50,9 +48,9 @@ if (count($this->news)):
 						<a class="title" href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $user->id; ?>"><?php echo ucfirst($user->Name); ?></a>
 						<span class="post-date"><?php echo date("d F Y h:i a", strtotime($row['created_date'])); ?></span>
 						<?php if ($row['id']): ?>
-						<span class="message_number" id="message_success_<?php echo $row['id']; ?>"><?php echo $row['news_count']; ?></span>
+						<span class="message_number" id="message_success_<?php echo $row['id']; ?>"><?php echo $row['votings']; ?></span>
 						<?php endif; if ($auth_user_id != $user->id): ?>
-						<img class="crp" id="img1_<?php echo $row['id']; ?>" onclick="voting(this, 'news', <?php echo $row['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo BASE_PATH; ?>www/images/<?php echo $row['news_count'] ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>">
+						<img class="crp" id="img1_<?php echo $row['id']; ?>" onclick="voting(this, 'news', <?php echo $row['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo BASE_PATH; ?>www/images/<?php echo $row['votings'] ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>">
 						<img class="crp" id="img2_<?php echo $row['id']; ?>" style="display:none" onclick="voting(this, 'news', <?php echo $row['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo BASE_PATH; ?>www/images/thumsup_voted.jpg" />
 						<div id="thumbs_up1_<?php echo $row['id']; ?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
 							<span id="message_success_5" style="color: rgb(51, 204, 0);"><img src="<?php echo BASE_PATH; ?>www/images/correct_small.gif" />Thanks!</span>
@@ -61,7 +59,7 @@ if (count($this->news)):
 							<span id="message_success_5" style="color: rgb(51, 204, 0);">Already-Voted</span>
 						</div>
 						<?php endif; if ($auth_user_id == $user->id): ?>
-						<img class="crp" id="img1_<?php echo $row['id']; ?>" onclick="alert('You can not vote your own post!');" src="<?php echo BASE_PATH; ?>www/images/<?php echo $row['news_count'] ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>" />
+						<img class="crp" id="img1_<?php echo $row['id']; ?>" onclick="alert('You can not vote your own post!');" src="<?php echo BASE_PATH; ?>www/images/<?php echo $row['votings'] ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>" />
 						<?php endif; ?>
 					</div>
 					<div class="post-bottom">
@@ -129,12 +127,12 @@ if (count($this->news)):
 		</span>
 		<div class="clr"></div>
 	</div>
-	<ul id="comment_list_<?php echo $row['id']; ?>"<?php if ($this->commentCount[$row['id']]): ?> class="cmntRow afterClr"<?php endif; ?>>
-	<?php if ($this->commentCount[$row['id']]): ?>
-		<?php if ($this->commentCount[$row['id']] > 2): ?>
+	<ul id="comment_list_<?php echo $row['id']; ?>"<?php if ($row['comments']): ?> class="cmntRow afterClr"<?php endif; ?>>
+	<?php if ($row['comments']): ?>
+		<?php if ($row['comments'] > 2): ?>
 		<li class="viewCount">
 			<?php if ($this->filter != 'all'): ?>
-			<div onclick="getComments(this);" class="commentField"><?php echo $comentsModel->viewMoreLabel($this->commentCount[$row['id']], $comentsModel->news_limit); ?></div>
+			<div onclick="getComments(this);" class="commentField"><?php echo $comentsModel->viewMoreLabel($row['comments'], $comentsModel->news_limit); ?></div>
 			<?php endif; ?>
 		</li>
 		<?php

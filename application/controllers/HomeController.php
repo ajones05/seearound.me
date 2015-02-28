@@ -413,7 +413,6 @@ class HomeController extends My_Controller_Action_Herespy {
 			$commentTable = new Application_Model_Comments();
 
 			$result = $result->toArray();
-			$commentCount = array();
 			$commentRow = array();
 
 			foreach ($result as &$row)
@@ -423,7 +422,6 @@ class HomeController extends My_Controller_Action_Herespy {
 					throw new RuntimeException('Incorrect user ID: ' . var_export($row['user_id']), -1);
 				}
 
-				$commentCount[$row['id']] = $commentTable->getCountByNewsId($row['id']);
 				$commentRow[$row['id']] = $commentTable->findAllByNewsId($row['id'], 2);
 
 				$row['user'] = array(
@@ -437,7 +435,6 @@ class HomeController extends My_Controller_Action_Herespy {
 				'auth' => $this->auth,
 				'news' => $result,
 				'comments' => $commentRow,
-				'commentCount' => $commentCount,
 				'fromPage' => $fromPage
 			));
 
