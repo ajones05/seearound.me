@@ -230,9 +230,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
 				->setIntegrityCheck(false)
 				->from($this, array(
 					'news.*',
-					'IFNULL(TIMESTAMPDIFF(HOUR, created_date, NOW()), 0) as hours',
-					'IFNULL(comments.count, 0) as comments',
-					'IFNULL(votings.count, 0) as votings',
 					'((IFNULL(votings.count, 0)+IFNULL(comments.count, 0)+1)/((IFNULL(TIMESTAMPDIFF(HOUR, created_date, NOW()), 0)+30)^1.1))*10000 as score',
 					// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
 					'(3959 * acos(cos(radians(' . $lat . ')) * cos(radians(news.latitude)) * cos(radians(news.longitude) - ' .

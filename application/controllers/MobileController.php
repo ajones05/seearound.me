@@ -686,7 +686,10 @@ class MobileController extends Zend_Controller_Action
 	 */
 	public function mypostsAction()
 	{
-		$response = array();
+		$response = array(
+			// TODO: remove
+			'result' => null
+		);
 
 		try
 		{
@@ -742,7 +745,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!My_Validate::emptyString($keywords))
 			{
-				$select->where('news LIKE ?', $keywords . '%');
+				$select->where('news LIKE ?', '%' . $keywords . '%');
 			}
 
 			$filter = $this->_getParam('filter');
@@ -773,21 +776,27 @@ class MobileController extends Zend_Controller_Action
 				$commentTable = new Application_Model_Comments;
 				$votingTable = new Application_Model_Voting;
 
-				$result = $result->toArray();
-
-				foreach ($result as &$row)
+				foreach ($result as $row)
 				{
-					$row['created_date'] = My_Time::time_ago($row['created_date']);
-					$row['comment_count'] = $commentTable->getCountByNewsId($row['id']);
-					$row['isLikedByUser'] = $votingTable->isNewsLikedByUser($row['id'], $user->id) ? 'Yes' : 'No';
+					$response['result'][] = array(
+						'id' => $row->id,
+						'user_id' => $row->user_id,
+						'news' => $row->news,
+						'images' => $row->images,
+						'created_date' => My_Time::time_ago($row['created_date']),
+						'updated_date' => $row->updated_date,
+						'isdeleted' => $row->isdeleted,
+						'isflag' => $row->isflag,
+						'isblock' => $row->isblock,
+						'latitude' => $row->latitude,
+						'longitude' => $row->longitude,
+						'Address' => $row->Address,
+						'score' => $row->score,
+						'distance_from_source' => $row->distance_from_source,
+						'comment_count' => $commentTable->getCountByNewsId($row->id);,
+						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
+					);
 				}
-
-				$response['result'] = $result;
-			}
-			else
-			{
-				// TODO: remove
-				$response['result'] = null;
 			}
 
 			$response['status'] = 'SUCCESS';
@@ -797,9 +806,6 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response['status'] = 'FAILED';
 			$response['message'] = 'Posts rendring failed';
-
-			// TODO: remove
-			$response['result'] = null;
 		}
 
 		$this->_logRequest($response);
