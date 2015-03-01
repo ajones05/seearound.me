@@ -81,7 +81,24 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect user email or password', -1);
 			}
 
-			$response = $user->toArray();
+			$response = array(
+				"id" => $user->id,
+				"Name" => $user->Name,
+				"Email_id" => $user->Email_id,
+				"Old_email" => $user->Old_email,
+				"Password" => $user->Password,
+				"Birth_date" => $user->Birth_date,
+				"Creation_date" => $user->Creation_date,
+				"Update_date" => $user->Update_date,
+				"Profile_image" => $user->Update_date,
+				"Status" => $user->Status,
+				"Network_id" => $user->Network_id,
+				"is_admin" => $user->is_admin,
+				"Token" => $user->Token,
+				"address" => $user->address,
+				"latitude" => $user->latitude,
+				"longitude" => $user->longitude,
+			);
 		}
 		catch (Exception $e)
 		{
@@ -793,7 +810,7 @@ class MobileController extends Zend_Controller_Action
 						'Address' => $row->Address,
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
-						'comment_count' => $commentTable->getCountByNewsId($row->id);,
+						'comment_count' => $commentTable->getCountByNewsId($row->id),
 						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
 					);
 				}

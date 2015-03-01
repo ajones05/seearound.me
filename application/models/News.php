@@ -237,6 +237,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
 				))
 				->where('news.latitude IS NOT NULL')
 				->where('news.longitude IS NOT NULL')
+				->where('news.isdeleted =?', 0)
 				->joinLeft('user_data', 'news.user_id = user_data.id', array())
 				->where('user_data.id IS NOT NULL')
 				->joinLeft(array('comments' => new Zend_Db_Expr('(' . $comments_subselect . ')')), 'comments.news_id = news.id', array())
