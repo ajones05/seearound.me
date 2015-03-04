@@ -1,8 +1,9 @@
 <?php
 $config = Zend_Registry::get('config_global');
 $geoip = My_Ip::geolocation();
+$request = Zend_Controller_Front::getInstance()->getRequest();
 
-$http_host = json_encode(Zend_Controller_Front::getInstance()->getRequest()->getHttpHost());
+$http_host = json_encode($request->getHttpHost());
 
 // TODO: update jquery
 $this->headScript()->prependFile('/www/scripts/jquery.js');
@@ -51,10 +52,10 @@ JAVASCRIPT
 	var reciever_userid =  "<?=$this->reciever?>";
 	var userName = "<?=$this->auth['user_name']?>";
 	var imagePath = "<?=$this->auth['pro_image']?>"; 
-	var controller = "<?=$this->request->getParam('controller')?>";
-	var action = "<?=$this->request->getParam('action')?>";
-	var showMy = "<?=$this->request->getParam('my')?'search':'no'?>";
-	var returnUrl = "<?=$this->request->getParam('url')?$this->request->getParam('url'):''?>";
+	var controller = "<?=$request->getParam('controller')?>";
+	var action = "<?=$request->getParam('action')?>";
+	var showMy = "<?=$request->getParam('my')?'search':'no'?>";
+	var returnUrl = "<?=$request->getParam('url')?$request->getParam('url'):''?>";
 	var currentRequests = 0;
 	if (imagePath){
 		if (imagePath.indexOf("://") > 0){
@@ -155,7 +156,7 @@ JAVASCRIPT
                 <li class="midCol">
                     <span class="sIcn">
                         <?php if(!$this->message) :?>
-                        <input type="text" id="searchText" value="<?=$this->request->getParam('sv', null)?>" placeholder="Search posts..." />
+                        <input type="text" id="searchText" value="<?=$request->getParam('sv', null)?>" placeholder="Search posts..." />
                         <img src="<?=BASE_PATH?>www/images/icn-search.png" alt="Search" onclick="getKeycodes(true);"/>
                         <?php endif;?>
                     </span>

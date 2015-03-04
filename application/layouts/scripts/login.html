@@ -1,8 +1,9 @@
 <?php
 $config = Zend_Registry::get('config_global');
 $geoip = My_Ip::geolocation();
+$request = Zend_Controller_Front::getInstance()->getRequest();
 
-$http_host = json_encode(Zend_Controller_Front::getInstance()->getRequest()->getHttpHost());
+$http_host = json_encode($request->getHttpHost());
 
 // TODO: update jquery
 $this->headScript()->prependFile('/www/scripts/jquery.js');
@@ -80,7 +81,7 @@ JAVASCRIPT
 
             var user_id = "<?=$this->auth['user_id']?>";
 
-            var returnUrl = "<?=$this->request->getParam('url')?$this->request->getParam('url'):''?>";
+            var returnUrl = "<?=$request->getParam('url')?$request->getParam('url'):''?>";
         </script>
 
 
@@ -170,7 +171,7 @@ JAVASCRIPT
 
                         <span>
                             <span> Keep me logged in </span>
-                            <input class="afterClr" id="remember" name="remember" type="checkbox" <?if($this->request->getCookie("keepLogin")) :?>checked="true"<?endif;?> tabindex="4"/>
+                            <input class="afterClr" id="remember" name="remember" type="checkbox" <?if($request->getCookie("keepLogin")) :?>checked="true"<?endif;?> tabindex="4"/>
                         </span>
 
 
