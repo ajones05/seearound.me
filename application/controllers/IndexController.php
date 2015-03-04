@@ -507,34 +507,6 @@ class IndexController extends My_Controller_Action_Abstract {
 
         $auth = Zend_Auth::getInstance();
 
-        $data = array('email' => $this->_getParam('email'));
-        
-        $returnvalueForMD5Passwords = $newsFactory->loginDetail($data,'tocheck');
-
-     if(isset($returnvalueForMD5Passwords->id)){   
-        if ($returnvalueForMD5Passwords->id > 243) {
-
-
-            if ($this->_getParam('check') == "yes") {
-
-                $data = array('email' => $this->_request->getCookie('emailLogin'), 'pass' => hash('sha256', $this->_request->getCookie('passwordLogin')));
-            } else {
-
-                $data = array('email' => $this->_getParam('email'), 'pass' => hash('sha256', $this->_getParam('pass')));
-            }
-        } else {
-
-            if ($this->_getParam('check') == "yes") {
-
-                $data = array('email' => $this->_request->getCookie('emailLogin'), 'pass' => md5($this->_request->getCookie('passwordLogin')));
-            } else {
-
-                $data = array('email' => $this->_getParam('email'), 'pass' => md5($this->_getParam('pass')));
-            }
-        }
-        
-      } else {
-       
            if ($this->_getParam('check') == "yes") {
 
                 $data = array('email' => $this->_request->getCookie('emailLogin'), 'pass' => hash('sha256', $this->_request->getCookie('passwordLogin')));
@@ -542,8 +514,6 @@ class IndexController extends My_Controller_Action_Abstract {
 
                 $data = array('email' => $this->_getParam('email'), 'pass' => hash('sha256', $this->_getParam('pass')));
             }
-      }  
-
 
         $loginStatus = new Application_Model_Loginstatus();
 

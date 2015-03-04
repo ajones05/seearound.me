@@ -54,27 +54,10 @@ class MobileController extends Zend_Controller_Action
 
 			$newsFactory = new Application_Model_NewsFactory();
 
-			$return = $newsFactory->loginDetail(array('email' => $email), 'tocheck');
-
-			if (!$return)
-			{
-				throw new RuntimeException('Incorrect user email', -1);
-			}
-
-			if ($return->id > 243)
-			{
-				$user = $newsFactory->loginDetail(array(
-					'email' => $email,
-					'pass' => hash('sha256', $pass),
-				));
-			}
-			else
-			{
-				$user = $newsFactory->loginDetail(array(
-					'email' => $email,
-					'pass' => md5($pass),
-				));
-			}
+			$user = $newsFactory->loginDetail(array(
+				'email' => $email,
+				'pass' => hash('sha256', $pass),
+			));
 
 			if (!$user)
 			{
