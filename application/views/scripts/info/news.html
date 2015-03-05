@@ -18,6 +18,11 @@ else
 {
 	$auth_user_id = null;
 }
+
+if (!Application_Model_User::checkId($this->news->user_id, $user))
+{
+	return false;
+}
 ?>
 <div class="scrpBox scrpBox_new" id="scrpBox_<?php echo $this->news->id; ?>">
 	<ul class="myScrp afterClr user_post">
@@ -32,7 +37,7 @@ else
 			<ul class="post">
 				<li class="imgPro">
 					<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $this->news->id; ?>" style="z-index:9999;">
-						<img id="userImage" src="<?php echo $auth_pro_image; ?>" class="smallImage" /> 
+						<img id="userImage" src="<?php echo $user->getProfileImage('www/images/img-prof40x40.jpg'); ?>" class="smallImage" /> 
 					</a>
 				</li>
 				<li>
