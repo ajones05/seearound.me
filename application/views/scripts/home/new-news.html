@@ -131,11 +131,9 @@ if (count($this->news)):
 	</div>
 	<ul id="comment_list_<?php echo $row['id']; ?>"<?php if ($comments_count): ?> class="cmntRow afterClr"<?php endif; ?>>
 	<?php if ($comments_count): ?>
-		<?php if ($comments_count > 2): ?>
+		<?php if ($comments_count > 3): ?>
 		<li class="viewCount">
-			<?php if ($this->filter != 'all'): ?>
-			<div onclick="getComments(this);" class="commentField"><?php echo $comentsModel->viewMoreLabel($comments_count, $comentsModel->news_limit); ?></div>
-			<?php endif; ?>
+			<div onclick="getComments(this);" class="commentField"><?php echo $comentsModel->viewMoreLabel($comments_count - 3, $comentsModel->news_limit); ?></div>
 		</li>
 		<?php
 			for ($i = count($this->comments[$row['id']]) - 1; $i >= 0; $i--)

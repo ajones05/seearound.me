@@ -95,7 +95,7 @@ if (!Application_Model_User::checkId($this->news->user_id, $user))
 	<ul class="cmntRow afterClr">
         <?php if($this->totalcomments > 5): ?>
         <li class="viewCount">
-			<div onclick="getComments(this);" class="commentField"><?php echo $this->comentsModel->viewMoreLabel($this->totalcomments, $this->comentsModel->news_limit); ?></div>
+			<div onclick="getComments(this);" class="commentField"><?php echo $this->comentsModel->viewMoreLabel($this->totalcomments - 5, $this->comentsModel->news_limit); ?></div>
         </li>
         <?php
 		endif;

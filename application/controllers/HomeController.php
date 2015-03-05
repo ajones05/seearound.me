@@ -422,7 +422,7 @@ class HomeController extends My_Controller_Action_Herespy {
 					throw new RuntimeException('Incorrect user ID: ' . var_export($row['user_id']), -1);
 				}
 
-				$commentRow[$row['id']] = $commentTable->findAllByNewsId($row['id'], 2);
+				$commentRow[$row['id']] = $commentTable->findAllByNewsId($row['id'], 3);
 
 				$row['user'] = array(
 					'name' => ucwords($news_user->Name),
