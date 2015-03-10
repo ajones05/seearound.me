@@ -103,11 +103,12 @@ $created_date = isset($this->item['created_date']) ? $this->item['created_date']
 			</div>
 		</li>
 		<?php
-			for ($i = count($comments) - 1; $i >= 0; $i--)
-			{
-				echo My_ViewHelper::render('home/comment-item.html', array('comment' => $comments[$i]));
-			}
 		endif;
+
+		for ($i = count($comments) - 1; $i >= 0; $i--)
+		{
+			echo My_ViewHelper::render('home/comment-item.html', array('comment' => $comments[$i]));
+		}
 		?>
 		<li id="commentTextarea_<?php echo $this->item['id']; ?>" class="cmntList-last afterClr">
 			<ul class="inpCmnt afterClr">
