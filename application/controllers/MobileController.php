@@ -146,40 +146,30 @@ class MobileController extends Zend_Controller_Action
     
     public function getotheruserprofileAction()
     {
-		$user_id = $this->_request->getParam('user_id');
-		$other_user_id = $this->_request->getParam('other_user_id');
-
 		$response = array(
 			'message' => 'Profile Detail',
 		);
 
 		try
 		{
-			if ($other_user_id == null)
-			{
-				throw new RuntimeException('Parameter other_user_id cannot be blank', -1);
-			}
+			$other_user_id = $this->_request->getParam('other_user_id');
 
-			$userModel = new Application_Model_User();
-			$other_user = $userModel->getUserProfile($other_user_id);
-
-			if (!count($other_user))
+			if (!Application_Model_User::checkId($other_user_id, $other_user))
 			{
 				throw new RuntimeException('Incorrect other_user_id id: ' . var_export($other_user_id, true), -1);
 			}
 
+			$user_id = $this->_request->getParam('user_id');
+
 			if ($user_id != null)
 			{
-				$user = $userModel->getUserProfile($user_id);
-
-				if (!count($user))
+				if (!Application_Model_User::checkId($user_id, $user))
 				{
-					throw new RuntimeException('Incorrect user_id id: ' . var_export($user, true), -1);
+					throw new RuntimeException('Incorrect user_id id: ' . var_export($user_id, true), -1);
 				}
 
-				$friendsModel = new Application_Model_Friends();
+				$result = Application_Model_Friends::getInstance()->getStatus($user_id, $other_user_id);
 
-				$result = $friendsModel->getStatus($user_id, $other_user_id);
 				$response['friends'] = count($result) && $result->status == 1 ? 1 : 0;
 			}
 
@@ -190,6 +180,8 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response['status'] = 'FAILED';
 		}
+
+		$this->_logRequest($response);
 
 		die(Zend_Json::encode($response));
     }
@@ -684,6 +676,8 @@ class MobileController extends Zend_Controller_Action
 			$response['status'] = 'FAILED';
 			$response['message'] = 'Nearest point data could not be render successfully';
 		}
+
+		$this->_logRequest($response);
 
 		die(Zend_Json_Encoder::encode($response));
 	}
