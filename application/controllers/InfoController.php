@@ -48,7 +48,7 @@ class InfoController extends My_Controller_Action_Abstract
 		$this->view->totalcomments = $this->view->comentsModel->getCountByNewsId($news->id);
 		$this->view->newsVote = Application_Model_Voting::getInstance()->findCountByNewsId($news->id);
 
-		$this->view->headScript()->prependFile('/www/scripts/publicNews.js');
+		$this->view->headScript()->prependFile('/www/scripts/publicNews.js?' . Zend_Registry::get('config_global')->mediaversion);
     }
 
     public function getTotalCommentsAction()

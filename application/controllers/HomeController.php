@@ -15,7 +15,7 @@ class HomeController extends My_Controller_Action_Herespy {
             $this->_redirect(BASE_PATH . 'home/edit-profile');
         }
 
-		$this->view->headScript()->prependFile('/www/scripts/publicNews.js');
+		$this->view->headScript()->prependFile('/www/scripts/publicNews.js?' . Zend_Registry::get('config_global')->mediaversion);
     }
     
      public function managedbAction(){
