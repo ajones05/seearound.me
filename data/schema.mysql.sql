@@ -46,6 +46,7 @@ ALTER TABLE `message_reply` ADD FOREIGN KEY `user_data_fk_3`(`message_id`) REFER
 -- Table structure for table `news`
 --
 ALTER TABLE `news` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
+ALTER TABLE `news` CHANGE `created_date` `created_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 --
 -- Table structure for table `votings`

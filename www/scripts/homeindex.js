@@ -76,6 +76,7 @@ var formContainor = ''; //To store the uploader form parent containor
 */
 $(document).ready(function(){
     upclick({
+		dataname: 'images',
         element: 'uploader',
         onstart: function(filename) {
             var uploadedImage = filename.split('\\');
@@ -95,10 +96,6 @@ $(document).ready(function(){
 				alert("Invalid file format");	
 				clearUpload();
 			}
-        },
-        oncomplete: function(response_data)
-        {
-           showAddNews(response_data);
         }
     });
 });
@@ -108,6 +105,7 @@ $(document).ready(function(){
 */    
 function reinitilizeUpload() {
      upclick({
+		dataname: 'images',
         element: 'uploader',
         onstart: function(filename) {
             var uploadedImage = filename.split('\\');
@@ -119,10 +117,6 @@ function reinitilizeUpload() {
             filename = "<br/><div id='case2' style='margin-left:0px;margin-top:-37px;'><div style='margin-bottom : 2px;float:left;'>"+imageRealName;
             filename += '</div><div>&nbsp;<img onclick="clearUpload();" src="'+baseUrl+'www/images/delete-icon.png" style="cursor:pointer;"/></div></div>';
             $("#fileNm").html(filename);
-        },
-        oncomplete: function(response_data)
-        {
-           showAddNews(response_data);
         }
     });
 }

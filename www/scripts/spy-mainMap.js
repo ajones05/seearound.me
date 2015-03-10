@@ -318,7 +318,7 @@ MainMap.prototype.createMarkersOnMap1 = function(dataForMarkers, markerIcon){
 			markerContent = {
 				id: dataForMarkers[i]['id'],
 				news: dataForMarkers[i]['news'],
-				user_id: dataForMarkers[i]['user_id'],
+				user_id: dataForMarkers[i]['user']['id'],
 				name: dataForMarkers[i]['user']['name'],
 				userImage: dataForMarkers[i]['user']['image']
 			};
@@ -1531,7 +1531,6 @@ MainMap.prototype.changeAddressContent = function(address){
      this.infoWindow.setContent(this.addressContent(address));
 
      this.infoWindow.setPosition((this.movingMarker).getPosition());
-     console.log((this.movingMarker).getPosition());
 
      this.infoWindow.open(this.map);   
 

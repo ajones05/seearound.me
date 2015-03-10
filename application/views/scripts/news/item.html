@@ -1,0 +1,145 @@
+<?php
+$comments = My_ArrayHelper::getProp($this, 'comments', array());
+$comments_count = My_ArrayHelper::getProp($this, 'comments_count', 0);
+$votings_count = My_ArrayHelper::getProp($this, 'votings_count', 0);
+$images = isset($this->item['images']) ? $this->item['images'] : null;
+$created_date = isset($this->item['created_date']) ? $this->item['created_date'] : date('Y-m-d H:i:s');
+?>
+<div id="scrpBox_<?php echo $this->item['id']; ?>" class="scrpBox" onmouseover="toggleBounce('<?php echo $this->item['id']; ?>','<?php echo $this->user->id?>');" onmouseout="stopBounce('<?php echo $this->item['id']; ?>',<?php echo $this->user->id; ?>);">
+	<ul class="myScrp afterClr" id="newsDiv<?php echo $this->item['id']; ?>">
+		<?php if ($this->auth['id'] == $this->user->id): ?>
+		<div class="deteleIcon">
+			<img class="crp deteleIcon_img" onclick="deletes(this, 'news', <?php echo $this->item['id']; ?>);" src="<?php echo BASE_PATH; ?>www/images/delete-icon.png" />
+		</div>
+		<?php endif; ?>
+		<li>
+			<ul class="post">
+				<li class="imgPro">
+					<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $this->user->id; ?>">
+						<img src="<?php echo $this->user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" class="smallImage" />
+					</a>
+				</li>
+				<li>
+					<div class="post-top">
+						<a class="title" href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $this->user->id; ?>"><?php echo ucfirst($this->user->Name); ?></a>
+						<span class="post-date"><?php echo date("d F Y h:i a", strtotime($created_date)); ?></span>
+						<?php if ($this->item['id']): ?>
+						<span class="message_number" id="message_success_<?php echo $this->item['id']; ?>"><?php echo $votings_count; ?></span>
+						<?php endif; if ($this->auth['id'] != $this->user->id): ?>
+						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $this->auth['id']; ?>);" src="<?php echo BASE_PATH; ?>www/images/<?php echo $votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>">
+						<img class="crp" id="img2_<?php echo $this->item['id']; ?>" style="display:none" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $this->auth['id']; ?>);" src="<?php echo BASE_PATH; ?>www/images/thumsup_voted.jpg" />
+						<div id="thumbs_up1_<?php echo $this->item['id']; ?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
+							<span id="message_success_5" style="color: rgb(51, 204, 0);"><img src="<?php echo BASE_PATH; ?>www/images/correct_small.gif" />Thanks!</span>
+						</div>
+						<div id="thumbs_up2_<?php echo $this->item['id']; ?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
+							<span id="message_success_5" style="color: rgb(51, 204, 0);">Already-Voted</span>
+						</div>
+						<?php endif; if ($this->auth['id'] == $this->user->id): ?>
+						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="alert('You can not vote your own post!');" src="<?php echo BASE_PATH; ?>www/images/<?php echo $votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>" />
+						<?php endif; ?>
+					</div>
+					<div class="post-bottom">
+						<p><?php echo My_CommonUtils::linkClickable(nl2br(htmlspecialchars(substr($this->item['news'], 0, 350)))); ?></p>
+					</div>
+				</li>
+				<li class="clr"></li>
+			</ul>
+		</li>
+		<?php
+		if ($images && file_exists(ROOT_PATH . '/newsimages/' . $images)):
+			list($width, $height) = getimagesize(ROOT_PATH . '/newsimages/' . $images);
+		?>
+		<li class="cmnti">
+			<div>
+				<img onclick="openImage('<?php echo $images; ?>','<?php echo $width; ?>', '<?php echo $height; ?>');" class="Image-Popup-Class" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>" style="cursor: pointer;width:100%;" />
+			</div>
+			<?php endif; if (strlen($this->item['news']) > 350): ?>
+			<span>
+				<span id="morecontent_<?php echo $this->item['id']; ?>" style="display: none;"><?php echo My_CommonUtils::linkClickable(nl2br(htmlspecialchars(substr($this->item['news'],350,strlen($this->item['news']))))); ?></span>
+				<span>
+					<a id="moreButton_<?php echo $this->item['id']; ?>" href="javascript:void(0)" class='commentFont' onclick="showMoreNews(this,'<?php echo $this->item['id']; ?>')">...More</a>
+				</span>
+			</span>
+			<?php endif; ?>
+		</li>
+		<li class="post-comment">
+		<?php
+		if (!$comments || !My_ArrayHelper::search(array('news_id' => $this->item['id']), $comments->toArray(), 1)):
+			if ($this->auth['id']):
+		?>
+			<span id="comment_text_<?php echo $this->item['id']; ?>" onclick="showCommentField(<?php echo $this->item['id']; ?>);" style="cursor:pointer;color: #4276cd;">Comment</span>
+		<?php else: ?>
+			<span class="login-popup-class" style="color: #4276cd;">Comment</span>
+		<?php
+			endif;
+		endif;
+		?>
+		</li>
+	</ul>
+	<div class="dur">
+		<span class="floatR">
+			<span style="display: block; float: left;">Share this Post:</span>
+			<a class="crp" onclick="fbshare('scrpBox_<?php echo $this->item['id']; ?>','<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>','<?php echo $this->item['news']; ?>','<?php echo BASE_PATH; ?>info/news/nwid/<?php echo $this->item['id']; ?>')">
+				<img src="<?php echo BASE_PATH; ?>www/images/facebook.png" style="width: 25px; height: 25px;" />
+			</a>
+			<?php if ($this->auth['id']): ?>
+			<a class="crp Message-Popup-Class cboxElement" onclick="clearErrors('<?php echo $this->item['id']; ?>');user_id=2;$('#message').val($.trim($('#<?php echo $this->item['news']; ?>').html()));">
+				<img src="<?php echo BASE_PATH; ?>www/images/email.png" style="width: 25px; height: 25px;" />
+			</a>
+			<?php else: ?>
+			<a class="login-popup-class crp">
+				<img src="<?php echo BASE_PATH; ?>www/images/email.png" />
+			</a>
+			<?php endif; ?>
+		</span>
+		<div class="clr"></div>
+	</div>
+	<ul id="comment_list_<?php echo $this->item['id']; ?>"<?php if ($comments_count): ?> class="cmntRow afterClr"<?php endif; ?>>
+	<?php if ($comments_count): ?>
+		<?php if ($comments_count > 3): ?>
+		<li class="viewCount">
+			<div onclick="getComments(this);" class="commentField">
+				<?php echo Application_Model_Comments::viewMoreLabel($comments_count - 3); ?>
+			</div>
+		</li>
+		<?php
+			for ($i = count($comments) - 1; $i >= 0; $i--)
+			{
+				echo My_ViewHelper::render('home/comment-item.html', array('comment' => $comments[$i]));
+			}
+		endif;
+		?>
+		<li id="commentTextarea_<?php echo $this->item['id']; ?>" class="cmntList-last afterClr">
+			<ul class="inpCmnt afterClr">
+				<span style="display: block; text-align: center;">
+					<img id="rpl_loading_<?php echo $this->item['id']; ?>" src="<?php echo BASE_PATH; ?>www/images/wait.gif" style="display: none;">
+				</span>
+				<li class="imgPro">
+					<img src="<?php echo $this->auth['image']; ?>" class="smallImage" />
+				</li>
+				<li class="inpCmnt-last">
+					<textarea id="comment<?php echo $this->item['id']; ?>" placeholder="Write a Comment" class="textAreaClass" onkeydown="textLimit(250, this);" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea(<?php echo $this->item['id']; ?>);"></textarea>
+				</li>
+				<div class="clr"></div>
+			</ul>
+		</li>
+	<?php else: ?>
+		<ul id="commentTextarea_<?php echo $this->item['id']; ?>" class="cmntRow afterClr" style="display: none;">
+			<li id='tempDiv_<?php echo $this->item['id']; ?>' class="cmntList-last" style="margin-top: 0; border-top: none;">
+				<ul class="inpCmnt afterClr">
+					<span>
+						<img id="rpl_loading_<?php echo $this->item['id']; ?>"  src="<?php echo BASE_PATH; ?>www/images/wait.gif" style="margin-bottom: 0px; float: right; margin-right: 131px; margin-top: 9px; display: none;" />
+					</span>
+					<li class="imgPro">
+						<img src="<?php echo $this->auth['image']; ?>" class="smallImage" />
+					</li>
+					<li class="inpCmnt-last">
+						<textarea id="comment<?php echo $this->item['id']; ?>" class="textAreaClass" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea(<?php echo $this->item['id']; ?>);"></textarea>
+					</li>
+					<div class="clr"></div>
+				</ul>
+			</li>
+		</ul>
+	<?php endif; ?>
+	</ul>
+</div>

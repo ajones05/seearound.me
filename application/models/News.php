@@ -351,11 +351,24 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
 		{
 			return false;
 		}
-		
+
 		$db = self::getInstance();
 
 		$news = $db->fetchRow($db->select()->where('id =?', $news_id));
 
 		return $news != null;
     }
+	
+    /**
+     * Inserts a new row.
+     *
+     * @param  array  $data  Column-value pairs.
+     * @return mixed         The primary key of the row inserted.
+     */
+    public function insert(array $data)
+    {
+		$data['updated_date'] = date('Y-m-d H:i:s');
+
+		return parent::insert($data);
+	}
 }

@@ -21,68 +21,6 @@ function newsMap(lat, lng, data) {
      });
 }
 
-function newsinfo(map, marker, lat, lng, data) {
-
-	if(infoBubble != ""){
-
-		infoBubble.close();
-
-		infoBubble = "";
-
-	}
-
-	var html = '<div id="content0_1" class="infoBubbleClass" style="min-width:200px;max-width:250px;min-height:50px;word-wrap:break-word;">'+
-
-			'<div style="float:left;width:20%">'+
-
-				'<img class="smallImage" src="'+data.image+'" />'+
-
-			'</div>'+
-
-			'<div class="markerNews" align="left" style="float:right;width:79%">'+
-
-				'<span id="userName0_1" class="userName">'+data.name+'</span>'+
-
-				'<span id="news0_1" style="margin-top:5px;display:block;word-wrap: break-word;">'+data.address+'</span>'+
-
-			'</div>'+
-
-		'</div>';
-
-	infoBubble = new InfoBubble({
-
-	  map: map,
-
-	  content: html,
-
-	  position: new google.maps.LatLng(lat, lng),
-
-	  shadowStyle: 3,
-
-	  padding: 10,
-
-	  borderRadius: 4,
-
-	  arrowSize: 25,
-
-	  borderWidth: 1,
-
-	  borderColor: '#2c2c2c',
-
-	  hideCloseButton: false,
-
-	  arrowPosition: 30,
-
-	  minWidth: 200
-
-	});
-
-	infoBubble.open(map, marker);
-
-   
-
-}
-
 function openImage(imageName, w, h) { 
  	if(w==0 && h==0) {
 
@@ -126,9 +64,6 @@ function openImage(imageName, w, h) {
         $("#imagePopup").attr('src', baseUrl+"newsimages/"+imageName);
         
  }
- 
-
-var reurl = window.location.href;
 
  function fbshare(scrpId,imageUrl,messageId,reurlPost) { 
     var newsVal='';
@@ -146,18 +81,6 @@ var reurl = window.location.href;
     });
     
 }
-
-
-
-function twitterShare(thisone) {
-
-   var url = "https://twitter.com/intent/tweet?original_referer="+reurl+"&source=tweetbutton&text="+$('#newsDataDiv').html().substring(0, 120)+"&url=http://"+http_host+"/info/news/nwid/"+newsId; 
-
-   window.open(url,"twiter Share", "width=500,height=350,top=200px,left=450px");
-
-}
-
-
 
 function publicMessage() {
 

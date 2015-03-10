@@ -211,115 +211,78 @@ class HomeController extends My_Controller_Action_Herespy {
         }
     }
 
-    public function addNewsAction() {
-        $this->view->myeditprofileExist = true;
-        $response = new stdClass();
-        $this->_helper->layout()->disableLayout();
-        
-        $newsFactory = new Application_Model_NewsFactory();
-        $votingTable = new Application_Model_Voting();
-        $newsTable = new Application_Model_News();
+	/**
+	 * Add news action.
+	 *
+	 * @return void
+	 */
+	public function addNewsAction()
+	{
+		try
+		{
+			$data = $this->getRequest()->getParams();
 
-        $userid = $this->auth['user_id'];
-        $res    = $this->_getParam('news');
-        $lat    = $this->_getParam('latitude');
-        $lng    = $this->_getParam('longitude');
- 
-        if (strpos($res, "<") > 0 || strpos($res, ">") > 0) {
-            $response->news = array();
-            $response->id = "";
-            $response->image = "";
-            $response->lastRowId = '';
-            $response->result = array();
-            die(Zend_Json_Encoder::encode($response));
-          }
-        $address = $this->_getParam('address');  //echo "<pre>"; print_r($_REQUEST);  print_r($_FILES); exit;
-       
-        if ($_FILES['Filedata']) {
-            if (getimagesize($_FILES['Filedata']['tmp_name'])) {
-                $name = $_FILES['Filedata']['name'];
-                $type = $_FILES['Filedata']['type'];
-                $tmp  = $_FILES['Filedata']['tmp_name'];
-                $size = $_FILES['Filedata']['size'];
-            }
-        } else {
-            $name = null;
-            $type = null;
-            $tmp = null;
-            $size = null;
-        }
+			if (!Application_Model_User::checkId($this->auth['user_id'], $user))
+			{
+				throw new Exception('Session error', -1);
+			}
 
-        $id = $newsFactory->addNews($userid, $res, $lat, $lng, $address, $name, $type, $tmp, $size);
-        if ($id) {
-             $newsId = $id;
-             if ($newsId){
-                $action = 'news';
-                $action_id = $newsId;
-                $votingTable = new Application_Model_Voting();
-                $insert = $votingTable->firstNewsExistence($action, $action_id, $userid);
-              }
-         }
-        
-         //$vid  =  $votingTable->addNewsVote($userid);
-        $newstable   = new Application_Model_News();
-        $votingTable = new Application_Model_Voting();
-        $newsRow = $newstable->getNews(array('id' => $id));
-        $lastRowId = $newsFactory->getLastRow();
+			$form = new Application_Form_News;
 
-        $response->news = $newsRow->toArray();
-        $response->noofvotes = $votingTable->getTotalVoteCounts('news', $newsRow['id'], $newsRow['user_id']);
-       //echo "after number of votes"; exit;
-        if (file_exists(realpath('.') . '/newsimages/' . $response->news['images'])) {
-            list( $response->source_image_width, $response->source_image_height, $response->source_image_type ) =
-				getimagesize(realpath('.') . '/newsimages/' . $response->news['images']);
-        } else {
-            $response->source_image_width = '';
-            $response->source_image_height = '';
-        }
+			$data['user_id'] = $user->id;
 
+			if (!$form->isValid($data))
+			{
+				throw new RuntimeException('Validate error', -1);
+			}
 
+			$model = new Application_Model_News;
 
-        $response->id = $id;
+			$data = $form->getValues();
 
-        $response->image = Application_Model_User::getImage($userid);
+			$data['id'] = $model->insert($form->getValues());
 
+			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $data['id'], $user->id))
+			{
+				throw new RuntimeException('Save voting error', -1);
+			}
 
+			$response = array(
+				'status' => 1,
+				'news' => array(
+					'id' => $data['id'],
+					'news' => $data['news'],
+					'latitude' => $data['latitude'],
+					'longitude' => $data['longitude'],
+					'user' => array(
+						'id' => $user->id,
+						'name' => $user->Name,
+						'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+					),
+					'html' => My_ViewHelper::render(
+						'news/item.html',
+						array(
+							'item' => $data,
+							'user' => $user,
+							'auth' => array(
+								'id' => $user->id,
+								'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+							),
+						)
+					)
+				),
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error'),
+			);
+		}
 
-        $response->lastRowId = '';
-
-        if (isset($lastRowId))
-            $response->lastRowId = $lastRowId;
-
-        die(Zend_Json_Encoder::encode($response));
-    }
-
-    public function distance($lat1, $lon1, $lat2, $lon2, $unit) {
-
-        $theta = $lon1 - $lon2;
-
-        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
-
-        $dist = acos($dist);
-
-        $dist = rad2deg($dist);
-
-        $miles = $dist * 60 * 1.1515;
-
-        $unit = strtoupper($unit);
-
-
-
-        if ($unit == "K") {
-
-            return ($miles * 1.609344);
-        } else if ($unit == "N") {
-
-            return ($miles * 0.8684);
-        } else {
-
-            return $miles;
-        }
-    }
+		die(Zend_Json_Encoder::encode($response));
+	}
 
 	/**
 	 *
@@ -410,37 +373,56 @@ class HomeController extends My_Controller_Action_Herespy {
 					throw new RuntimeException('Incorrect filter value: ' . var_export($filter, true), -1);
 			}
 
-			$commentTable = new Application_Model_Comments();
-
-			$result = $result->toArray();
-			$commentRow = array();
-
-			foreach ($result as &$row)
+			if (count($result))
 			{
-				if (!Application_Model_User::checkId($row['user_id'], $news_user))
+				$auth_image = BASE_PATH . 'www/images/img-prof40x40.jpg';
+
+				if (!empty($this->auth['user_id']))
 				{
-					throw new RuntimeException('Incorrect user ID: ' . var_export($row['user_id']), -1);
+					$auth = Application_Model_User::findById($this->auth['user_id']);
+					$auth_image = $auth->getProfileImage($auth_image);
 				}
 
-				$commentRow[$row['id']] = $commentTable->findAllByNewsId($row['id'], 3);
+				$commentTable = new Application_Model_Comments;
+				$votingTable = new Application_Model_Voting;
 
-				$row['user'] = array(
-					'name' => ucwords($news_user->Name),
-					'image' => $news_user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
-				);
+				foreach ($result as $row)
+				{
+					$user = Application_Model_User::findById($row->user_id);
+
+					$response['result'][] = array(
+						'id' => $row->id,
+						'news' => $row->news,
+						'latitude' => $row->latitude,
+						'longitude' => $row->longitude,
+						'user' => array(
+							'id' => $user->id,
+							'name' => $user->Name,
+							'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+						),
+						'html' => My_ViewHelper::render(
+							'news/item.html',
+							array(
+								'item' => $row,
+								'user' => $user,
+								'auth' => array(
+									'id' => My_ArrayHelper::getProp($this->auth, 'user_id'),
+									'image' => $auth_image,
+								),
+								'votings_count' => $votingTable->findCountByNewsId($row->id),
+								'comments_count' => $commentTable->getCountByNewsId($row->id),
+								'comments' => $commentTable->findAllByNewsId($row->id, 3)
+							)
+						)
+					);
+				}
+			}
+			elseif ($fromPage == 0)
+			{
+				$response['result'] = My_ViewHelper::render('news/empty.html');
 			}
 
-			$html = My_ViewHelper::render('home/new-news.html', array(
-				'filter' => $filter,
-				'auth' => $this->auth,
-				'news' => $result,
-				'comments' => $commentRow,
-				'fromPage' => $fromPage
-			));
-
 			$response['status'] = 1;
-			$response['result'] = $result;
-			$response['html'] = $html;
 		}
 		catch (Exception $e)
 		{
@@ -574,7 +556,7 @@ class HomeController extends My_Controller_Action_Herespy {
 
 				if ($count)
 				{
-					$response['label'] = $comentsTable->viewMoreLabel($count, $comentsTable->news_limit);
+					$response['label'] = $comentsTable->viewMoreLabel($count);
 				}
 			}
 

@@ -48,4 +48,41 @@ class My_ArrayHelper
 
 		return $result;
 	}
+
+	/**
+	 * Gets array's or object's prperty by key.
+	 *
+	 * @param	mixed	$src		Source array or object.
+	 * @param	string	$key		Key to get property. Can be composite "level1.level2" or "level1->level2".
+	 * @param	mixed	$default	Default value to return when nothing found.
+	 *
+	 * @return	mixed	Reference to property or $default if nothing found.
+	 */
+	public static function getProp($src, $key, $default=null)
+	{
+		$property = &$src;
+		foreach (array_map("trim", explode(".", str_replace("->", ".", $key))) as $k)
+		{
+			if (is_array($property))
+			{
+				if (isset($property[$k]))
+				{
+					$property = &$property[$k];
+					continue;
+				}
+			}
+			else if(is_object($property))
+			{
+				if (isset($property->$k))
+				{
+					$property = &$property->$k;
+					continue;
+				}
+			}
+
+			return $default;
+		}
+
+		return $property;
+	}
 }

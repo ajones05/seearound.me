@@ -156,7 +156,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		);
 	}
 
-	public function viewMoreLabel($count, $limit)
+	public static function viewMoreLabel($count, $limit = 30)
 	{
 		$label = 'View ';
 

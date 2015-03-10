@@ -564,9 +564,23 @@ class Application_Model_User extends My_Db_Table_Abstract
 			return false;
 		}
 
+		$user = self::findById($user_id);
+
+		return $user != null;
+	}
+
+	/**
+	 * Finds record by ID.
+	 *
+	 * @param	integer	$id
+	 *
+	 * return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 */
+	public static function findById($id)
+	{
 		$db = self::getInstance();
 
-		$user = $db->fetchRow(
+		$result = $db->fetchRow(
 			$db->select()
 				->setIntegrityCheck(false)
 				->from($db, '*')
@@ -589,9 +603,9 @@ class Application_Model_User extends My_Db_Table_Abstract
 						'address.longitude'
 					)
 				)
-				->where('user_data.id =?', $user_id)
+				->where('user_data.id =?', $id)
 		);
 
-		return $user != null;
+		return $result;
 	}
 }

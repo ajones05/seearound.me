@@ -291,9 +291,7 @@ function getAllNearestPoint(centerPosition){
 			hideNewsScreen();
 			paginationResultObject = true;
 
-			if (response.result.length){
-				globalStart += response.result.length;
-
+			if (typeof response.result === 'object'){
 				var scrollPosition = [
 					self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
 					self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
@@ -301,7 +299,10 @@ function getAllNearestPoint(centerPosition){
 
 				window.scrollTo(scrollPosition[0], scrollPosition[1]);
 
-				$("#newsData").append(response.html);
+				for (i in response.result){
+					globalStart++;
+					$("#newsData").append(response.result[i].html);
+				}
 
 				if (response.result.length == NEWS_LIMIT){
 					$(window).scroll(bindScroll);
@@ -311,19 +312,10 @@ function getAllNearestPoint(centerPosition){
 
 				commonMap.createMarkersOnMap1(response.result, UserMarker1);
 
-				$(".Image-Popup-Class").colorbox({
-					width: "60%",
-					height: "80%",
-					inline: true,
-					href: "#Image-Popup"
-				}, function(){
-					$.colorbox.resize({
-						width: imageWidth + 'px',
-						height: imageHeight + 'px'
-					});
-				});
-			} else {
-				$("#newsData").append(response.html);
+				updateNews();
+			} else if (typeof response.result === 'string'){
+				globalStart++;
+				$("#newsData").append(response.result);
 			}
 
 			if ($("#newsData").height() > 714){
@@ -371,10 +363,11 @@ function addNews() {
 		alert("You enter invalid text");
 		return false;
 	}
-    textBoxHeight = 1;
+
     var news = $.trim($('#newsPost').val());
-    news = news.replace("http://", " "); 
-    news = news.replace("https://", " "); 
+    news = news.replace("http://", " ");
+    news = news.replace("https://", " ");
+
     if(commonMap.mapMoved){
        $("#locationButton").trigger('click');
     } else {
@@ -386,23 +379,43 @@ function addNews() {
      			}, function(results,status) {
        				if (status == google.maps.GeocoderStatus.OK) {
     					if (results[0]) {
-    				          var formattedAddress = results[0].formatted_address;
-                              if($('#fileNm').html() != ""){  
-                                  $("#tempContainor").html(formContainor); 
-								  // TODO: fix
-                                  $("#mainForm").attr('action',baseUrl+'home/add-news?news='+news+'&latitude='+userLatitude+'&longitude='+userLongitude+'&address='+formattedAddress); 
-                                  $("#mainForm").submit();
-                                  $('#loading').hide();
-                                  $('#postOptionId').hide();
-                                  $('#newsPost').attr('placeholder','Share something from your current location'); 
-                                       } else { 
-                                                $.post(baseUrl+'home/add-news',
-                                                       {'news': news,'latitude': userLatitude,'longitude': userLongitude, 'address': formattedAddress}, 
-                                                       showAddNews, 
-                                                       "html");
-                                             $('#postOptionId').hide();
-                                             $('#newsPost').attr('placeholder','Share something from your current location'); 
-                                             } 
+							var data = new FormData();
+
+							if ($('#fileNm').html()){
+								data.append('images', $('[name=images]', formContainor)[0].files[0]);
+							}
+
+							data.append('news', news);
+							data.append('latitude', userLatitude);
+							data.append('longitude', userLongitude);
+							data.append('address', results[0].formatted_address);
+
+							$.ajax({
+								url: baseUrl + 'home/add-news',
+								data: data,
+								cache: false,
+								contentType: false,
+								processData: false,
+								dataType: 'json',
+								type: 'POST',
+								success: function(response){
+									$("#newsData").prepend(response.news.html);
+									$('#noNews').html('');
+									$('#newsWaitOnAdd').hide();
+
+									$('html, body').animate({scrollTop: 0}, 0);
+
+									commonMap.createMarkersOnMap1([response.news], UserMarker1);
+
+									clearUpload();
+									reinitilizeUpload();
+									updateNews();
+
+									$('#postOptionId').hide();
+									$('#newsPost').val('').css('height', 36).attr('placeholder','Share something from your current location');
+									$('#loading').hide();
+								}
+							});
                                   }
                            }
                      });
@@ -489,238 +502,31 @@ function stopBounce(newsId,user_id){
     commonMap.searchNewsMarker(newsId,'stopbounce');
 }
 
-/*
-* Function to 
-* @param {CONTENT ARRAY,CURRENT NEWS WHICH IS FOCUSED,DATA TO SHOW,NEWS ID, TYPE(ADDED,PREVIOUS))}
-*/
-function showAddNews(obj){
-    initFlagForMap = null;
-    
-    var jsdata = $.parseJSON(obj);
-        textBoxHeight = 1;
-        var news = $.trim($('#newsPost').val().replace(/\n/g,"<br>"));
-        var html = '<div id="scrpBox_'+jsdata.id+'" class="scrpBox" onmouseover="toggleBounce('+jsdata.id+','+user_id+');" onmouseout="stopBounce('+jsdata.id+','+user_id+');">'+
-                        '<ul class="myScrp afterClr" id="newsDiv'+jsdata.id+'">'+ 
-                            '<div class="deteleIcon">'+
-                                '<img class="crp" style="float:right;margin-right: 7px;" onclick="deletes(this, \'news\', '+jsdata.id+');" src="'+baseUrl+'www/images/delete-icon.png">'+'</div><div class="deleteIcon12">'+
-                                '<img class="crp12" style="margin-top: 17px;right: 14px;position: absolute;cursor: pointer;width: 23px;" onclick="showAlert();" src="'+baseUrl+'www/images/thumsup_voted_gray.png">'+
-                            '</div>'+
-    					    '<li>'+
-                                '<ul class="post">'+
-                                     '<li class="imgPro">'
-    	                                if (jsdata.image) { 
-    		                                if(jsdata.image.indexOf('://') > 0) {
-    			                                html += '<a href="'+baseUrl+'home/profile/user/'+user_id+'"><img src="' + jsdata.image + '"  class="smallImage"/></a>';
-    		                                }else {
-    			                                html += '<a href="'+baseUrl+'home/profile/user/'+user_id+'"><img src="'+baseUrl+'uploads/' + jsdata.image + '"  class="smallImage"/></a>';
-    		                                }
-    	                                }else html += '<a href="'+baseUrl+'home/profile/user/'+user_id+'"><img src="'+baseUrl+'www/images/img-prof40x40.jpg"  class="smallImage"/></a>';
-    						     
-                                     html+='</li>';
-                                 
-                                     html+='<li>'+
-                                        '<div class="post-top">'+ 
-                                        
-                                            '<a class="title" href="'+baseUrl+'home/profile/user/'+user_id+'">'+userName+'</a>'+
-                                            '<span class="post-date">'+ 'Just now' + '</span>'+ 
-                                            '<span class="message_number">0</span>'+
-                                        
-                                        '</div>';
-                                     
-                                     html+='<div class="post-bottom test">';
-                                            html+= "<p>" + linkClickable(news.substring(0,350)) + "</p>";
-                                            if(news.length>350) {
-                                                 html+='<span><a id="moreButton_'+jsdata.id+'" href="javascript:void(0)" onclick="showMoreNews(this,'+jsdata.id+')">....More</a><span id="morecontent_'+jsdata.id+'" style="display:none">'+linkClickable(news.substring(350,news.length))+'</span></span>';
-                                            } 
-                                     
-                                     html+='</p></div></li><li class="clr"></li>'; 
-                                 
-                                html+='</ul>';
-                                html+='<li class="cmnt">';
-                                if(jsdata.news){
-                                    if((jsdata.news).images) {
-                                          
-                                                                     var imageUplaoded = baseUrl+'newsimages/'+(jsdata.news).images;
-                                            html+='<div><img onclick="openImage(\''+(jsdata.news).images+'\', '+jsdata.source_image_width+', '+jsdata.source_image_height+');" class="Image-Popup-Class" src="'+imageUplaoded+'" style="width: 100%; height: auto;cursor: pointer;"></div>'; 
-                                        };
-                                    };
-                                             
-                                html+='</li>';
-                             html+='<div class="dur">'+
-								 '<span class="floatR">'+
-                                   '<span style="position:block;float:left;">Share this Post:</span>'+
-                                   '<a class="crp"  onclick="fbshare(\'scrpBox_'+jsdata.id+'\',\''+baseUrl+'tbnewsimages/'+(jsdata.news).images+'\',\''+(jsdata.news).news+'\',\''+baseUrl+'info/news/nwid/'+jsdata.id+'\')">'+
-                                    '<img style="width:25px; height:25px;" src="'+baseUrl+'www/images/facebook.png" />'+
-                                   '</a>'+                                   
-                                   '<a class="crp Message-Popup-Class cboxElement" onclick="clearErrors();">'+
-                                    '<img style="width:25px; height:25px;" src="'+baseUrl+'www/images/email.png" />'+
-                                   '</a>'+
-                                 '</span><div class="clr"></div>'+
-                             '</div>'+
-			                 '<ul id="comment_list_'+jsdata.id+'"'+ 'class="cmntRow afterClr"' +'>'+
-    					        '<ul id="commentTextarea_'+jsdata.id+'" class="cmntList-last afterClr" style="margin-top:0px; border-top:none;">'+
-                                    '<li id="tempDiv_'+jsdata.id+'"'+ 'style="padding:0;"'+ '>'+
-                                        '<ul class="inpCmnt afterClr">'+
-                                            '<span style="margin-bottom: 0px; float: right; margin-right: 131px; margin-top: 9px; display: none;">'+
-                                                '<img id="rpl_loading_'+jsdata.id +'src="'+baseUrl+'www/images/wait.gif">'+
-                                            '</span>'+
-                                            '<li class="imgPro">';
-                                                if (jsdata.image) { 
-                            		                if(jsdata.image.indexOf('://') > 0) {
-                            			                html += '<img src="' + jsdata.image + '"   class="smallImage"/>';
-                            		                }else {
-                            			                html += '<img src="'+baseUrl+'uploads/' + jsdata.image + '"   class="smallImage"/>';
-                            		                }
-                            	                }else html += '<img src="'+baseUrl+'www/images/img-prof40x40.jpg"   class="smallImage"/>';
-                                            html+='</li>'+
-                                
-                                            '<li class="inpCmnt-last">'+
-    							                '<textarea id="comment'+jsdata.id+'" class="textAreaClass" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea('+jsdata.id+');" placeholder="Write comments..."></textarea>'+
-    						                '</li>'+
-                                            '<div class="clr"></div>'+
-                                        '</ul>'+
-                                    '</li>'+
-                                '</ul>'+
-    					     '</ul></li></ul>'
-    				'</div>';
-        	$("#newsData").prepend(html);
-        	$('#newsPost').val('');
-                $('#newsPost').css('height','36');
-          	$('#noNews').html('');
-    		$('#newsWaitOnAdd').hide();
-    		$(".Image-Popup-Class").colorbox({width:"60%",height:"80%", inline:true, href:"#Image-Popup"},function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});
-                $(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"});
-                $(".Message-Popup-Class").colorbox({width:"40%",height:"45%", inline:true, href:"#Message-Popup_Email"},function(){$('html, body').animate({ scrollTop: 0 }, 0);});
-    		$('html, body').animate({ scrollTop: 0 }, 0);
+function updateNews(){
+	$(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"});
+	$(".Message-Popup-Class").colorbox({width:"40%",height:"45%", inline:true, href:"#Message-Popup_Email"},function(){$('html, body').animate({ scrollTop: 0 }, 0);});
 
-        var plusHeight = 0
-        if((jsdata.news).images) {
-            plusHeight = Number(jsdata.source_image_height);
-        }
-         if($("#newsData").height()>714)
-                    setThisHeight(Number($("#newsData").height())+100+plusHeight);
-       if($("#news0_1").html() == "This is me!"){
-              changeNewsContent(0,1,jsdata,news,'FIRST');
-       } else {
-            
-            if(commonMap.findData(commonMap.bubbleArray[0].user_id,user_id,'CHECK')){
-                news = concatinateNews(news,jsdata.id);
-                commonMap.updateContent(commonMap.createContent(jsdata.image,userName,news,++(commonMap.bubbleArray[0]).total,"second",0,jsdata.id),0,(commonMap.bubbleArray[0]).total,jsdata.id);
-                $("#contentUpdator").html(commonMap.bubbleArray[0].divContent);
-                updatedContentId = (commonMap.bubbleArray[0]).total;
-                commonMap.bubbleArray[0].divContent = "";
-                commonMap.toggleContent(0,Number((commonMap.bubbleArray[0]).total),updatedContentId);
-                UpdatedContent = commonMap.updateContent($("#contentUpdator").html(),0,Number((commonMap.bubbleArray[0]).total),jsdata.id);
-                if((currentIdOfMarker==0)&&(previousBubble)){
-                    previousBubble.setContent(UpdatedContent);
-                }
-                $("#contentUpdator").html("");
-                
-            } else {
-                changeNewsContent(0,1,jsdata,news,'ADDED');
-            }
-      }
+	$( ".scrpBox" ).hover(function(){
+		$(this).find(".deteleIcon").each(function(){
+			$(this).css("display", "block");
+		});
+	}, function(){
+		$(this).find(".deteleIcon").each(function(){
+			$(this).css("display", "none");
+		});
+	});
 
-	 clearUpload();
-     reinitilizeUpload();
-     location.reload();
-}
-
-/*@ function for alert  */
-function showAlert(){
-    alert('You can not vote your own post.');
-}
-
-/*
-* Function to change news content when new news is posted
-* @param {bubbleArrayIndex : index of the div where news has to change,
-*  newsPosition : position of the news,
-*  jsdata : object of news which is to be replaced with new content
-*  news : news content,
-*  type : type of the content}
-*/
-function changeNewsContent(bubbleArrayIndex,newsPosition,jsdata,news,type){
-     $(document).find("#mainContent_0").each(function(){
-        if($(this).html()==""){
-            $(this).remove();
-        };
-     })
-     $("#contentUpdator").html(commonMap.bubbleArray[bubbleArrayIndex].divContent);
-     var UpdatedContent = '';
-     if((currentIdOfMarker==0)&&(previousBubble)){
-        news = concatinateNews(news,jsdata.id);
-        $("#userName"+bubbleArrayIndex+"_"+newsPosition).html(userName);
-        $("#news"+bubbleArrayIndex+"_"+newsPosition).html(news);
-        UpdatedContent = commonMap.changeContent($("#mainContent_"+bubbleArrayIndex).html(),bubbleArrayIndex,Number((commonMap.bubbleArray[bubbleArrayIndex]).total),jsdata.id);
-     } else {
-        news = concatinateNews(news,jsdata.id);
-        $("#userName"+bubbleArrayIndex+"_"+newsPosition).html(userName);
-        $("#news"+bubbleArrayIndex+"_"+newsPosition).html(news);
-        UpdatedContent = commonMap.changeContent($("#contentUpdator").html(),bubbleArrayIndex,Number((commonMap.bubbleArray[bubbleArrayIndex]).total),jsdata.id);
-     }
-    var currentBubble = commonMap.bubbleArray[0];
-    var arrowFlag = false;
-    if(currentBubble.contentArgs[0][2] == 'This is me!'){
-        currentBubble.newsId = new Array()
-        currentBubble.newsId.push(jsdata.id);
-        currentBubble.user_id = new Array()
-        currentBubble.user_id.push(user_id);
-        currentBubble.contentArgs[0] = [jsdata.image,userName,news,1,'first',0,jsdata.id];
-    }else{
-        arrowFlag = true;
-        currentBubble.newsId = array_unshift_assoc(currentBubble.newsId,0,jsdata.id);
-        currentBubble.user_id = array_unshift_assoc(currentBubble.user_id,0,user_id);
-        currentBubble.total++;
-        currentBubble.contentArgs = array_unshift_assoc(currentBubble.contentArgs,0,[jsdata.image,userName,news,1,'first',0,jsdata.id]);
-    }
-    currentBubble.currentNewsId = jsdata.id;
-    var content = commonMap.createOtherContent(jsdata.image,userName,news,1,'first',0,jsdata.id);
-    $("#mainContent_0").attr('currentDiv',1);
-    $("#content0_1").html(content);
-    $("#detail_0").html("<a href='/info/news/nwid/"+jsdata.id+"'>Detail</a>");
-    $("#prevDiv_0").hide();
-    if(type != 'FIRST')
-        $("#nextDiv_0").show();
-    else
-        $("#nextDiv_0").hide();
-    $("#contentUpdator").html("");
-    
-}
-
-
-function changeBubbleContent(bubbleArrayIndex,newsPosition,jsdata,news,type){
-    var currentBubble = commonMap.bubbleArray[0];
-    currentBubble.newsId = array_unshift_assoc(currentBubble.newsId,0,jsdata.id);
-    currentBubble.user_id = array_unshift_assoc(currentBubble.user_id,0,jsdata.user_id);
-    currentBubble.total++;
-    currentBubble.contentArgs = array_unshift_assoc(currentBubble.contentArgs,0,[jsdata.images,jsdata.Name,jsdata.news,1,'first',0,jsdata.id]);
-    var content = commonMap.createOtherContent(currentBubble.contentArgs[0][0],currentBubble.contentArgs[0][1],currentBubble.contentArgs[0][2],currentBubble.contentArgs[0][3],currentBubble.contentArgs[0][4],currentBubble.contentArgs[0][5],currentBubble.contentArgs[0][6],currentBubble.contentArgs[0][7],false);
-    $("#mainContent_"+bubbleCounter).attr('currentDiv',0);
-    $("#content0_1").html(content);
-}
-
-/*
-* Function to concatinate news when length increases more then 100
-* @param {news : news string, newsId : id of the news}
-*/
-function concatinateNews(news,newsId){
-    var content = news.substring(0,100);
-    if(news.length>100) {
-        content += "..<span style='color:blue;cursor:pointer;' onclick='focusOnNews("+newsId+")'>More</span></span></div></div>";
-    }
-    return content;
-}
-
-/*
-* Function to show handle the visibilite of next and
-* previous button on the infobubble
-* @param {buttonType : array of button,action : action perform over button array
-* buttonIndex : index of next previous button}
-*/
-function hideShowPreviousNextButton(buttonType,action,buttonIndex){
-    for(i in buttonType){
-        $('#'+buttonType[i]+"_"+buttonIndex).css('display',action[i]);
-    }
+	$(".Image-Popup-Class").colorbox({
+		width: "60%",
+		height: "80%",
+		inline: true,
+		href: "#Image-Popup"
+	}, function(){
+		$.colorbox.resize({
+			width: imageWidth + 'px',
+			height: imageHeight + 'px'
+		});
+	});
 }
 
 /*
