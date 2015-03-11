@@ -1,0 +1,30 @@
+<?php
+$created_at = isset($this->item['created_at']) ? $this->item['created_at'] : date('Y-m-d H:i:s');
+?>
+<li id="comment_<?php echo $this->item['id']; ?>" class="cmntList">
+	<div class="imgPro">
+		<img src="<?php echo $this->user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" />
+	</div>
+	<ul>
+		<li class="title">
+			<div class="title-wrapper">
+				<?php echo $this->user->Name; ?>:
+				<span class="cmnt">
+					<?php echo My_CommonUtils::linkClickable(substr($this->item['comment'], 0, 250)); ?>
+					<?php if(strlen($this->item['comment']) > 250): ?>
+					<span>
+						<a href="javascript:void(0)" class='commentFont' onclick="showMoreNews(this,'<?php echo $this->item['id']; ?>')">...more</a>
+						<span id="morecontent_<?php echo $this->item['id']; ?>" style="display: none;">
+							<?php echo My_CommonUtils::linkClickable(substr($this->item['comment'], 250, strlen($this->item['comment']))); ?>
+						</span>
+					</span>
+					<?php endif; ?>
+				</span>
+			</div>
+		</li>
+		<li class="dur">
+			<p><?php echo date('d F Y h:i a', strtotime($created_at)); ?></p>
+		</li>
+	</ul>
+	<div class="clr"></div>
+</li>

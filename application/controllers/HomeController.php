@@ -220,7 +220,7 @@ class HomeController extends My_Controller_Action_Herespy {
 	{
 		try
 		{
-			$data = $this->getRequest()->getParams();
+			$data = $this->_request->getParams();
 
 			if (!Application_Model_User::checkId($this->auth['user_id'], $user))
 			{
@@ -457,65 +457,70 @@ class HomeController extends My_Controller_Action_Herespy {
 		{
 			$identity = Zend_Auth::getInstance()->getIdentity();
 
-			if (!$identity)
+			if (!$identity || !Application_Model_User::checkId($identity['user_id'], $user))
 			{
-				throw new RuntimeException('Session expired', -1);
+				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			if (!Application_Model_User::checkId($identity['user_id'], $user))
+			$data = $this->_request->getParams();
+
+			if (empty($data['news_id']) || !Application_Model_News::checkId($data['news_id'], $news))
 			{
-				throw new RuntimeException('Incorrect user ID: ' . var_export($identity['user_id']), -1);
+				throw new RuntimeException('Incorrect news ID');
 			}
 
-			$news_id = $this->_getParam('news_id');
+			$form = new Application_Form_Comment;
 
-			if (!Application_Model_News::checkId($news_id, $news))
+			$data['user_id'] = $user->id;
+
+			if (!$form->isValid($data))
 			{
-				throw new RuntimeException('Incorrect news ID: ' . var_export($news_id), -1);
+				throw new RuntimeException('Validate error', -1);
 			}
 
-			$comments = $this->_getParam('comments');
+			$model = new Application_Model_Comments;
 
-			if (trim($comments) === '' || strpos($comments, '<') > 0 || strpos($comments, '>') > 0)
+			$data = $form->getValues();
+			$data['id'] = $model->insert($form->getValues());
+
+			Application_Model_Voting::getInstance()->measureLikeScore('news', $news->id, $user->id);
+
+			$comment_users = $model->getAllCommentUsers($news->id, array($user->id, $news->user_id));
+
+			if (count($comment_users) || $news->user_id != $user->id)
 			{
-				throw new RuntimeException('Incorrect comment', -1);
-			}
+				$subject = 'SeeAroundme comment on your post';
+				$body = My_Email::renderBody('comment-notify', array(
+					'news' => $news,
+					'user' => $user,
+					'comment' => $comments
+				));
 
-			$newsFactory = new Application_Model_NewsFactory();
-			$comment_id = $newsFactory->addComments($comments, $news->id, $user->id);
-
-			$votingTable = new Application_Model_Voting();
-			$votingTable->measureLikeScore('news', $news->id, $user->id);
-
-			$commentTable = new Application_Model_Comments();
-			$comment_users = $commentTable->getAllCommentUsers($news->id, array($user->id, $news->user_id));
-
-			$subject = 'SeeAroundme comment on your post';
-			$body = My_Email::renderBody('comment-notify', array(
-				'news' => $news,
-				'user' => $user,
-				'comment' => $comments
-			));
-
-			if (count($comment_users))
-			{
-				foreach ($comment_users as $row)
+				if (count($comment_users))
 				{
-					My_Email::send(array($row->Name => $row->Email_id), $subject, array('body' => $body));
+					foreach ($comment_users as $row)
+					{
+						My_Email::send(array($row->Name => $row->Email_id), $subject, array('body' => $body));
+					}
+				}
+
+				if ($news->user_id != $user->id)
+				{
+					Application_Model_User::checkId($news->user_id, $news_user);
+					My_Email::send(array($news_user->Name => $news_user->Email_id), $subject, array('body' => $body));
 				}
 			}
 
-			if ($news->user_id != $user->id)
-			{
-				Application_Model_User::checkId($news->user_id, $news_user);
-				My_Email::send(array($news_user->Name => $news_user->Email_id), $subject, array('body' => $body));
-			}
-
 			$response['status'] = 1;
-			$response['commentId'] = $comment_id;
+			$response['html'] = My_ViewHelper::render('comment/item.html', array(
+				'item' => $data,
+				'user' => $user
+			));
 		}
 		catch (Exception $e)
 		{
+			var_dump($e->getMessage()); exit;
+
 			$response['status'] = 0;
 		}
 
@@ -549,7 +554,10 @@ class HomeController extends My_Controller_Action_Herespy {
 			{
 				foreach ($comments as $comment)
 				{
-					$response['data'][] = My_ViewHelper::render('home/comment-item.html', array('comment' => $comment));
+					$response['data'][] = My_ViewHelper::render('comment/item.html', array(
+						'item' => $comment,
+						'user' => Application_Model_User::findById($comment->user_id)
+					));
 				}
 
 				$count = max($comentsTable->getCountByNewsId($news_id) - ($limitstart + $comentsTable->news_limit), 0);

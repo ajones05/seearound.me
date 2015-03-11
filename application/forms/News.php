@@ -3,7 +3,7 @@
 /**
  * News form class
  */
-class Application_Form_news extends Zend_Form
+class Application_Form_News extends Zend_Form
 {
     /**
      * Initialize form (used by extending classes)

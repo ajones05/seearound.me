@@ -2,7 +2,10 @@
 if(count($this->comments)):
 	foreach($this->comments as $commentRow)
 	{
-		echo My_ViewHelper::render('home/comment-item.html', array('comment' => $commentRow));
+		echo My_ViewHelper::render('comment/item.html', array(
+			'item' => $commentRow,
+			'user' => Application_Model_User::findById($commentRow->user_id)
+		));
 	}
 	?>
 <li id="commentTextarea_<?=$this->newsId?>" class="cmntList-last afterClr">

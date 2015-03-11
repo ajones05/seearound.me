@@ -365,8 +365,6 @@ function addNews() {
 	}
 
     var news = $.trim($('#newsPost').val());
-    news = news.replace("http://", " ");
-    news = news.replace("https://", " ");
 
     if(commonMap.mapMoved){
        $("#locationButton").trigger('click');
@@ -681,7 +679,7 @@ function resizeArea(id, thisone){
 				$.ajax({
 					url: baseUrl + 'home/add-new-comments',
 					data: {
-						comments: comments,
+						comment: comments,
 						news_id: news_id
 					},
 					type: 'POST',
@@ -689,54 +687,9 @@ function resizeArea(id, thisone){
 					async: false
 				}).done(function(response){
 					if (response && response.status){
-						$('#comment'+id).val('').blur();
-                        $('#rpl_loading_'+id).hide();
-
-                        var commentArea = $("#commentTextarea_"+id).html();
-
-                        if ($("#tempDiv_"+id).html()!=null){
-                            commentArea = $("#tempDiv_"+id).html();
-                        }
-
-						$("#commentTextarea_"+id).remove();
-						var commentData = '<li id="comment_'+response.commentId +'" class="cmntList afterClr">'+
-								'<div class="imgPro"><img src="' + imagePath + '"/></div>'+
-                                                    '<ul>'+
-                                                        '<div class="deteleIcon">'+
-                                                            '<img class="crp deteleIcon_img" src="' + baseUrl + 'www/images/delete-icon.png" onclick="deletes(this, \'comments\', '+response.commentId+');" style="float:right;"/>'+
-                                                        '</div>'+
-                                                        '<li class="title">' +
-                                                            '<div class="title-wrapper">'+ userName +':' +
-                                                            '<span class="cmnt">'+
-                                                                linkClickable(comments.substring(0,255));
-                                                                if(comments.length>255) {comments
-                                                                     commentData+='<a id="moreButton_'+response.commentId+'" href="javascript:void(0)" onclick="showMoreComments(this,'+response.commentId+')">....More</a><span id="morecomments_'+response.commentId+'" style="display:none">'+comments.substring(255,comments.length)+'</span>';
-                                                                }
-                                                            commentData +='</span>'+'</div>'+   
-						                                '</li>'+
-                                                        '<li class="dur"><p>Just now</p></li>'+
-                                                    '</ul><div class="clr"></div></li>';
-                        
-						if(thisone){ 
-							$(thisone).parent().parent().parent().before(commentData);
-							if($('#midColLayout')) {
-								setThisHeight(Number($("#midColLayout").height()));
-							}
-							if($('#totalCommentView')) {
-								$('#totalCommentView').html(Number($('#totalCommentView').html())+1);
-							}
-						} else { 
-							if(!$("#comment_list_"+id).attr('class')){
-								$("#comment_list_"+id).attr('class','cmntRow afterClr');
-							}
-							$("#comment_list_"+id).append(commentData);
-							
-							$("#comment_list_"+id).append("<li id='commentTextarea_"+id+"' class='cmntList-last afterClr'>"+commentArea+"</li>");
-							$("#comment_list_"+id).show();							
-						}
-                        if($("#newsData").height()>714)
-                                setThisHeight(Number($("#newsData").height())+100);
-                        $('#comment'+id).removeAttr('disabled');
+						$('#comment'+id).val('').blur().removeAttr("disabled");
+						$("#commentTextarea_"+id).before(response.html);
+						$('#rpl_loading_'+id).hide();
 					} else {
 						alert(ERROR_MESSAGE);
 					}

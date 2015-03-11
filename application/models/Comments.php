@@ -150,6 +150,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 				->where('isdeleted!=?', 1)
 				->joinLeft('user_data', 'comments.user_id = user_data.id', '')
 				->where('user_data.id IS NOT NULL')
+				->where('user_data.status =?', 'active')
 				->order('comments.id DESC')
 				->group('comments.id')
 				->limit($limit, $limitstart)
@@ -177,5 +178,18 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		}
 
 		return $label;
+	}
+
+    /**
+     * Inserts a new row.
+     *
+     * @param  array  $data  Column-value pairs.
+     * @return mixed         The primary key of the row inserted.
+     */
+    public function insert(array $data)
+    {
+		$data['updated_at'] = date('Y-m-d H:i:s');
+
+		return parent::insert($data);
 	}
 }
