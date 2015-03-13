@@ -10,7 +10,7 @@ $this->headScript()->prependFile('/www/scripts/jquery.js');
 
 $this->headScript()->appendScript(<<<JAVASCRIPT
 	var http_host = {$http_host},
-		facebook_appId = {$config->facebook->appId};
+		facebook_appId = {$config->facebook->app->id};
 
 JAVASCRIPT
 , 'text/javascript');
