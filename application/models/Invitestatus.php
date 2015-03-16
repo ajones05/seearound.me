@@ -9,7 +9,7 @@ class Application_Model_Invitestatus extends My_Db_Table_Abstract
     protected $_name = "invite_status";
     protected $_primary = "id";
     protected $_rowClass = "Application_Model_InvitestatusRow";
-    protected $_instance = null;    
+    protected static $_instance = null;    
     public static function getInstance() 
     {
         if(null === self::$_instance) {

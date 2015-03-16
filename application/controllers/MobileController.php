@@ -29,8 +29,6 @@ class MobileController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$response = array();
-
 		try
 		{
 			$email = $this->_request->getParam('email');
@@ -52,7 +50,7 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Password cannot be blank', -1);
 			}
 
-			$newsFactory = new Application_Model_NewsFactory();
+			$newsFactory = new Application_Model_NewsFactory;
 
 			$user = $newsFactory->loginDetail(array(
 				'email' => $email,
@@ -64,28 +62,72 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect user email or password', -1);
 			}
 
+			if ($user->Status != 'active')
+			{
+				throw new RuntimeException('User is not active', -1);
+			}
+
+			$newsFactory->updateToken(md5(uniqid($user->Email_id, true)), $user->id);
+
+			$loginStatus = new Application_Model_Loginstatus;
+
+			$loginRow = $loginStatus->setData(array(
+				'user_id' => $user->id,
+				'login_time' => date('Y-m-d H:i:s'),
+				'ip_address' => $_SERVER['REMOTE_ADDR']
+			));
+
+			// TODO: check
+			// Calculation for the invites counts for the login user
+			if (date('D') == 'Mon')
+			{
+				$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array(
+					'user_id' => $user->id
+				));
+
+				if ($inviteStatusRow != null && floor((time() - strtotime($inviteStatusRow->updated)) / 86400) >= 7)
+				{
+					$loginRows = $loginStatus->sevenDaysOldData($user->id);
+					$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + floor(count($loginRows) / 5);
+					$inviteStatusRow->updated = date('Y-m-d H:i:s');
+					$inviteStatusRow->save();
+				}
+			}
+
 			$response = array(
-				"id" => $user->id,
-				"Name" => $user->Name,
-				"Email_id" => $user->Email_id,
-				"Old_email" => $user->Old_email,
-				"Password" => $user->Password,
-				"Birth_date" => $user->Birth_date,
-				"Creation_date" => $user->Creation_date,
-				"Update_date" => $user->Update_date,
-				"Profile_image" => $user->Update_date,
-				"Status" => $user->Status,
-				"Network_id" => $user->Network_id,
-				"is_admin" => $user->is_admin,
-				"Token" => $user->Token,
-				"address" => $user->address,
-				"latitude" => $user->latitude,
-				"longitude" => $user->longitude,
+				'status' => 'SUCCESS',
+				'message' => 'AUTHENTICATED',
+				'result' => array(
+					'id' => $user->id,
+					'Name' => $user->Name,
+					'Email_id' => $user->Email_id,
+					'Old_email' => $user->Old_email,
+					'Password' => $user->Password,
+					'Birth_date' => $user->Birth_date,
+					'Creation_date' => $user->Creation_date,
+					'Update_date' => $user->Update_date,
+					'Profile_image' => $user->Profile_image,
+					'Status' => $user->Status,
+					'Network_id' => $user->Network_id,
+					'Conf_code' => $user->Conf_code,
+					'is_admin' => $user->is_admin,
+					'Token' => $user->Token,
+					'address' => $user->address,
+					'latitude' => $user->latitude,
+					'longitude' => $user->longitude,
+					'Activities' => $user->Activities,
+					'Gender' => $user->Gender,
+					'login_id' => $loginRow->id,
+				)
 			);
 		}
 		catch (Exception $e)
 		{
-			$response = 'NOT AUTHENTICATED';
+			$response = array(
+				'status' => 'FAILED',
+				'message' => 'NOT AUTHENTICATED',
+				'result' => ''
+			);
 		}
 
 		$this->_logRequest($response);

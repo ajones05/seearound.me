@@ -539,46 +539,24 @@ class Application_Model_NewsFactory {
         }
     }
 
-    function loginDetail($data,$type=null){
-        
-        $user = new Application_Model_User();
-        if($type=='tocheck'){
-        
-            $select = $user->select()->setIntegrityCheck(false)
-            ->from('user_data')
-            ->joinLeft('address','address.user_id = user_data.id',array('address', 'latitude','longitude'))
-            ->where('user_data.Email_id =?', $data['email'])
-            ->order(array('user_data.Email_id DESC LIMIT 1'))
-            ->limit(1);
-          $data = $user->fetchRow($select);
-        
-        } else {
-          
-           $select = $user->select()->setIntegrityCheck(false)
-            ->from('user_data')
-            ->joinLeft('address','address.user_id = user_data.id',array('address', 'latitude','longitude'))
-            ->where('user_data.Email_id =?', $data['email'])
-            ->where('user_data.Password =?', $data['pass']);
-         
-           $data = $user->fetchRow($select);
-            
-        }    
-        return $data;
+	// TODO: move to Application_Model_User model
+
+	public function loginDetail($data)
+	{
+		$user = new Application_Model_User;
+
+		$select = $user->select()->setIntegrityCheck(false)
+			->from('user_data')
+			->joinLeft('address','address.user_id = user_data.id',array('address', 'latitude','longitude'))
+			->joinLeft('user_profile','user_profile.user_id = user_data.id',array('Activities', 'Gender'))
+			->where('user_data.Email_id =?', $data['email'])
+			->where('user_data.Password =?', $data['pass']);
+
+		$data = $user->fetchRow($select);
+ 
+		return $data;
     }
-    
-       
-   function wsloginDetail($data){
-        $user = new Application_Model_User();
-        $select = $user->select()->setIntegrityCheck(false)
-            ->from('user_data')
-            ->joinLeft('address','address.user_id = user_data.id',array('address', 'latitude','longitude'))
-            ->joinLeft('user_profile','user_profile.user_id = user_data.id',array('Activities', 'Gender'))
-            ->where('user_data.Email_id =?', $data['email'])->where('user_data.Password =?', $data['pass']);
-        $data = $user->fetchRow($select);
-        return $data;
-   }
-    
-    
+
    function getUserId($data){
      $user = new Application_Model_User();
         $select = $user->select()->setIntegrityCheck(false)
