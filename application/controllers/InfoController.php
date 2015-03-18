@@ -142,15 +142,6 @@ class InfoController extends My_Controller_Action_Abstract
         die(Zend_Json_Encoder::encode($response));
     }
 
-    public function privacyAction()
-    {
-        // action body
-    }
-
-    public function aboutUsAction()
-    {
-        // action body
-    }
      public function storeVotingIndividualAction(){
          $response = new stdClass();
          if($this->_request->isPost()) {

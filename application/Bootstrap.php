@@ -23,4 +23,42 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$db = Zend_Db::factory($config->resources->db);
 		Zend_Db_Table::setDefaultAdapter($db);
 	}
+
+	protected function _initRoutes()
+	{
+		$router = Zend_Controller_Front::getInstance()->getRouter();
+
+		$router->addRoute(
+			'about',
+			new Zend_Controller_Router_Route(
+				'about',
+				array(
+					'controller' => 'page',
+					'view' => 'about'
+				)
+			)
+		);
+
+		$router->addRoute(
+			'privacy',
+			new Zend_Controller_Router_Route(
+				'privacy',
+				array(
+					'controller' => 'page',
+					'view' => 'privacy'
+				)
+			)
+		);
+
+		$router->addRoute(
+			'terms',
+			new Zend_Controller_Router_Route(
+				'terms',
+				array(
+					'controller' => 'page',
+					'view' => 'privacy'
+				)
+			)
+		);
+	}
 }

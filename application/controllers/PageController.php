@@ -15,11 +15,19 @@ class PageController extends Zend_Controller_Action
 	}
 
 	/**
-	 * Privacy page action.
+	 * Render page action.
 	 *
 	 * @return void
 	 */
-	public function privacyAction()
+	public function indexAction()
 	{
+		$view = $this->_request->getParam('view');
+
+		if (!$view)
+		{
+			throw new Exception('Incorrect view name');
+		}
+
+		$this->render($view);
 	}
 }

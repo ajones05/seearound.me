@@ -290,23 +290,27 @@ JAVASCRIPT
                 <div class="footer">
                     <ul class="footerLinks" >
                         <li>
-                            <a href="<?=BASE_PATH?>info/about-us">About</a>
+                            <a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
                         </li>
                         <li>
-                            <a href="<?=BASE_PATH?>info/privacy">Privacy Policy</a>
+							<a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
                         </li>
-                        <li class="afterClr"><span class="copyRight">@ Copyright 2014 SeeAround.me </span></li>
+                        <li class="afterClr">
+							<span class="copyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
+						</li>
                     </ul>
                 </div> <?} else {?>
                   <div class="footer">
                     <ul class="footerLinks" >
                         <li>
-                            <a href="<?=BASE_PATH?>info/about-us">About</a>
+                            <a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
                         </li>
                         <li>
-                            <a href="<?=BASE_PATH?>info/privacy">Privacy Policy</a>
+							<a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
                         </li>
-                        <li class="afterClr"><span class="copyRight">@ Copyright 2014 SeeAround.me </span></li>
+                        <li class="afterClr">
+							<span class="copyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
+						</li>
                     </ul>
                 </div>
                  
@@ -316,13 +320,13 @@ JAVASCRIPT
             <div class="loginFooter">
                 <ul style="float:right;" class="footerLinks" >
                     <li>
-                        <a href="<?=BASE_PATH?>info/about-us">About</a>
+                        <a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
                     </li>
                     <li>
-                        <a href="<?=BASE_PATH?>info/privacy">Privacy Policy</a>
+                        <a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
                     </li>
                     <li class="afterClr">
-                        <span class="copyRight">@ Copyright 2014 SeeAround.me </span>
+						<span class="copyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
                     </li>
                 </ul>                    
             </div>             
