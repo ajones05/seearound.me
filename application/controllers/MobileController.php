@@ -31,7 +31,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$email = $this->_request->getParam('email');
+			$email = $this->_request->getPost('email');
 
 			if (My_Validate::emptyString($email))
 			{
@@ -43,7 +43,7 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect email address: ' . var_export($email, true), -1);
 			}
 
-			$pass = $this->_request->getParam('pass');
+			$pass = $this->_request->getPost('password');
 
 			if (My_Validate::emptyString($pass))
 			{
