@@ -37,7 +37,7 @@ if (!Application_Model_User::checkId($this->news->user_id, $user))
 			<ul class="post">
 				<li class="imgPro">
 					<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $this->news->id; ?>" style="z-index:9999;">
-						<img id="userImage" src="<?php echo $user->getProfileImage('www/images/img-prof40x40.jpg'); ?>" class="smallImage" /> 
+						<img id="userImage" src="<?php echo $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" class="smallImage" /> 
 					</a>
 				</li>
 				<li>
