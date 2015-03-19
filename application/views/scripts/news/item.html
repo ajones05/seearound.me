@@ -83,7 +83,7 @@ $created_date = isset($this->item['created_date']) ? $this->item['created_date']
 				<img src="<?php echo BASE_PATH; ?>www/images/facebook.png" style="width: 25px; height: 25px;" />
 			</a>
 			<?php if ($this->auth['id']): ?>
-			<a class="crp Message-Popup-Class cboxElement" onclick="clearErrors('<?php echo $this->item['id']; ?>');user_id=2;$('#message').val($.trim($('#<?php echo $this->item['news']; ?>').html()));">
+			<a class="crp Message-Popup-Class cboxElement" onclick="clearErrors('<?php echo $this->item['id']; ?>');">
 				<img src="<?php echo BASE_PATH; ?>www/images/email.png" style="width: 25px; height: 25px;" />
 			</a>
 			<?php else: ?>

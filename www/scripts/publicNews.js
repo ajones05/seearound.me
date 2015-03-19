@@ -1,4 +1,3 @@
-globalVarForEmail = "";
 var infoBubble = "";
 
 function newsMap(lat, lng, data) {
@@ -137,60 +136,37 @@ function publicMessage() {
 
 }
 
+function publicMessageEmail(){
+	var to = $('#to').val();
 
-function publicMessageEmail(scrpId,imageUrl,messageId,reurlPost){
-    var emialPattern = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-   // var message = $('#message').val();
-	var message = globalVarForEmail;
-    var to = $('#to').val();
-	if(emialPattern.test(to)) {
+	if (/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(to)){
 		$.ajax({
-			type: "POST",
-			url: baseUrl+"info/public-message-email",
-			data: {'to':to, 'message':message},
-			success: function (msg) { 
-				msg = JSON.parse(msg);
-				if(msg && msg.errors) {
-					if(msg && msg.errors['to'] != "") {
-						$('#to_error').html(msg.errors['to']);
-					}
-					if(msg && msg.errors['message'] != "") {
-						$('#message_error').html(msg.errors['message']);
-					}
-				}else if(msg && msg.success) {
-					$('#message').val('');
-					$('#subject').val('');
-					$("#thanksButton").trigger('click');                
-				}			
-			}     
-		});
+			type: 'POST',
+			url: baseUrl + 'info/public-message-email',
+			cache: false,
+			data: {
+				to: to,
+				news_id: $('#news_id').val(),
+				message: $('#message').val()
+			},
+			dataType: 'json'
+		}).done(function(response){
+			if (response && response.status){
+				$('#thanksButton').trigger('click');
+			} else {
+				alert(ERROR_MESSAGE);
+			}
+		}).fail(function(jqXHR, textStatus){
+			alert(textStatus);
+		})
 	} else {
-
 		$('#to_error').html('Please type a valid email address');
-
 	}
+}
 
- }
-
- function clearErrors(id) {
-    //alert('here');
-   globalVarForEmail = http_host + '/info/news/nwid/'+id+'';
-    if($('#message')) {		
-
-		$('#message').val("");
-
-	} 
-
-	if($('#subject')) {	
-
-		$('#subject').val("");	
-
-	}
-
-	if($('#to')) {	
-
-		$('#to').val("");	
-
-	}
-
+function clearErrors(id){
+	var $popup = $('#Message-Popup_Email');
+	$('#to,#subject,#message', $popup).val('');
+	$('.errors', $popup).html('');
+	$('#news_id', $popup).val(id);
 }

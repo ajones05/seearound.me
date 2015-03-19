@@ -105,42 +105,55 @@ class InfoController extends My_Controller_Action_Abstract
         die(Zend_Json_Encoder::encode($response));
     }
 
+	/**
+	 * Function to share public post through mail.
+	 *
+	 * @return	void
+	 */
+	public function publicMessageEmailAction() 
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
-    /*
-     * function to share public post through mail 
-     */
-    public function publicMessageEmailAction() 
-    {
-        /*
-         * creating the instance of auth class
-         */
-        $response = new stdClass();
-        if($this->_request->isPost()) {
-            /*
-             * accessing the requested parameters and setuping mail parameters
-             */
-            $message = $this->_request->getPost('message', null);
-            $to = $this->_request->getPost('to', null);
-            if(!$message) {
-                $response->errors->message = "Invalid messags information";
-            } elseif(!$to) {
-                $response->errors->to = "Invalid reciever information";
-            } else { 
-                $this->name =$this->auth['user_name'];
-                $this->to = $to;
-                $this->from = $this->auth['user_email'];
-                $this->subject = "News invitation";
-                $this->view->name = "User";
-                $this->view->message = "<p align='justify'> $this->name shared a local update with you -- you can see the post details and location here $message</p>";
-                $this->view->adminName = "Admin";
-                $this->view->response = "seearound.me";
-                $this->message = $this->view->action("index","general",array());
-                $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-                $response->success = "done";
-            }
-        } 
-        die(Zend_Json_Encoder::encode($response));
-    }
+			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$news_id = $this->_request->getPost('news_id');
+
+			if (!Application_Model_News::checkId($news_id, $news))
+			{
+				throw new RuntimeException('Incorrect news ID', -1);
+			}
+
+			$to = $this->_request->getPost('to');
+			$message = $this->_request->getPost('message');
+
+			My_Email::send($to, 'Interesting local news', array(
+				'template' => 'post-share',
+				'assign' => array(
+					'user' => $user,
+					'news' => $news,
+					'message' => $message,
+				)
+			));
+
+			$response = array('status' => 1);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array(
+					'message' => 'Internal server error'
+				)
+			);
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+	}
 
      public function storeVotingIndividualAction(){
          $response = new stdClass();

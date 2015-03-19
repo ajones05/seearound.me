@@ -362,7 +362,7 @@ JAVASCRIPT
                     <ul id="messageForm">
                         <? if($this->publicMessage):?>
                         <li>
-                            <input type="text" id="to" name="to" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter receiver email address..."/><br />
+                            <input type="email" id="to" name="to" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter receiver email address..."/><br />
                             <span class="errors marginL" id="to_error"></span>
                         </li>
                         <? else:?>
@@ -386,7 +386,7 @@ JAVASCRIPT
                 <div class="locationPopup">
                     <ul id="messageForm">
                         <li>
-                            <input type="text" id="to" name="to" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter receiver email address..."/><br />
+                            <input type="email" id="to" name="to" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter receiver email address..."/><br />
                             <span class="errors marginL" id="to_error"></span>
                         </li>
                         <li>
@@ -394,8 +394,9 @@ JAVASCRIPT
                             <span class="errors marginL" id="message_error"></span>
                         </li>
                       
-                        <input id="closeLocationPopup" class="btnBlueRpt" type="button" value="Send" <? if($this->publicMessage):?> onClick="publicMessageEmail();"<?else:?> onClick="publicMessageEmail();"<?endif;?> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                                      
+                        <input id="closeLocationPopup" class="btnBlueRpt" type="button" value="Send" onClick="publicMessageEmail();" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <input type="button" onClick="closePopup();" class="btnBlueRpt" value="Cancel" />
+						<input type="hidden" id="news_id" name="news_id" />
                     </ul>
                  </div>
              </div>

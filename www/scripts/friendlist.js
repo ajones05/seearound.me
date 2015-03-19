@@ -167,7 +167,6 @@ $(document).ready(function() {
    function clearErrors(id) {
     globalFrienListId = id;
     reciever_userid = globalFrienListId;
-    globalVarForEmail = http_host + '/info/news/nwid/'+id+'';
     if($('#message')) {		
 
 		$('#message').val("");
