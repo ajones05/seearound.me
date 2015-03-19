@@ -1515,7 +1515,7 @@ MainMap.prototype.addressContent = function(address){
     return content;*/
     
     var content = "<div class='profile-map-info'>";
-        content+= "<div style='float:left;margin-right:8px;'><img class='user-img' src='"+this.profileImage+"'/></div>";            
+        content+= "<div style='float:left;margin-right:8px;'><img class='user-img' src='"+baseUrl+this.profileImage+"'/></div>";            
         content+= "<div class='user-address'>"+address+"</div>";
         content+=  "</div>";
      return content;
