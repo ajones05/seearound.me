@@ -56,7 +56,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				'terms',
 				array(
 					'controller' => 'page',
-					'view' => 'privacy'
+					'view' => 'terms'
 				)
 			)
 		);

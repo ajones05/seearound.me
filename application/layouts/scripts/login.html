@@ -115,10 +115,11 @@ JAVASCRIPT
         <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/main.js"></script>
 
 
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js?<?php echo $config->mediaversion; ?>"></script>
 
 
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js?<?php echo $config->mediaversion; ?>"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/common.js?<?php echo $config->mediaversion; ?>"></script>
 
         <!-- custom scrollbar plugin -->
         <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.mCustomScrollbar.js"></script>

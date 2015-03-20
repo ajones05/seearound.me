@@ -74,8 +74,9 @@ JAVASCRIPT
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/json2.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.boxy.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.form.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js"></script>
+	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js?<?php echo $config->mediaversion; ?>"></script>
+	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js?<?php echo $config->mediaversion; ?>"></script>
+	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/common.js?<?php echo $config->mediaversion; ?>"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/areaCircle.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-common.js?<?php echo $config->mediaversion; ?>"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-mainMap.js?<?php echo $config->mediaversion; ?>"></script>
@@ -143,77 +144,7 @@ JAVASCRIPT
 <body>
         <div id="fb-root"></div>
         <div style="display: none;"></div>
-        <div class="uprBar">
-            <div class="uprBar-wrapper">
-            <ul class="uprBarInr afterClr">
-                 <li class="leftCol">
-                     <a class="logo" href="<?=BASE_PATH?>">
-                         <img src="<?=BASE_PATH?>www/images/logo.png"/></a>
-                 </li>
-
-                <?if(!$this->publicProfile) :?>
-                  
-                <li class="midCol">
-                    <span class="sIcn">
-                        <?php if(!$this->message) :?>
-                        <input type="text" id="searchText" value="<?=$request->getParam('sv', null)?>" placeholder="Search posts..." />
-                        <img src="<?=BASE_PATH?>www/images/icn-search.png" alt="Search" onclick="getKeycodes(true);"/>
-                        <?php endif;?>
-                    </span>
-                </li>
-                
-                <li class="rightCol">
-                    <ul class="primNav">
-                      <?php if(!$this->message) :?>   
-                        <li>
-                            <a href="javascript:void(0);" id="ddMyConn"  onclick="showFriendRequest(this);"><img src="<?=BASE_PATH?>www/images/friends.png"  style="margin-top:-6px; width: 27px; height: auto"  alt="My Connections"  id="icnMyConn" /> 
-                                   <span style="padding-left:33px;color: #5d5d5d;">My Friends</span>
-                            </a>
-                            <span style="display:none;" id="noteTotal" class="connQty"></span>
-
-                            <div id="ddMyConnList" class="ddMyConnList beforeClr"></div>
-
-                        </li>
-                        <li>
-                            <a class="messageLiMargin" href="<?=BASE_PATH?>message">
-                                <img src="<?=BASE_PATH?>www/images/message.png" style="margin-top:-1px; width: 24px; height: 18px" alt="My Messages" id="icnMyMsg" />
-                                <span class="linkText" style="color: #5d5d5d;">My Messages</span>
-                                <span style="display:none;" id="msgTotal" class="connQty"></span>
-                            </a>
-                        </li>
-                       
-                 
-                       <li class="last">
-                            <a href="javascript:void(0);" id="myProfLink">
-                             <?php  if(isset($this->auth['pro_image'])) { ?>
-                               <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="imgProf_Header" style="margin-top:-8px;"/>
-                              <?php } else { ?>
-                               <img src="/www/images/img-prof40x40.jpg" class="imgProf_Header" style="margin-top:-3px;"/>
-                              <?php } ?>
-                              <span style="color:#5d5d5d;">My Profile</span> 
-                            </a>
-                                <div id="ddMyProf" class="ddMyProf beforeClr dispNone">
-                                <ul class="ddMyProfLinks afterClr">
-                                    <li>
-                                        <a href="<?=BASE_PATH?>/home/profile">Profile</a>
-                                    </li>
-                                    <li id="logoutLi">
-                                        <a href="javascript:void(0)" onclick="fbLogout('general/logout');">Logout</a>
-                                    </li>
-                                </ul>
-
-                            </div>
-                        </li>
-                        <div class="clr"></div>
-                   <?php endif; ?>
-                   
-                    </ul>
-                </li>
-                <div class="clr"></div>
-                <?endif;?>
-            </ul>
-        </div>
-        </div>
+		<?php include '_header.html'; ?>
         <div id="line_1" class="mainContainer_line"></div>
         <div id="mainDiv" class="mainContainer appendClr">
             <?php if(isset($this->currentPage) && ($this->currentPage == 'Message')): ?>

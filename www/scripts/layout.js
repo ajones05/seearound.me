@@ -1,4 +1,4 @@
-$(document).ready(function(){
+$(function(){
     var width = screen.width,
     height = screen.height;
     setInterval(function () {
@@ -9,10 +9,6 @@ $(document).ready(function(){
         }
     }, 5);
 });
-
-$(window).bind('resolutionchange', function(){
-    console.log('Resolution ='+ screen.width+'*'+screen.height);
-})
 
 function goLoc(url) {
 
@@ -102,136 +98,11 @@ function closeThisPopup() {
 
 } 
 
-$(document).ready(function () {
-
-    window.fbAsyncInit = function () {
-
-        FB.init({
-            appId: facebook_appId, 
-            status: true, 
-            cookie: true,
-
-            xfbml: true
-
-        });
-
-    };
-
-    (function () {
-
-        var e = document.createElement('script');
-
-        e.type = 'text/javascript';
-
-        e.src = document.location.protocol +
-
-        '//connect.facebook.net/en_US/all.js';
-
-        e.async = true;
-
-        document.getElementById('fb-root').appendChild(e);
-
-    } ());
-
-});
-
-
-
 var preurl ="http://graph.facebook.com/";
 
 var posturl ="/picture?type=square";
 
 var picture = "";
-
-
-
-function fbLogin() {
-
-    FB.login(function(response) {
-
-        FbCallback()
-
-    },{
-        scope: 'email,user_likes,user_birthday'
-    });
-
-}
-
-
-
-function FbCallback() {
-
-    FB.api('/me', function (response) {
-
-        var nwId = response.id;
-
-        var name = response.name;
-
-        var email = response.email;
-
-        var gender = response.gender;
-
-        var dob = response.birthday;
-
-        picture = preurl+nwId+posturl; 
-
-        if(nwId != undefined) { 
-
-            document.body.style.cursor = 'wait';
-
-            $.post(baseUrl+'index/fb-login/', {
-                'id':nwId,
-                'name':name,
-                'email': email,
-                'picture':picture,
-                'gender':gender,
-                'dob':dob
-            }, returnLogin, "text");
-
-        }			
-
-    });
-
-}
-
-
-
-function fbLogout(url) {
-
-    if(isFbLogin){
-
-        FB.init({
-            appId: facebook_appId, 
-            status: true, 
-            cookie: true, 
-            xfbml: true
-        });
-
-        FB.getLoginStatus(function(response) {
-
-            if(response.authResponse) {
-
-                FB.logout(function () {
-
-                    window.location.href = baseUrl+url;
-
-                });
-
-            } else {
-
-                window.location.href = baseUrl+url;
-
-            }
-
-        }); 
-
-    } else {
-
-        window.location.href = baseUrl+url;
-
-    }
-
-}
 
 function message() {
 
@@ -286,32 +157,6 @@ function message() {
     });
 
 }
-
-
-
-/* function clearErrors() {
-    
-	if($('#message')) {		
-
-		$('#message').val("");
-
-	} 
-
-	if($('#subject')) {	
-
-		$('#subject').val("");	
-
-	}
-
-	if($('#to')) {	
-
-		$('#to').val("");	
-
-	}
-
-}   */
-
-
 
 function removeError(that) {
 
@@ -906,162 +751,6 @@ if(isLogin) {
 
     }	
 
-	
-
-    function showFriendRequest(thisone) {
-
-        var html = '<p class="bgTop"></p>'+
-
-        '<img style=" margin: 7px 0 7px 112px;" src="'+baseUrl+'www/images/wait.gif" /><br>'+
-
-        '<p class="pendReq2"></p>';
-
-        $("#ddMyConnList").html(html);
-
-        $.ajax({
-
-            url : baseUrl+'contacts/requests',
-
-            type : "post",
-
-            data :{},
-
-            success : function(obj) {
-
-                if(obj) {
-
-                    obj = $.parseJSON(obj); 
-
-                    if(obj.total > 0) { 
-
-                        html = '';
-
-                        html += '<p class="bgTop"></p>';
-
-                        currentRequests = 0;
-
-                        for(var x in obj.data) { 
-
-                            currentRequests++;
-
-                            var imgsrc = baseUrl+'www/images/img-prof40x40.jpg';
-
-                            if((obj.data[x]).Profile_image) {
-
-                                if((obj.data[x]).Profile_image != 'null' || (obj.data[x]).Profile_image != '') { 
-
-                                    if(((obj.data[x]).Profile_image).indexOf('://') > 0) {
-
-                                        imgsrc = (obj.data[x]).Profile_image;
-
-                                    }else {
-
-                                        imgsrc = baseUrl+'uploads/'+(obj.data[x]).Profile_image;
-
-                                    }
-
-                                }
-
-                            }
-
-	
-
-                            html += '<ul class="connList afterClr">'+
-
-                            '<li class="thumb">'+
-
-                            '<img src="'+imgsrc+'" width="40" height="40" />'+
-
-                            '</li>'+
-
-                            '<li class="name">'+
-
-                            (obj.data[x]).Name +
-
-                            '</li>'+
-
-                            '<li class="adrs">';
-
-                            if((obj.data[x]).address) {
-
-                                html += (obj.data[x]).address.breakAt(32);
-
-                            } else {
-
-                                html += '<br><br>';
-
-                            }
-
-                            html +='</li>'+
-
-                            '<li class="btnSet">'+
-
-                            '<input class="curPnt" type="button" value="Accept" onclick="allow(this,'+(obj.data[x]).fid+');" />&nbsp;&nbsp;'+
-
-                            '<input class="curPnt" type="button" value="Deny" onclick="deny(this,'+(obj.data[x]).fid+');" />&nbsp;&nbsp;'+
-
-                            '<img class="imgAlowDeny" height="20" width="50" src="'+baseUrl+'www/images/loader.gif" />'+
-
-                            '</li>'+
-
-                                
-
-                            '</ul><div class="clear"></div>';
-
-                        }
-
-	
-
-                        if(obj.total >= 5) {
-
-                            html+='<p class="pendReq">'+
-
-                            '<a href="'+baseUrl+'contacts/all-requests">View all pending requests</a>'+
-
-                            '</p>';
-
-                        }else {
-
-                            html+='<p class="pendReq2"></p>';
-
-                        }
-
-                        $("#noteTotal").html(obj.total); 
-
-                        $("#ddMyConnList").html(html);
-
-                    } else {
-
-                        html = '<p class="pendReq">No new friend request found.</p>';								
-
-                        $("#ddMyConnList").html(html);
-
-                    }
-
-                  //$("#ddMyConnList").append('<a style="text-decoration:underline;color:blue;margin-left:52px;padding:5px;" href="'+baseUrl+'contacts/friends-list">Go to my connections</a>');
-                    $("#ddMyConnList").append('<a class="friend" href="'+baseUrl+'contacts/friends-list">Go to my friends </a>');
-                } else {
-
-                    $(thisone).parent().siblings('div').html("");
-
-                }
-
-            },
-
-            error : function() {
-
-                $(thisone).parent().siblings('div').html();
-
-            }
-
-	
-
-        });
-
-    }
-
-	
-
     function allow(thisone, id) {
 
         if(id) {
@@ -1210,8 +899,6 @@ String.prototype.breakAt= function(breakAt) {
 
     var tempBreakAt = breakAt;
 
-    var connectionFlag = false;
-
     while (len < this.length) {
 
         if(breakAt == len){
@@ -1247,46 +934,6 @@ String.prototype.breakAt= function(breakAt) {
     
 
 };
-
-
-
-function timeconversion(a){
-
-    var b = time();
-
-    var c = strtotime($a);
-
-    var d = b-c;
-
-    var minute = 60;
-
-    var hour = minute * 60;
-
-    var day = hour * 24;
-
-    var week = day * 7;
-
-    if(d < 2) return "right now";
-
-    if(d < minute) return floor(d) + " seconds ago";
-
-    if(d < minute * 2) return "about 1 minute ago";
-
-    if(d < hour) return floor(d / minute) + " minutes ago";
-
-    if(d < hour * 2) return "about 1 hour ago";
-
-    if(d < day) return floor(d / hour) + " hours ago";
-
-    if(d > day && d < day * 2) return "yesterday";
-
-    if(d < day * 365) return floor(d / day) + " days ago";
-
-    return "over a year ago";	
-
-}
-
-
 
 function deletes(thisone, action, elid) {
 
@@ -1569,12 +1216,6 @@ function voting(thisone, action, elid,userid) {
 
                 }  
 
-                /* if(data && data.count){
-
-                      $('#voting_up_'+elid).show();
-
-                    } */
-
                 else if(data && data.error) {
 
                     alert('Sorry! we are unable to perform voting action');
@@ -1594,130 +1235,6 @@ function voting(thisone, action, elid,userid) {
     }
 
 }
-
-/*  function voting ends  */
-
-/* function to vote for individual pages*/
-
-function votingIndividual(thisone, action, elid,userid) {
-
-    if(action && elid && userid) {
-console.log(action);
-console.log(elid);
-console.log(userid);
-        $.ajax({
-
-            url  : baseUrl+'info/store-voting-individual',
-
-            type : 'post',
-
-            data : {
-                action:action, 
-                id:elid, 
-                user_id:userid
-            },
-
-            success: function(data) {
-
-                data = $.parseJSON(data);
-
-                if(data && data.noofvotes_1){
-
-                // $('#message_success_'+elid).attr("<strong>Hello</strong>");
-
-                } 
-
-                    
-
-                if(data && data.successalready){
-
-                    $('#thumbs_up2').show('slow');
-
-                    $('#thumbs_up1').hide();
-
-                    //$('#thumbsup_blck_'+elid).css('display:none');
-
-                    // $('#img1').hide();
-
-                    $('#img1').hide();
-                    $('#img2').show();
-
-                }
-
-                if(data && data.success) {
-
-                    if(action =='comments') {
-
-                    // alert('in comments part');
-
-                    //$('#comment_'+elid).show();
-
-                    } else if(action == 'news') {
-
-                        $('#thumbs_up1').show('slow');
-
-                        $('#thumbs_up2').hide();
-
-                        //  $('#thumbsup_blck_'+elid).hide();
-
-                        //$('#img1').hide();
-
-                        $('#img1').hide();
-                        $('#img2').show();
-
-                        var doFlag = true;
-
-                    } else {
-
-                    //$(thione).remove();
-
-                    }
-
-                }
-
-                    
-
-                if(data && data.noofvotes_2){
-
-                    //alert(data.noofvotes_2);
-
-                    $('#message_success').html(data.noofvotes_2); 
-
-                }  
-
-                /* if(data && data.count){
-
-                      $('#voting_up_'+elid).show();
-
-                    } */
-
-                else if(data && data.error) {
-
-                    alert('Sorry! we are unable to perform voting action');
-
-                } 
-
-            }
-
-        });
-
-        
-
-    } else {
-
-        alert('Sorry! we are unable to performe delete action');
-
-    }
-
-}
-
-/* end of function */
-
-
-
-
-
-
 
 function mergeArray(mainArray,indexNumber){
 
@@ -1740,24 +1257,3 @@ function mergeArray(mainArray,indexNumber){
     
 
 }
-
-/* script to show delete ,sahre functionality in hovering*/
-//$('.scrpBox').live('mouseover mouseout', function(event) {
-//    if (event.type == 'mouseover') {
-//        $(this).find('.floatR').show();
-//        $(this).find('.deteleIcon').show();
-
-//    } else {
-//        $(this).find('.floatR').hide();
-//        $(this).find('.deteleIcon').hide();
-
-//    }
-
-//});
-
-
-
-
-
-
-      

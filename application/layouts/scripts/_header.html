@@ -1,0 +1,91 @@
+<?php
+$auth = Zend_Auth::getInstance()->getIdentity();
+?>
+<div class="uprBar">
+	<?php if (Application_Model_User::checkId($auth['user_id'], $user)): ?>
+	<div class="uprBar-wrapper">
+		<ul class="uprBarInr">
+			<li class="leftCol">
+				<a class="logo" href="<?php echo BASE_PATH; ?>">
+					<img src="<?php echo BASE_PATH; ?>www/images/logo.png" />
+				</a>
+			</li>
+			<li class="midCol">
+				<span class="sIcn">
+					<input type="text" id="searchText" value="<?php $request->getParam('sv', null); ?>" placeholder="Search posts..." />
+					<img src="<?php echo BASE_PATH; ?>www/images/icn-search.png" alt="Search" onclick="getKeycodes(true);" />
+				</span>
+			</li>
+			<li class="rightCol">
+				<ul class="primNav">
+					<li>
+						<a href="#" id="ddMyConn" onclick="showFriendRequest(this);">
+							<img src="<?php echo BASE_PATH; ?>www/images/friends.png" style="margin-top:-6px; width: 27px; height: auto" alt="My Connections"  id="icnMyConn" />
+							<span style="padding-left:33px;color: #5d5d5d;">My Friends</span>
+						</a>
+						<span style="display:none;" id="noteTotal" class="connQty"></span>
+						<div class="clr"></div>
+						<div id="ddMyConnList" class="ddMyConnList"></div>
+					</li>
+					<li>
+						<a class="messageLiMargin" href="<?php echo BASE_PATH; ?>message">
+							<img src="<?php echo BASE_PATH; ?>www/images/message.png" style="margin-top:-1px; width: 24px; height: 18px" alt="My Messages" id="icnMyMsg" />
+							<span class="linkText" style="color: #5d5d5d;">My Messages</span>
+							<span style="display:none;" id="msgTotal" class="connQty"></span>
+						</a>
+					</li>
+					<li class="last">
+						<a href="#" id="myProfLink">
+							<img src="<?php echo $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" class="imgProf_Header" />
+							<span style="color:#5d5d5d;">My Profile</span>
+						</a>
+						<div class="clr"></div>
+						<div id="ddMyProf" class="ddMyProf dispNone">
+							<ul class="ddMyProfLinks">
+								<li>
+									<a href="<?php echo BASE_PATH; ?>home/profile">Profile</a>
+								</li>
+								<li id="logoutLi">
+									<a href="<?php echo BASE_PATH; ?>general/logout">Logout</a>
+								</li>
+							</ul>
+							<div class="clr"></div>
+						</div>
+					</li>
+					<li class="clr"></li>
+				</ul>
+			</li>
+			<li class="clr"></li>
+		</ul>
+		<div class="clr"></div>
+	</div>
+	<?php else: ?>
+	<div class="loginHdr">
+		<a href="<?php echo BASE_PATH; ?>">
+			<img src="<?php echo BASE_PATH; ?>www/images/logo.png" style="height: auto;width:200px;margin: 8px 0px 8px 3px;" />
+		</a>
+		<ul class="loginForm">
+			<li>
+				<span id="loginError" class="loginerror"></span>
+			</li>
+			<li>
+				<input id="emailLogin" type="text" placeholder="Email Address" tabindex="1" />
+				<span>
+					<span> Keep me logged in </span>
+					<input id="remember" name="remember" type="checkbox" tabindex="4" />
+					<div class="clr"></div>
+				</span>
+			</li>
+			<li>
+				<input id="passwordLogin" type="password" placeholder="Password" tabindex="2" />
+				<a class="hypDecNone" href="<?php echo BASE_PATH; ?>index/forgot"><span>Forgot your password?</span></a>
+			</li>
+			<li class="btn">
+				<input class="floatL" type="submit" onclick="loginValidation();" value="Login" tabindex="3" />
+			</li>
+			<div class="clr"></div>
+		</ul>
+		<div class="clr"></div>
+	</div>
+	<?php endif; ?>
+</div>

@@ -183,7 +183,7 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 
 .profDtl_Header .imgProf_Header{border: 1px solid #D3DDE6;height: 38px;margin-bottom: 4px;width: 43px;}
 
-.imgProf_Header{border: 1px solid #D3DDE6;height:26px;margin-bottom: 4px;margin-left: -7px;width: 26px; -moz-border-radius:30px;-webkit-border-radius:30px;border-radius: 30px;-khtml-border-radius: 30px;}
+.imgProf_Header{border: 1px solid #D3DDE6;height:26px;margin-bottom: 4px;margin-left: -7px;width: 26px; -moz-border-radius:30px;-webkit-border-radius:30px;border-radius: 30px;-khtml-border-radius: 30px;margin-top:-3px;}
 
 .myProf h4{font:bold 13px tahoma; padding:10px 20px; color:#0068c4; margin-top:10px;}
 
@@ -1252,5 +1252,20 @@ table tr td input { border: 1px solid #d7d7d7;}
     position: relative!important;
 }
 
-
-
+body.page {
+	background-color: #fff;
+}
+.paragraph {
+	margin-top: 30px;
+}
+.content {
+	padding:10px;
+	text-align: left;
+}
+.content > h1 {
+	font-size:15px;
+	text-align: center;
+}
+.tab {
+	margin-left:10px;
+}

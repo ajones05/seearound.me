@@ -11,7 +11,7 @@ class PageController extends Zend_Controller_Action
 	 */
 	public function init()
 	{
-		$this->view->layout()->setLayout('login');
+		$this->view->layout()->setLayout('page');
 	}
 
 	/**
