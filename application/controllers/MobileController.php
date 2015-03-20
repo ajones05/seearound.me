@@ -635,14 +635,14 @@ class MobileController extends Zend_Controller_Action
 
 		try
 		{
-			$user_id = $this->_getParam('user_id');
+			$user_id = $this->_request->getPost('userId');
 
 			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user id: ' . var_export($user_id, true), -1);
 			}
 
-			$latitude = $this->_getParam('latitude');
+			$latitude = $this->_request->getPost('latitude');
 
 			if (My_Validate::emptyString($latitude))
 			{
@@ -654,7 +654,7 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect latitude value: ' . var_export($latitude, true), -1);
 			}
 
-			$longitude = $this->_getParam('longitude');
+			$longitude = $this->_request->getPost('longitude');
 
 			if (My_Validate::emptyString($longitude))
 			{
@@ -666,14 +666,14 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect longitude value: ' . var_export($longitude, true), -1);
 			}
 
-			$radius = $this->_getParam('radious', 1);
+			$radius = $this->_request->getPost('radious', 1);
 
 			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
 			{
 				throw new RuntimeException('Incorrect radius value: ' . var_export($radius, true), -1);
 			}
 
-			$fromPage = $this->_getParam('fromPage', 0);
+			$fromPage = $this->_request->getPost('fromPage', 0);
 
 			if (!My_Validate::digit($fromPage) || $fromPage < 0)
 			{
@@ -738,14 +738,14 @@ class MobileController extends Zend_Controller_Action
 
 		try
 		{
-			$user_id = $this->_getParam('user_id');
+			$user_id = $this->_request->getPost('user_id');
 
 			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user id: ' . var_export($user_id, true), -1);
 			}
 
-			$latitude = $this->_getParam('latitude');
+			$latitude = $this->_request->getPost('latitude');
 
 			if (My_Validate::emptyString($latitude))
 			{
@@ -757,7 +757,7 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect latitude value: ' . var_export($latitude, true), -1);
 			}
 
-			$longitude = $this->_getParam('longitude');
+			$longitude = $this->_request->getPost('longitude');
 
 			if (My_Validate::emptyString($longitude))
 			{
@@ -769,14 +769,14 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect longitude value: ' . var_export($longitude, true), -1);
 			}
 
-			$radius = $this->_getParam('radious', 0.8);
+			$radius = $this->_request->getPost('radious', 0.8);
 
 			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
 			{
 				throw new RuntimeException('Incorrect radius value: ' . var_export($radius, true), -1);
 			}
 
-			$fromPage = $this->_getParam('fromPage', 0);
+			$fromPage = $this->_request->getPost('fromPage', 0);
 
 			if (!My_Validate::digit($fromPage) || $fromPage < 0)
 			{
@@ -786,14 +786,14 @@ class MobileController extends Zend_Controller_Action
 			$newsTable = new Application_Model_News;
 			$select = $newsTable->select();
 
-			$keywords = $this->_getParam('searchText');
+			$keywords = $this->_request->getPost('searchText');
 
 			if (!My_Validate::emptyString($keywords))
 			{
 				$select->where('news LIKE ?', '%' . $keywords . '%');
 			}
 
-			$filter = $this->_getParam('filter');
+			$filter = $this->_request->getPost('filter');
 
 			switch ($filter)
 			{
