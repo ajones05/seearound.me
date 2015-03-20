@@ -15,7 +15,14 @@ class HomeController extends My_Controller_Action_Herespy {
             $this->_redirect(BASE_PATH . 'home/edit-profile');
         }
 
-		$this->view->headScript()->prependFile('/www/scripts/publicNews.js?' . Zend_Registry::get('config_global')->mediaversion);
+		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
+
+		$this->view->headLink()
+			->appendStylesheet('/www/css/jquery.loadmask.css?' . $mediaversion);
+
+		$this->view->headScript()
+			->prependFile('/www/scripts/publicNews.js?' . $mediaversion)
+			->prependFile('/www/scripts/jquery.loadmask.js?' . $mediaversion);
     }
     
      public function managedbAction(){

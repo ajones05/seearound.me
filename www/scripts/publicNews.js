@@ -140,6 +140,10 @@ function publicMessageEmail(){
 	var to = $('#to').val();
 
 	if (/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(to)){
+		var $dialog = $('#Message-Popup_Email').closest('#cboxLoadedContent');
+
+		$dialog.mask('Loading...');
+
 		$.ajax({
 			type: 'POST',
 			url: baseUrl + 'info/public-message-email',
@@ -156,7 +160,10 @@ function publicMessageEmail(){
 			} else {
 				alert(ERROR_MESSAGE);
 			}
+
+			$dialog.unmask();
 		}).fail(function(jqXHR, textStatus){
+			$dialog.unmask();
 			alert(textStatus);
 		})
 	} else {
