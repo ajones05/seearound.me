@@ -21,13 +21,6 @@ class MessageController extends My_Controller_Action_Herespy
     public function indexAction()
 
     {
-
-        if($this->auth['latitude'] == "" && $this->auth['longitude']=="") {
-
-            $this->_redirect(BASE_PATH.'home/edit-profile');
-
-        } 
-
         $messageTable = new Application_Model_Message();
 
         $newsFactory = new Application_Model_NewsFactory();

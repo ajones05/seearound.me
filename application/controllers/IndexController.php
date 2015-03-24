@@ -1,6 +1,6 @@
 <?php
 
-
+require_once ROOT_PATH . '/vendor/autoload.php';
 
 class IndexController extends My_Controller_Action_Abstract {
 
@@ -275,228 +275,6 @@ class IndexController extends My_Controller_Action_Abstract {
            }
      }
 
-
-
-   public function wsLoginAction() {
-        $response = new stdClass();
-        $request  = $this->getRequest();
-        $newsFactory = new Application_Model_NewsFactory();
-        $loginStatus = new Application_Model_Loginstatus();
-        $inviteStatus = new Application_Model_Invitestatus();
-        $username = $_REQUEST['email'];
-        $password = md5($_REQUEST['password']); 
-        $data   = array();
-        $data['email'] =  $username;
-        $data['pass']  = $password;
-         $getUserId = $newsFactory->getUserId($data);
-        /*If login succesful then create a token */
-          $token = md5(uniqid($username,true));
-           try{ 
-             $tokenUpdation = $newsFactory->updateToken($token,$getUserId['id']);
-           } catch(Exception $e) {
-             print_r($e);
-           }
-            
-        /*End Token creation */
-      
-        $returnvalue = array();
-        $returnvalue = $newsFactory->wsloginDetail($data);
-    
-         if((count($returnvalue) > 0) && ($returnvalue->Status == "active")) {
-             $loginRow = $loginStatus->setData(array(user_id=>$returnvalue->id, login_time=>date('Y-m-d H:i:s'), ip_address=>$_SERVER['REMOTE_ADDR'])); 
-            
-              /** Calculation for the invites counts for the login user **/
-            if(date('D') == "Mon") {
-                $loginRows = $loginStatus->sevenDaysOldData($returnvalue->id);
-                $inviteCount = floor((count($loginRows))/($this->credit));
-                if($inviteStatusRow = $inviteStatus->getData(array('user_id'=>$returnvalue->id))) {
-                    if(floor(((strtotime(date('Y-m-d H:i:s')))-(strtotime($inviteStatusRow->updated)))/(24*60*60)) >= 7) {
-                        $inviteStatusRow->invite_count = ($inviteStatusRow->invite_count+$inviteCount);
-                        $inviteStatusRow->updated = date('Y-m-d H:i:s');
-                        $inviteStatusRow->save();
-                    }
-                } 
-             }
-             $returnvalue  = $returnvalue->toArray();
-             $returnvalue['login_id'] =  $loginRow->id;
-             $response->status  = "SUCCESS";
-             $response->message = "AUTHENTICATED";
-             $response->result  = $returnvalue;
-             die(Zend_Json_Encoder::encode($response));
-        
-        } else {
-             $returnvalue = '';
-             $response->status  = "FAILED";  
-             $response->message = "NOT AUTHENTICATED";
-             $response->result  = $returnvalue; 
-             die(Zend_Json_Encoder::encode($response));
-        }
-    }
-
-
-
-    public function loginAction123() {
-     
-        $this->view->layout()->setLayout('login');
-
-        $response = new stdClass();
-
-        $auth = Zend_Auth::getInstance();
-
-        if($this->_getParam('check') == "yes") {
-
-            $data = array('email' => $this->_request->getCookie('emailLogin'), 'pass' => md5($this->_request->getCookie('passwordLogin')));
-
-        }else {
-
-            $data = array('email' => $this->_getParam('email'), 'pass' => md5($this->_getParam('pass')));
-
-        }
-
-     
-
-        $newsFactory = new Application_Model_NewsFactory();
-
-        $loginStatus = new Application_Model_Loginstatus();
-
-        $inviteStatus = new Application_Model_Invitestatus();
-
-        $returnvalue = $newsFactory->loginDetail($data);
-        // echo "<pre>"; print_r($returnvalue); exit;
-        if((count($returnvalue) > 0) && ($returnvalue->Status == "active")) {
-
-            /*
-
-             * Setting login time in to the login status table
-
-             */
-
-            $loginRow = $loginStatus->setData(array(user_id=>$returnvalue->id, login_time=>date('Y-m-d H:i:s'), ip_address=>$_SERVER['REMOTE_ADDR']));
-
-            
-
-            /*
-
-             * Setting user authantication values in to the auth 
-
-             */
-
-            $response->error1 = $returnvalue->Status." ".count($returnvalue);
-
-            $authData['user_id'] = $returnvalue->id;
-
-            $authData['login_id'] = $loginRow->id;
-
-            $authData['is_fb_login'] = false;
-
-            $authData['user_name'] = $returnvalue->Name;
-
-            $authData['user_email'] = $returnvalue->Email_id;
-
-            $authData['latitude'] = $returnvalue->latitude;
-
-            $authData['longitude'] = $returnvalue->longitude;
-
-            $authData['pro_image'] = $returnvalue->Profile_image;
-
-            $authData['address'] = $returnvalue->address;
-
-            $auth->getStorage()->write($authData);
-
-            $response->error = 0;
-
-            
-
-            /*
-
-             * Calculation for the invites counts for the login user   
-
-             */
-
-            if(date('D') == "Mon") {
-
-                $loginRows = $loginStatus->sevenDaysOldData($returnvalue->id);
-
-                $inviteCount = floor((count($loginRows))/($this->credit));
-
-                if($inviteStatusRow = $inviteStatus->getData(array('user_id'=>$returnvalue->id))) {
-
-                    if(floor(((strtotime(date('Y-m-d H:i:s')))-(strtotime($inviteStatusRow->updated)))/(24*60*60)) >= 7) {
-
-                        $inviteStatusRow->invite_count = ($inviteStatusRow->invite_count+$inviteCount);
-
-                        $inviteStatusRow->updated = date('Y-m-d H:i:s');
-
-                        $inviteStatusRow->save();
-
-                    }
-
-                } 
-
-            }
-
-            
-
-            /*
-
-             * Setting user loging details in to cookies 
-
-             */
-
-            if($this->_getParam('remember', null)) {
-
-                setcookie("emailLogin", $this->_getParam('email'), time() +7*24*60*60, '/');
-
-                setcookie("passwordLogin", $this->_getParam('pass'), time() +7*24*60*60, '/');
-
-            }
-
-            if($returnvalue->latitude != "" && $returnvalue->longitude != '') {
-
-                if($returnUrl != "") {
-
-                    $response->redirect = $returnUrl;
-
-                } else {
-
-                    $response->redirect = BASE_PATH."home";
-
-                }
-
-            }else {
-
-                $response->redirect = BASE_PATH."home/edit-profile";
-
-            }
-
-
-
-        }elseif(count($returnvalue)> 0 && $returnvalue->Status =="inactive"){
-
-            $response->redirect = BASE_PATH."index/reg-success?id=$returnvalue->id&q=$returnvalue->Conf_code&type=2";
-
-            $response->error = 0;
-
-        }else {
-
-            $response->error = 1;
-
-        }
-
-        if($this->_request->isXmlHttpRequest()) {
-
-            die(Zend_Json_Encoder::encode($response));
-
-        }else {
-
-            $this->_redirect($response->redirect);
-
-        }
-
-    }
-    
-    
-    
      public function loginAction($typeArray = null) {
 
         $this->view->layout()->setLayout('login');
@@ -576,8 +354,6 @@ class IndexController extends My_Controller_Action_Abstract {
                 setcookie("passwordLogin", $this->_getParam('pass'), time() + 7 * 24 * 60 * 60, '/');
             }
 
-            if ($returnvalue->latitude != "" && $returnvalue->longitude != '') {
-
                 if ($returnUrl != "") {
 
                     $response->redirect = $returnUrl;
@@ -585,10 +361,6 @@ class IndexController extends My_Controller_Action_Abstract {
 
                     $response->redirect = BASE_PATH . "home";
                 }
-            } else {
-
-                $response->redirect = BASE_PATH . "home/edit-profile";
-            }
         } elseif (count($returnvalue) > 0 && $returnvalue->Status == "inactive") {
 
             $response->redirect = BASE_PATH . "index/reg-success?id=$returnvalue->id&q=$returnvalue->Conf_code&type=2";
@@ -607,79 +379,166 @@ class IndexController extends My_Controller_Action_Abstract {
             $this->_redirect($response->redirect);
         }
     }
-    
-    
-    
-   
-    public function fbLoginAction(){
-        $response = new stdClass();
-        if($this->getRequest()->isPost()) {
-            $auth = Zend_Auth::getInstance();
-            $newsFactory = new Application_Model_NewsFactory();
-            $loginStatus = new Application_Model_Loginstatus();
-            $inviteStatus = new Application_Model_Invitestatus();
-            $id = $this->getRequest()->getPost('id', null);
-            $name = $this->getRequest()->getPost('name', null);
-            $email = $this->getRequest()->getPost('email', null);
-            $picture = $this->getRequest()->getPost('picture', null);
-            $gender = $this->getRequest()->getPost('gender', null);
-            $dob = date('Y-m-d H:i:s', strtotime($this->getRequest()->getPost('dob', null)));
-            $data = array(
-                'Network_id' => $id,
-                'Name' => $name,
-                'Email_id' => $email,
-                'Gender' => $gender,
-                'Status' => 'active',
-                'Birth_date' => $dob,
-                'Profile_image' => $picture,
-                'Creation_date'=> date('Y-m-d H:i:s'),
-                'Update_date' => date('Y-m-d H:i:s')
-            );
 
-            if($row = $newsFactory->fbLogin($data)) {
-                $row = $newsFactory->getUser(array("user_data.id" => $row->id));
-                $loginRow = $loginStatus->setData(array(user_id=>$row->id, login_time=>date('Y-m-d H:i:s'), ip_address=>$_SERVER['REMOTE_ADDR']));
-                $authData['user_id'] = $row->id;
-                $authData['login_id'] = $loginRow->id;
-                $authData['is_fb_login'] = ture;
-                $authData['user_name'] = $row->Name;
-                $authData['user_email'] = $row->Email_id;
-                $authData['latitude'] = (isset($row->latitude))?$row->latitude:'';
-                $authData['longitude'] = (isset($row->longitude))?$row->longitude:'';
-                $authData['pro_image'] = $row->Profile_image;
-                $authData['address'] = (isset($row->address))?$row->address:'';
-                $authData['network_id'] = $row->Network_id;
-                if($auth->hasIdentity()) {
-                   $auth->clearIdentity();
-                 }
-                $auth->getStorage()->write($authData);	
-                /*
-                * Calculation for the invites counts for thw login user   
-                */
-                if(date('D') == "Mon") {
-                    $loginRows = $loginStatus->sevenDaysOldData($row->id);
-                    $inviteCount = floor((count($loginRows))/($this->credit));
-                    if($inviteStatusRow = $inviteStatus->getData(array('user_id'=>$row->id))) {
-                        if(floor(((strtotime(date('Y-m-d H:i:s')))-(strtotime($inviteStatusRow->updated)))/(24*60*60)) >= 7) {
-                            $inviteStatusRow->invite_count = ($inviteStatusRow->invite_count+$inviteCount);
-                            $inviteStatusRow->updated = date('Y-m-d H:i:s');
-                            $inviteStatusRow->save();
-                        }
-                    } 
-                }
-            }
-            $response->error = 0;
-            if((isset($row->longitude) && $row->longitude!="" )&& (isset($row->latitude)&& $row->latitude!="" )) {
-                $response->redirect = BASE_PATH."home";
-            }else {
-                $response->redirect = BASE_PATH."home/edit-profile";
-            }
-        }
-        die(Zend_Json_Encoder::encode($response));
-  }
-  
+	/**
+	 * Facebook login action.
+	 *
+	 * @return void
+	 */
+	public function fbLoginAction()
+	{
+		$config = Zend_Registry::get('config_global');
 
-public function wsfbLoginAction(){
+		Facebook\FacebookSession::setDefaultApplication($config->facebook->app->id, $config->facebook->app->secret);
+
+		$session = (new Facebook\FacebookJavaScriptLoginHelper())->getSession();
+
+		if (!$session)
+		{
+			throw new Exception('Login error.');
+		}
+
+		$me = (new Facebook\FacebookRequest(
+		  $session, 'GET', '/me'
+		))->execute()->getGraphObject(Facebook\GraphUser::className());
+
+		$email = $me->getEmail();
+
+		if (!$email)
+		{
+			throw new Exception('Email not activated');
+		}
+
+		$user_model = new Application_Model_User;
+
+		$network_id = $me->getId();
+
+		$user = $user_model->findByNetworkId($network_id);
+
+		if (!$user)
+		{
+			$user = $user_model->findByEmail($email);
+
+			if ($user)
+			{
+				$user_model->update(
+					array('Network_id' => $network_id),
+					$user_model->getAdapter()->quoteInto('id =?', $user->id)
+				);
+			}
+			else
+			{
+				$user = $user_model->createRow(array(
+					'Network_id' => $network_id,
+					'Name' => $me->getName(),
+					'Email_id' => $email,
+					'Status' => 'active',
+					'Creation_date'=> new Zend_Db_Expr('NOW()'),
+					'Update_date' => new Zend_Db_Expr('NOW()')
+				));
+
+				$me_picture = (new Facebook\FacebookRequest(
+					$session, 'GET', '/me/picture', array('type' => 'square', 'redirect' => false)
+				))->execute()->getGraphObject();
+
+				$picture = $me_picture->getProperty('url');
+
+				if ($picture != null)
+				{
+					$user->Profile_image = $me_picture->getProperty('url');
+				}
+
+				$user->save();
+				
+				Application_Model_Profile::getInstance()->insert(array(
+					'user_id' => $user->id,
+					'Gender' => ucfirst($me->getGender())
+				));
+
+				$geolocation = My_Ip::geolocation();
+
+				Application_Model_Address::getInstance()->insert(array(
+					'user_id' => $user->id,
+					'latitude' => $geolocation[0],
+					'longitude' => $geolocation[1]
+				));
+
+				Application_Model_Invitestatus::getInstance()->insert(array(
+					'user_id' => $user->id,
+					'created' => new Zend_Db_Expr('NOW()'),
+					'updated' => new Zend_Db_Expr('NOW()')
+				));
+
+				$users = Application_Model_Fbtempusers::getInstance()->findAllByNetworkId($network_id);
+
+				if (count($users))
+				{
+					$users_model = new Application_Model_Friends;
+
+					foreach($users as $tmp_user)
+					{
+						$users_model->insert(array(
+							'sender_id' => $tmp_user->sender_id,
+							'reciever_id' => $user->id,
+							'cdate' => new Zend_Db_Expr('NOW()'),
+							'udate' => new Zend_Db_Expr('NOW()')
+						));
+
+						$tmp_user->delete();
+					}
+				}
+			}
+		}
+
+		$status_model = new Application_Model_Loginstatus;
+
+		$loginRow = $status_model->setData(array(
+			'user_id' => $user->id,
+			'login_time' => new Zend_Db_Expr('NOW()'),
+			'ip_address' => $_SERVER['REMOTE_ADDR']
+		));
+
+		$auth = Zend_Auth::getInstance();
+
+		if ($auth->hasIdentity())
+		{
+			$auth->clearIdentity();
+		}
+
+		$auth->getStorage()->write(array(
+			'user_id' => $user->id,
+			'login_id' => $loginRow->id,
+			'is_fb_login' => true,
+			'user_name' => $user->Name,
+			'user_email' => $user->Email_id,
+			'latitude' => $user->lat(),
+			'longitude' => $user->lng(),
+			'pro_image' => $user->Profile_image,
+			'address' => $user->address(),
+			'network_id' => $user->Network_id
+		));
+
+		if (date('D') == "Mon")
+		{
+			$loginRows = $status_model->sevenDaysOldData($user->id);
+			$inviteCount = floor(count($loginRows) / $this->credit);
+			$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $user->id));
+
+			if ($inviteStatusRow && floor((strtotime(date('Y-m-d H:i:s')) - strtotime($inviteStatusRow->updated)) / (24 * 60 * 60)) >= 7)
+			{
+				$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + $inviteCount;
+				$inviteStatusRow->updated = new Zend_Db_Expr('NOW()');
+				$inviteStatusRow->save();
+			}
+		}
+
+		$this->_redirect(BASE_PATH . 'home');
+	}
+
+	/**
+	 * TODO: move to mobile controller
+	 */
+	public function wsfbLoginAction(){
         $response = new stdClass();
         if($_REQUEST) {
             $newsFactory = new Application_Model_NewsFactory();

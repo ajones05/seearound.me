@@ -3,7 +3,16 @@ class Application_Model_Address extends Zend_Db_Table_Abstract {
 
  	protected $_name     = 'address';
 	protected $_primary  = array('Id');
-    		
+	protected static $_instance = null;
+
+    protected $_referenceMap = array(
+		'User' => array(
+			'columns' => 'user_id',
+			'refTableClass' => 'Application_Model_User',
+			'refColumns' => 'id'
+		)
+    );
+
 	public static function getInstance() {
 		if (null === self::$_instance) {
 			self::$_instance = new self();

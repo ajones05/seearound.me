@@ -10,9 +10,6 @@ class ContactsController extends My_Controller_Action_Herespy
 
     public function indexAction()
     {
-        if($this->auth['latitude'] == "" && $this->auth['longitude']=="") {
-            $this->_redirect(BASE_PATH.'home/edit-profile');
-        }
         $inviteStatus = new Application_Model_Invitestatus();
         if($inviteStatus = $inviteStatus->getData(array(user_id=>$this->auth['user_id']))) {
             if($inviteStatus->invite_count <= 0) {
@@ -252,9 +249,7 @@ class ContactsController extends My_Controller_Action_Herespy
     public function friendsListAction()
     {  
         $this->view->friendListExist =true;
-        if($this->auth['latitude'] == "" && $this->auth['longitude']=="") {
-            $this->_redirect(BASE_PATH.'home/edit-profile');
-        }
+
         $response = new stdClass();
         $tableUser = new Application_Model_User();
         $tableFriends = new Application_Model_Friends();

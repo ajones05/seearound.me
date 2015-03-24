@@ -178,25 +178,6 @@ Number.prototype.toDeg = function () {
     return this * 180 / Math.PI;
 }
 
-
-function distanceBetween(secondPoint,firstPoint){
-    lat1 = firstPoint.lat();
-	lon1 = firstPoint.lng();
-	
-	lat2 = secondPoint.lat();
-	lon2 = secondPoint.lng();
-	var R = 6371; 
-	var dLat = (lat2-lat1).toRad();
-	var dLon = (lon2-lon1).toRad();
-	var lat1 = lat1.toRad();
-	var lat2 = lat2.toRad();
-
-	var a = (Math.sin(dLat/2) * Math.sin(dLat/2)) + (Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2)); 
-	var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-	var d = R * c;
-	return d;
-}
-
 function distance(firstPoint,secondPoint,unit){ 
   var lat1= firstPoint.lat();
   var lon1= firstPoint.lng(); 

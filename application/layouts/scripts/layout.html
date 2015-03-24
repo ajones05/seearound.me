@@ -43,8 +43,8 @@ JAVASCRIPT
 	var geoiplatitude  = <?php echo $geoip[0]; ?>;
 	var geoiplongitude = <?php echo $geoip[1]; ?>;
 	var baseUrl = "<?=BASE_PATH?>";
-	var userLatitude = "<?=$this->auth['latitude'];?>";
-	var userLongitude = "<?=$this->auth['longitude'];?>";
+	var userLatitude = <?php echo My_ArrayHelper::getProp($this->auth, 'latitude', $geoip[0]); ?>;
+	var userLongitude = <?php echo My_ArrayHelper::getProp($this->auth, 'longitude', $geoip[1]); ?>;
 	var userPosition = new google.maps.LatLng(userLatitude,userLongitude);
 	var isLogin = "<?=$this->isLogin?>";
 	var isFbLogin = "<?php echo !empty($this->auth['is_fb_login']); ?>";

@@ -22,11 +22,6 @@ JAVASCRIPT
 
 
     <head>
-
-
-        <? $auth = Zend_Auth::getInstance()->getStorage()->read();?>
-
-
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
 
@@ -67,16 +62,10 @@ JAVASCRIPT
 
 			var geoiplongitude = <?php echo $geoip[1]; ?>;
 
-            var userLatitude = "<?=$this->auth['latitude'];?>";
-
-
-            var userLongitude = "<?=$this->auth['longitude'];?>";
-
+			var userLatitude = <?php echo My_ArrayHelper::getProp($this->auth, 'latitude', $geoip[0]); ?>;
+			var userLongitude = <?php echo My_ArrayHelper::getProp($this->auth, 'longitude', $geoip[1]); ?>;
 
             var isLogin = "<?=$this->isLogin?>";
-
-
-            var user_id = "<?=$this->auth['user_id']?>";
 
 
             var user_id = "<?=$this->auth['user_id']?>";
@@ -112,7 +101,7 @@ JAVASCRIPT
         <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.form.js"></script>
 
 
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/main.js"></script>
+        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/main.js?<?php echo $config->mediaversion; ?>"></script>
 
 
         <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js?<?php echo $config->mediaversion; ?>"></script>
@@ -192,13 +181,7 @@ JAVASCRIPT
 
 
                     <li class="btn afterClr">
-
-
-                        <!--<input class="floatL" type="image" onclick="loginValidation();" src="<?=BASE_PATH?>www/images/btn-login.gif" tabindex="3"/> -->
                         <input class="floatL" type="submit" onclick="loginValidation();" value="Login" tabindex="3"/> 
-                        <!--<img width="70" height="26" alt="FB Login" src="<?=BASE_PATH?>/www/images/btn-fbLogin.gif" onclick="fbLogin();" style="cursor: pointer;" />-->
-
-
                     </li>
 
 

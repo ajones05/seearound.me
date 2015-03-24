@@ -2,7 +2,7 @@
 /**
  * User row model class.
  */
-class Application_Model_UserRow extends My_Db_Table_Row_Abstract
+class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 {
 	/**
 	 * Returns list of user interests.
@@ -52,6 +52,36 @@ class Application_Model_UserRow extends My_Db_Table_Row_Abstract
 
 		return $default;
 	}
+
+	/**
+	 * Returns user's geolocation latitude.
+	 *
+	 * @return	float
+	 */
+	public function lat()
+	{
+		return $this->findDependentRowset('Application_Model_Address')->current()->latitude;
+	}
+
+	/**
+	 * Returns user's geolocation longitude.
+	 *
+	 * @return	float
+	 */
+	public function lng()
+	{
+		return $this->findDependentRowset('Application_Model_Address')->current()->longitude;
+	}
+
+	/**
+	 * Returns user's address.
+	 *
+	 * @return	string
+	 */
+	public function address()
+	{
+		return $this->findDependentRowset('Application_Model_Address')->current()->address;
+	}
 }
 
 /**
@@ -68,7 +98,11 @@ class Application_Model_User extends My_Db_Table_Abstract
 
     protected $_rowClass = 'Application_Model_UserRow';
 
-    protected $_dependentTables = array('Application_Model_News', 'Application_Model_Comments');
+    protected $_dependentTables = array(
+		'Application_Model_News',
+		'Application_Model_Comments',
+		'Application_Model_Address'
+	);
 
     protected static $_instance = null;
 
@@ -604,6 +638,42 @@ class Application_Model_User extends My_Db_Table_Abstract
 					)
 				)
 				->where('user_data.id =?', $id)
+		);
+
+		return $result;
+	}
+
+	/**
+	 * Finds record by network ID.
+	 *
+	 * @param	string	$network_id
+	 *
+	 * return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 */
+	public static function findByNetworkId($network_id)
+	{
+		$db = self::getInstance();
+
+		$result = $db->fetchRow(
+			$db->select()->where('user_data.Network_id =?', $network_id)
+		);
+
+		return $result;
+	}
+
+	/**
+	 * Finds record by email.
+	 *
+	 * @param	string	$email
+	 *
+	 * return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 */
+	public static function findByEmail($email)
+	{
+		$db = self::getInstance();
+
+		$result = $db->fetchRow(
+			$db->select()->where('Email_id =?', $email)
 		);
 
 		return $result;

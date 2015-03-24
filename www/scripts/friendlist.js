@@ -1,5 +1,4 @@
 $(document).ready(function() {
-        //profileMap(userLatitude, userLongitude);
         friendMapInitialize();
         setHeight('.eqlCH');
 });

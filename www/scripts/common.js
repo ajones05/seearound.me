@@ -1,7 +1,36 @@
+/* facebook */
+window.fbAsyncInit = function(){
+	FB.init({
+		appId: facebook_appId,
+		xfbml: true,
+		cookie: true,
+		version: 'v2.1'
+	});
+};
+
+(function(d, s, id){
+	var js, fjs = d.getElementsByTagName(s)[0];
+	if (d.getElementById(id)) {return;}
+	js = d.createElement(s); js.id = id;
+	js.src = "//connect.facebook.net/en_US/sdk.js";
+	fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+
 $(function(){
 	$('#logoutLi a').click(function(e){
+		var url = $(this).attr('href');
+
 		e.preventDefault();
-		fbLogout($(this).attr('href'));
+
+		FB.getLoginStatus(function(response){
+			if (response.authResponse){
+				FB.logout(function(){
+					window.location.href = url;
+				});
+			} else {
+				window.location.href = url;
+			}
+		}); 
 	});
 
 	$('#myProfLink').click(function(e){
@@ -27,65 +56,25 @@ $(function(){
 			$(this).off('click.menu');
 		});
 	});
+
+	$('#facebookLogin').click(function(e){
+		e.preventDefault();
+
+		var url = $(this).attr('href');
+		
+		FB.login(function(response){
+			if (response.authResponse){
+				FB.api('/me', function(response){
+					if (response.email){
+						window.location.href = url;
+					} else {
+						alert('Email not activated');
+					}
+				});
+			}
+		},{scope: 'email'});
+	});
 });
-
-/* facebook */
-window.fbAsyncInit = function(){
-	FB.init({
-		appId: facebook_appId,
-		xfbml: true,
-		cookie: true,
-		version: 'v2.1'
-	});
-};
-
-(function(d, s, id){
-	var js, fjs = d.getElementsByTagName(s)[0];
-	if (d.getElementById(id)) {return;}
-	js = d.createElement(s); js.id = id;
-	js.src = "//connect.facebook.net/en_US/sdk.js";
-	fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
-
-function fbLogout(url){
-	FB.getLoginStatus(function(response){
-		if (response.authResponse){
-			FB.logout(function(){
-				window.location.href = baseUrl + url;
-			});
-		} else {
-			window.location.href = baseUrl + url;
-		}
-	}); 
-}
-
-function fbLogin(){
-	FB.login(function(response){
-		if (response.authResponse){
-			window.location.href = baseUrl + 'index/fb-login';
-			// FB.api('/me', function(response){
-				// console.log(response);
-				// picture = preurl+nwId+posturl;
-				// if(nwId != undefined) {
-					// document.body.style.cursor = 'wait';
-					// $.post(baseUrl+'index/fb-login/', {
-						// 'id':nwId,
-						// 'name':name,
-						// 'email': email,
-						// 'picture':picture,
-						// 'gender':gender,
-						// 'dob':dob
-					// }, returnLogin, "text");
-				// }
-			// });
-		}
-	},{
-		scope: 'email,user_likes,user_birthday,user_location,user_hometown',
-		return_scopes: true
-		// auth_type: 'rerequest'
-		// return_scopes: true
-	});
-}
 
 function showFriendRequest(thisone){
 	var html = '<p class="bgTop"></p>'+

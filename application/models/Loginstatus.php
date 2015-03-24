@@ -9,7 +9,7 @@ class Application_Model_Loginstatus extends My_Db_Table_Abstract
     protected $_name = "login_status";
     protected $_primary = "id";
     protected $_rowClass = "Application_Model_LoginstatusRow";
-    protected $_instance = null;    
+    protected static $_instance = null;    
     public static function getInstance() 
     {
         if(null === self::$_instance) {

@@ -81,4 +81,22 @@ class Application_Model_Fbtempusers extends Zend_Db_Table_Abstract {
         }
         
     }
+
+	/**
+	 * Finds records by receiver network ID.
+	 *
+	 * @param	string	$network_id
+	 *
+	 * return	array
+	 */	
+	public static function findAllByNetworkId($network_id)
+	{
+		$db = self::getInstance();
+
+		$result = $db->fetchAll(
+			$db->select()->where('reciever_nw_id =?', $network_id)
+		);
+
+		return $result;
+	}
 }

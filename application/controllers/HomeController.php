@@ -11,10 +11,6 @@ class HomeController extends My_Controller_Action_Herespy {
         $this->view->homePageExist = true;
         $this->view->changeLocation = true;
 
-        if ($this->auth['latitude'] == "" && $this->auth['longitude'] == "") {
-            $this->_redirect(BASE_PATH . 'home/edit-profile');
-        }
-
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
 		$this->view->headLink()
@@ -197,10 +193,6 @@ class HomeController extends My_Controller_Action_Herespy {
                 } else {
                      $this->view->latestPost= "N/A";
                }
-              
-            if ($user_data->latitude == "" && $user_data->longitude == "") {
-                $this->_redirect(BASE_PATH . 'home/edit-profile');
-            }
 
             $tableFriends = new Application_Model_Friends;
 
