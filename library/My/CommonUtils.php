@@ -14,7 +14,7 @@ class My_CommonUtils
 	public static function linkClickable($body)
 	{
 		return preg_replace_callback(
-			'/((http(s)?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/m',
+			'/((http(s)?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=!;]*)/m',
 			function($match)
 			{
 				$text = trim($match[0]);
