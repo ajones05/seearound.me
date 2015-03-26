@@ -30,6 +30,9 @@ class Application_Form_Comment extends Zend_Form
 			array(
 				'required' => true,
 				'filters' => array('StringTrim'),
+				'validators' => array(
+					array('stringLength', false, array(1, 250))
+				)
 			)
 		);
     }

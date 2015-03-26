@@ -10,15 +10,7 @@ $created_at = isset($this->item['created_at']) ? $this->item['created_at'] : dat
 			<div class="title-wrapper">
 				<?php echo $this->user->Name; ?>:
 				<span class="cmnt">
-					<?php echo My_CommonUtils::linkClickable(substr($this->item['comment'], 0, 250)); ?>
-					<?php if(strlen($this->item['comment']) > 250): ?>
-					<span>
-						<a href="javascript:void(0)" class='commentFont' onclick="showMoreNews(this,'<?php echo $this->item['id']; ?>')">...more</a>
-						<span id="morecontent_<?php echo $this->item['id']; ?>" style="display: none;">
-							<?php echo My_CommonUtils::linkClickable(substr($this->item['comment'], 250, strlen($this->item['comment']))); ?>
-						</span>
-					</span>
-					<?php endif; ?>
+					<?php echo My_CommonUtils::renderHtml($this->item['comment']); ?>
 				</span>
 			</div>
 		</li>

@@ -23,7 +23,7 @@ class My_StringHelper
 
 		if ($count > $limit)
 		{
-			$text = substr($text, 0, $limit - strlen($dots)) . $dots;
+			$text = substr(trim($text, '.'), 0, $limit - strlen($dots)) . $dots;
 		}
 
 		return $text;

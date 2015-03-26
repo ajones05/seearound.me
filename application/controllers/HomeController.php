@@ -276,7 +276,7 @@ class HomeController extends My_Controller_Action_Herespy {
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error'),
+				'error' => array('message' => 'Internal Server Error')
 			);
 		}
 
@@ -290,8 +290,6 @@ class HomeController extends My_Controller_Action_Herespy {
 	 */
 	public function getNearbyPointsAction()
 	{
-		$response = array();
-
 		try
 		{
 			$user_id = $this->_getParam('user_id');
@@ -350,6 +348,8 @@ class HomeController extends My_Controller_Action_Herespy {
 			}
 
 			$filter = $this->_getParam('filter');
+
+			$response = array();
 
 			switch ($filter)
 			{
@@ -425,8 +425,10 @@ class HomeController extends My_Controller_Action_Herespy {
 		}
 		catch (Exception $e)
 		{
-			$response['status'] = 0;
-			$response['error']['message'] = 'Internal server error';
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
 		}
 
 		die(Zend_Json_Encoder::encode($response));
@@ -450,8 +452,6 @@ class HomeController extends My_Controller_Action_Herespy {
 
     public function addNewCommentsAction()
 	{
-		$response = array();
-
 		try
 		{
 			$identity = Zend_Auth::getInstance()->getIdentity();
@@ -492,7 +492,7 @@ class HomeController extends My_Controller_Action_Herespy {
 				$body = My_Email::renderBody('comment-notify', array(
 					'news' => $news,
 					'user' => $user,
-					'comment' => $comments
+					'comment' => $data['comment']
 				));
 
 				if (count($comment_users))
@@ -510,17 +510,20 @@ class HomeController extends My_Controller_Action_Herespy {
 				}
 			}
 
-			$response['status'] = 1;
-			$response['html'] = My_ViewHelper::render('comment/item.html', array(
-				'item' => $data,
-				'user' => $user
-			));
+			$response = array(
+				'status' => 1,
+				'html' => My_ViewHelper::render('comment/item.html', array(
+					'item' => $data,
+					'user' => $user
+				))
+			);
 		}
 		catch (Exception $e)
 		{
-			var_dump($e->getMessage()); exit;
-
-			$response['status'] = 0;
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
 		}
 
 		die(Zend_Json_Encoder::encode($response));
@@ -528,8 +531,6 @@ class HomeController extends My_Controller_Action_Herespy {
 
     public function getTotalCommentsAction()
 	{
-		$response = array();
-
 		try
 		{
 			$news_id = $this->_getParam('news_id');
@@ -548,6 +549,8 @@ class HomeController extends My_Controller_Action_Herespy {
 
 			$comentsTable = new Application_Model_Comments;
 			$comments = $comentsTable->findAllByNewsId($news_id, $comentsTable->news_limit, $limitstart);
+
+			$response = array();
 
 			if (count($comments))
 			{
@@ -571,7 +574,10 @@ class HomeController extends My_Controller_Action_Herespy {
 		}
 		catch (Exception $e)
 		{
-			$response['status'] = 0;
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
 		}
 
         die(Zend_Json_Encoder::encode($response));

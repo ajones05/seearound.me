@@ -5,43 +5,82 @@
 class My_CommonUtils
 {
 	/**
-	 * Replaces link to href.
+	 * Render html.
 	 *
 	 * @param	string	$body
+	 * @param	integer	$limit
 	 *
 	 * @return	string
 	 */
-	public static function linkClickable($body)
+	public static function renderHtml($body, $limit = 0)
 	{
-		return preg_replace_callback(
-			'/((http(s)?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=!;]*)/m',
-			function($match)
+		$output = '';
+
+		for ($i = 0; $i < strlen($body);)
+		{
+			if (preg_match('/^(((f|ht)tps?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=!;]*)/',
+				substr($body, $i), $matches))
 			{
-				$text = trim($match[0]);
-				$pieces = parse_url($text);
-				$scheme = isset($pieces['scheme']) ? $pieces['scheme'] : 'http';
-				$host = isset($pieces['host']) ? $pieces['host'] : $pieces['path'];
-				$link = $scheme . '://' . $host;
+				$i += strlen($matches[0]);
 
-				if (isset($pieces['path']) && $pieces['path'] != $host)
+				$text = $matches[0];
+
+				if ($limit && $i >= $limit)
 				{
-					$link .= $pieces['path'];
+					$text = My_StringHelper::stringLimit($text, $limit - $i);
 				}
 
-				if (isset($pieces['query']))
-				{
-					$link .= '?' . $pieces['query'];
-				}
+				$output .= self::renderLink($matches[0], $text);
+			}
+			else
+			{
+				$output .= $body[$i];
 
-				if (isset($pieces['fragment']))
-				{
-					$link .= '#' . $pieces['fragment'];
-				}
+				$i++;
+			}
 
-				return '<a href="' . htmlspecialchars($link) . '">' . $text . '</a>';
-			},
-			$body
-		);
+			if ($limit && $i >= $limit)
+			{
+				$output .= '...';
+
+				break;
+			}
+		}
+
+		return nl2br($output);
+	}
+
+	/**
+	 * Replaces link to href.
+	 *
+	 * @param	string	$link
+	 * @param	string	$text
+	 *
+	 * @return	string
+	 */
+	public static function renderLink($link, $text)
+	{
+		$url = parse_url(trim($link));
+		$scheme = isset($url['scheme']) ? $url['scheme'] : 'http';
+		$host = isset($url['host']) ? $url['host'] : $url['path'];
+		$link = $scheme . '://' . $host;
+
+		if (isset($url['path']) && $url['path'] != $host)
+		{
+			$link .= $url['path'];
+		}
+
+		if (isset($url['query']))
+		{
+			$link .= '?' . $url['query'];
+		}
+
+		if (isset($url['fragment']))
+		{
+			$link .= '#' . $url['fragment'];
+		}
+
+		return '<a href="' . htmlspecialchars($link) . '">' . $text . '</a>';
 	}
 
 	/**

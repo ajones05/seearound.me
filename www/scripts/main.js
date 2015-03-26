@@ -1198,24 +1198,6 @@ $(document).ready(function(){
 
 });
 
-function showMoreNews(thisOne,morecontentId){
-
-    $(thisOne).remove();
-
-    var newsParent = $("#morecontent_"+morecontentId).parent().parent();
-
-    $(newsParent).html($(newsParent).html()+""+$("#morecontent_"+morecontentId).html());
-
-    var height=Number($(newsParent).parent().parent().height())+Number($("#morecontent_"+morecontentId).height());
-
-    $(newsParent).parent().parent().height(height-30);
-
-    $("#morecontent_"+morecontentId).remove();
-
-}
-
-
-
 /*******************************************************************************************************************************************/
 
 /*****                                          Function to validate existance of Email address                                        *****/

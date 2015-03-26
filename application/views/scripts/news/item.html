@@ -39,28 +39,23 @@ $created_date = isset($this->item['created_date']) ? $this->item['created_date']
 						<?php endif; ?>
 					</div>
 					<div class="post-bottom">
-						<p><?php echo My_CommonUtils::linkClickable(nl2br(htmlspecialchars(substr($this->item['news'], 0, 350)))); ?></p>
+						<p class="short"><?php echo My_CommonUtils::renderHtml($this->item['news'], 350); ?></p>
+						<p class="full" style="display: none"><?php echo My_CommonUtils::renderHtml($this->item['news']); ?></p>
+						<?php if (strlen($this->item['news']) > 350): ?>
+						<a href="#" class="moreButton">More</a>
+						<?php
+						endif;
+						if ($images && file_exists(ROOT_PATH . '/newsimages/' . $images)):
+							list($width, $height) = getimagesize(ROOT_PATH . '/newsimages/' . $images);
+						?>
+						<div class="post-image" style="margin-top: 10px;">
+							<img onclick="openImage('<?php echo $images; ?>','<?php echo $width; ?>', '<?php echo $height; ?>');" class="Image-Popup-Class" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>" style="cursor: pointer;width:100%;" />
+						</div>
+						<?php endif; ?>
 					</div>
 				</li>
 				<li class="clr"></li>
 			</ul>
-		</li>
-		<?php
-		if ($images && file_exists(ROOT_PATH . '/newsimages/' . $images)):
-			list($width, $height) = getimagesize(ROOT_PATH . '/newsimages/' . $images);
-		?>
-		<li class="cmnti">
-			<div>
-				<img onclick="openImage('<?php echo $images; ?>','<?php echo $width; ?>', '<?php echo $height; ?>');" class="Image-Popup-Class" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>" style="cursor: pointer;width:100%;" />
-			</div>
-			<?php endif; if (strlen($this->item['news']) > 350): ?>
-			<span>
-				<span id="morecontent_<?php echo $this->item['id']; ?>" style="display: none;"><?php echo My_CommonUtils::linkClickable(nl2br(htmlspecialchars(substr($this->item['news'],350,strlen($this->item['news']))))); ?></span>
-				<span>
-					<a id="moreButton_<?php echo $this->item['id']; ?>" href="javascript:void(0)" class='commentFont' onclick="showMoreNews(this,'<?php echo $this->item['id']; ?>')">...More</a>
-				</span>
-			</span>
-			<?php endif; ?>
 		</li>
 		<li class="post-comment">
 		<?php
@@ -94,7 +89,7 @@ $created_date = isset($this->item['created_date']) ? $this->item['created_date']
 		</span>
 		<div class="clr"></div>
 	</div>
-	<ul id="comment_list_<?php echo $this->item['id']; ?>"<?php if ($comments_count): ?> class="cmntRow afterClr"<?php endif; ?>>
+	<ul id="comment_list_<?php echo $this->item['id']; ?>" class="cmntRow afterClr">
 	<?php if ($comments_count): ?>
 		<?php if ($comments_count > 3): ?>
 		<li class="viewCount">

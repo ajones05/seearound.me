@@ -69,7 +69,7 @@ if (!Application_Model_User::checkId($this->news->user_id, $user))
                     </div>
 					<?php endif; ?>
 					<div class="post-bottom">
-						<div id="newsDataDiv"><p><?php echo nl2br(htmlspecialchars($this->news->news)); ?></p></div>
+						<div id="newsDataDiv"><p><?php echo My_CommonUtils::renderHtml($this->news->news); ?></p></div>
 					</div>
 				</li>
 				<li class="clr"></li>
