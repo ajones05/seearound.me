@@ -808,12 +808,9 @@ class MobileController extends Zend_Controller_Action
 				case 'Friends':
 					$result = $newsTable->findByLocationInFriends($latitude, $longitude, $radius, 15, $fromPage, $user, $select);
 					break;
-				case 'All':
-				case null:
+				default:
 					$result = $newsTable->findByLocation($latitude, $longitude, $radius, 15, $fromPage, $select);
 					break;
-				default:
-					throw new RuntimeException('Incorrect filter value: ' . var_export($filter, true), -1);
 			}
 
 			if (count($result))
