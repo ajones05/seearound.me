@@ -13,7 +13,7 @@ class InfoController extends My_Controller_Action_Abstract
             $this->view->isLogin = true;
         } else {
             $this->view->layout()->setLayout('login');
-            $this->view->publicProfile = ture;
+            $this->view->publicProfile = true;
         }
         /* Initialize action controller here */
     }
@@ -48,23 +48,13 @@ class InfoController extends My_Controller_Action_Abstract
 		$this->view->totalcomments = $this->view->comentsModel->getCountByNewsId($news->id);
 		$this->view->newsVote = Application_Model_Voting::getInstance()->findCountByNewsId($news->id);
 
-		$this->view->headScript()->prependFile('/www/scripts/publicNews.js?' . Zend_Registry::get('config_global')->mediaversion);
+		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
+
+		$this->view->headScript()
+			->prependFile('/www/scripts/publicNews.js?' . $mediaversion)
+			->prependFile('/www/scripts/news.js?' . $mediaversion);
     }
 
-    public function getTotalCommentsAction()
-    {
-        $response = new stdClass();
-        $newsId = $this->_getParam('news_id');
-
-        $newsFactory = new Application_Model_NewsFactory();
-        $comments = $newsFactory->viewTotalComments($newsId);
-        $this->view->comments = $comments;
-        $this->view->newsId = $newsId;
-        $html = $this->view->action('total-comments', 'info', array()); 
-        $response->comments = $html;
-        die(Zend_Json_Encoder::encode($response));
-    }
-    
     public function totalCommentsAction()
     {
         $this->_helper->layout()->disableLayout();

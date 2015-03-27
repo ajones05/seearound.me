@@ -1,0 +1,26 @@
+<?php
+$auth = Zend_Auth::getInstance()->getIdentity();
+$auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
+
+$auth_pro_image = BASE_PATH . 'www/images/img-prof40x40.jpg';
+
+if ($auth_user_id)
+{
+	$auth_pro_image = Application_Model_User::findById($auth_user_id)->getProfileImage($auth_pro_image);
+}
+?>
+<li class="cmntList-last<?php if (!empty($this->hidden)): ?> hidden<?php endif; ?>">
+	<ul class="inpCmnt">
+		<span style="display: block; text-align: center;">
+			<img class="commentLoading" src="<?=BASE_PATH?>www/images/wait.gif" style="margin-bottom: -6px; display: none;float: right; margin-right:226px;margin-top:11px;">
+		</span>
+		<li class="imgPro">
+			<img id="userImage" src="<?php echo $auth_pro_image; ?>" class="smallImage" />
+		</li>
+		<li class="inpCmnt-last">
+			<textarea class="textAreaClass" placeholder="Write a Comment"></textarea>
+		</li>
+		<div class="clr"></div>
+	</ul>
+	<div class="clr"></div>
+</li>

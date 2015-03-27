@@ -1600,18 +1600,13 @@ MainMap.prototype.getCenterAddress = function(latlng,comment,flag) {
     }, function(results,status) {
 
      if (status == google.maps.GeocoderStatus.OK) {
-
          if (results[0]) {
 
             if($("#useNewAddress"))
 
                 $("#useNewAddress").removeAttr('disabled');
               var formattedAddress  = results[0].formatted_address;   
-          
-              var latitudeLongitude = results[0].geometry.location;
-
 		  	  me.centerPoint = latlng;
-
 			  me.map.setCenter(latlng);
 
               me.centerData = formattedAddress;
@@ -1621,7 +1616,7 @@ MainMap.prototype.getCenterAddress = function(latlng,comment,flag) {
 			  if(flag == 'CHANGE'){
                 me.changeAddressContent(formattedAddress);
             } else
-                me.addressMarker(latitudeLongitude,me.icon,formattedAddress);
+                me.addressMarker(latlng,me.icon,formattedAddress);
           }
         }
       });

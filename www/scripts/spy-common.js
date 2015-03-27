@@ -482,18 +482,21 @@ function stopBounce(newsId,user_id){
 }
 
 function updateNews(){
+	$('.post-comment span').on('click', showComment);
+	$('.textAreaClass').live('input paste keypress', addCommentHandle);
+	$('.deteleIcon1 img').on('click', removeNews);
+
+	$('.myScrp').hover(
+		function(){
+			$(this).find(".deteleIcon1").show();
+		},
+		function(){
+			$(this).find(".deteleIcon1").hide();
+		}
+	);
+
 	$(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"});
 	$(".Message-Popup-Class").colorbox({width:"40%",height:"45%", inline:true, href:"#Message-Popup_Email"},function(){$('html, body').animate({ scrollTop: 0 }, 0);});
-
-	$( ".scrpBox" ).hover(function(){
-		$(this).find(".deteleIcon").each(function(){
-			$(this).css("display", "block");
-		});
-	}, function(){
-		$(this).find(".deteleIcon").each(function(){
-			$(this).css("display", "none");
-		});
-	});
 
 	$(".Image-Popup-Class").colorbox({
 		width: "60%",
@@ -566,22 +569,6 @@ function showResult() {
 }
 
 /*
-* Function to get show comment area
-* @param {DIV ID}
-*/
-function showCommentField(id) {
-    if(isLogin){
-       $("#comment_text_"+id).hide();
-	   $("#commentTextarea_"+id).show();
-       $("#comment"+id).focus();
-       if($("#newsData").height()>714)
-             setThisHeight(Number($("#newsData").height())+100);
-    } else {
-        alert('Please Login');
-    }
-}
-
-/*
 * Function to get commets for unique news
 * @param {newsId : id of the news}
 */
@@ -621,77 +608,9 @@ function getComments(target){
 }
 
 /*
-* Function to resize the textbox of comment and news
-* @param {DIV ID}
-*/
-function resizeArea(id, thisone){
-	var keycode = '';
-    $('#comment'+id).bind('keydown', function(event) {
-		keycode = event.keyCode;
-        if ($('#comment'+id).attr('value').length > 350) {
-    		    alert('The comment should be less the 350 Characters');
-                $('#comment'+id).attr('value',($('#comment'+id).attr('value')).substring(0, 350));
-    	} 
-    	
-		if(keycode === 13 && event.shiftKey) {
-			$('#comment'+id).autoGrow();
-            if(Number($("#newsData").height())>714)
-                setThisHeight(Number($("#newsData").height())+100);
-        } else if(keycode === 13){
-            if(($.trim($('#comment'+id).val())) == ""){
-                return false;
-			}
-			if(($.trim($('#comment'+id).val())).indexOf("<") > 0 || ($.trim($('#comment'+id).val())).indexOf(">") > 0){
-				alert("You enter invalid text");
-				return false;
-			}
-			var comments = $('#comment'+id).val();
-            $('#comment'+id).attr( "disabled","disabled");
-			var news_id = id;
-			if(comments != '') {
-			    $('#rpl_loading_'+id).show();
-
-				$.ajax({
-					url: baseUrl + 'home/add-new-comments',
-					data: {
-						comment: comments,
-						news_id: news_id
-					},
-					type: 'POST',
-					dataType: 'json',
-					async: false
-				}).done(function(response){
-					if (response && response.status){
-						$('#comment'+id).val('').blur().removeAttr("disabled");
-						$("#commentTextarea_"+id).before(response.html);
-						$('#rpl_loading_'+id).hide();
-					} else {
-						alert(ERROR_MESSAGE);
-					}
-				}).fail(function(jqXHR, textStatus){
-					alert(textStatus);
-				});
-			}
-		}
-       
-	});
-
-	if(keycode != 13){
-		$('#comment'+id).autoGrow();
-        if(Number($("#newsData").height())>714)
-            setThisHeight(Number($("#newsData").height())+100);
-	}
-   
-    
-}
-/*
 * Function to show more comments when
 * clicked on More.. button
 */
-function showMoreComments(thisOne,currId){
-    $(thisOne).hide();
-    $('#morecomments_'+currId).show();
-}
 
   function searchLatest(){
      if(controller == 'home' && action == 'index') {
@@ -860,18 +779,12 @@ function showHideDiv(type,bubbleCounter){
 * @return null
 */
 
-function textLimit(textLimit, thisone) {
+function textLimit(textLimit, thisone){
 	var text = $(thisone).val();
-	if(text.length <= textLimit) {
-		return true;
-	} else {		
-		$(thisone).val("");
-		var newVal = "";
-		for(var i = 0; i<textLimit; ++i) {
-			newVal += text[i];
-		}
-		$(thisone).val(newVal);
-		alert("Sorry! You can not enter more then "+textLimit+" charactes.");
+
+	if (text.length > textLimit){
+		$(thisone).val(text.substring(0, textLimit - 1));
+		alert("Sorry! You can not enter more then " + textLimit + " charactes.");
 		return false;
 	}
 }

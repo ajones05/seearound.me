@@ -14,11 +14,13 @@ class HomeController extends My_Controller_Action_Herespy {
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
 		$this->view->headLink()
-			->appendStylesheet('/www/css/jquery.loadmask.css?' . $mediaversion);
+			->appendStylesheet('/www/css/jquery.loadmask.css?' . $mediaversion)
+			->appendStylesheet('/www/css/common.css?' . $mediaversion);
 
 		$this->view->headScript()
 			->prependFile('/www/scripts/publicNews.js?' . $mediaversion)
-			->prependFile('/www/scripts/jquery.loadmask.js?' . $mediaversion);
+			->prependFile('/www/scripts/jquery.loadmask.js?' . $mediaversion)
+			->prependFile('/www/scripts/news.js?' . $mediaversion);
     }
     
      public function managedbAction(){
@@ -435,12 +437,6 @@ class HomeController extends My_Controller_Action_Herespy {
 	}
 
 	// TODO: remove
-    public function commentsAction() {
-        $this->_helper->layout->disableLayout();
-        $this->_helper->layout->enableLayout();
-    }
-
-	// TODO: remove
     public function pagingAction() {
         $this->_helper->layout()->disableLayout();
     }
@@ -583,11 +579,6 @@ class HomeController extends My_Controller_Action_Herespy {
         die(Zend_Json_Encoder::encode($response));
     }
 
-    public function totalCommentsAction() {
-
-        $this->_helper->layout()->disableLayout();
-    }
-
 public function changeAddressAction() {
 
         $response = new stdClass();
@@ -709,63 +700,38 @@ public function changeAddressAction() {
         die(Zend_Json_Encoder::encode($response));
     }   
 
-    public function deleteAction() {
+    public function deleteAction()
+	{
+        try
+		{
+			$id = $this->_request->getPost('id');
 
-        $response = new stdClass();
+			if (!Application_Model_News::checkId($id, $news))
+			{
+				throw new Exception('Incorrect news ID.');
+			}
 
-        if ($this->_request->isPost()) {
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
-            $data = $this->_request->getPost();
+			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $user) ||
+				$news->user_id != $user->id)
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
 
-            if ($data['action'] == 'user') {
+			$news->delete();
 
-                $userTable = new Application_Model_User();
+			$response = array('status' => 1);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Sorry! we are unable to performe delete action')
+			);
+		}
 
-                if ($row = $userTable->find($data['id'])->current()) {
-
-                    //$row->delete();
-
-                    $response->success = "deleted successfully";
-                } else {
-
-                    $response->error = 'Sorry! we are unable to performe delete action';
-                }
-            } elseif ($data['action'] == 'news') {
-
-                $newsTable = new Application_Model_News();
-
-                if ($row = $newsTable->find($data['id'])->current()) {
-
-                    $row->delete();
-
-                    $response->success = "deleted successfully";
-                } else {
-
-                    $response->error = 'Sorry! we are unable to performe delete action';
-                }
-            } elseif ($data['action'] == 'comments') {
-
-                $commentTable = new Application_Model_Comments();
-
-                if ($row = $commentTable->find($data['id'])->current()) {
-
-                    $row->delete();
-
-                    $response->success = "deleted successfully";
-                } else {
-
-                    $response->error = 'Sorry! we are unable to performe delete action';
-                }
-            }
-        } else {
-
-            $response->error = 'Sorry! we are unable to performe delete action';
-        }
-
-        if ($this->_request->isXmlHttpRequest()) {
-
-            die(Zend_Json_Encoder::encode($response));
-        }
+		die(Zend_Json_Encoder::encode($response));
     }
 
     /*

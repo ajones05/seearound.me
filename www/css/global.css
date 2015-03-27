@@ -205,9 +205,6 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 
 .myProf h3{font:bold 14px/40px tahoma; padding:0px 20px; color:#0068c4;}
 
-
-.deteleIcon .deteleIcon_img {position: absolute;width: 12px;right: 4px;top: 2px;}
-
 img.image_delete {cursor: pointer; width: 12px; margin-top: 2px; margin-left: 10px;}
 /******************/	
 
@@ -243,7 +240,11 @@ img.image_delete {cursor: pointer; width: 12px; margin-top: 2px; margin-left: 10
 
 .scrpBox_new .user_post { padding-top: 5px; background: #fff;}
 
-.deteleIcon1 img.user_post_icon {display: none;position:absolute;cursor:pointer; width: 12px;right: 4px;top: 4px;}
+.deteleIcon1 {
+	display: none;
+}
+
+.deteleIcon1 img {position:absolute;cursor:pointer;width: 12px;right: 4px;top: 4px;}
 
 .myScrp{padding:0px; position: relative;}
 

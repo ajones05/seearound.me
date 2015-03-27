@@ -104,6 +104,15 @@ class Application_Model_User extends My_Db_Table_Abstract
 		'Application_Model_Address'
 	);
 
+	protected $_referenceMap = array(
+		'News' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_News',
+			'refColumns' => 'user_id',
+			// 'onDelete' => self::CASCADE
+		)
+	); 
+
     protected static $_instance = null;
 
     protected $_filters = array(

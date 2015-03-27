@@ -1,15 +1,18 @@
 <?php
+$auth = Zend_Auth::getInstance()->getIdentity();
+$auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
 $comments = My_ArrayHelper::getProp($this, 'comments', array());
 $comments_count = My_ArrayHelper::getProp($this, 'comments_count', 0);
 $votings_count = My_ArrayHelper::getProp($this, 'votings_count', 0);
 $images = isset($this->item['images']) ? $this->item['images'] : null;
 $created_date = isset($this->item['created_date']) ? $this->item['created_date'] : date('Y-m-d H:i:s');
+$hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => $this->item['id']), $comments->toArray(), 1);
 ?>
 <div id="scrpBox_<?php echo $this->item['id']; ?>" class="scrpBox" onmouseover="toggleBounce('<?php echo $this->item['id']; ?>','<?php echo $this->user->id?>');" onmouseout="stopBounce('<?php echo $this->item['id']; ?>',<?php echo $this->user->id; ?>);">
 	<ul class="myScrp afterClr" id="newsDiv<?php echo $this->item['id']; ?>">
-		<?php if ($this->auth['id'] == $this->user->id): ?>
-		<div class="deteleIcon">
-			<img class="crp deteleIcon_img" onclick="deletes(this, 'news', <?php echo $this->item['id']; ?>);" src="<?php echo BASE_PATH; ?>www/images/delete-icon.png" />
+		<?php if ($auth_user_id == $this->user->id): ?>
+		<div class="deteleIcon1">
+			<img src="<?php echo BASE_PATH; ?>www/images/delete-icon.png" />
 		</div>
 		<?php endif; ?>
 		<li>
@@ -57,19 +60,11 @@ $created_date = isset($this->item['created_date']) ? $this->item['created_date']
 				<li class="clr"></li>
 			</ul>
 		</li>
+		<?php if ($hide_comments): ?>
 		<li class="post-comment">
-		<?php
-		if (!$comments || !My_ArrayHelper::search(array('news_id' => $this->item['id']), $comments->toArray(), 1)):
-			if ($this->auth['id']):
-		?>
-			<span id="comment_text_<?php echo $this->item['id']; ?>" onclick="showCommentField(<?php echo $this->item['id']; ?>);" style="cursor:pointer;color: #4276cd;">Comment</span>
-		<?php else: ?>
-			<span class="login-popup-class" style="color: #4276cd;">Comment</span>
-		<?php
-			endif;
-		endif;
-		?>
+			<span style="cursor:pointer;color: #4276cd;">Comment</span>
 		</li>
+		<?php endif; ?>
 	</ul>
 	<div class="dur">
 		<span class="floatR">
@@ -107,38 +102,9 @@ $created_date = isset($this->item['created_date']) ? $this->item['created_date']
 				'user' => Application_Model_User::findById($comments[$i]->user_id)
 			));
 		}
-		?>
-		<li id="commentTextarea_<?php echo $this->item['id']; ?>" class="cmntList-last afterClr">
-			<ul class="inpCmnt afterClr">
-				<span style="display: block; text-align: center;">
-					<img id="rpl_loading_<?php echo $this->item['id']; ?>" src="<?php echo BASE_PATH; ?>www/images/wait.gif" style="display: none;">
-				</span>
-				<li class="imgPro">
-					<img src="<?php echo $this->auth['image']; ?>" class="smallImage" />
-				</li>
-				<li class="inpCmnt-last">
-					<textarea id="comment<?php echo $this->item['id']; ?>" placeholder="Write a Comment" class="textAreaClass" onkeydown="textLimit(250, this);" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea(<?php echo $this->item['id']; ?>);"></textarea>
-				</li>
-				<div class="clr"></div>
-			</ul>
-		</li>
-	<?php else: ?>
-		<ul id="commentTextarea_<?php echo $this->item['id']; ?>" class="cmntRow afterClr" style="display: none;">
-			<li id='tempDiv_<?php echo $this->item['id']; ?>' class="cmntList-last" style="margin-top: 0; border-top: none;">
-				<ul class="inpCmnt afterClr">
-					<span>
-						<img id="rpl_loading_<?php echo $this->item['id']; ?>"  src="<?php echo BASE_PATH; ?>www/images/wait.gif" style="margin-bottom: 0px; float: right; margin-right: 131px; margin-top: 9px; display: none;" />
-					</span>
-					<li class="imgPro">
-						<img src="<?php echo $this->auth['image']; ?>" class="smallImage" />
-					</li>
-					<li class="inpCmnt-last">
-						<textarea id="comment<?php echo $this->item['id']; ?>" class="textAreaClass" onkeydown="textLimit(250, this);" onkeyup="textLimit(250, this);resizeArea(<?php echo $this->item['id']; ?>);"></textarea>
-					</li>
-					<div class="clr"></div>
-				</ul>
-			</li>
-		</ul>
-	<?php endif; ?>
+	endif;
+
+	echo My_ViewHelper::render('comment/add-item.html', array('hidden' => $hide_comments));
+	?>
 	</ul>
 </div>
