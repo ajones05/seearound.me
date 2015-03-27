@@ -66,15 +66,19 @@ $user = $this->news->findDependentRowset('Application_Model_User')->current();
             <?php endif;?>
          </li>
     </ul>
-	<?php if($this->totalcomments > 5) :?>
+	<?php if ($this->totalcomments > 5): ?>
 	<div class="dur" style="height: 25px;"></div>
 	<?php endif;?>
 	<ul class="cmntRow afterClr">
-        <?php if($this->totalcomments > 5): ?>
+        <?php if ($this->totalcomments > 5): ?>
         <li class="viewCount">
 			<div onclick="getComments(this);" class="commentField"><?php echo $this->comentsModel->viewMoreLabel($this->totalcomments - 5); ?></div>
         </li>
         <?php
+		endif;
+
+		if ($this->totalcomments)
+		{
 			for ($i = count($this->comments) - 1; $i >= 0; $i--)
 			{
 				echo My_ViewHelper::render('comment/item.html', array(
@@ -82,7 +86,7 @@ $user = $this->news->findDependentRowset('Application_Model_User')->current();
 					'user' => Application_Model_User::findById($this->comments[$i]->user_id)
 				));
 			}
-		endif;
+		}
 
 		echo My_ViewHelper::render('comment/add-item.html')
 		?>
