@@ -109,7 +109,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
                   ->from('comments', array('news_id'))
                   ->where('user_id=?', $userId)
                   ->where('news_id=?', $newsId)
-                  ->where('isdeleted!=?', 1);
+                  ->where('isdeleted =?', 0);
         $resultSet =  $this->fetchAll($select);
         $resultSet = $resultSet->toArray();
         if($resultSet) {
@@ -134,7 +134,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 			$this->select()
 				->from($this, 'comments.*')
 				->where('news_id=?', $news_id)
-				->where('isdeleted!=?', 1)
+				->where('isdeleted =?', 0)
 				->joinLeft('user_data', 'comments.user_id = user_data.id', '')
 				->where('user_data.id IS NOT NULL')
 				->where('user_data.status =?', 'active')

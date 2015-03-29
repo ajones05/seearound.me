@@ -450,7 +450,7 @@ class HomeController extends My_Controller_Action_Herespy {
 
 			$data = $this->_request->getParams();
 
-			if (empty($data['news_id']) || !Application_Model_News::checkId($data['news_id'], $news))
+			if (empty($data['news_id']) || !Application_Model_News::checkId($data['news_id'], $news, 0))
 			{
 				throw new RuntimeException('Incorrect news ID');
 			}
@@ -690,7 +690,7 @@ public function changeAddressAction() {
 		{
 			$id = $this->_request->getPost('id');
 
-			if (!Application_Model_News::checkId($id, $news))
+			if (!Application_Model_News::checkId($id, $news, 0))
 			{
 				throw new Exception('Incorrect news ID.');
 			}
@@ -730,9 +730,14 @@ public function changeAddressAction() {
 				throw new Exception('Incorrect comment ID.');
 			}
 
-			$auth = Zend_Auth::getInstance()->getIdentity();
-
 			$news = $comment->findDependentRowset('Application_Model_News')->current();
+
+			if ($news->isdeleted)
+			{
+				throw new RuntimeException('News does not exist', -1);
+			}
+
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
 			if (!$auth || ($auth['user_id'] != $comment->user_id && $auth['user_id'] != $news->user_id))
 			{
