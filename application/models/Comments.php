@@ -1,52 +1,45 @@
 <?php
 
-
-
-class Application_Model_CommentsRow extends My_Db_Table_Row_Abstract {
-
-    
-
+class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
+{
+    /**
+     * Saves the properties to the database.
+     *
+     * @return mixed The primary key value(s), as an associative array if the
+     *     key is compound, or a scalar if the key is single-column.
+     */
+	public function save()
+	{
+		$this->updated_at = date('Y-m-d H:i:s');
+		return parent::save();
+	}
 }
-
-
 
 class Application_Model_Comments extends Zend_Db_Table_Abstract
 {
-	/**
-	 * @var	Application_Model_Comments
-	 */
-	protected static $_instance;
-
 	/**
 	 * @var	integer
 	 */
 	public $news_limit = 30;
 
- 	protected $_name     = 'comments';
+	/**
+	 * @var	Application_Model_Comments
+	 */
+	protected static $_instance;
 
-	protected $_primary  = array('id');
+    /**
+     * The table name.
+     *
+     * @var string
+     */
+ 	protected $_name = 'comments';
 
-        protected $_rowClass = 'Application_Model_CommentsRow';
-
-        protected $_dependentTables = array();
-
-        protected $_referenceMap    = array(
-
-            'News' => array(
-
-            'columns' => 'news_id',
-
-            'refTableClass' => 'Application_Model_News',
-
-            'refColumns' => 'id',
-
-            'onDelete' => self::CASCADE
-
-            )
-
-        );   
-
-		
+    /**
+     * Classname for row.
+     *
+     * @var string
+     */
+	protected $_rowClass = 'Application_Model_CommentsRow';
 
 	public static function getInstance() {
 
@@ -75,6 +68,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 			->setIntegrityCheck(false)
 			->from($this, 'user_data.*')
 			->joinLeft('user_data', 'comments.user_id = user_data.id')
+			->where('comments.isdeleted =?', 0)
 			->where('comments.news_id =?', $news_id)
 			->group('comments.user_id'); 
 
@@ -84,14 +78,6 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		}
 
 		return $this->fetchAll($select);
-    }
-    
-    public function getCommentOfAllNews(){
-        $select = $this->select()
-                  ->from('comments', array('news_id','count(*) as comment_count'))
-                  ->group('news_id');
-        return $this->fetchAll($select); 
-         
     }
 
 	/**
@@ -107,6 +93,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 			$this->select()
 				->from('comments', array('count(*) as comment_count'))
 				->where('news_id=?', $news_id)
+				->where('isdeleted =?', 0)
 		); 
 
 		if ($result)
@@ -180,16 +167,47 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		return $label;
 	}
 
-    /**
-     * Inserts a new row.
-     *
-     * @param  array  $data  Column-value pairs.
-     * @return mixed         The primary key of the row inserted.
-     */
-    public function insert(array $data)
-    {
-		$data['updated_at'] = date('Y-m-d H:i:s');
+	/**
+	 * Checks if comment id valid.
+	 *
+	 * @param	integer	$comment_id
+	 * @param	mixed	$comment
+	 * @param	mixed	$deleted
+	 *
+	 * @return	boolean
+	 */
+	public static function checkId($comment_id, &$comment, $deleted = null)
+	{
+		if ($comment_id == null)
+		{
+			return false;
+		}
 
-		return parent::insert($data);
+		$comment = self::findById($comment_id, $deleted);
+
+		return $comment != null;
+	}
+
+	/**
+	 * Finds record by ID.
+	 *
+	 * @param	integer	$id
+	 *
+	 * return	mixed	If success Application_Model_CommentsRow, otherwise NULL
+	 */
+	public static function findById($id, $deleted = null)
+	{
+		$db = self::getInstance();
+
+		$query = $db->select()->where('id =?', $id);
+		
+		if ($deleted !== null)
+		{
+			$query->where('isdeleted =?', $deleted);
+		}
+
+		$result = $db->fetchRow($query);
+
+		return $result;
 	}
 }

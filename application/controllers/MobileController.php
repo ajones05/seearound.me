@@ -900,17 +900,9 @@ class MobileController extends Zend_Controller_Action
         $id = $newsFactory->addComments($comments, $newsId, $userId);
         $commentRowSet = $newsFactory->viewTotalComments($newsId,-1,$userId);
          if(isset($id)){
-		     /* $newstable   = new Application_Model_News();
-              $votingTable = new Application_Model_Voting();
-              $newsRow = $newstable->getNews(array('id' => $news_id));
-              $response->noofvotes = $votingTable->getTotalVoteCounts('news',$newsId,$userId);
-              $response->news = $newsRow->toArray(); */
               $response->status ="SUCCESS";
               $response->message = "Comments Post Successfully";
               $response->result = $commentRowSet;
-           /* $response->userId =$userId;
-              $response->postedAt =date("Y-m-d H:i:s");
-              $response->image  =  Application_Model_User::getImage($userId);*/
               echo(json_encode($response)); exit;
          } else {
               $response->status  = "FAILED";  
@@ -942,10 +934,7 @@ class MobileController extends Zend_Controller_Action
                 $response->noofvotes_1 = $votingTable->getTotalVoteCounts($action, $news_id, $user_id);
                 echo(json_encode($response)); exit; 
             } else {
-                $newstable   = new Application_Model_News();
-                $votingTable = new Application_Model_Voting();
-                $newsRow = $newstable->getNews(array('id' => $news_id));
-                $response->news = $newsRow->toArray();
+                $response->news = Application_Model_News::getInstance()->findById($news_id, 0)->toArray();
                 $response->success = 'voted successfully';
                 $response->noofvotes_2 = $votingTable->getTotalVoteCounts($action, $news_id, $user_id);
                  /*Code for score measurement*/

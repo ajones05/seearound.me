@@ -72,7 +72,7 @@ $user = $this->news->findDependentRowset('Application_Model_User')->current();
 	<ul class="cmntRow afterClr">
         <?php if ($this->totalcomments > 5): ?>
         <li class="viewCount">
-			<div onclick="getComments(this);" class="commentField"><?php echo $this->comentsModel->viewMoreLabel($this->totalcomments - 5); ?></div>
+			<div class="commentField"><?php echo $this->comentsModel->viewMoreLabel($this->totalcomments - 5); ?></div>
         </li>
         <?php
 		endif;
@@ -81,10 +81,7 @@ $user = $this->news->findDependentRowset('Application_Model_User')->current();
 		{
 			for ($i = count($this->comments) - 1; $i >= 0; $i--)
 			{
-				echo My_ViewHelper::render('comment/item.html', array(
-					'item' => $this->comments[$i],
-					'user' => Application_Model_User::findById($this->comments[$i]->user_id)
-				));
+				echo My_ViewHelper::render('comment/item.html', array('item' => $this->comments[$i]));
 			}
 		}
 
@@ -94,8 +91,7 @@ $user = $this->news->findDependentRowset('Application_Model_User')->current();
 </div>
 <script type="text/javascript">
 	$(function(){
-		$('.textAreaClass').live('input paste keypress', addCommentHandle);
-		$('.deteleIcon1 img').on('click', removeNews);
+		renderNews();
 
         var data = {
             name: <?php echo json_encode($this->news_user->Name); ?>,
@@ -114,14 +110,5 @@ $user = $this->news->findDependentRowset('Application_Model_User')->current();
 
         $(".Image-Popup-Class").colorbox({width:"60%",height:"80%", inline:true, href:"#Image-Popup"},
 			function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});
-
-        $('.myScrp').hover(
-			function(){
-				$(this).find(".deteleIcon1").show();
-			},
-			function(){
-				$(this).find(".deteleIcon1").hide();
-			}
-		);
     });
 </script>

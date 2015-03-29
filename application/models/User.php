@@ -108,8 +108,12 @@ class Application_Model_User extends My_Db_Table_Abstract
 		'News' => array(
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_News',
-			'refColumns' => 'user_id',
-			// 'onDelete' => self::CASCADE
+			'refColumns' => 'user_id'
+		),
+		'Comments' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_Comments',
+			'refColumns' => 'user_id'
 		)
 	); 
 

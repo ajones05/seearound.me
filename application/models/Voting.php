@@ -101,7 +101,7 @@ class Application_Model_Voting extends My_Db_Table_Abstract
     function getPostTime($news_id) {
         $newsTable = new Application_Model_News();
         $sel = $newsTable->select()->from('news', array('created_date'))
-                ->where('id=?', $news_id);
+                ->where('id=?', $news_id)->where('isdeleted =?', 0);
         $fetch = $newsTable->fetchRow($sel);
         return $fetch->created_date;
         exit;
@@ -213,22 +213,14 @@ class Application_Model_Voting extends My_Db_Table_Abstract
             return count($fetch);
         }
     }
-    
-    
-   public function getTotalCommentsCounts($action_id, $news_id, $user_id){
-        $news_count = 1;
-        if ($action_id == 'news') {
-            $commentsTable = new Application_Model_Comments();
-            $sel = $commentsTable->select()->from('comments', array('*'))
-                               ->where('news_id=?', $news_id);
-            $fetch = $commentsTable->fetchAll($sel);
-            if(count($fetch)){
-                return count($fetch);
-            } else {
-                return 0;
-            }
-        }
-    }
+
+	public function getTotalCommentsCounts($action_id, $news_id, $user_id)
+	{
+		if ($action_id == 'news')
+		{
+			return Application_Model_Comments::getInstance()->getCountByNewsId($news_id);
+		}
+	}
 
 	/**
 	 * Returns voiting count by news ID.

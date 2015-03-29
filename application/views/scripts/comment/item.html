@@ -1,21 +1,30 @@
 <?php
-$created_at = isset($this->item['created_at']) ? $this->item['created_at'] : date('Y-m-d H:i:s');
+$auth = Zend_Auth::getInstance()->getIdentity();
+$auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
+$created_at = isset($this->item['created_at']) ? strtotime($this->item['created_at']) : time();
+$user = $this->item->findDependentRowset('Application_Model_User')->current();
+$news = $this->item->findDependentRowset('Application_Model_News')->current();
 ?>
-<li id="comment_<?php echo $this->item['id']; ?>" class="cmntList">
+<li id="comment_<?php echo $this->item->id; ?>" class="cmntList">
 	<div class="imgPro">
-		<img src="<?php echo $this->user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" />
+		<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $user->id; ?>">
+			<img src="<?php echo $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" />
+		</a>
 	</div>
 	<ul>
+		<?php if ($auth_user_id == $news->user_id || $auth_user_id == $this->item->user_id): ?>
+		<div class="deteleIcon1">
+			<img src="<?php echo BASE_PATH; ?>www/images/delete-icon.png" />
+		</div>
+		<?php endif; ?>
 		<li class="title">
 			<div class="title-wrapper">
-				<?php echo $this->user->Name; ?>:
-				<span class="cmnt">
-					<?php echo My_CommonUtils::renderHtml($this->item['comment']); ?>
-				</span>
+				<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $user->id; ?>"><?php echo $user->Name; ?>:</a>
+				<span class="cmnt"><?php echo My_CommonUtils::renderHtml($this->item->comment); ?></span>
 			</div>
 		</li>
 		<li class="dur">
-			<p><?php echo date('d F Y h:i a', strtotime($created_at)); ?></p>
+			<p><?php echo date('d F Y h:i a', $created_at); ?></p>
 		</li>
 	</ul>
 	<div class="clr"></div>

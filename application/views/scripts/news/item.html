@@ -28,16 +28,16 @@ $hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => 
 						<span class="post-date"><?php echo date("d F Y h:i a", strtotime($created_date)); ?></span>
 						<?php if ($this->item['id']): ?>
 						<span class="message_number" id="message_success_<?php echo $this->item['id']; ?>"><?php echo $votings_count; ?></span>
-						<?php endif; if ($this->auth['id'] != $this->user->id): ?>
-						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $this->auth['id']; ?>);" src="<?php echo BASE_PATH; ?>www/images/<?php echo $votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>">
-						<img class="crp" id="img2_<?php echo $this->item['id']; ?>" style="display:none" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $this->auth['id']; ?>);" src="<?php echo BASE_PATH; ?>www/images/thumsup_voted.jpg" />
+						<?php endif; if ($auth_user_id != $this->user->id): ?>
+						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo BASE_PATH; ?>www/images/<?php echo $votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>">
+						<img class="crp" id="img2_<?php echo $this->item['id']; ?>" style="display:none" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo BASE_PATH; ?>www/images/thumsup_voted.jpg" />
 						<div id="thumbs_up1_<?php echo $this->item['id']; ?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
 							<span id="message_success_5" style="color: rgb(51, 204, 0);"><img src="<?php echo BASE_PATH; ?>www/images/correct_small.gif" />Thanks!</span>
 						</div>
 						<div id="thumbs_up2_<?php echo $this->item['id']; ?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
 							<span id="message_success_5" style="color: rgb(51, 204, 0);">Already-Voted</span>
 						</div>
-						<?php endif; if ($this->auth['id'] == $this->user->id): ?>
+						<?php endif; if ($auth_user_id == $this->user->id): ?>
 						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="alert('You can not vote your own post!');" src="<?php echo BASE_PATH; ?>www/images/<?php echo $votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>" />
 						<?php endif; ?>
 					</div>
@@ -72,7 +72,7 @@ $hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => 
 			<a class="crp" onclick="fbshare('scrpBox_<?php echo $this->item['id']; ?>','<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>','<?php echo $this->item['news']; ?>','<?php echo BASE_PATH; ?>info/news/nwid/<?php echo $this->item['id']; ?>')">
 				<img src="<?php echo BASE_PATH; ?>www/images/facebook.png" style="width: 25px; height: 25px;" />
 			</a>
-			<?php if ($this->auth['id']): ?>
+			<?php if ($auth_user_id): ?>
 			<a class="crp Message-Popup-Class cboxElement" onclick="clearErrors('<?php echo $this->item['id']; ?>');">
 				<img src="<?php echo BASE_PATH; ?>www/images/email.png" style="width: 25px; height: 25px;" />
 			</a>
@@ -85,26 +85,22 @@ $hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => 
 		<div class="clr"></div>
 	</div>
 	<ul id="comment_list_<?php echo $this->item['id']; ?>" class="cmntRow afterClr">
-	<?php if ($comments_count): ?>
 		<?php if ($comments_count > 3): ?>
 		<li class="viewCount">
-			<div onclick="getComments(this);" class="commentField">
-				<?php echo Application_Model_Comments::viewMoreLabel($comments_count - 3); ?>
-			</div>
+			<div class="commentField"><?php echo Application_Model_Comments::viewMoreLabel($comments_count - 3); ?></div>
 		</li>
 		<?php
 		endif;
 
-		for ($i = count($comments) - 1; $i >= 0; $i--)
+		if ($comments_count)
 		{
-			echo My_ViewHelper::render('comment/item.html', array(
-				'item' => $comments[$i],
-				'user' => Application_Model_User::findById($comments[$i]->user_id)
-			));
+			for ($i = count($comments) - 1; $i >= 0; $i--)
+			{
+				echo My_ViewHelper::render('comment/item.html', array('item' => $comments[$i]));
+			}
 		}
-	endif;
 
-	echo My_ViewHelper::render('comment/add-item.html', array('hidden' => $hide_comments));
+		echo My_ViewHelper::render('comment/add-item.html', array('hidden' => $hide_comments));
 	?>
 	</ul>
 </div>

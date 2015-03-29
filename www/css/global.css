@@ -294,7 +294,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .cmntList li.title .title-wrapper {padding: 5px 10px; background: #fff; min-height: 40px; overflow: scroll; overflow-x: hidden; overflow-y: hidden;}
 
-.cmntList li.title a {color:#4276cd;}
+.cmntList li.title a {color:#4276cd;text-decoration: none;}
 
 .cmntList li.title .cmnt { color: #8d8d8d; font: normal 15px Lato-Regular;}
 

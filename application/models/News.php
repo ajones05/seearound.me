@@ -1,26 +1,50 @@
 <?php
 
-class Application_Model_NewsRow extends My_Db_Table_Row_Abstract {
-    
+class Application_Model_NewsRow extends My_Db_Table_Row_Abstract
+{
 }
 
-class Application_Model_News extends Zend_Db_Table_Abstract {
-
+class Application_Model_News extends Zend_Db_Table_Abstract
+{
 	/**
 	 * @var	Application_Model_News
 	 */
 	protected static $_instance;
 
-    protected $_name     = 'news';
-    protected $_primary  = array('id');
+    /**
+     * The table name.
+     *
+     * @var string
+     */
+    protected $_name = 'news';
+
+    /**
+     * Classname for row.
+     *
+     * @var string
+     */
     protected $_rowClass = 'Application_Model_NewsRow';
-    protected $_dependentTables = array('Application_Model_Comments');
-    protected $_referenceMap    = array(
-            'User' => array(
-            'columns' => 'user_id',
-            'refTableClass' => 'Application_Model_User',
-            'refColumns' => 'id',
-            'onDelete' => self::CASCADE
+
+	/**
+	 * @var	array
+	 */
+    protected $_dependentTables = array(
+		'Application_Model_Comments'
+	);
+
+	/**
+	 * @var	array
+	 */
+	protected $_referenceMap = array(
+		'User' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_User',
+			'refColumns' => 'user_id'
+        ),
+		'Comments' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_Comments',
+			'refColumns' => 'news_id'
         )
     );    
 
@@ -31,171 +55,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
             }		
             return self::$_instance;
     }
-    public function getNews($data = array(), $all = false) 
-    {
-      $select = $this->select();
-      if(count($data) > 0) {
-         foreach($data as $index => $value) {
-                $select->where($index. " =?", $value);
-          }
-      } 
-      
-      /* 
-                ->from('user_data')
-                ->joinLeft('address','address.user_id = user_data.id',array('latitude','longitude'))
-                ->where('Network_id =?', $data['Network_id']); //echo $select; exit;
-       */
-        if($all) {
-            return $this->fetchAll($select);
-        }else {
-             //$getResult = ($this->fetchRow($select));
-             
-            // echo "<pre>"; print_r($getResult); exit;
-             //echo "<pre>"; print_r ($this->fetchRow($select)); exit;
-            return $this->fetchRow($select);
-        }
-    }
-
-    public function getNewsWithDetails($id = 0) 
-    {
-        if($id) {
-            $select = $this->select()->setIntegrityCheck(false)
-                    ->from($this)
-                    ->joinLeft('user_data', 'news.user_id = user_data.id', array(email => 'Email_id', name => 'Name'))
-                    ->joinLeft('user_profile', 'news.user_id = user_profile.user_id')
-                    ->joinLeft('address', 'news.user_id = address.user_id')
-                    ->where('news.id =?', $id);
-            return $this->fetchRow($select);
-        }
-    }
-    
-   public function existUserId($news_id,$user_id){
-        $newsTable = new Application_Model_News();
-        $select = $this->select()->from('news',array('user_id'))
-                                      ->where('id=?', $news_id)
-                                      ->where('user_id=?', $user_id);
-        $fetch  = $newsTable->fetchRow($select);
-        return $fetch['user_id'];
-    }
-
-    function selectLatestNewsId($userId){
-        $newsTable = new Application_Model_News();
-        $select    = $newsTable->select()->from('news',array('id,user_id'));
-        $fetch     = $newsTable->fetchAll($select);
-       
-        return $fetch;
-    }
-    
-    
-    //((votes+comments+1)/((hours+30)^1.1))
-    function manipulateDb() {
-        $newsTable = new Application_Model_News();
-        $votingTable = new Application_Model_Voting();
-        $select = $newsTable->select()->from('news', array('*'));
-        $fetch = $newsTable->fetchAll($select);
-        $response = $fetch->toArray();
-     
-        foreach ($response as $key => $row) {
-          
-            
-            if ($response[$key]['score'] == '') {
-               
-                $totalLikeCounts = 0;
-                $type = 'news';
-                $totalCommentsCounts = $votingTable->getTotalCommentsCounts($type, $response[$key]['id'], $response[$key]['user_id']);
-                $createdDate = StrToTime($response[$key]['created_date']);
-                $currentDate = StrToTime(date("Y-m-d H:i:s"));
-                
-                $timeDiffernce = ($currentDate - $createdDate);
-                $timeDiffernce = $timeDiffernce / 3600;
-                $numerator = ($totalLikeCounts + $totalCommentsCounts + 1);
-                $demonator = pow(($timeDiffernce + 30), 1.1);
-                $score = $numerator / $demonator;
-                $score = number_format($score, 5, '.', '');
-                
-                if ($score) {
-                    $insData = array(
-                        'score' => $score
-                    );
-                    $newsTable->update($insData, $newsTable->getAdapter()->quoteInto("id =?", $response[$key]['id']));
-                }
-            }  else {
-
-                $type = 'news';
-                $totalLikeCounts = $votingTable->getTotalVoteCounts($type, $response[$key]['id'], $response[$key]['user_id']);
-                $totalCommentsCounts = $votingTable->getTotalCommentsCounts($type, $response[$key]['id'], $response[$key]['user_id']);
-                
-                $createdDate = StrToTime($response[$key]['created_date']);
-                $currentDate = StrToTime(date("Y-m-d H:i:s"));
-                $timeDiffernce = ($currentDate - $createdDate);
-                $timeDiffernce = $timeDiffernce / 3600;
-                $numerator = ($totalLikeCounts + $totalCommentsCounts + 1);
-                $demonator = pow(($timeDiffernce + 30), 1.1);
-                $score = $numerator / $demonator;
-                $score = number_format($score, 5, '.', '');
-            
-                if ($score) {
-               
-                    $insData = array(
-                        'score' => $score
-                    );
-                  echo "<pre>"; print_r($insData)."<br/>";
-                  $newsTable->update($insData, $newsTable->getAdapter()->quoteInto("id =?", $response[$key]['id']));
-                } 
-            } 
-        }
-        return $fetch;
-    }
-    
-    
-   /* 
-    function manipulateDb(){
-       
-        $newsTable = new Application_Model_News();
-        $votingTable  = new Application_Model_Voting();
-        $select    = $newsTable->select()->from('news',array('*'));
-        $fetch     = $newsTable->fetchAll($select);
-        $response  = $fetch->toArray();
-       
-        foreach($response as $key=>$row){
-        if($response[$key]['score']==''){
-             $totalLikeCounts = 0;
-             $createdDate  =  StrToTime ($response[$key]['created_date']);
-             $currentDate  =  StrToTime (date("Y-m-d H:i:s"));
-             $timeDiffernce =  ($currentDate-$createdDate);
-             $timeDiffernce = $timeDiffernce/3600;
-             $numerator =  ($totalLikeCounts+1);
-             $demonator =   pow(($timeDiffernce+2),1.2);
-             $score  =  $numerator/$demonator;   
-             $score = number_format($score,5,'.','');  
-             if($score) {
-              $insData = array(
-              'score'  => $score
-              );
-              $newsTable->update($insData, $newsTable->getAdapter()->quoteInto("id =?", $response[$key]['id']));
-              } 
-           } else {
-              $type='news';
-              $totalLikeCounts = $votingTable->getTotalVoteCounts($type, $response[$key]['id'],$response[$key]['user_id']);
-              $createdDate = StrToTime ($response[$key]['created_date']);
-              $currentDate = StrToTime (date("Y-m-d H:i:s"));
-              $timeDiffernce = ($currentDate-$createdDate);
-              $timeDiffernce = $timeDiffernce/3600;
-              $numerator = ($totalLikeCounts+1);
-              $demonator = pow(($timeDiffernce+2),1.2);
-              $score = $numerator/$demonator;   
-              $score = number_format($score,5,'.','');  
-              if($score) {
-               $insData = array(
-               'score'  => $score
-               );
-              $newsTable->update($insData, $newsTable->getAdapter()->quoteInto("id =?", $response[$key]['id']));
-              } 
-           }
-        
-        }
-        return $fetch;
-    } */
 
 	/**
 	 * Finds news by location.
@@ -218,6 +77,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
 
 		$comments_subselect = Application_Model_Comments::getInstance()->select()
 			->from('comments', array('news_id', 'COUNT(*) as count'))
+			->where('comments.isdeleted =?', 0)
 			->group('news_id');
 
 		$votings_subselect = Application_Model_Voting::getInstance()->select()
@@ -342,23 +202,45 @@ class Application_Model_News extends Zend_Db_Table_Abstract {
 	 *
 	 * @param	integer	$news_id
 	 * @param	mixed	$news
+	 * @param	mixed	$deleted
 	 *
 	 * @return	boolean
 	 */
-    public static function checkId($news_id, &$news)
+    public static function checkId($news_id, &$news, $deleted = null)
     {
 		if ($news_id == null)
 		{
 			return false;
 		}
 
-		$db = self::getInstance();
-
-		$news = $db->fetchRow($db->select()->where('id =?', $news_id));
+		$news = self::findById($news_id, $deleted);
 
 		return $news != null;
     }
-	
+
+	/**
+	 * Finds record by ID.
+	 *
+	 * @param	integer	$id
+	 *
+	 * return	mixed	If success Application_Model_NewsRow, otherwise NULL
+	 */
+	public static function findById($id, $deleted = null)
+	{
+		$db = self::getInstance();
+
+		$query = $db->select()->where('id =?', $id);
+		
+		if ($deleted !== null)
+		{
+			$query->where('isdeleted =?', $deleted);
+		}
+
+		$result = $db->fetchRow($query);
+
+		return $result;
+	}
+
     /**
      * Inserts a new row.
      *

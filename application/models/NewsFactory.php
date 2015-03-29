@@ -17,34 +17,10 @@ class Application_Model_NewsFactory {
 
     }
 
-    public function totalNewsData(){
-        $newsFactory = new Application_Model_NewsFactory();
-        $news        = new Application_Model_News();
-        $select      = $news->select()->order('created_date DESC');
-        $data        = $news->fetchAll($select);
-        $i=0; 
-        $rowData = array();
-        foreach($data as $row){
-                $rowData[$i]['time'] = $newsFactory->calculate_time($row['updated_date']);
-                $rowData[$i]['news'] = $row['news'];
-                $rowData[$i]['id']   = $row['id'];
-                $i++;
-        }
-        return $rowData;
-    }
-    
     public function generateCode(){
         mt_srand();
         $hash = md5(mt_rand(0, time()));
         return substr($hash, mt_rand(0, 20), 10);
-    }
-
-    public function getLastRow(){
-        $newsFactory = new Application_Model_NewsFactory();
-        $news = new Application_Model_News();
-        $select = $news->select()->order('created_date DESC')->limit(1, 10);
-        $data = $news->fetchRow($select);
-        return $data->id;
     }
 
     public function addNews($userId,$res, $lat, $lng, $address, $name=null, $type=null, $tmp=null, $size=null){
@@ -124,94 +100,7 @@ class Application_Model_NewsFactory {
         $row->save();
         return $row->id;
     }
-    
-    
-    
-    public function addmobileNews_321($userId,$res, $lat, $lng, $address, $base){
-         $totalLikeCounts = 0;
-         $createdDate  = StrToTime (date("Y-m-d H:i:s"));
-         $currentDate  = StrToTime (date("Y-m-d H:i:s"));
-         $timeDiffernce = ($currentDate-$createdDate);
-         $timeDiffernce = $timeDiffernce/3600;
-         $numerator =  ($totalLikeCounts+1);
-         $demonator = pow(($timeDiffernce+2),1.2);
-         $score  =  $numerator/$demonator;   
-         $score = number_format($score,5,'.',''); 
-         $news = new Application_Model_News();
-         $orignalImagePath = realpath('.')."/www/upload/"; 
-        if(isset($base) && $base != '') {			
-                $imageBinary = base64_decode($base);
-                header('Content-Type: bitmap; charset=utf-8');
-                $path = realpath('.') . "/tbnewsimages/" . date('YmdHs') . ".jpeg";
-                $pathExploded = explode("/", $path);
-                $countLength = count($pathExploded);
-                $actual_image_name = $pathExploded[$countLength-1];
-                
-                $file = fopen($path, 'wb');
-                fwrite($file, $imageBinary);
-                fclose($file);  
-                
-           /*   $source = $path;
-                $pathExploded = explode("/", $path);
-                $countLength = count($pathExploded);
-                $actual_image_name = $pathExploded[$countLength-1];
-                $destinationThumbnail960 = realpath('.')."/newsimages/".$actual_image_name;
-                $destinationThumbnail320 = realpath('.')."/tbnewsimages/".$actual_image_name;                                                        
-                $myThumbnail = new My_Thumbnail($source);
-                $myThumbnail->resize(960,960);
-                $myThumbnail->save($destinationThumbnail960, 60);
-                $myThumbnail = new My_Thumbnail($source);
-                $myThumbnail->resize(320,320);
-                $myThumbnail->save($destinationThumbnail320, 60);*/
-                
-                /*    $source = $orignalImagePath.$actual_image_name;
-                    $destinationThumbnail960 = realpath('.')."/newsimages/".$actual_image_name;
-                                                                        
-                    $destinationThumbnail320 = realpath('.')."/tbnewsimages/".$actual_image_name;                                                        
-                    $myThumbnail = new My_Thumbnail($source);
-                    
-                    $myThumbnail->resize(960,960);
-                   
-                    $myThumbnail->save($destinationThumbnail960, 60);
 
-                    $myThumbnail = new My_Thumbnail($source);
-                    $myThumbnail->resize(320,320);
-                    $myThumbnail->save($destinationThumbnail320, 60);
-
-                if (file_exists($source)) {
-                    unlink($source);
-                }  */
-                
-                $datas = array(	
-                    'user_id' => $userId,
-                    'news' => $res,
-                    'images' => $actual_image_name,
-                    'created_date' => date('Y-m-d H:i'),
-                    'updated_date' => date('Y-m-d H:i'),
-                    'latitude' => $lat,
-                    'longitude' => $lng,
-                    'Address' => $address,
-                    'score'   => $score
-                );                            
-           } else {
-             $datas = array (	
-                'user_id' => $userId,
-                'news' => $res,
-                'created_date' => date('Y-m-d H:i'),
-                'updated_date' => date('Y-m-d H:i'),
-                'latitude' => $lat,
-                'longitude' => $lng,
-                'Address' => $address,
-                'score'   => $score
-            );
-        }
-        // end for images upload code 
-        $row = $news->createRow($datas);
-        $row->save();
-        return $row->id;
-    }
-    
-    
  public function addmobileNews($userId,$res, $lat, $lng, $address, $base){
          $totalLikeCounts = 0;
          $createdDate  = StrToTime (date("Y-m-d H:i:s"));
@@ -803,54 +692,11 @@ class Application_Model_NewsFactory {
         return $response;
     }
 
-    function imageUploadWithCrowl($name,$size,$tmp,$user_id,$lat,$lng,$address){
-        $path = realpath('.')."/public/www/newsimages/";
-        $valid_formats = array("jpg", "png", "gif", "bmp");
-        $response = '';
-        if(strlen($name)) {			
-            list($txt, $ext) = explode(".", $name);
-            if(in_array($ext,$valid_formats)) {				
-                if($size<(2028*2048)) {					
-                    $actual_image_name = time().substr(str_replace(" ", "_", $txt), 5).".".$ext;
-                    if(move_uploaded_file($tmp, $path.$actual_image_name)) {
-                        $newsTable = new Application_Model_News();
-                        $data = array(
-                            'user_id' => $user_id,
-                            'images' => BASE_PATH."public/www/newsimages/".$actual_image_name,
-                            'latitude' => $lat,
-                            'longitude' => $lng,
-                            'Address' => $address,
-                            'created_date' => date('Y-m-d H:i:s'),
-                            'updated_date' => date('Y-m-d H:i:s')
-                        );
-
-                        $newsRow = $newsTable->createRow($data);    
-                        if($newsRow) {
-                            $newsRow->save();
-                        }
-                        //$where = $userTable->getAdapter()->quoteInto('id = ?', $user_id);
-                        //$sa = $userTable->update($data,$where);
-                        $response = urlencode(BASE_PATH."public/www/newsimages/".$actual_image_name."?parm=".time());
-                    } else { 
-                        $response = "failed";
-                    }
-                } else { 
-                    $response = "Image file size max 1 MB";					
-                }
-            } else {
-                    $response = "Invalid file format..";	
-            }
-        } else {
-                $response = "Please select image..!";
-        }
-        return $response;
-    }
-
     function getLatestPost($user_id){
        $newsFactory = new Application_Model_NewsFactory();
         $news = new Application_Model_News();
         $select = $news->select()->order('id DESC')
-                      ->where('user_id=?',$user_id);
+                      ->where('user_id=?',$user_id)->where('isdeleted =?', '0');
         $data = $news->fetchAll($select);
         return $data;
     }

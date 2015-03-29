@@ -482,18 +482,9 @@ function stopBounce(newsId,user_id){
 }
 
 function updateNews(){
-	$('.post-comment span').on('click', showComment);
-	$('.textAreaClass').live('input paste keypress', addCommentHandle);
-	$('.deteleIcon1 img').on('click', removeNews);
+	renderNews();
 
-	$('.myScrp').hover(
-		function(){
-			$(this).find(".deteleIcon1").show();
-		},
-		function(){
-			$(this).find(".deteleIcon1").hide();
-		}
-	);
+	$('.post-comment span').on('click', showCommentHandle);
 
 	$(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"});
 	$(".Message-Popup-Class").colorbox({width:"40%",height:"45%", inline:true, href:"#Message-Popup_Email"},function(){$('html, body').animate({ scrollTop: 0 }, 0);});
@@ -566,45 +557,6 @@ function showResult() {
 
         getAllNearestPoint();
     }
-}
-
-/*
-* Function to get commets for unique news
-* @param {newsId : id of the news}
-*/
-function getComments(target){
-	var news_item = $(target).closest('.scrpBox'),
-		comment_list = $(target).closest('ul');
-
-	$(target).hide();
-
-	$.ajax({
-		type: 'POST',
-		url: baseUrl + 'home/get-total-comments',
-		data: {
-			news_id: news_item.attr('id').replace('scrpBox_', ''),
-			limitstart: comment_list.find('.cmntList').size()
-		},
-		dataType : 'json'
-	}).done(function(response){
-		if (response && response.status){
-			if (response.data){
-				for (var i in response.data){
-					$('.viewCount', comment_list).after(response.data[i]);
-				}
-
-				if (response.label){
-					comment_list.effect("highlight", {}, 500, function(){
-						$(target).text(response.label).show();
-					});
-				}
-			}
-		} else {
-			alert(ERROR_MESSAGE);
-		}
-	}).fail(function(jqXHR, textStatus){
-		alert(textStatus);
-	});
 }
 
 /*

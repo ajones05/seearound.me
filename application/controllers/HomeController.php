@@ -22,15 +22,6 @@ class HomeController extends My_Controller_Action_Herespy {
 			->prependFile('/www/scripts/jquery.loadmask.js?' . $mediaversion)
 			->prependFile('/www/scripts/news.js?' . $mediaversion);
     }
-    
-     public function managedbAction(){
-         
-        $newsFactory = new Application_Model_NewsFactory();
-        $userTable   = new Application_Model_User; 
-        $newsTable   = new Application_Model_News; 
-        $responseToken = $newsTable->manipulateDb();  
-     
-     }
 
     public function editProfileAction() {
         $this->view->myeditprofileExist = true;
@@ -474,9 +465,8 @@ class HomeController extends My_Controller_Action_Herespy {
 			}
 
 			$model = new Application_Model_Comments;
-
-			$data = $form->getValues();
-			$data['id'] = $model->insert($form->getValues());
+			$comment = $model->createRow($form->getValues());
+			$comment->save();
 
 			Application_Model_Voting::getInstance()->measureLikeScore('news', $news->id, $user->id);
 
@@ -488,7 +478,7 @@ class HomeController extends My_Controller_Action_Herespy {
 				$body = My_Email::renderBody('comment-notify', array(
 					'news' => $news,
 					'user' => $user,
-					'comment' => $data['comment']
+					'comment' => $comment->comment
 				));
 
 				if (count($comment_users))
@@ -508,10 +498,7 @@ class HomeController extends My_Controller_Action_Herespy {
 
 			$response = array(
 				'status' => 1,
-				'html' => My_ViewHelper::render('comment/item.html', array(
-					'item' => $data,
-					'user' => $user
-				))
+				'html' => My_ViewHelper::render('comment/item.html', array('item' => $comment))
 			);
 		}
 		catch (Exception $e)
@@ -552,10 +539,7 @@ class HomeController extends My_Controller_Action_Herespy {
 			{
 				foreach ($comments as $comment)
 				{
-					$response['data'][] = My_ViewHelper::render('comment/item.html', array(
-						'item' => $comment,
-						'user' => Application_Model_User::findById($comment->user_id)
-					));
+					$response['data'][] = My_ViewHelper::render('comment/item.html', array('item' => $comment));
 				}
 
 				$count = max($comentsTable->getCountByNewsId($news_id) - ($limitstart + $comentsTable->news_limit), 0);
@@ -719,7 +703,44 @@ public function changeAddressAction() {
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$news->delete();
+			$news->isdeleted = 1;
+			$news->save();
+
+			$response = array('status' => 1);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Sorry! we are unable to performe delete action')
+			);
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+    }
+
+    public function deleteCommentAction()
+	{
+        try
+		{
+			$id = $this->_request->getPost('id');
+
+			if (!Application_Model_Comments::checkId($id, $comment, 0))
+			{
+				throw new Exception('Incorrect comment ID.');
+			}
+
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			$news = $comment->findDependentRowset('Application_Model_News')->current();
+
+			if (!$auth || ($auth['user_id'] != $comment->user_id && $auth['user_id'] != $news->user_id))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$comment->isdeleted = 1;
+			$comment->save();
 
 			$response = array('status' => 1);
 		}
