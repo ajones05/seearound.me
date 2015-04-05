@@ -60,7 +60,14 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function lat()
 	{
-		return $this->findDependentRowset('Application_Model_Address')->current()->latitude;
+		$address = $this->findDependentRowset('Application_Model_Address')->current();
+
+		if ($address)
+		{
+			return $address->latitude;
+		}
+
+		return My_Ip::geolocation()[0];
 	}
 
 	/**
@@ -70,7 +77,14 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function lng()
 	{
-		return $this->findDependentRowset('Application_Model_Address')->current()->longitude;
+		$address = $this->findDependentRowset('Application_Model_Address')->current();
+
+		if ($address)
+		{
+			return $address->longitude;
+		}
+
+		return My_Ip::geolocation()[1];
 	}
 
 	/**
