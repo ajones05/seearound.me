@@ -194,7 +194,7 @@ class HomeController extends My_Controller_Action_Herespy {
 				'name' => ucwords($user->Name),
 				'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
 				'lat' => $user->lat(),
-				'lng' => $user->lat(),
+				'lng' => $user->lng(),
 				'latestPost' => $latest_post ? $latest_post->news : 'N/A'
 			)) . ';');
 		}
