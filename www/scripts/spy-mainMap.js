@@ -1581,8 +1581,7 @@ MainMap.prototype.getCenterAddress = function(latlng,comment,flag) {
                 me.changeAddressContent(formattedAddress);
 
             } else
-                me.addressMarker(latitudeLongitude,me.icon,formattedAddress);
-
+                me.addressMarker(latlng,me.icon,formattedAddress);
           }
         }
       });

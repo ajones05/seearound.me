@@ -125,12 +125,6 @@ function profileMap(lat,lng,type,dataToShow){
 
 function profileMapOther(lat,lng,type,dataToShowOther){
       otherProfileExist = 1;
-      var profileImage = '';
-     if(dataToShowOther){
-        profileImage = dataToShowOther.userImage;
-     } else {
-        profileImage = '/www/images/img-prof40x40.jpg';
-     }
 
     commonMap = new MainMap({
         mapElement : document.getElementById('map_canvas'),
@@ -138,7 +132,7 @@ function profileMapOther(lat,lng,type,dataToShowOther){
         icon:MainMarker1,
         centerData:dataToShowOther,
         mapType:type,
-	    profileImage:profileImage,
+	    profileImage:dataToShowOther.userImage,
         markerType:'nonDragable',
         isMapDragable:'dragable',
         showMapElement:false,

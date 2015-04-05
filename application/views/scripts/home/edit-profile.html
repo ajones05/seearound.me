@@ -114,6 +114,8 @@
     
 
     function locationDone() {
+		commonMap.movingMarker.setMap(null);
+		commonMap.infoWindow.close();
 
         if($("#Location").val()) {
 
@@ -136,17 +138,6 @@
     }	
 
 </script>
-
-<? if($this->auth['latitude'] == "" && $this->auth['longitude'] == ""):?>
-
-    <div id="location_error_div" class="errorMessage1">
-
-        Please select your location to proceed.
-
-    </div>
-
-<? endif;?>	
-
 <h3 class="topHdGrayB12">Edit Profile Info</h3>
 
 <div id="userDiv" class="leftCol" >
