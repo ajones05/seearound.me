@@ -260,7 +260,7 @@ class ContactsController extends My_Controller_Action_Herespy
         if(isset($this->auth['user_id']) && $this->auth['user_id'] != "") {
             $frlist = $tableFriends->getTotalFriends($this->auth['user_id'], $limit, $offset);
             $more = $tableFriends->getTotalFriends($this->auth['user_id'], $limit, $offset+$limit);
-            $this->view->inviteStatus = $inviteStatus->getData(array(user_id=>$this->auth['user_id']));
+            $this->view->inviteStatus = $inviteStatus->getData(array('user_id'=>$this->auth['user_id']));
         } 
         if($this->request->isXmlHttpRequest()) {
             $response->frlist = $frlist->toArray();
@@ -274,87 +274,110 @@ class ContactsController extends My_Controller_Action_Herespy
         }
         
     }
-    
-    public function makeFriendAction() 
-    {
-        $sendMail = true;
-        $response = new stdClass();
-        $tableFriends = new Application_Model_Friends;
-        $tableUser = new Application_Model_User;
-        if($this->_request->isPost()) {
-            $sender = $this->_request->getPost("sender", 0);
-            $reciever = $this->_request->getPost("reciever", 0);
-            $action = $this->_request->getPost("action", null); 
-            $mailValues = $tableUser->recordForEmail($sender, $reciever);
-            $select = $tableFriends->select()
-                ->where("sender_id =".$sender." AND reciever_id =".$reciever)
-                ->orWhere("sender_id =".$reciever." AND reciever_id =".$sender);
-            if($row = $tableFriends->fetchRow($select)) {
-                if($action == "friend"){
-                    $row->status = 1;
-                    $row->udate = date('Y-m-d H:i:s');
-                    $row->save();
-                    $response->done = "yes";
-                    $response->type = "friend";
-                    $response->data = $row->toArray();
-                    $this->to = $mailValues->senderEmail;
-                    $this->from = $mailValues->recieverEmail.':'.$mailValues->recieverName;
-                    $this->subject = "Friend approval";
-                    $message = "$mailValues->recieverName has confirmend your friend request on seearound.me.";
-                    $this->view->name = $mailValues->senderName;
-                    $this->view->message = "<p align='justify'>$message</p>";
-                    $this->view->adminPart = "no";
-                    $this->view->adminName = "Admin";
-                    $this->view->response = "seearound.me";
-                    $this->message = $this->view->action("index","general",array());
-                }else if($action == "unfriend") {
-                    $row->status = 2;
-                    $row->udate = date('Y-m-d H:i:s');
-                    $row->save();
-                    $response->done = "yes";
-                    $response->type = "unfriend";
-                    $response->data = $row->toArray();
-                    $sendMail = false;
-                }else if($action == "delete") {
-                    $row->delete();
-                    $response->done = "yes";
-                    $response->type = "delete";
-                    $mailValues = $tableUser->recordForEmail($sender, $reciever);
-                }
-            } else {
-                $data = array(
-                    'sender_id'   => $sender,
-                    'reciever_id' => $reciever,
-                    "source"      => "herespy",
-                    'cdate'       => date('Y-m-d H:i:s'),
-                    'udate'       => date('Y-m-d H:i:s')
-                ); 
-                $row = $tableFriends->createRow($data);
-                $row->save();
-                $response->data = $row->toArray();
-                $response->done = "yes";
-                $response->type = "pending";
-                $this->subject = "Friend invitation";
-                $this->to = $mailValues->recieverEmail;
-                $this->from = $mailValues->senderEmail.':'.$mailValues->senderName;
-                $this->view->senderName = $mailValues->senderName;
-                $this->view->name = $mailValues->recieverName;
-                $this->view->adminPart = "no";
-                $this->view->adminName = "Admin";
-                $this->view->response = "seearound.me";
-                $this->message = $this->view->action("friend-invitation","general",array());
-            }
-        }
-        if($sendMail) {
-            $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-        }
-        if($this->_request->isXmlHttpRequest()) {
-            die(Zend_Json_Encoder::encode($response));
-        }else {
-            $this->view->response = $response;
-        }        
-    }
-    
+
+	/**
+	 * Friend action.
+	 *
+	 * @return void
+	 */
+	public function friendAction() 
+	{
+		try
+		{
+			$reciever_id = $this->_request->getPost('user');
+
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $auth) || $reciever_id == $auth->id)
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			if (!Application_Model_User::checkId($reciever_id, $reciever))
+			{
+				throw new RuntimeException('Incorrect reciever user ID', -1);
+			}
+
+			$action = $this->_request->getPost('action');
+
+			$friendsModel = new Application_Model_Friends;
+			$friend = $friendsModel->getStatus($auth->id, $reciever->id);
+
+			if ($friend)
+			{
+				if ($action == 'reject')
+				{
+					$friend->status = 2;
+					$friend->udate = date('Y-m-d H:i:s');
+					$friend->save();
+				}
+				else
+				{
+					if ($action != 'confirm')
+					{
+						throw new RuntimeException('Incorrect action value', -1);
+					}
+
+					if ($friend->status == 2 && $friend->reciever_id != $auth->id)
+					{
+						throw new RuntimeException('Access denied', -1);
+					}
+
+					$friend->status = 1;
+					$friend->udate = date('Y-m-d H:i:s');
+					$friend->save();
+
+					My_Email::send($reciever->Email_id, 'Friend approval', array(
+						'template' => 'friend-approval',
+						'assign' => array('name' => $auth->Name)
+					));
+				}
+			}
+			else
+			{
+				if ($action != 'add')
+				{
+					throw new RuntimeException('Incorrect action value', -1);
+				}
+
+				$friendsModel->createRow(array(
+					'status' => 0,
+					'sender_id' => $auth->id,
+					'reciever_id' => $reciever_id,
+					'source' => 'herespy',
+					'cdate' => date('Y-m-d H:i:s'),
+					'udate' => date('Y-m-d H:i:s')
+				))->save();
+
+				My_Email::send($reciever->Email_id, 'Friend invitation', array(
+					'template' => 'friend-invitation',
+					'assign' => array('name' => $auth->Name)
+				));
+			}
+
+			$response = array('status' => 1);
+
+			if ($this->_request->getPost('total'))
+			{
+				$response['total'] = $friendsModel->fetchRow(
+					$friendsModel->select()
+						->from($friendsModel, array('count(*) as friend_count'))
+						->where('reciever_id =?', $auth->id)
+						->where('status =?', 0)
+				)->friend_count;
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+	}
+
     public function makeFriendFbAction() 
     {
         $response = new stdClass();
@@ -486,111 +509,7 @@ class ContactsController extends My_Controller_Action_Herespy
         $this->view->data = $friendRows = $tableFriends->frendsList($this->auth['user_id'], true);
         $this->view->total = count($friendRows);
     }
-    
-    public function allowAction() {
-        $response = new stdClass();
-        $tableFriends = new Application_Model_Friends;
-        $tableUser = new Application_Model_User;
-        if($this->request->isPost()) {
-            $select = $tableFriends->select()
-                ->where('id =?',$this->_request->getPost('id', 0));
-            if($row = $tableFriends->fetchRow($select)) {
-                $row->status = '1';
-                $row->udate = date('Y-m-d H:i:s');
-                $row->save();
-                $response->data = $row->toArray();
-            }
-            $data = array(
-                'reciever_id' => $this->auth['user_id'],
-                'status' => '0'
-            );
-            
-            $mailValues = $tableUser->recordForEmail($row->sender_id, $row->reciever_id);
-            $this->to = $mailValues->senderEmail;
-            $this->from = $mailValues->recieverEmail.':'.$mailValues->recieverName;
-            $this->subject = "Friend request confirmed";
-            $message = "$mailValues->recieverName has confirmed your firend request on seearound.me.";
-            $this->view->name = $mailValues->senderName;
-            $this->view->message = "<p align='justify'>$message</p>";
-            $this->view->adminPart = "no";
-            $this->view->adminName = "Admin";
-            $this->view->response = "seearound.me";
-            $this->message = $this->view->action("index","general",array());
-            $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-            
-            $friendRow = $tableFriends->getFriends($data, true);
-            $response->total = count($friendRow);
-            $data = array(
-                'reciever_id' => $this->auth['user_id'],
-                'status' => '1'
-            );
-            $friendRow = $tableFriends->getFriends($data, true);
-            $response->totalFriends = count($tableFriends->getTotalFriends($this->auth['user_id']));
-        }
-        die(Zend_Json_Encoder::encode($response));
-    }
-    
-    public function denyAction() {
-        $response = new stdClass();
-        $tableFriends = new Application_Model_Friends;
-        $tableUser = new Application_Model_User;
-        if($this->request->isPost()) {
-            $select = $tableFriends->select()
-                ->where('id =?',$this->_request->getPost('id', 0));
-            if($row = $tableFriends->fetchRow($select)) {
-                $mailValues = $tableUser->recordForEmail($row->sender_id, $row->reciever_id);
-                $this->to = $mailValues->senderEmail;
-                $this->from = $mailValues->recieverEmail.':'.$mailValues->recieverName;
-                $this->subject = "Friend request denyed";
-                $message = "$mailValues->recieverName has deny your firend request on seearound.me.";
-                $this->view->name = $mailValues->senderName;
-                $this->view->message = "<p align='justify'>$message</p>";
-                $this->view->adminPart = "no";
-                $this->view->adminName = "Admin";
-                $this->view->response = "seearound.me";
-                $this->message = $this->view->action("index","general",array());
-                $this->sendEmail($this->to, $this->from, $this->subject, $this->message); 
-                $row->delete();
-                $response->data = "yes";
-            }
-            $data = array(
-                'reciever_id' => $this->auth['user_id'],
-                'status' => '0'
-            );
-            
-            $friendRow = $tableFriends->getFriends($data, true);
-            $response->total = count($friendRow);
-        }
-        die(Zend_Json_Encoder::encode($response));
-    }
-    
-    public function deleteAction() 
-    {
-        $response = new stdClass();
-        $tableFriends = new Application_Model_Friends;
-        $tableUser = new Application_Model_User;
-        if($this->_request->isPost()) {
-            $id = $this->_request->getPost('user', 0);
-            $select = $tableFriends->select()
-                    ->where('id =?', $id);
-            if($row = $tableFriends->fetchRow($select)) {
-                if($row->sender_id == $this->auth['user_id']) {
-                    $response->success = "done";                    
-                    $row->delete();
-                } elseif($row->reciever_id == $this->auth['user_id']) {
-                    $response->success = "done";                    
-                    $mailValues = $tableUser->recordForEmail($row->sender_id, $row->reciever_id); 
-                    $row->delete();
-                } else {
-                    $response->errors = "Sorry! you can not delete this friend.";
-                }
-            } else {
-                $response->errors = "Unable to delete this friends.";
-            }
-        }
-        die(Zend_Json_Encoder::encode($response));
-    }
-    
+
     public function searchAction() {
         $response = new stdClass();
         $newsFactory = new Application_Model_NewsFactory;

@@ -1,536 +1,145 @@
-<!--<h3 class="topHdGrayB12" style="width:116%;">Profile Detail</h3>-->
-<?if($this->user_data->id == $this->auth['user_id']) :?>
+<?php
+$auth = Zend_Auth::getInstance()->getIdentity();
+$auth_id = $auth ? $auth['user_id'] : null;
+?>
 <div id="userDiv" class="leftCol">
-
-    <div class="profDtl"> 
-
-        <?if($this->publicProfile) :?>
-        
-            <div class="profile-img">
-
-                <a style="z-index:9999;" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>">
-
-                    <span id="image_upload_field">
-
-                        <?php if($this->user_data->Profile_image != 'null' && $this->user_data->Profile_image != '') {?> 
-
-                        <img <? if(strpos($this->user_data->Profile_image, '://')):?>src="<?=$this->user_data->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$this->user_data->Profile_image?>"<?endif;?> class="imgProf" />
-
-                            <?php } else { ?>
-
-                            <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="imgProf"/>
-
-                        <?php } ?>
-
-                    </span>
-
-                </a> 
-            </div>
-            
-            <div class="profile-describe afterClr">
-                
-                <a class="hypDecNone" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>">
-                    <h3 class="name"><?php echo ucfirst($this->user_data->Name);?></h3>
-                </a>    
-                <p class="loc">
-                    <?php 
-                    $string = (strlen($this->user_data->address) > 50) ? substr($this->user_data->address,0,50).'...' : $this->user_data->address;
-                    echo ucfirst($string);?>
-                </p>
-       
-            </div>
-
-        <?else :?>
-        <div class="profile-img">
-            <a style="z-index:9999;" href="<?=BASE_PATH?>home/profile">
-
-                <span id="image_upload_field">
-
-                    <?if($this->auth["pro_image"]){?> 
-
-                    <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="imgProf"/> 
-
-                    <? } else { ?>
-
-                    <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="imgProf"/>
-
-                    <? } ?>
-
-                </span>
-
-            </a> 
-        </div>
-        <div class="profile-describe afterClr">    
-            <a class="hypDecNone" href="<?=BASE_PATH?>home/profile">
-                <h3 class="name"><?php echo ucfirst($this->auth['user_name']);?></h3> 
-            </a>
-            <p class="loc"><?php 
-              //echo ucfirst($this->auth['address']);
-               $string = (strlen($this->auth['address']) > 50) ? substr($this->auth['address'],0,50).'...' : $this->auth['address'];
-               echo ucfirst($string); ?>
-            </p>
-        </div>
-        
-        <?endif;?>                    
-
-    </div>
-
-
-
+	<div class="profDtl">
+		<div class="profile-img">
+			<span id="image_upload_field">
+				<img src="<?php echo $this->user_data->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" />
+			</span>
+		</div>
+		<div class="profile-describe">
+			<h3 class="name"><?php echo ucfirst($this->user_data->Name); ?></h3>
+			<p class="loc"><?php echo ucfirst(My_StringHelper::stringLimit($this->user_data->address, 50, '...')); ?></p>
+		</div>
+		<div class="clr"></div>
+	</div>
 </div>
-
-<?endif;?>  
-
-<?if($this->user_data->id != $this->auth['user_id'] && !$this->publicProfile) :?>
-
-<div id="userDiv" class="leftCol">
-    
-    <div class="profDtl">
-        <div class="profile-img">
-                
-                <?php if($this->user_data->Profile_image != 'null' && $this->user_data->Profile_image != '') {?> 
-                    
-                <span id="image_upload_field">
-                    <img <? if(strpos($this->user_data->Profile_image, '://')):?>src="<?=$this->user_data->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$this->user_data->Profile_image?>"<?endif;?> />
-                </span>
-                <?php } else { ?>
-                    
-                <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg"  />
-                    
-                <?php } ?>
-                    
-            </div>
-                
-            <?if($this->user_data->Name):?>
-                
-            <div class="profile-describe">
-                
-                <h3 class="name"><?=ucfirst($this->user_data->Name);?> <br /></h3>
-                <p class="loc"><?php 
-                  //echo ucfirst($this->auth['address']);
-                      //$string = (strlen($this->auth['address']) > 49) ? substr($this->auth['address'],0,50).'...' : $this->auth['address'];
-                      //echo ucfirst($string); 
-                      $string = (strlen($this->user_data->address) > 49) ? substr($this->user_data->address,0,50).'...': $this->user_data->address;
-                      echo ucfirst($string);
-                     ?></p>
-            </div>
-            <div class="clr"></div>
-            <?endif;?>
-                
-            
-    </div>
-        
-</div>
-
-<!--<div id="userDiv" class="leftCol" style="margin-left:-17%;margin-top:-42.5%;height:224px;">
-
-    <div class="viewProfDtl" >
-
-        <ul class="afterClr">
-
-            <li class="imgPro">
-
-                <?php if($this->user_data->Profile_image != 'null' && $this->user_data->Profile_image != '') {?> 
-
-                <span id="image_upload_field">
-                    <img <? if(strpos($this->user_data->Profile_image, '://')):?>src="<?=$this->user_data->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$this->user_data->Profile_image?>"<?endif;?> style="height:75px;width:94px;" />
-                </span>
-                <?php } else { ?>
-
-                <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" />
-
-                <?php } ?>
-
-            </li>
-
-            <?if($this->user_data->Name):?>
-
-            <li class="title">
-
-                <h3 class="name" style="color: #0068C4;font: bold 15px tahoma;"><?=ucfirst($this->user_data->Name);?> <br /></h3>
-
-            </li>
-            <li>
-                <p class="loc"><?php echo ucfirst($this->user_data->address);?></p>
-            </li>
-            <?endif;?>
-
-        </ul>
-
-    </div>
-
-</div> -->
-
-<?endif;?>
-
 <ul class="viewForm" style="width:100%; margin-left: 0px;">
-
-	<?php if ($this->auth['user_id'] == $this->reciever || $this->profile): ?>
+	<?php if ($auth_id == $this->reciever || $this->publicProfile): ?>
 	<li>
 		<label>Email Address</label>
-		<span><?=$this->user_data->Email_id?></span>
+		<span><?php echo $this->user_data->Email_id; ?></span>
 	</li>
 	<?php endif; ?>
-
-  
-
-   
     <li>
-
-        <label>
-
-            Gender
-
-        </label>
-
-        <span>
-
-            <?=ucfirst($this->user_data->Gender);?>
-
-        </span>
-
+        <label>Gender</label>
+        <span><?php echo $this->user_data->Gender; ?></span>
     </li>
-
-   
-   
     <li>
-
-        <label>
-
-            Intererst
-
-        </label>
-
-        <span>
-
-            <?=$this->user_data->Activities?>
-
-        </span>
-
+		<label>Intererst</label>
+        <span><?php echo $this->user_data->Activities; ?></span>
     </li>
-
-    
-    <?if($this->user_data->address && !$this->publicProfile):?>
-
+    <?php if ($this->user_data->address && !$this->publicProfile): ?>
+	<li>
+        <label>Location</label>
+        <span><?php echo $this->user_data->address; ?></span>
+    </li>
+    <?php endif; ?>
     <li>
-
-        <label>
-
-            Location
-
-        </label>
-
-        <span>
-
-            <?=$this->user_data->address?>
-
-        </span>
-
+        <label>Age</label>
+		<?php if ($this->user_data->Birth_date): ?>
+        <span><?php echo $this->dateConversion(strtotime($this->user_data->Birth_date)); ?></span>
+		<?php endif; ?>
     </li>
-
-    <?endif;?>
-
- 
-    <li>
-
-        <label> 
-
-            Age
-
-        </label>
-
-        <span>
-
-            <? if($this->user_data->Birth_date){ ?> 
-            <?=$this->dateConversion(strtotime($this->user_data->Birth_date))?>
-            <?php } else { ?>
-            <?php echo ''; ?>
-            <?php } ?>
-        </span>
-
-    </li>
-
-
 </ul>
-
-<?
-
-if($this->user_data->id && $this->auth['user_id'] && $this->user_data->id == $this->auth['user_id']) :?>
-
+<?php if ($this->user_data->id == $auth_id): ?>
 <div class="btnBarM20">
-  <a style="z-index: 999;" class="hypDecNone" href="<?=BASE_PATH?>home/edit-profile">
-    <input onclick="goLoc('home/edit-profile');" class="wAuto btnBlueRpt" type="button" value="Edit Profile Info" />
-  </a>
+	<a style="z-index: 999;" class="hypDecNone btnBlueRpt wAuto" href="<?=BASE_PATH?>home/edit-profile">Edit Profile Info</a>
 </div>
-
-<?elseif(!$this->publicProfile):?>
-
+<?php elseif (!$this->publicProfile): ?>
 <div id="friendAction" class="btnBarM20">
-
-    <?if($this->auth['user_id'] != $this->user_id) :?>
-
-    <?if(count($this->friendStatus) > 0) :?>
-
-    <?if($this->friendStatus->status == '0'):?>
-
-    <?if($this->friendStatus->sender_id == $this->auth['user_id']):?>
-
-    <input class="wAuto btnBlueRpt" type="button" value="Pending" />
-
-    <?else:?>
-
-    <input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend('friend');" />
-
-    <?endif;?>
-
-    <?elseif($this->friendStatus->status == '1'):?>
-
-    <input class="wAuto btnBlueRpt" type="button" value="Unfriend" onclick="makeFriend('unfriend');" />
-
-    <?elseif($this->friendStatus->status == '2'):?>
-
-    <?if($this->friendStatus->reciever_id == $this->auth['user_id']):?>
-
-    <input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend('friend');" />
-
-    <?else:?>
-
-    <input class="wAuto btnBlueRpt" type="button" value="Blocked" />
-
-    <?endif;?>
-
-    <?endif;?>
-
-    <?else :?>
-
-    <input class="wAuto btnBlueRpt" type="button" value="Friend" onclick="makeFriend('friend');" />
-
-    <?endif;?>
-
-    <?endif;?>
-
-    <img class="frndReqImg" src="<?=BASE_PATH?>www/images/wait.gif">
-
+	<?php if($auth_id != $this->user_id): ?>
+		<?if(count($this->friendStatus) > 0) :?>
+			<?if($this->friendStatus->status == '0'):?>
+				<?if($this->friendStatus->sender_id == $auth_id):?>
+					<input class="wAuto btnBlueRpt" type="button" value="Pending" />
+				<?else:?>
+					<input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend('confirm');" />
+				<?endif;?>
+			<?elseif($this->friendStatus->status == '1'):?>
+				<input class="wAuto btnBlueRpt" type="button" value="Unfriend" onclick="makeFriend('reject');" />
+			<?elseif($this->friendStatus->status == '2'):?>
+				<?if($this->friendStatus->reciever_id == $auth_id):?>
+					<input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend('confirm');" />
+				<?else:?>
+					<input class="wAuto btnBlueRpt" type="button" value="Blocked" />
+				<?endif;?>
+			<?endif;?>
+		<?else :?>
+			<input class="wAuto btnBlueRpt" type="button" value="Friend" onclick="makeFriend('add', true);" />
+		<?endif;?>
+	<?endif;?>
+    <img class="frndReqImg" src="<?php echo BASE_PATH; ?>www/images/wait.gif" />
     <input class="wAuto btnBlueRpt Message-Popup-Class" type="button" value="Message" onclick="clearErrors();user_id=<?=$this->reciever?>;" />
-
-</div> 
-
-<?endif;?>
-
-
-<!-- Code for Profile picture -->
-     
-
-<!-- end of profile picture-->
-
-
-
-<!-- code for profile picture when viewing other user profile-->
-
-
-
-<!-- end of viewing other user profile code -->
-
-
-
-<?if($this->publicProfile) :?>
-
-<div style="border-top: 1px solid #D3DDE6"></div>
-
-<div id="loading" align="center"><img src='<?=BASE_PATH?>www/images/LoadingBar.gif'/></div>
-
-<div id="newsData"></div>
-
-<?endif;?>
-
+</div>
+<?php endif; ?>
 <script type="text/javascript">
+$(function(){
+	$(window).scroll(function(){
+		if ($("#midColLayout").height() > 714){
+			setThisHeight(Number($("#midColLayout").height()));
+		}
+	});
 
-    var imageHeight = '';
+	if (reciever_userid == user_id){
+		profileMap(userLatitude, userLongitude, '', {
+			name: userName,
+			id: user_id,
+			news: '',
+			userImage: imagePath,
+			user_id: user_id
+		});
+	} else {
+		profileMapOther(user_profile.lat, user_profile.lng, '', {
+			name: user_profile.name,
+			id: user_id,
+			news: '',
+			userImage: user_profile.image,
+			user_id: user_id,
+			comment: user_profile.latestPost
+		});
+	}
 
-    var imageWidth = '';
-   
-    var latestPost;
-       latestPost = "<?=stripslashes($this->latestPost)?>";
-   if(latestPost && latestPost!=''){
-      if(latestPost.length <= 130){
-       latestPost ="<?=stripslashes($this->latestPost)?>";
-      } else {
-       latestPost = "<?=stripslashes($this->latestPost)?>";
-       latestPost = latestPost.substring(0,130)+'....';
-      }
-      
-   } else {
-      latestPost ='Currently there is not any post by this user.';
-   }
-  
-    $(document).ready(function() {
+	setHeight('.eqlCH');
+});
 
-        var profileLat = <?=$this->user_data->latitude?>;
+function makeFriend(action, isnew){
+	$('.frndReqImg').show();
 
-        var profileLng = <?=$this->user_data->longitude?>;
+	$.ajax({
+		url: baseUrl + 'contacts/friend',
+		type: 'POST',
+		data: {
+			user: reciever_userid,
+			action: action
+		},
+		dataType: 'json'
+	}).done(function(response){
+		if (response && response.status){
+			$('.frndReqImg').hide();
 
-        var profileImage = '';
+			if (isnew){
+				$("#friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Pending" />');
+			} else {
+				if (action == 'confirm'){
+					$("#friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Unfriend" onclick="makeFriend(\'reject\');" />');
+				} else if (action == 'reject'){
+					$("#friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend(\'confirm\');" />');
+				}
+			}
 
-            <?php if($this->user_data->Profile_image != 'null' && $this->user_data->Profile_image != '') {?> 
-
-                 profileImage = "<? if(strpos($this->user_data->Profile_image, '://')):?><?=$this->user_data->Profile_image?><?else:?><?=BASE_PATH?>uploads/<?=$this->user_data->Profile_image?><?endif;?>"
-
-                <?php } else { ?>
-
-                 profileImage = "<?=BASE_PATH?>www/images/img-prof40x40.jpg"
-
-                <?php } ?>
-
-             var dataToReturn = { name:'<?=$this->user_data->Name?>',id:user_id,news:'',userImage:profileImage,user_id:user_id };
-            
-             var dataToReturnOther = {name:'<?=$this->user_data->Name?>',id:user_id,news:'',userImage:profileImage,user_id:user_id, comment:latestPost};
-            
-             <?php if($this->user_data->id == $this->auth['user_id']){ ?>
-                 profileMap(profileLat, profileLng,'',dataToReturn);
-             <?php } else { ?>
-                 profileMapOther(profileLat, profileLng,'',dataToReturnOther);
-             <?php } ?>
-
-               setHeight('.eqlCH');
-
-    });
-
-    
-
-    function makeFriend(action) {
-
-        if(action){
-
-            var sender = "<?=$this->auth['user_id']?>";
-
-            var reciever = "<?=$this->reciever?>";
-
-            $(".frndReqImg").show();
-
-            $.ajax({
-
-                url : baseUrl+'contacts/make-friend',
-
-                type : "post",
-
-                data : {sender:sender, reciever: reciever, action:action},
-
-                success : function(obj) {
-
-                    $(".frndReqImg").hide();
-
-                    obj = $.parseJSON(obj);
-
-                    if(obj.type == 'friend') {
-
-                        var html = '<input class="wAuto btnBlueRpt" type="button" value="Unfriend" onclick="makeFriend(\'unfriend\');" />';
-
-                        $("#friendAction").html(html);
-
-                    } else if(obj.type == 'unfriend') {
-
-                        var html = '<input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend(\'friend\');" />';
-
-                        $("#friendAction").html(html);
-
-                    } else if(obj.type == 'pending') {
-
-                        var html = '<input class="wAuto btnBlueRpt" type="button" value="Pending" />';
-
-                        $("#friendAction").html(html);
-
-                    } else if(obj.type == 'delete') {
-
-                        $("#friendAction").remove();
-
-                    } else {
-
-                        
-
-                    }
-
-                $("#friendAction").append('<img class="frndReqImg" src="<?=BASE_PATH?>www/images/wait.gif">&nbsp;&nbsp;&nbsp;&nbsp;<input class="wAuto btnBlueRpt Message-Popup-Class" type="button" value="Message" onclick="clearErrors();user_id='+reciever+';" />');
-
-            }
-
-        });
-
-    }
-
-}    
-
-function updateNewsData(obj) { 
-
-    $("#loading").hide();
-
-    obj = JSON.parse(obj);
-
-    $("#newsData").html(obj.html);                
-
-    $("#pagingDiv").remove();
-
-    setHeight('.eqlCH');
-
-    $(".Image-Popup-Class").colorbox({width:"60%",height:"80%", inline:true, href:"#Image-Popup"},function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});
-
-    $(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"},function(){$('html, body').animate({ scrollTop: 0 }, 0);});
-
+			$("#friendAction").append(
+				'<img class="frndReqImg" src="<?=BASE_PATH?>www/images/wait.gif">' +
+				'&nbsp;&nbsp;&nbsp;&nbsp;' +
+				'<input class="wAuto btnBlueRpt Message-Popup-Class" type="button" value="Message" onclick="clearErrors();user_id='+user_profile.id+';" />'
+			);
+		} else {
+			alert(ERROR_MESSAGE);
+		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
+	});
 }
-
-    
-
-function openImage(imageName, w, h) { 
-
-    $("#imagePopup").attr('src', '');
-
-    $('html, body').animate({ scrollTop: 0 }, 0);
-
-    aaa =w;
-
-    if(Number(w) < 400) {
-
-        imageWidth = Number(w)+40;
-
-    } else {
-
-        imageWidth = w;
-
-    }
-
-    if(Number(h) < 400) {
-
-        imageHeight = Number(h)+40;
-
-    } else {
-
-        imageHeight = h;  
-
-    }
-
-    $("#imagePopup").attr('src', baseUrl+"newsimages/"+imageName);
-
-}
-
-		
-
-var adjustDiv = true;
-
-if(adjustDiv) {
-
-    $(window).scroll(function() {            
-
-        if($("#midColLayout").height()>714)
-
-        setThisHeight(Number($("#midColLayout").height()));
-
-    adjustDiv = false;
-
-}
-
-);
-
-}
-
-    
-
 </script>

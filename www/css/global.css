@@ -662,7 +662,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 .btnBarM20 {text-align: center; background:#668cd5; padding: 4px 0px;}
 
 .btnBlueRpt, .btnBlueRptType1{background: none; overflow:visible; font-size:17px; font-family: Lato-Bold; color:#fff;}
-
+#friendAction .btnBlueRpt {cursor: pointer; overflow: visible; border: none;}
 
 .btnBlueRptType2{background:none; overflow:visible;font:normal 17px Lato-Bold;color:#fff;}
 

@@ -15,27 +15,29 @@ $(document).ready(function() {
         $(childrens[0]).show();
         $(childrens[1]).hide();
     }
-    
-    function deleteFriend(thisone, user) {
-        if(user) {
-            if(confirm("Are you sure to delete this friend?")) {
-                $.ajax({
-                    url : baseUrl+'contacts/delete',
-                    type : 'post',
-                    data : {user : user},
-                    success : function(obj) {
-                        if(obj) {
-                            $(thisone).parent().parent().remove();
-                            if($("#totalFriend")) {
-                                $("#totalFriend").html(Number($("#totalFriend").html())-1);
-                            }
-                        }
-                    }
-                });
-            }
-        }
-    }
-    
+
+	function deleteFriend(thisone, user){
+		if (confirm("Are you sure to delete this friend?")){
+			$.ajax({
+				url: baseUrl + 'contacts/friend',
+				type: 'POST',
+				data: {
+					user: user,
+					action: 'reject'
+				},
+				dataType: 'json'
+			}).done(function(response){
+				if (response && response.status){
+					$(thisone).parent().parent().remove();
+				} else {
+					alert(ERROR_MESSAGE);
+				}
+			}).fail(function(jqXHR, textStatus){
+				alert(textStatus);
+			});
+		}
+	}
+
     function moreFriends(page,type) {
         $("#sacrchWait2").toggle();
         $("#moreText").toggle();
@@ -83,7 +85,7 @@ $(document).ready(function() {
                                 //'<li style="width: 25px; cursor: pointer;margin-top:23px;" class="btnCol"><img height="25" width="25" title="" onclick="clearErrors();user_id='+(data.frlist[x]).id+';" class="Message-Popup-Class" src="'+baseUrl+'www/images/envelope-icon.gif" /></li>'+
                                  '<li style="width: 26px; cursor: pointer; margin-top:15px;" class="btnCol"><img style="width: 26px; height: auto;" title="" onclick="clearErrors('+(data.frlist[x]).id+');user_id='+(data.frlist[x]).id+';" class="Message-Popup-Class" src="'+baseUrl+'www/images/envelope-icon.gif" /></li>'+
                                  '<input type="hidden" id="frndListUserId" name="frndListUserId" value="'+(data.frlist[x]).id+'"/>'+
-                                '<li style="width: 15px; cursor: pointer; margin-left: 18px;" class="btnCol">&nbsp;&nbsp;<img title="" onclick="deleteFriend(this, '+(data.frlist[x]).fid+');" style="margin-top: 4px; width: 15px; height: auto;" src="'+baseUrl+'www/images/delete-icon.png" /></li>'+'<div class="clr"></div>'
+                                '<li style="width: 15px; cursor: pointer; margin-left: 18px;" class="btnCol">&nbsp;&nbsp;<img title="" onclick="deleteFriend(this, '+(data.frlist[x]).id+');" style="margin-top: 4px; width: 15px; height: auto;" src="'+baseUrl+'www/images/delete-icon.png" /></li>'+'<div class="clr"></div>'
                             '</ul>'+
                         '</div>'+
                         '<div class="clr"></div>';

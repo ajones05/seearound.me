@@ -53,7 +53,20 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 	}
 
-        
+	/*
+     * Returns an instance of a Zend_Db_Table_Select object.
+     *
+     * @param bool $withFromPart Whether or not to include the from part of the select based on the table
+     * @return Zend_Db_Table_Select
+     */
+    public function publicSelect($withFromPart = self::SELECT_WITHOUT_FROM_PART)
+    {
+        $select = parent::select($withFromPart)->setIntegrityCheck(false);
+		$select->joinLeft('user_data', 'news.user_id = user_data.id', array());
+		$select->where('isdeleted =?', 0);
+
+		return $select;
+    }
 
 	/**
 	 * Returns notify

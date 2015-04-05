@@ -691,15 +691,4 @@ class Application_Model_NewsFactory {
         }
         return $response;
     }
-
-    function getLatestPost($user_id){
-       $newsFactory = new Application_Model_NewsFactory();
-        $news = new Application_Model_News();
-        $select = $news->select()->order('id DESC')
-                      ->where('user_id=?',$user_id)->where('isdeleted =?', '0');
-        $data = $news->fetchAll($select);
-        return $data;
-    }
-
-
 }

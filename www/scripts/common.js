@@ -123,8 +123,8 @@ function showFriendRequest(thisone){
 
                             html +='</li>'+
                             '<li class="btnSet">'+
-                            '<input class="curPnt" type="button" value="Accept" onclick="allow(this,'+(obj.data[x]).fid+');" />&nbsp;&nbsp;'+
-                            '<input class="curPnt" type="button" value="Deny" onclick="deny(this,'+(obj.data[x]).fid+');" />&nbsp;&nbsp;'+
+                            '<input class="curPnt" type="button" value="Accept" onclick="friendRequest(this,'+(obj.data[x]).sender_id+',\'confirm\');" />&nbsp;&nbsp;'+
+                            '<input class="curPnt" type="button" value="Deny" onclick="friendRequest(this,'+(obj.data[x]).sender_id+',\'reject\');" />&nbsp;&nbsp;'+
                             '<img class="imgAlowDeny" height="20" width="50" src="'+baseUrl+'www/images/loader.gif" />'+
                             '</li>'+
                             '</ul><div class="clear"></div>';
@@ -150,5 +150,39 @@ function showFriendRequest(thisone){
 		error : function(){
 			$(thisone).parent().siblings('div').html();
 		}
+	});
+}
+
+function friendRequest(thisone, id, action){
+	$(thisone).siblings('img').toggle();
+
+	$.ajax({
+		url: baseUrl + 'contacts/friend',
+		type: 'POST',
+		data: {
+			user: id,
+			action: action,
+			total: true
+		},
+		dataType: 'json'
+	}).done(function(response){
+		if (response && response.status){
+			$('#noteTotal').html(response.total);
+			$(thisone).parent().parent().remove();
+
+			currentRequests--;
+
+			if (response.total == 0){
+				$('#noteTotal').hide();
+			}
+
+			if (currentRequests <= 0){
+				showFriendRequest();
+			}
+		} else {
+			alert(ERROR_MESSAGE);
+		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
 	});
 }

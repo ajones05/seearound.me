@@ -156,52 +156,49 @@ class HomeController extends My_Controller_Action_Herespy {
         die(Zend_Json_Encoder::encode($response));
     }
 
-    public function profileAction() {
-        //echo "<pre>"; print_r( $this->_request->getParam('user')); exit;
-        //echo "<pre>"; print_r($this->auth['user_id']); exit;
-        $this->view->currentPage = 'Profile';
-        $this->view->myprofileExist = true;
-        $this->view->reciever = $user_id = $this->_request->getParam('user', $this->auth['user_id']);
-        //echo $user_id; exit;
-        $this->view->returnUrl = BASE_PATH . 'home/profile/user/' . $user_id;
-        $profileTable = new Application_Model_Profile;
-        $prow = $profileTable->fetchRow($profileTable->select()->where("user_id =?", $user_id));
-        $this->view->profile = $prow->public_profile;
-        if ($user_id && is_finite($user_id)) {
-            $newsFactory = new Application_Model_NewsFactory();
-             $user_data =  $newsFactory->getUser(array("user_data.id" => $user_id));
-            
-             $latestPost = $newsFactory->getLatestPost($user_id);
-        
-             $counter = 0;
-             
-                if(isset($latestPost) && $latestPost!=''){
-                 foreach($latestPost as $post){
-                   if($counter<1){
-                      $getPostNews  =  $post['news'];
-                      $this->view->latestPost = $getPostNews;
-                      $counter++;
-                     }
-                   }
-                } else {
-                     $this->view->latestPost= "N/A";
-               }
+	public function profileAction()
+	{
+		$auth = Zend_Auth::getInstance()->getIdentity();
+		$auth_id = $auth ? $auth['user_id'] : null;
+		$user_id = $this->_request->getParam('user', $auth_id);
 
-            $tableFriends = new Application_Model_Friends;
+		if (!Application_Model_User::checkId($user_id, $user))
+		{
+			throw new RuntimeException('Incorrect user ID', -1);
+		}
 
-            if (isset($this->auth['user_id'])) {
-                $this->view->friendStatus = $tableFriends->getStatus($this->auth['user_id'], $user_id);
-            }
+		$newsModel = new Application_Model_News;
 
-            if (count($user_data)) {
-                $this->view->user_data = $user_data;
-            } else {
-                $this->_redirect(BASE_PATH);
-            }
-          } else {
-            $this->_redirect(BASE_PATH);
-        }
-    }
+		$latest_post = $newsModel->fetchRow(
+			$newsModel->publicSelect()
+				->where('user_id =?', $user_id)
+				->order('id DESC')
+		);
+
+		if ($auth && $auth_id != $user_id)
+		{
+			$this->view->friendStatus = Application_Model_Friends::getInstance()->getStatus($auth_id, $user_id);
+		}
+
+		$this->view->user_data = $user;
+		$this->view->currentPage = 'Profile';
+		$this->view->myprofileExist = true;
+		$this->view->reciever = $user_id;
+		$this->view->returnUrl = BASE_PATH . 'home/profile/user/' . $user_id;
+		$this->view->profile = $user->public_profile;
+
+		if ($user_id != $auth_id)
+		{
+			$this->view->headScript()->appendScript('	var user_profile = ' . json_encode(array(
+				'id' => $user->id,
+				'name' => ucwords($user->Name),
+				'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+				'lat' => $user->lat(),
+				'lng' => $user->lat(),
+				'latestPost' => $latest_post ? $latest_post->news : 'N/A'
+			)) . ';');
+		}
+	}
 
 	/**
 	 * Add news action.

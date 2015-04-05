@@ -56,6 +56,17 @@ class Application_Model_News extends Zend_Db_Table_Abstract
             return self::$_instance;
     }
 
+	/*
+     * Returns an instance of a Zend_Db_Table_Select object.
+     *
+     * @param bool $withFromPart Whether or not to include the from part of the select based on the table
+     * @return Zend_Db_Table_Select
+     */
+    public function publicSelect($withFromPart = self::SELECT_WITHOUT_FROM_PART)
+    {
+		return parent::select($withFromPart)->where('isdeleted =?', 0);
+    }
+
 	/**
 	 * Finds news by location.
 	 *

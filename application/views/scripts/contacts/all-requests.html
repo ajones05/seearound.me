@@ -18,8 +18,8 @@
 						<span id="loc_<?=$index?>" class="loc">
 							<?=$row->address?>    
 						</span>
-						<input class="curPnt requestInput" type="button" value="Accept" onclick="allow(this,<?=$row->fid?>);" />	
-						<input class="curPnt requestInput" type="button" value="Deny" onclick="deny(this,<?=$row->fid?>);" />&nbsp;&nbsp;
+						<input class="curPnt requestInput" type="button" value="Accept" onclick="friendRequest(this,<?=$row->sender_id?>,'confirm');" />	
+						<input class="curPnt requestInput" type="button" value="Deny" onclick="friendRequest(this,<?=$row->sender_id?>,'reject');" />&nbsp;&nbsp;
 						<img class="imgAlowDeny" width="50" height="20" src="<?=BASE_PATH?>www/images/loader.gif" style="margin-right: 108px;">
 					</li>
 				</ul>
