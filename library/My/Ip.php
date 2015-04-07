@@ -7,6 +7,11 @@ require_once ROOT_PATH . '/vendor/autoload.php';
 class My_Ip
 {
 	/**
+	 * @var	array 
+	 */
+	protected static $city = array();
+
+	/**
 	 *
 	 *
 	 *
@@ -46,16 +51,19 @@ class My_Ip
 			return false;
 		}
 
-		try
+		if (!isset(self::$city[$ip_address]))
 		{
-			$reader = new GeoIp2\Database\Reader(ROOT_PATH . '/includes/maxmind-db/GeoLite2-City.mmdb');
+			try
+			{
+				self::$city[$ip_address] = (new GeoIp2\Database\Reader(ROOT_PATH . '/includes/maxmind-db/GeoLite2-City.mmdb'))->city($ip_address);
+			}
+			catch (Exception $e)
+			{
+				return false;
+			}
+		}
 
-			return $reader->city($ip_address);
-		}
-		catch (Exception $e)
-		{
-			return false;
-		}
+		return self::$city[$ip_address];
 	}
 
 	/**
@@ -63,7 +71,7 @@ class My_Ip
 	 *
 	 * @return	array
 	 */
-	public static function geolocation()
+	public static function geolocation($default = true)
 	{
 		$city = self::getCity();
 
@@ -72,8 +80,12 @@ class My_Ip
 			return array($city->location->latitude, $city->location->longitude);
 		}
 
-		$config = Zend_Registry::get('config_global');
+		if ($default)
+		{
+			$config = Zend_Registry::get('config_global');
+			return array($config->geolocation->lat, $config->geolocation->lng);
+		}
 
-		return array($config->geolocation->lat, $config->geolocation->lng);
+		return false;
 	}
 }

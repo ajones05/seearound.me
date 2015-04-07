@@ -101,7 +101,12 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 			return $address->address;
 		}
 
-		return Zend_Registry::get('config_global')->geolocation->address;
+		if (!My_Ip::geolocation(false))
+		{
+			return Zend_Registry::get('config_global')->geolocation->address;
+		}
+
+		return '';
 	}
 }
 
