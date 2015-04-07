@@ -24,16 +24,6 @@ function searchPlaceBy(){
 
 }
 
-
-
-function showNewsScreen() {
-
-    $("#loading").width($("#newsData").width());
-
-    $('#loading').show();
-
-}
-
 function showLoadingScreen() {
     $('#loading').show();
     $("#loading").width($("#newsData").width());

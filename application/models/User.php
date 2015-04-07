@@ -94,7 +94,14 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function address()
 	{
-		return $this->findDependentRowset('Application_Model_Address')->current()->address;
+		$address = $this->findDependentRowset('Application_Model_Address')->current();
+
+		if ($address)
+		{
+			return $address->address;
+		}
+
+		return Zend_Registry::get('config_global')->geolocation->address;
 	}
 }
 

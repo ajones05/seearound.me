@@ -61,8 +61,6 @@ function initialize() {
 
     var input = document.getElementById('searchAddresHome');
     var autocomplete = new google.maps.places.Autocomplete(input);
-    var input2 = document.getElementById('Change-searchAddresHome');
-    var autocomplete = new google.maps.places.Autocomplete(input2);
 }
 
 /*
@@ -230,8 +228,8 @@ function getAllNearestPoint(centerPosition){
 
 	reinitializeCenterData(userLatitude,userLongitude);
 
-    showNewsScreen();
-    removePaginationDiv();
+    $('#loading').width($("#newsData").width()).show();
+	$('#newsData #pagingDiv').remove();
 
 	if (!centerPosition){
 		if (commonMap.circle){
@@ -329,75 +327,6 @@ function setThisHeight(height){
     $("#newsData").css("position","relative");
     $("#newsData").css("height","100%");
 }
-
-/*
-* Function to add new news on the news post area
-*/
-function addNews() {
-   	if($('#newsPost').val().indexOf("<") > 0 || $('#newsPost').val().indexOf(">") > 0){
-		alert("You enter invalid text");
-		return false;
-	}
-
-    var news = $.trim($('#newsPost').val());
-
-    if(commonMap.mapMoved){
-       $("#locationButton").trigger('click');
-    } else {
-        if(news != '') {
-		      $('#newsWaitOnAdd').show();
-                      var point = new google.maps.LatLng(parseFloat(userLatitude),parseFloat(userLongitude));
-        		        geocoder.geocode({
-        		 	   'latLng': point
-     			}, function(results,status) {
-       				if (status == google.maps.GeocoderStatus.OK) {
-    					if (results[0]) {
-							var data = new FormData();
-
-							if ($('#fileNm').html()){
-								data.append('images', $('[name=images]', formContainor)[0].files[0]);
-							}
-
-							data.append('news', news);
-							data.append('latitude', userLatitude);
-							data.append('longitude', userLongitude);
-							data.append('address', results[0].formatted_address);
-
-							$.ajax({
-								url: baseUrl + 'home/add-news',
-								data: data,
-								cache: false,
-								contentType: false,
-								processData: false,
-								dataType: 'json',
-								type: 'POST',
-								success: function(response){
-									$("#newsData").prepend(response.news.html);
-									$('#noNews').html('');
-									$('#newsWaitOnAdd').hide();
-
-									$('html, body').animate({scrollTop: 0}, 0);
-
-									commonMap.createMarkersOnMap1([response.news], UserMarker1);
-
-									clearUpload();
-									reinitilizeUpload();
-									updateNews();
-
-									$('#postOptionId').hide();
-									$('#newsPost').val('').css('height', 36).attr('placeholder','Share something from your current location');
-									$('#loading').hide();
-								}
-							});
-                                  }
-                           }
-                     });
-                 } else {
-       	$('#loading').hide();
-	    }
-     } 
-  $("#mainForm").parent().remove();
- }
 
 /*
 * Function to get the latest news of any latitude longitude
@@ -526,18 +455,6 @@ function toggleContent() {
     });
 }
 
-/*******************************************************************************************************************************************/
-/*****                                          Function to handle pagination                                                          *****/
-/*******************************************************************************************************************************************/
-
-function removePaginationDiv(){
-      $("#newsData div").each(function(){
-        if($(this).attr('id')=='pagingDiv'){
-            $(this).remove();
-        }
-      })
-}
-
 /*
 * Function to show more news and comments when first post a meassge than clicked on 
 * pagination button also includes new pagination
@@ -625,36 +542,6 @@ function fillUserAddress() {
       $.ajaxSetup({async:true});
   }
 
-
-/*
-* Function to change the current location of user and update the new address in Database
-*/
-function fillPostLocationAddress(){
-    $("#waitingAddress").show();
-    $("#useNewAddress").attr('disabled','disabled');
-    $("#useNewAddress").hide();
-    $("#useAddress").hide();
-    $("#cboxClose").trigger('click');
-        userLatitude  = commonMap2.centerPoint.lat();
-        userLongitude = commonMap2.centerPoint.lng();
-        centerPoint   = commonMap2.centerPoint;
-
-     var news = $.trim($('#newsPost').val());
-         news = news.replace("http://", " "); 
-         news = news.replace("https://", " "); 
-  
-   if(news != '' && news){
-     addNews();
-     $("#waitingAddress").hide(); 
-     initialize();
-    }
-    else {
-        $("#waitingAddress").hide(); 
-        alert('Messagebox can not be blank');
-    }
-   
- }
-
 /*
 * Function to change the current location of user
 */
@@ -693,7 +580,7 @@ function showHideDiv(type,bubbleCounter){
         $("#content"+bubbleCounter+"_1").hide();
         $("#content"+bubbleCounter+"_"+showHideCounter).hide();
         if(type == 'next') {
-            $("#prevDiv_"+bubbleCounter).show(); //.show() in previous version
+            $("#prevDiv_"+bubbleCounter).show();
             showHideCounter++;
             if(showHideCounter < Number($("#mainContent_"+bubbleCounter).attr('totalDiv'))){
                 $("#content"+bubbleCounter+"_"+showHideCounter).show();
@@ -704,7 +591,7 @@ function showHideDiv(type,bubbleCounter){
             }
            
         } else {
-            $("#nextDiv_"+bubbleCounter).show(); //.hide() in previous version
+            $("#nextDiv_"+bubbleCounter).show();
             showHideCounter--;
             if(showHideCounter > 1){
                  $("#content"+bubbleCounter+"_"+showHideCounter).show();
@@ -718,21 +605,6 @@ function showHideDiv(type,bubbleCounter){
             updatedContentId = showHideCounter;
         }
         $("#mainContent_"+bubbleCounter).attr('currentDiv',showHideCounter);
-}
-
-/* Function to chack the value length of text area and remove the extra characters
-* @param val (value of text area), textLimit(Lenght of characters of text area) 
-* @return null
-*/
-
-function textLimit(textLimit, thisone){
-	var text = $(thisone).val();
-
-	if (text.length > textLimit){
-		$(thisone).val(text.substring(0, textLimit - 1));
-		alert("Sorry! You can not enter more then " + textLimit + " charactes.");
-		return false;
-	}
 }
 
 /*
@@ -814,7 +686,7 @@ function showHideDivContent(type,bubbleCounter){
     var me = commonMap;
     showHideCounter = $("#mainContent_"+bubbleCounter).attr('currentDiv');
         if(type == 'next') {
-            $("#prevDiv_"+bubbleCounter).show(); //.show() in previous version
+            $("#prevDiv_"+bubbleCounter).show();
             showHideCounter++;
             
             if(showHideCounter < Number(me.bubbleArray[bubbleCounter].contentArgs.length)){
@@ -898,41 +770,6 @@ function changeHomeLocation(flag) {
         alert("Sorry! We are unable to find this location.");
 		$("#searchAddresHome").val("");
 	}
-}
-function changepostLocation(flag) {
-    var userAddress = '';
-    var searchaddr = $("#Change-searchAddresHome").val();
-    if(searchaddr == ""){
-        $("#Change-searchAddresHome").addClass("inputErrorBorder");
-        return;
-    } else { 
-        $("#Change-searchAddresHome").removeClass("inputErrorBorder");
-    }
-    if(searchaddr) {
-        userAddress += searchaddr;
-    }
-    if(userAddress) {
-        geocoder.geocode({
-         'address': userAddress
-        }, function(results,status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-                    if (results[0]) {
-                       var latlng = results[0].geometry.location;
-                       if(flag == 'draw'){
-                           map.setCenter(latlng);
-                           relatedMap(latlng.lat(), latlng.lng());
-                       }
-                    }
-                } else {
-                    alert("Sorry! We are unable to find this location.");
-                    $("#Change-searchAddresHome").val("");
-                }
-            } 
-        );
-    } else {
-        alert("Sorry! We are unable to find this location.");
-        $("#Change-searchAddresHome").val("");
-    }
 }
 
 function getRadius(){

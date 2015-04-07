@@ -1,79 +1,25 @@
 <ul class="scrpRow appendClr afterClr">
-    <li class="imgPro">
-       <a class="user-img" href="<?=BASE_PATH?>home/profile">
-            <?php if(isset($this->auth['pro_image'])) { ?>
-             <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" />
-           <?php } else { ?>
-             <img src="/www/images/img-prof40x40.jpg" class="smallImage" />
-           <?php } ?>
+	<li class="imgPro">
+       <a class="user-img" href="<?php echo BASE_PATH; ?>home/profile">
+			<img src="<?php echo $this->user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" class="smallImage" />
        </a>
-       <a class="user-name" title="<?php echo $this->auth["user_name"]; ?>" href="<?=BASE_PATH?>home/profile"><?php echo My_StringHelper::stringLimit($this->auth["user_name"], 10, '...'); ?></a>
-   
-    </li>
-   <li class="bgTxtArea"> 
-       <textarea id="newsPost" class="textAreaClassPost" placeholder="Share something from your current location..."  onkeyup="textLimit(500, this);" onfocus="clearpostField(this)"></textarea>
-      
-        <div id='tempContainor'></div>
-
-        <div id="postOptionId" style="margin-right: 4px;margin-top:-5px;display:none;">
-            <input type="button" value="Post" class="floatR marginT10 btnBlueRpt post"  onclick="addNews()"/>
-          
-            <input type="button" class="Change-Post-Location-Popup-Class btnBlueRpt cboxElement" value="Post From Different Location" id="postlocationButton" />
-       
-            <input id="uploader" type="button" class="floatR marginT10 crp imgInput" style="margin-right:10px;"/> 
-        
-        </div>
-        
-       <img id="newsWaitOnAdd" class="waitimg" src="<?=BASE_PATH?>www/images/wait.gif"/>
-        <div class="clr"></div>
-        <div style="display:inline;width:80px;" id="fileNm"></div>
-
-      </li> 
-   
-  </ul>
-
+		<a class="user-name" title="<?php echo $this->user->Name; ?>" href="<?php echo BASE_PATH; ?>home/profile">
+			<?php echo My_StringHelper::stringLimit($this->user->Name, 10, '...'); ?>
+		</a>
+	</li>
+	<li class="bgTxtArea">
+		<textarea id="newsPost" class="textAreaClassPost" placeholder="Share something from your current location..."></textarea>
+		<div id="postOptionId" style="margin-right: 4px;margin-top:-5px;display:none;">
+			<input type="button" value="Post" class="floatR marginT10 btnBlueRpt post addNews" />
+			<input type="button" class="Change-Post-Location-Popup-Class btnBlueRpt cboxElement" value="Post From Different Location" id="postlocationButton" />
+			<input id="uploader" type="button" class="floatR marginT10 crp imgInput" style="margin-right:10px;"/>
+		</div>
+		<img id="newsWaitOnAdd" class="waitimg" src="<?php echo BASE_PATH; ?>www/images/wait.gif" />
+		<div class="clr"></div>
+		<div style="display:inline;width:80px;" id="fileNm"></div>
+	</li>
+</ul>
 <div id="loading" align="center" style="position: relative; height: 100%;margin-left:-125px;width:157%">
-
-       <img src='<?=BASE_PATH?>www/images/LoadingBar.gif'/>
-
+	<img src="<?=BASE_PATH?>www/images/LoadingBar.gif" />
 </div>
-
-<div id="newsData" align="left" style="position: relative; height: 100%;width:100%">
-
-   
-
-</div>
-
-
-
-<script type="text/javascript" src="<?=BASE_PATH?>www/scripts/homeindex.js?<?php echo Zend_Registry::get('config_global')->mediaversion; ?>"></script>
-
-<script>
-
-    var adjustDiv = true;
-
-    if(adjustDiv) {
-
-        $(window).scroll(function() {            
-
-            if($("#midColLayout").height()>714)
-
-                setThisHeight(Number($("#midColLayout").height()));
-
-                adjustDiv = false;
-
-            }
-
-        );
-
-    }
-
-     function clearpostField(that){
-          $('#postOptionId').show();
-          $('#newsPost').attr('placeholder','');
-        }
-    
-       $('#newsPost').on('blur', function() {
-               $('#newsPost').attr('placeholder','Share something from your current location');
-        });      
-</script>
+<div id="newsData" align="left" style="position: relative; height: 100%;width:100%"></div>

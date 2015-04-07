@@ -130,18 +130,11 @@ MainMap.prototype.createMap = function(){
 
                initFlagForMap = true;
 
-               if(previousBubble)
+				if (previousBubble){
+					previousBubble.close();
+				}
 
-                    previousBubble.close();
-
-               if(me.showMapElement)
-
-                    me.onMapDragen('CENTER');
-
-               else
-
-                   me.onMapDragen('FRIENDS');
-
+				me.onMapDragen('CENTER');
             });
 
         }
@@ -1015,16 +1008,6 @@ MainMap.prototype.mapContent = function(){
 
     var sliderController = this.createImageDom('slide',["sliderController"],'sliderBackground','','');
 
-    
-
-	//map.controls[google.maps.ControlPosition.LEFT_CENTER].push(leftSlider);
-
-    //map.controls[google.maps.ControlPosition.RIGHT_CENTER].push(rightSlider);
-
-    //map.controls[google.maps.ControlPosition.TOP_CENTER].push(upSlider);
-
-    //map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(downSlider);
-
     map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(sliderController);
 
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(zoomController);
@@ -1094,12 +1077,6 @@ MainMap.prototype.createImageDom = function(type,id,className,src,angle) {
        var secDiv = document.createElement('div'); 
 
        secDiv.align = 'center';
-
-       //secDiv.style['fontWeight'] = 'bold';
-
-       //secDiv.style['marginBottom'] = '4px';
-
-       
 
        var spanDom = document.createElement('span'); 
 
@@ -1273,69 +1250,43 @@ MainMap.prototype['changeMapZoom'] = MainMap.prototype.changeMapZoom;
 MainMap.prototype.onMapDragen = function(type){
 	globalStart = 0;
 
-	if (type == 'FRIENDS'){
-		// TODO: fix
-		var userPosition = this.map.getCenter();
-		getAllNearestFriends(userPosition.lat(), userPosition.lng(), getRadius());		
-	} else {
-		this.flushMap(type);
+	this.flushMap(type);
 
-		if (type == 'ALL'){
+	switch (type){
+		case 'ALL':
 			latestNews();
-		} else if (type == 'CENTER'){
+			break;
+		case 'CENTER':
 			getAllNearestPoint();
-		}
+			break;
 	}
 }
 
 MainMap.prototype['onMapDragen'] = MainMap.prototype.onMapDragen;
 
 MainMap.prototype.flushMap = function(type){
+	var me = this;
+	me.clearMapMarker(type);
 
-    var me = this;
+	var newCenterPoint = me.map.getCenter();
 
-    me.clearMapMarker(type);
-
-    var newCenterPoint = (me.map).getCenter();
-
-	var circleRadious = Number($('#radious').html());
-
-	if(!circleRadious){
-
-		circleRadious = 0.8;
-
-	}
-
- 	if(distance(new google.maps.LatLng(userLatitude,userLongitude),newCenterPoint,'M')>(Number(circleRadious))){
-
+	if (distance(new google.maps.LatLng(userLatitude, userLongitude), newCenterPoint, 'M') > getRadius()){
 		me.mapMoved = true;
-
 	} else {
-
 		me.mapMoved = false;
-
 	}
 
-    me.changeCircleRadious();
+	me.changeCircleRadious();
 
-    return newCenterPoint;
-
+	return newCenterPoint;
 }
 
 MainMap.prototype['flushMap'] = MainMap.prototype.flushMap;
 
-
-
 MainMap.prototype.changeCircleRadious = function(){
-
-   var newCenterPoint = (this.map).getCenter();
-
-   if(this.circle){
-
-        (this.circle).changeCenter(newCenterPoint,Number($("#radious").html()));
-
-    } 
-
+	if (this.circle){
+		this.circle.changeCenter(this.map.getCenter(), getRadius());
+	}
 }
 
 MainMap.prototype['changeCircleRadious'] = MainMap.prototype.changeCircleRadious;
@@ -1484,7 +1435,7 @@ MainMap.prototype.addressWindow = function(address){
     var sizeObj = new google.maps.Size(0, -37, 'px', 'px');
     this.infoWindow = new google.maps.InfoWindow({maxWidth:220, pixelOffset : sizeObj});
 
-    this.infoWindow.setContent(this.addressContent(address));
+    this.infoWindow.setContent(this.addressContent(address, this.profileImage));
 
     this.infoWindow.setPosition((this.movingMarker).getPosition());
     this.infoWindow.open(this.map); 
@@ -1503,23 +1454,12 @@ MainMap.prototype['infoWindow'] = MainMap.prototype.infoWindow;
 
 
 
-MainMap.prototype.addressContent = function(address){
-
-    /* var content = "<table><tr><td valign='middle'>"+address+"</td>";
-
-	if(this.profileImage)
-	 	 content+="<td valign='middle'>&nbsp;<img  style='margin-left:105px;' height='55' width='55' src='"+this.profileImage+"'/></td>";
-         //content+="<td valign='middle'>&nbsp;<img height='55' width='55' src='"+this.profileImage+"'/></td>";
-   	    content+="</tr></table>";
-
-    return content;*/
-    
+MainMap.prototype.addressContent = function(address, profileImage){
     var content = "<div class='profile-map-info'>";
-        content+= "<div style='float:left;margin-right:8px;'><img class='user-img' src='"+this.profileImage+"'/></div>";            
+        content+= "<div style='float:left;margin-right:8px;'><img class='user-img' src='"+profileImage+"'/></div>";
         content+= "<div class='user-address'>"+address+"</div>";
         content+=  "</div>";
      return content;
-
 };
 
 MainMap.prototype['addressContent'] = MainMap.prototype.addressContent;
@@ -1528,7 +1468,7 @@ MainMap.prototype.changeAddressContent = function(address){
 
 	(this.movingMarker).setPosition(this.centerPoint);
 
-     this.infoWindow.setContent(this.addressContent(address));
+     this.infoWindow.setContent(this.addressContent(address, this.profileImage));
 
      this.infoWindow.setPosition((this.movingMarker).getPosition());
 
@@ -1563,8 +1503,6 @@ MainMap.prototype.getCenterAddress = function(latlng,comment,flag) {
             } else {
              var formattedAddress  = results[0].formatted_address;   
             }
-            
-            //
 
             var latitudeLongitude = results[0].geometry.location;
 

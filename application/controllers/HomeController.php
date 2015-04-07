@@ -20,7 +20,10 @@ class HomeController extends My_Controller_Action_Herespy {
 		$this->view->headScript()
 			->prependFile('/www/scripts/publicNews.js?' . $mediaversion)
 			->prependFile('/www/scripts/jquery.loadmask.js?' . $mediaversion)
-			->prependFile('/www/scripts/news.js?' . $mediaversion);
+			->prependFile('/www/scripts/news.js?' . $mediaversion)
+			->prependFile('/www/scripts/homeindex.js?' . $mediaversion);
+
+		$this->view->user = Application_Model_User::findById(Zend_Auth::getInstance()->getIdentity()['user_id']);
     }
 
     public function editProfileAction() {

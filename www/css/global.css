@@ -654,7 +654,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 #Map-Popup-id img.homemap-srh-img {cursor: pointer; position: absolute;top: 17px;width: 39px;margin-left: -3px; height: 36px;}
 #Change-Postlocation-Map-Popup-id img.Change-srh-img {cursor: pointer; position: absolute;top: 17px;width: 39px;margin-left: -3px; height: 36px;}
 #Map-Popup-id #useNewAddress {font: normal 17px lato-Bold;margin-left: 50px;padding: 8px 10px;}
-#Change-Postlocation-Map-Popup-id #useNewAddress {font: normal 17px lato-Bold;margin-left: 50px;padding: 8px 10px;}
+#Change-Postlocation-Map-Popup-id .useNewAddress {font: normal 17px lato-Bold;margin-left: 50px;padding: 8px 10px;}
 /**/
 #postOptionId .Change-Post-Location-Popup-Class.btnBlueRpt {float:right;margin-right:10px;margin-top:10px;height:22px;cursor: pointer; overflow: visible; border: 0px none; color: #4276cd;}
 #postOptionId .floatR.post {height:22px; color: #4276cd;}

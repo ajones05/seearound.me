@@ -34,7 +34,7 @@ class Application_Form_News extends Zend_Form
 			'text',
 			'address',
 			array(
-				'required' => true,
+				'required' => false,
 				'filters' => array('StringTrim'),
 			)
 		);
