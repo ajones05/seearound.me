@@ -474,8 +474,8 @@ class HomeController extends My_Controller_Action_Herespy {
 
 			if (count($comment_users) || $news->user_id != $user->id)
 			{
-				$subject = 'SeeAroundme comment on your post';
-				$body = My_Email::renderBody('comment-notify', array(
+				$subject = 'SeeAroundme comment on a post you commented on';
+				$body = My_Email::renderBody('comment-notify-comment', array(
 					'news' => $news,
 					'user' => $user,
 					'comment' => $comment->comment
@@ -491,8 +491,20 @@ class HomeController extends My_Controller_Action_Herespy {
 
 				if ($news->user_id != $user->id)
 				{
-					Application_Model_User::checkId($news->user_id, $news_user);
-					My_Email::send(array($news_user->Name => $news_user->Email_id), $subject, array('body' => $body));
+					$news_user = Application_Model_User::findById($news->user_id);
+
+					My_Email::send(
+						array($news_user->Name => $news_user->Email_id),
+						'SeeAroundme comment on your post',
+						array(
+							'template' => 'comment-notify-owner',
+							'assign' => array(
+								'news' => $news,
+								'user' => $user,
+								'comment' => $comment->comment
+							)
+						)
+					);
 				}
 			}
 

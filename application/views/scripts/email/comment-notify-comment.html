@@ -1,0 +1,6 @@
+<?php
+$url = BASE_PATH . 'info/news/nwid/' . $this->news->id;
+?>
+<p><?php echo $this->user->Name; ?> has commented on a post you commented on.</p>
+<p><?php echo nl2br(htmlspecialchars(substr($this->comment, 0, 100))); ?></p>
+<p>View the comments for this post: <a href="<?php echo $url; ?>"><?php echo $url; ?></a></p>
