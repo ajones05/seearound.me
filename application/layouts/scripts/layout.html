@@ -10,18 +10,14 @@ $config = Zend_Registry::get('config_global');
 $geoip = My_Ip::geolocation();
 $request = Zend_Controller_Front::getInstance()->getRequest();
 
-$http_host = json_encode($request->getHttpHost());
-
 $this->headScript()
+	->appendScript(
+		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
+		"	var http_host = " . json_encode($request->getHttpHost()) . ";\n" .
+		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
+	)
 	->prependFile('/www/scripts/jquery.js')
 	->appendFile('/www/scripts/jquery.validate.min.js');
-
-$this->headScript()->appendScript(<<<JAVASCRIPT
-	var http_host = {$http_host},
-		facebook_appId = {$config->facebook->app->id};
-
-JAVASCRIPT
-, 'text/javascript');
 
 $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 ?>
@@ -56,7 +52,6 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 	var userLatitude = <?php echo $this->isLogin ? $user->lat() : $geoip[0]; ?>;
 	var userLongitude = <?php echo $this->isLogin ? $user->lng() : $geoip[1]; ?>;
 	var userAddress = <?php echo json_encode($this->isLogin ? $user->address() : ''); ?>;
-	var isLogin = <?php echo json_encode((boolean) $this->isLogin); ?>;
 	var isFbLogin = "<?php echo !empty($this->auth['is_fb_login']); ?>";
 	var user_id = <?php echo json_encode($this->isLogin ? $user->id : ''); ?>;
 	var reciever_userid =  "<?=$this->reciever?>";

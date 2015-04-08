@@ -2,19 +2,16 @@
 $config = Zend_Registry::get('config_global');
 $geoip = My_Ip::geolocation();
 $request = Zend_Controller_Front::getInstance()->getRequest();
-
-$http_host = json_encode($request->getHttpHost());
+$auth = Zend_Auth::getInstance()->getIdentity();
 
 $this->headScript()
+	->appendScript(
+		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
+		"	var http_host = " . json_encode($request->getHttpHost()) . ";\n" .
+		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
+	)
 	->prependFile('/www/scripts/jquery.js')
 	->appendFile('/www/scripts/jquery.validate.min.js');
-
-$this->headScript()->appendScript(<<<JAVASCRIPT
-	var http_host = {$http_host},
-		facebook_appId = {$config->facebook->app->id};
-
-JAVASCRIPT
-, 'text/javascript');
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">

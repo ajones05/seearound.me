@@ -1,6 +1,7 @@
 <?php
 $config = Zend_Registry::get('config_global');
 $request = Zend_Controller_Front::getInstance()->getRequest();
+$auth = Zend_Auth::getInstance()->getIdentity();
 
 $this->headLink()
 	->appendStylesheet('/www/css/reset.css?' . $config->mediaversion)
@@ -9,9 +10,9 @@ $this->headLink()
 
 $this->headScript()
 	->appendScript(
-"	var isLogin = " . json_encode((boolean) $this->isLogin) . ";\n" .
-"	var baseUrl = " . json_encode(BASE_PATH) . ";\n" .
-"	var facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
+		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
+		"	var baseUrl = " . json_encode(BASE_PATH) . ";\n" .
+		"	var facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
 	)
 	->prependFile('/www/scripts/jquery.js')
 	->appendFile('/www/scripts/jquery.validate.js')

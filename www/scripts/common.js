@@ -103,7 +103,7 @@ $(function(){
 							return false;
 						}
 
-						if (returnUrl != ''){
+						if (typeof returnUrl !== 'undefined' && returnUrl != ''){
 							window.location.href = returnUrl;
 							return false;
 						}
