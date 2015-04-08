@@ -32,7 +32,6 @@ $this->headScript()
 		var geoiplongitude = <?php echo $geoip[1]; ?>;
 		var userLatitude = <?php echo My_ArrayHelper::getProp($this->auth, 'latitude', $geoip[0]); ?>;
 		var userLongitude = <?php echo My_ArrayHelper::getProp($this->auth, 'longitude', $geoip[1]); ?>;
-		var isLogin = <?php echo json_encode((boolean) $this->isLogin); ?>;
 		var user_id = "<?=$this->auth['user_id']?>";
 		var returnUrl = "<?=$request->getParam('url')?$request->getParam('url'):''?>";
 	</script>
