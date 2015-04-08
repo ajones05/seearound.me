@@ -9,6 +9,7 @@ $this->headLink()
 
 $this->headScript()
 	->appendScript(
+"	var isLogin = " . json_encode((boolean) $this->isLogin) . ";\n" .
 "	var baseUrl = " . json_encode(BASE_PATH) . ";\n" .
 "	var facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
 	)
