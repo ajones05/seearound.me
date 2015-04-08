@@ -135,6 +135,8 @@ MainMap.prototype.createMap = function(){
 				}
 
 				me.onMapDragen('CENTER');
+
+				$('html, body').animate({scrollTop: '0px'}, 300);
             });
 
         }
