@@ -48,16 +48,6 @@ class IndexController extends My_Controller_Action_Abstract {
 
         $newsFactory = new Application_Model_NewsFactory();
 
-
-
-        if (!$this->request->isXmlHttpRequest()) {
-
-            if ($this->_request->getCookie('emailLogin') && $this->_request->getCookie('passwordLogin')) {
-
-                $this->_redirect(BASE_PATH . "index/login/check/yes");
-            }
-        }
-
         $errors = array();
 
         $data = array();
@@ -68,14 +58,8 @@ class IndexController extends My_Controller_Action_Abstract {
 
             if (empty($errors)) {
 
-                /*  $options = [
-                  'cost' => 11,
-                  ];
-                  $passwordFromPost = $data['Password'];
-                  $hash = password_hash($passwordFromPost, PASSWORD_BCRYPT, $options); */
 
                 $data['Password'] = hash('sha256', $data['Password']);
-                // $data['Password']  = md5($data['Password']);
 
                 $data['address']  = $data['Location'];
 
@@ -108,7 +92,6 @@ class IndexController extends My_Controller_Action_Abstract {
 
 
                     $this->_redirect(BASE_PATH . "home/index");
-                    //$this->_redirect(BASE_PATH."index/reg-success/dq/".$row->id);
                 } else {
 
                     $this->view->errors = "errors";
@@ -145,8 +128,6 @@ class IndexController extends My_Controller_Action_Abstract {
             $auth = Zend_Auth::getInstance();
 
             $loginRow = $loginStatus->setData(array(user_id => $returnvalue->id, login_time => date('Y-m-d H:i:s'), ip_address => $_SERVER['REMOTE_ADDR']));
-
-            $response->error1 = $returnvalue->Status . " " . count($returnvalue);
 
             $authData['user_id'] = $returnvalue->id;
 
@@ -275,110 +256,117 @@ class IndexController extends My_Controller_Action_Abstract {
            }
      }
 
-     public function loginAction($typeArray = null) {
+	/**
+	 * Login action.
+	 *
+	 * @return void
+	 */
+	public function loginAction()
+	{
+		try
+		{
+			$email = $this->_request->getPost('email');
 
-        $this->view->layout()->setLayout('login');
+			if (My_Validate::emptyString($email))
+			{
+				throw new RuntimeException('Email cannot be blank', -1);
+			}
 
-        $response = new stdClass();
+			if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+			{
+				throw new RuntimeException('Incorrect email address format: ' . var_export($email, true), -1);
+			}
 
-        $newsFactory = new Application_Model_NewsFactory();
+			$password = $this->_request->getPost('password');
 
-        $auth = Zend_Auth::getInstance();
+			if (My_Validate::emptyString($password))
+			{
+				throw new RuntimeException('Password cannot be blank', -1);
+			}
 
-           if ($this->_getParam('check') == "yes") {
+			$newsFactory = new Application_Model_NewsFactory;
+			$returnvalue = $newsFactory->loginDetail(array(
+				'email' => $email,
+				'pass' => hash('sha256', $password)
+			));
 
-                $data = array('email' => $this->_request->getCookie('emailLogin'), 'pass' => hash('sha256', $this->_request->getCookie('passwordLogin')));
-            } else {
+			if (!$returnvalue)
+			{
+				throw new RuntimeException('Invalid email or password', -1);
+			}
 
-                $data = array('email' => $this->_getParam('email'), 'pass' => hash('sha256', $this->_getParam('pass')));
-            }
+			$response = array();
 
-        $loginStatus = new Application_Model_Loginstatus();
+			if ($returnvalue->Status == 'active')
+			{
+				$loginStatus = new Application_Model_Loginstatus;
 
-        $inviteStatus = new Application_Model_Invitestatus();
+				$loginRow = $loginStatus->setData(array(
+					'user_id' => $returnvalue->id,
+					'login_time' => new Zend_Db_Expr('NOW()'),
+					'ip_address' => $_SERVER['REMOTE_ADDR']
+				));
 
-        $returnvalue = $newsFactory->loginDetail($data);
+				Zend_Auth::getInstance()->getStorage()->write(array(
+					'user_id' => $returnvalue->id,
+					'login_id' => $loginRow->id,
+					'is_fb_login' => false,
+					'user_name' => $returnvalue->Name,
+					'user_email' => $returnvalue->Email_id,
+					'latitude' => $returnvalue->latitude,
+					'longitude' => $returnvalue->longitude,
+					'pro_image' => $returnvalue->Profile_image,
+					'address' => $returnvalue->address
+				));
 
-        if ((count($returnvalue) > 0) && ($returnvalue->Status == "active")) {
+				// TODO: ???
+				if (date('D') == 'Mon')
+				{
+					$loginRows = $loginStatus->sevenDaysOldData($returnvalue->id);
+					$inviteCount = floor(count($loginRows) / $this->credit);
+					$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $returnvalue->id));
 
-            $loginRow = $loginStatus->setData(array(user_id => $returnvalue->id, login_time => date('Y-m-d H:i:s'), ip_address => $_SERVER['REMOTE_ADDR']));
+					if ($inviteStatusRow && floor((time() - strtotime($inviteStatusRow->updated)) / (24 * 60 * 60)) >= 7)
+					{
+						$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + $inviteCount;
+						$inviteStatusRow->updated = new Zend_Db_Expr('NOW()');
+						$inviteStatusRow->save();
+					}
+				}
 
-            $response->error1 = $returnvalue->Status . " " . count($returnvalue);
+				if ($this->_request->getPost('remember'))
+				{
+					Zend_Session::rememberMe();
+				}
 
-            $authData['user_id'] = $returnvalue->id;
+				$response['active'] = 1;
+				$response['redirect'] = BASE_PATH . 'home';
+			}
+			else
+			{
+				$response['active'] = 0;
+				$response['redirect'] = BASE_PATH . 'index/reg-success/id/' . $returnvalue->id;
+			}
 
-            $authData['login_id'] = $loginRow->id;
+			$response['status'] = 1;
+		}
+		catch (RuntimeException $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => $e->getMessage())
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
+		}
 
-            $authData['is_fb_login'] = false;
-
-            $authData['user_name'] = $returnvalue->Name;
-
-            $authData['user_email'] = $returnvalue->Email_id;
-
-            $authData['latitude'] = $returnvalue->latitude;
-
-            $authData['longitude'] = $returnvalue->longitude;
-
-            $authData['pro_image'] = $returnvalue->Profile_image;
-
-            $authData['address'] = $returnvalue->address;
-
-            $auth->getStorage()->write($authData);
-
-            $response->error = 0;
-            
-
-            if (date('D') == "Mon") {
-
-                $loginRows = $loginStatus->sevenDaysOldData($returnvalue->id);
-
-                $inviteCount = floor((count($loginRows)) / ($this->credit));
-
-                if ($inviteStatusRow = $inviteStatus->getData(array('user_id' => $returnvalue->id))) {
-
-                    if (floor(((strtotime(date('Y-m-d H:i:s'))) - (strtotime($inviteStatusRow->updated))) / (24 * 60 * 60)) >= 7) {
-
-                        $inviteStatusRow->invite_count = ($inviteStatusRow->invite_count + $inviteCount);
-
-                        $inviteStatusRow->updated = date('Y-m-d H:i:s');
-
-                        $inviteStatusRow->save();
-                    }
-                }
-            }
-
-            if ($this->_getParam('remember', null)) {
-
-                setcookie("emailLogin", $this->_getParam('email'), time() + 7 * 24 * 60 * 60, '/');
-
-                setcookie("passwordLogin", $this->_getParam('pass'), time() + 7 * 24 * 60 * 60, '/');
-            }
-
-                if ($returnUrl != "") {
-
-                    $response->redirect = $returnUrl;
-                } else {
-
-                    $response->redirect = BASE_PATH . "home";
-                }
-        } elseif (count($returnvalue) > 0 && $returnvalue->Status == "inactive") {
-
-            $response->redirect = BASE_PATH . "index/reg-success?id=$returnvalue->id&q=$returnvalue->Conf_code&type=2";
-
-            $response->error = 0;
-        } else {
-
-            $response->error = 1;
-        }
-
-        if ($this->_request->isXmlHttpRequest()) {
-
-            die(Zend_Json_Encoder::encode($response));
-        } else {
-
-            $this->_redirect($response->redirect);
-        }
-    }
+		die(Zend_Json_Encoder::encode($response));
+	}
 
 	/**
 	 * Facebook login action.
@@ -518,13 +506,14 @@ class IndexController extends My_Controller_Action_Abstract {
 			'network_id' => $user->Network_id
 		));
 
-		if (date('D') == "Mon")
+		// TODO: ???
+		if (date('D') == 'Mon')
 		{
 			$loginRows = $status_model->sevenDaysOldData($user->id);
 			$inviteCount = floor(count($loginRows) / $this->credit);
 			$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $user->id));
 
-			if ($inviteStatusRow && floor((strtotime(date('Y-m-d H:i:s')) - strtotime($inviteStatusRow->updated)) / (24 * 60 * 60)) >= 7)
+			if ($inviteStatusRow && floor((time() - strtotime($inviteStatusRow->updated)) / (24 * 60 * 60)) >= 7)
 			{
 				$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + $inviteCount;
 				$inviteStatusRow->updated = new Zend_Db_Expr('NOW()');
@@ -632,17 +621,21 @@ class IndexController extends My_Controller_Action_Abstract {
 
     }
 
-    
+	/**
+	 * Inactive account action.
+	 *
+	 * @return void
+	 */
+	public function regSuccessAction()
+	{
+		if (!Application_Model_User::checkId($this->_request->getParam('id'), $user) || $user->Status != 'inactive')
+		{
+			throw new Exception('Incorrect user ID');
+		}
 
-    public function regSuccessAction()
-
-    {
-
-        $this->view->layout()->setLayout('login');
-
-    }
-
-    
+		$this->view->layout()->setLayout('login');
+		$this->view->headScript()->appendScript('	var user = ' . json_encode(array('id' => $user->id)) . ';');
+	}
 
     public function regConfirmAction()
 
@@ -672,64 +665,41 @@ class IndexController extends My_Controller_Action_Abstract {
 
     }
 
-    
+	/**
+	 * Resend user account activate email action.
+	 *
+	 * @return void
+	 */
+	public function resendAction() 
+	{
+		try
+		{
+			if (!Application_Model_User::checkId($this->_request->getPost('id'), $user) || $user->Status != 'inactive')
+			{
+				throw new RuntimeException('Incorrect user ID');
+			}
 
-    public function resendAction() 
+			My_Email::send(
+				array($user->Name => $user->Email_id),
+				'Re-send activation link',
+				array(
+					'template' => 'user-resend',
+					'assign' => array('user' => $user)
+				)
+			);
 
-    {
-		$config = Zend_Registry::get('config_global');
+			$response = array('status' => 1);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
+		}
 
-        if($this->getRequest()->isPost()) {
-
-            $response = new stdClass();
-
-            $id = $this->getRequest()->getPost('id', null);
-
-            $newsFactory = new Application_Model_NewsFactory();
-
-            if($id) {
-
-                if($row = $newsFactory->resend($id)) {
-
-                    $url = BASE_PATH."index/reg-confirm?id=".$row->id."&q=".$row->Conf_code;
-
-                    $this->to = $row->Email_id;
-
-                    $this->subject = "Re-send activation link";
-
-                    $this->from = $config->email->from_email . ':' . $config->email->from_name;
-
-                    $message = "Hi ".$row['Name']."\n\n\n\n Your new activation link is : <a href='$url'>$url</a>\n\n\n\n Admin\nwww.seearound.me";
-
-                    $this->view->name = $row->Name;
-
-                    $this->view->message = "<p align='justify'>Your new activation link is : $url</p>";
-
-                    $this->view->adminName = "Admin";
-
-                    $this->view->response = "seearound.me";
-
-                    $this->message = $this->view->action("index","general",array());
-
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-
-                    //@mail($to, $subject, $message, $headers);
-
-                    $response->success = "ok";
-
-                }else {
-
-                    $response->errors = "error";
-
-                }		
-
-            } 
-
-        }
-
-        die(Zend_Json_Encoder::encode($response));
-
-    }
+		die(Zend_Json_Encoder::encode($response));
+	}
 
     
 

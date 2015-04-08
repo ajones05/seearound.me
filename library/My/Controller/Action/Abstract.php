@@ -15,8 +15,7 @@ abstract class My_Controller_Action_Abstract extends Zend_Controller_Action {
             $this->view->userId = '';
             $this->view->isLogin = false;
         }
-        $this->view->emailLogin =  $this->_request->getCookie('emailLogin');
-        $this->view->passwordLogin =  $this->_request->getCookie('passwordLogin');
+
         $this->view->publicProfile = $this->profile;
     }
     
@@ -89,41 +88,8 @@ abstract class My_Controller_Action_Abstract extends Zend_Controller_Action {
 
     }
 
-    public function getFullURL() {
-        $host  = $_SERVER['HTTP_HOST'];
-        $proto = (empty($_SERVER['HTTPS'])) ? 'http' : 'https';
-        return $proto . '://' . $host.Zend_Controller_Front::getInstance()->getRequest()->getRequestUri();
-    }
-
     public function setBaseUrl($url = '', $addModuleName = true) {
         if ($addModuleName) $url = '/' . $this->getRequest()->getParam('module') . $url;
         Zend_Controller_Front::getInstance()->setBaseUrl($url);
     }
-
-    public function _generateCaptcha($config = array())
-    {
-        $captcha = new Zend_Form_Element_Captcha('captcha', array(
-            'captcha' => array(	
-            'captcha' => 'Image',
-            'wordLen' => 5,
-            'font' => LIB_DIR . '/fonts/DejaVuSans.ttf',
-            'imgDir' => realpath(".").'/public/www/captcha',
-            'imgUrl' => $this->getBaseURL().'/public/www/captcha',
-            'timeout' => 300,
-            'width' => 150,
-            'height' => 80,
-            'dotNoiseLevel' => 50,
-            'lineNoiseLevel' => 10,
-            'fontSize' => 30
-            )
-        ));
-
-        $captcha = $captcha->render();
-        return $captcha;
-    }
-
-    public function postDispatch() {
-		parent::postDispatch();
-    }
-    
 }

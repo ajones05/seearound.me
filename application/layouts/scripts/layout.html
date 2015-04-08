@@ -1,5 +1,10 @@
 <?php
-$user = Application_Model_User::findById(Zend_Auth::getInstance()->getIdentity()['user_id']);
+$auth = Zend_Auth::getInstance()->getIdentity();
+
+if ($auth)
+{
+	$user = Application_Model_User::findById($auth['user_id']);
+}
 
 $config = Zend_Registry::get('config_global');
 $geoip = My_Ip::geolocation();
@@ -7,7 +12,9 @@ $request = Zend_Controller_Front::getInstance()->getRequest();
 
 $http_host = json_encode($request->getHttpHost());
 
-$this->headScript()->prependFile('/www/scripts/jquery.js');
+$this->headScript()
+	->prependFile('/www/scripts/jquery.js')
+	->appendFile('/www/scripts/jquery.validate.min.js');
 
 $this->headScript()->appendScript(<<<JAVASCRIPT
 	var http_host = {$http_host},
@@ -15,6 +22,8 @@ $this->headScript()->appendScript(<<<JAVASCRIPT
 
 JAVASCRIPT
 , 'text/javascript');
+
+$image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -44,15 +53,15 @@ JAVASCRIPT
 	var geoiplatitude  = <?php echo $geoip[0]; ?>;
 	var geoiplongitude = <?php echo $geoip[1]; ?>;
 	var baseUrl = "<?=BASE_PATH?>";
-	var userLatitude = <?php echo $user->lat(); ?>;
-	var userLongitude = <?php echo $user->lng(); ?>;
-	var userAddress = <?php echo json_encode($user->address()); ?>;
+	var userLatitude = <?php echo $this->isLogin ? $user->lat() : $geoip[0]; ?>;
+	var userLongitude = <?php echo $this->isLogin ? $user->lng() : $geoip[1]; ?>;
+	var userAddress = <?php echo json_encode($this->isLogin ? $user->address() : ''); ?>;
 	var isLogin = "<?=$this->isLogin?>";
 	var isFbLogin = "<?php echo !empty($this->auth['is_fb_login']); ?>";
-	var user_id = <?php echo $user->id; ?>;
+	var user_id = <?php echo json_encode($this->isLogin ? $user->id : ''); ?>;
 	var reciever_userid =  "<?=$this->reciever?>";
-	var userName = <?php echo json_encode($user->Name); ?>;
-	var imagePath = "<?php echo $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>";
+	var userName = <?php echo json_encode($this->isLogin ? $user->Name : ''); ?>;
+	var imagePath = "<?php echo $this->isLogin ? $user->getProfileImage($image) : $image; ?>";
 	var controller = "<?=$request->getParam('controller')?>";
 	var action = "<?=$request->getParam('action')?>";
 	var showMy = "<?=$request->getParam('my')?'search':'no'?>";

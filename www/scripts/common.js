@@ -17,63 +17,109 @@ window.fbAsyncInit = function(){
 }(document, 'script', 'facebook-jssdk'));
 
 $(function(){
-	$('#logoutLi a').click(function(e){
-		var url = $(this).attr('href');
+	if (isLogin){
+		$('#logoutLi a').click(function(e){
+			var url = $(this).attr('href');
 
-		e.preventDefault();
+			e.preventDefault();
 
-		FB.getLoginStatus(function(response){
-			if (response.authResponse){
-				FB.logout(function(){
-					window.location.href = url;
-				});
-			} else {
-				window.location.href = url;
-			}
-		}); 
-	});
-
-	$('#myProfLink').click(function(e){
-		e.preventDefault();
-		e.stopPropagation();
-
-		$('#ddMyProf').show();
-
-		$('body').on('click.menu', function(){
-			$('#ddMyProf').hide();
-			$(this).off('click.menu');
-		});
-    });
-
-	$("#ddMyConn").click(function (e){
-		e.preventDefault();
-		e.stopPropagation();
-
-		$('#ddMyConnList').show();
-
-		$('body').on('click.menu', function(){
-			$('#ddMyConnList').hide();
-			$(this).off('click.menu');
-		});
-	});
-
-	$('#facebookLogin').click(function(e){
-		e.preventDefault();
-
-		var url = $(this).attr('href');
-		
-		FB.login(function(response){
-			if (response.authResponse){
-				FB.api('/me', function(response){
-					if (response.email){
+			FB.getLoginStatus(function(response){
+				if (response.authResponse){
+					FB.logout(function(){
 						window.location.href = url;
+					});
+				} else {
+					window.location.href = url;
+				}
+			}); 
+		});
+
+		$('#myProfLink').click(function(e){
+			e.preventDefault();
+			e.stopPropagation();
+
+			$('#ddMyProf').show();
+
+			$('body').on('click.menu', function(){
+				$('#ddMyProf').hide();
+				$(this).off('click.menu');
+			});
+		});
+
+		$("#ddMyConn").click(function (e){
+			e.preventDefault();
+			e.stopPropagation();
+
+			$('#ddMyConnList').show();
+
+			$('body').on('click.menu', function(){
+				$('#ddMyConnList').hide();
+				$(this).off('click.menu');
+			});
+		});
+	} else {
+		$('#facebookLogin').click(function(e){
+			e.preventDefault();
+
+			var url = $(this).attr('href');
+			
+			FB.login(function(response){
+				if (response.authResponse){
+					FB.api('/me', function(response){
+						if (response.email){
+							window.location.href = url;
+						} else {
+							alert('Email not activated');
+						}
+					});
+				}
+			},{scope: 'email'});
+		});
+
+		$('#loginForm').validate({
+			errorPlacement: function(error, element){
+			},
+			rules: {
+				email: {
+					required: true,
+					email: true
+				},
+				password: {
+					required: true
+				}
+			},
+			submitHandler: function(form){
+				$('#loginError').html('');
+
+				$.ajax({
+					url: $(form).attr('action'),
+					data: $(form).serialize(),
+					type: 'POST',
+					dataType: 'json'
+				}).done(function(response){
+					if (response && response.status){
+						if (!response.active){
+							window.location.href = response.redirect;
+							return false;
+						}
+
+						if (returnUrl != ''){
+							window.location.href = returnUrl;
+							return false;
+						}
+
+						window.location.href = response.redirect;
+					} else if (response){
+						$('#loginError').html(response.error.message);
 					} else {
-						alert('Email not activated');
+						alert(ERROR_MESSAGE);
 					}
+				}).fail(function(jqXHR, textStatus){
+					alert(textStatus);
 				});
 			}
-		},{scope: 'email'});
-	});
+		});
+	}
 });
 
 function showFriendRequest(thisone){

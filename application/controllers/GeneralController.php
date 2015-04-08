@@ -61,23 +61,7 @@ class GeneralController extends  My_Controller_Action_Abstract
         }
 
         $auth->clearIdentity();
-
-        if($this->_request->getCookie('emailLogin') && $this->_request->getCookie('passwordLogin')) {
-
-            setcookie("emailLogin", "", 0, '/');
-
-            setcookie("passwordLogin", "", 0, '/');
-
-            setcookie("keepLogin", "yes", time() +7*24*60*60, '/');
-
-            $this->_redirect(BASE_PATH);
-
-        } else {
-
-            $this->_redirect(BASE_PATH);
-
-        }
-
+		$this->_redirect(BASE_PATH);
     }
 
     public function inviteSelfAction()

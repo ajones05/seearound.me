@@ -1270,3 +1270,6 @@ body.page {
 .tab {
 	margin-left:10px;
 }
+.loginForm .error {
+	border-color: red;
+}

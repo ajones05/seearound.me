@@ -64,27 +64,29 @@ $auth = Zend_Auth::getInstance()->getIdentity();
 		<a href="<?php echo BASE_PATH; ?>">
 			<img src="<?php echo BASE_PATH; ?>www/images/logo.png" style="height: auto;width:200px;margin: 8px 0px 8px 3px;" />
 		</a>
-		<ul class="loginForm">
-			<li>
-				<span id="loginError" class="loginerror"></span>
-			</li>
-			<li>
-				<input id="emailLogin" type="text" placeholder="Email Address" tabindex="1" />
-				<span>
-					<span> Keep me logged in </span>
-					<input id="remember" name="remember" type="checkbox" tabindex="4" />
-					<div class="clr"></div>
-				</span>
-			</li>
-			<li>
-				<input id="passwordLogin" type="password" placeholder="Password" tabindex="2" />
-				<a class="hypDecNone" href="<?php echo BASE_PATH; ?>index/forgot"><span>Forgot your password?</span></a>
-			</li>
-			<li class="btn">
-				<input class="floatL" type="submit" onclick="loginValidation();" value="Login" tabindex="3" />
-			</li>
-			<div class="clr"></div>
-		</ul>
+		<form id="loginForm" action="<?php echo BASE_PATH; ?>index/login" method="POST" class="loginForm">
+			<ul>
+				<li>
+					<span id="loginError" class="loginerror"></span>
+				</li>
+				<li>
+					<input type="email" name="email" placeholder="Email Address" tabindex="1" />
+					<span>
+						<span> Keep me logged in </span>
+						<input name="remember" type="checkbox" value="1" tabindex="3" />
+						<div class="clr"></div>
+					</span>
+				</li>
+				<li>
+					<input type="password" name="password" placeholder="Password" tabindex="2" />
+					<a class="hypDecNone" href="<?php echo BASE_PATH; ?>index/forgot"><span>Forgot your password?</span></a>
+				</li>
+				<li class="btn">
+					<input class="floatL" type="submit" value="Login" tabindex="4" />
+				</li>
+				<div class="clr"></div>
+			</ul>
+		</form>
 		<div class="clr"></div>
 	</div>
 	<?php endif; ?>

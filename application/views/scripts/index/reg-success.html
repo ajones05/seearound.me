@@ -1,1 +1,36 @@
-<div class="loginCopyArea appendClr">    <div class="regSuccUpdated">        <table width="100%" style="height:100%">            <tr align="center">                 <td width="50%" style="vertical-align:top;" align="center"><br /> <br /> <br />                     <? if($this->request->getParam('type') == 2):?>                        <div style="font-size: 14px; font-weight: bold; color: grey; min-height: 300px;">Your account is not activated. Please check your email for the activation link. If you don't find the activation link in your inbox,  please check your spam or Click on resend activation link <a onclick="resend();" href="javascript:viod(0);">resend</a></div>                    <? else:?>                        <span style="font-size: 14px; font-weight: bold; color: grey; min-height: 300px;">Thank you for registering with us. Please check your email for an activation link. If you don't receive the email within 5 minutes, please check your spam. You can also click on resend activation link to recieve a confirmation email.</span><br /><br /><br /><br />                        <span style="font-size: 14px; font-weight: bold; color: grey; min-height: 300px;">                                Click on resend activation link <a onclick="resend();" href="javascript:viod(0);">resend</a>                        </span>                    <? endif;?>                </td>            </tr>        </table>    </div></div><script type="text/javascript">function resend() {        var id = "<?=$this->request->getParam('dq', null)?>";        var q = "<?=$this->request->getParam('q', null)?>";        $.post(baseUrl+'index/resend/', {'id': id, 'q': q}, returnResend, "text");    }    function returnResend(obj) {         alert('Confirmation mail send successfully');    }	</script>
+<div class="loginCopyArea appendClr">
+	<div class="regSuccUpdated">
+		<table width="100%" style="height:100%">
+			<tr align="center">
+				<td width="50%" style="vertical-align:top;" align="center">
+					<br /><br /><br />
+					<div style="font-size: 14px; font-weight: bold; color: grey; min-height: 300px;">Your account is not activated. Please check your email for the activation link. If you don't find the activation link in your inbox,  please check your spam or Click on resend activation link <a id="resend" href="#">resend</a></div>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+<script type="text/javascript">
+$(function(){
+	$('#resend').click(function(e){
+		e.preventDefault();
+
+		$.ajax({
+			url: baseUrl + 'index/resend',
+			data: {'id': user.id},
+			type: 'POST',
+			dataType: 'json'
+		}).done(function(response){
+			if (response && response.status){
+				alert('Confirmation mail send successfully');
+			} else if (response){
+				alert(response.error.message);
+			} else {
+				alert(ERROR_MESSAGE);
+			}
+		}).fail(function(jqXHR, textStatus){
+			alert(textStatus);
+		});
+	});
+});
+</script>

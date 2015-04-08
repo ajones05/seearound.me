@@ -5,8 +5,9 @@ $request = Zend_Controller_Front::getInstance()->getRequest();
 
 $http_host = json_encode($request->getHttpHost());
 
-// TODO: update jquery
-$this->headScript()->prependFile('/www/scripts/jquery.js');
+$this->headScript()
+	->prependFile('/www/scripts/jquery.js')
+	->appendFile('/www/scripts/jquery.validate.min.js');
 
 $this->headScript()->appendScript(<<<JAVASCRIPT
 	var http_host = {$http_host},
@@ -16,518 +17,154 @@ JAVASCRIPT
 , 'text/javascript');
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-
 <html xmlns="http://www.w3.org/1999/xhtml">
-
-
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-
-        <title>seearound.me</title>
-		<?php echo $this->headScript(); ?>
-
-
-        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/colorbox.css"/>
-
-
-        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/boxy.css"/>
-
-
-        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery-ui.css"/>
-
-
-        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/reset.css"/>
-
-
-        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/global.css?3"/>
-
-
-        <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/login.css"/>
-		
-		<!-- custom scrollbar stylesheet -->
-	    <link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery.mCustomScrollbar.css"/>
-		
-		
-	
-
-
-        <script language="javascript" type="text/javascript">
-
-
-            var baseUrl = "<?=BASE_PATH?>";
-
-			var geoiplatitude  = <?php echo $geoip[0]; ?>;
-
-			var geoiplongitude = <?php echo $geoip[1]; ?>;
-
-			var userLatitude = <?php echo My_ArrayHelper::getProp($this->auth, 'latitude', $geoip[0]); ?>;
-			var userLongitude = <?php echo My_ArrayHelper::getProp($this->auth, 'longitude', $geoip[1]); ?>;
-
-            var isLogin = "<?=$this->isLogin?>";
-
-
-            var user_id = "<?=$this->auth['user_id']?>";
-
-            var returnUrl = "<?=$request->getParam('url')?$request->getParam('url'):''?>";
-        </script>
-
-
-        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
-
-
-        <!-- <script language="javascript" type="text/javascript" src="http://j.maxmind.com/app/geoip.js"></script> -->
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery-ui.min.js"></script>
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/infobubble.js"></script>
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/customDatepicker.js"></script>
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.colorbox.js"></script>
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/json2.js"></script>
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.boxy.js"></script>
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.form.js"></script>
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/main.js?<?php echo $config->mediaversion; ?>"></script>
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js?<?php echo $config->mediaversion; ?>"></script>
-
-
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js?<?php echo $config->mediaversion; ?>"></script>
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/common.js?<?php echo $config->mediaversion; ?>"></script>
-
-        <!-- custom scrollbar plugin -->
-        <script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.mCustomScrollbar.js"></script>
-
-
-    </head>
-
-
-    <body class="bgRegForm">
-
-
-        <div id="fb-root"></div>
-
-
-        <div style="display: none;"></div>
-
-
-        <div class="uprBar">
-
-
-            <div class="loginHdr appendClr">
-
-                   
-                <a href="<?=BASE_PATH?>">
-
-                    <img src="<?=BASE_PATH?>www/images/logo.png" style="height: auto;width:200px;margin: 8px 0px 8px 3px;"/>
-                    <!--<img src="<?=BASE_PATH?>www/images/text.png" class="siteLogo"  width="193" height="31" />-->
-
-
-                </a>
-
-
-                <ul class="loginForm">
-
-
-                    <li>
-
-
-                        <span id="loginError" class="loginerror"></span>
-
-
-                    </li>
-
-
-                    <li>
-
-
-                        <input id="emailLogin" type="text" placeholder="Email Address" value="<?=$this->emailLogin?>" tabindex="1"/>
-
-
-                        <span>
-                            <span> Keep me logged in </span>
-                            <input class="afterClr" id="remember" name="remember" type="checkbox" <?if($request->getCookie("keepLogin")) :?>checked="true"<?endif;?> tabindex="4"/>
-                        </span>
-
-
-                    </li>
-
-
-                    <li>
-
-
-                        <input id="passwordLogin" type="password" placeholder="Password" value="<?=$this->passwordLogin?>" tabindex="2"/>
-
-
-                        <a class="hypDecNone" href="<?=BASE_PATH?>index/forgot"><span>Forgot your password?</span></a>
-
-
-                    </li>
-
-
-                    <li class="btn afterClr">
-                        <input class="floatL" type="submit" onclick="loginValidation();" value="Login" tabindex="3"/> 
-                    </li>
-
-
-                        
-
-
-                </ul>
-
-
-            </div>
-
-
-        </div>
-
-
-        <div align="center" class="mainContainer brdrNone">
-
-
-            <?=$this->layout()->content;?>
-
-
-        </div>
-
-        <div class="opacity-dev"></div>
-        <div class="special-footer">
-
-
-            <div class="loginFtr">
-
-
-                <ul>
-
-                     <li>
-
-
-                        <a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
-
-
-                    </li>
-
-					<li class="tems-of-service-popup"  style="cursor: pointer;">
-						<a style="color:#FFFFFF;cursor:pointer" href="<?php echo $this->url(array(), 'terms'); ?>">Terms Of Service</a>
-					</li>
-                    <li class="privacy-policy-popup" style="cursor: pointer;">
-						<p style="color:#FFFFFF;cursor: pointer;font-size:14px;font-weight:bold;">
-							<a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
-						</p>
-					</li>
-
-
-                    <li>
-						<span class="copyRight ftrCopyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
-                    </li>
-                    
-                    <li class="clr"></li>
-
-
-                </ul>
-
-
-            </div>  
-
-
-        </div>
-
-
-        
-
-
-        <!-- code for popups div start here -->
-
-        <div style="display: none;">
-
-
-            <div id="Map-Popup-id">
-
-
-            <div style="height: 100%; width: 100%; position: relative; background-color: rgb(229, 227, 223); overflow: hidden;" id="mapSection" class="mapScreen"></div>
-
-
-                <div align="center" style="width: 100%;">
-
-
-                    <input class="btnBlueRpt" id="useAddress" type="button" disabled="disabled" value="Use this address" onClick="fillAddress()"/>
-
-
-                    <input class="btnBlueRpt" id="useNewAddress" type="button" disabled="disabled" value="Use this address" onClick="fillUserAddress()"/>
-
-
-                    <input type="hidden"  id="currentAddress" name="currentAddress"/>
-
-
-                    <input class="btnBlueRpt" id="closeOpenPopup" class='btn primary' type="button" value="Cancel Search" onClick="closePopup();"/>
-
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-        <!-- Code for message popups -->
-
-
-        <div style="display: none;">
-
-
-            <div style="display:none;"><input type="button" class="Thanks-Popup-Class" id="thanksButton" /></div>
-
-
-            <div id="Thanks-Popup">
-
-
-                <table width="100%">
-
-
-                    <tr>
-
-
-                        <td colspan="2">&nbsp;</td>
-
-
-                    </tr>    
-
-
-                    <tr>
-
-
-                        <td colspan="2">
-
-
-                            <div align="center">
-
-
-                                <span style="color:#33CC00" id="messageSuccess" >
-
-
-                                    <img src="<?=BASE_PATH?>www/images/correct.gif" />
-
-
-                                        &nbsp;Message sent successful
-
-
-                                </span>
-
-
-                            </div>
-
-
-                        </td>
-
-
-                    </tr>
-
-
-                </table>
-
-
-            </div>
-
-
-        </div>
-
-
-        <!-- Code for send message popup -->
-
-
-        
-
-
-        <div style="display: none;">
-
-
-            <div id="Message-Popup">
-
-
-                <img style="vertical-align:middle;" src="<?=BASE_PATH?>www/images/mail_send.gif" />
-
-
-                <span style="font-size:18px;font-weight:800;margin-left:150px; margin-bottom:10px;">Send Message</span>
-
-
-                <center>
-
-
-                    <div style="text-align:center; width:500px;">
-
-
-                        <table width="50%">
-
-
-                                <tbody id="messageForm">
-
-
-                                <tr>
-
-
-                                    <td valign="top">
-
-
-                                        <b>Subject :</b>
-
-
-                                    </td>
-
-
-                                    <td>
-
-
-                                        <input type="text" id="subject" name="subject" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter subject..."/><br />
-
-
-                                        <span style="margin-left:0px;" class="errorField" id="subject_error"></span>
-
-
-                                    </td>
-
-
-                                </tr>
-
-
-                                <tr>
-
-
-                                    <td valign="top">
-
-
-                                        <b>Message :</b>
-
-
-                                    </td>
-
-
-                                    <td>
-
-
-                                        <textarea id="message" name="message" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter message..."></textarea><br />
-
-
-                                        <span style="margin-left:0px;" class="errorField" id="message_error"></span>
-
-
-                                    </td>
-
-
-                                </tr>
-
-
-                                <tr>
-
-
-                                    <td colspan="2" style="text-align:center;">
-
-
-                                        <input id="closeLocationPopup" class='btn primary' type="button" value="Send" onClick="message();"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-
-                                        <input type="button" onClick="closePopup();" class='btn primary' value="Cancel" />
-
-
-                                    </td>
-
-
-                                </tr>
-
-
-                            </tbody>
-
-
-                        </table>	
-
-
-                    </div>
-
-
-                </center>
-
-
-            </div>
-
-
-        </div>
-
-
-
-
-
-        <div style="display: none;">
-
-
-            <div id="login-id" style="padding:10px;">
-
-
-                <table cellpadding="10" cellspacing="10" align="center">
-
-
-                    <tr>
-
-
-                        <td><div align="center"><b>Please Login to post comment</b><br /><div align="center" style="margin-top: 10px;"><a href="<?=BASE_PATH?>here-spy-index"><input type="button" value="Login"/></a></div></td>
-
-
-                    </tr>
-
-
-                    <tr>
-
-
-                        <td><div align="center"><b style="color: blue;">or</b><br /><b style="margin-top: 10px;">Register with us</b></div></td>
-
-
-                    </tr>
-
-
-                    <tr>
-
-
-                        <td><div align="center"><a href="<?=BASE_PATH?>here-spy-index"><input type="button" value="Register"/></a></div></td>
-
-
-                    </tr>
-
-
-                </table>
-
-
-            </div>
-
-
-        </div>
-
-
-        <!-- End for popups div --> 
-
-
-        
-
-
-        
-
-
-    </body>
-
-
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>seearound.me</title>
+	<?php echo $this->headScript(); ?>
+	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/colorbox.css"/>
+	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/boxy.css"/>
+	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/jquery-ui.css"/>
+	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/reset.css"/>
+	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/global.css?3"/>
+	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/login.css"/>
+	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/jquery.mCustomScrollbar.css"/>
+	<script language="javascript" type="text/javascript">
+		var baseUrl = "<?php echo BASE_PATH; ?>";
+		var geoiplatitude  = <?php echo $geoip[0]; ?>;
+		var geoiplongitude = <?php echo $geoip[1]; ?>;
+		var userLatitude = <?php echo My_ArrayHelper::getProp($this->auth, 'latitude', $geoip[0]); ?>;
+		var userLongitude = <?php echo My_ArrayHelper::getProp($this->auth, 'longitude', $geoip[1]); ?>;
+		var isLogin = "<?=$this->isLogin?>";
+		var user_id = "<?=$this->auth['user_id']?>";
+		var returnUrl = "<?=$request->getParam('url')?$request->getParam('url'):''?>";
+	</script>
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery-ui.min.js"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/infobubble.js"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/customDatepicker.js"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery.colorbox.js"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/json2.js"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery.boxy.js"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery.form.js"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/main.js?<?php echo $config->mediaversion; ?>"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/custom.js?<?php echo $config->mediaversion; ?>"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/layout.js?<?php echo $config->mediaversion; ?>"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/common.js?<?php echo $config->mediaversion; ?>"></script>
+	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery.mCustomScrollbar.js"></script>
+</head>
+<body class="bgRegForm">
+	<?php include '_header.html'; ?>
+	<div align="center" class="mainContainer brdrNone">
+		<?php echo $this->layout()->content; ?>
+	</div>
+	<div class="opacity-dev"></div>
+	<?php include '_footer.html'; ?>
+	<div style="display: none;">
+		<div id="Map-Popup-id">
+			<div style="height: 100%; width: 100%; position: relative; background-color: rgb(229, 227, 223); overflow: hidden;" id="mapSection" class="mapScreen"></div>
+			<div align="center" style="width: 100%;">
+				<input class="btnBlueRpt" id="useAddress" type="button" disabled="disabled" value="Use this address" onClick="fillAddress()"/>
+				<input class="btnBlueRpt" id="useNewAddress" type="button" disabled="disabled" value="Use this address" onClick="fillUserAddress()"/>
+				<input type="hidden"  id="currentAddress" name="currentAddress"/>
+				<input class="btnBlueRpt" id="closeOpenPopup" class='btn primary' type="button" value="Cancel Search" onClick="closePopup();"/>
+			</div>
+		</div>
+	</div>
+	<div style="display: none;">
+		<div style="display:none;">
+			<input type="button" class="Thanks-Popup-Class" id="thanksButton" />
+		</div>
+		<div id="Thanks-Popup">
+			<table width="100%">
+				<tr>
+					<td colspan="2">&nbsp;</td>
+				</tr>    
+				<tr>
+					<td colspan="2">
+						<div align="center">
+							<span style="color:#33CC00" id="messageSuccess" >
+								<img src="<?php echo BASE_PATH; ?>www/images/correct.gif" />&nbsp;Message sent successful
+							</span>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div style="display: none;">
+		<div id="Message-Popup">
+			<img style="vertical-align:middle;" src="<?php echo BASE_PATH; ?>www/images/mail_send.gif" />
+			<span style="font-size:18px;font-weight:800;margin-left:150px; margin-bottom:10px;">Send Message</span>
+			<center>
+				<div style="text-align:center; width:500px;">
+					<table width="50%">
+						<tbody id="messageForm">
+							<tr>
+								<td valign="top">
+									<b>Subject:</b>
+								</td>
+								<td>
+									<input type="text" id="subject" name="subject" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter subject..."/><br />
+									<span style="margin-left:0px;" class="errorField" id="subject_error"></span>
+								</td>
+							</tr>
+							<tr>
+								<td valign="top">
+									<b>Message:</b>
+								</td>
+								<td>
+									<textarea id="message" name="message" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter message..."></textarea><br />
+									<span style="margin-left:0px;" class="errorField" id="message_error"></span>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2" style="text-align:center;">
+									<input id="closeLocationPopup" class='btn primary' type="button" value="Send" onClick="message();"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<input type="button" onClick="closePopup();" class='btn primary' value="Cancel" />
+								</td>
+							</tr>
+						</tbody>
+					</table>	
+				</div>
+			</center>
+		</div>
+	</div>
+	<div style="display: none;">
+		<div id="login-id" style="padding:10px;">
+			<table cellpadding="10" cellspacing="10" align="center">
+				<tr>
+					<td>
+						<div align="center">
+							<b>Please Login to post comment</b><br />
+							<div align="center" style="margin-top: 10px;">
+								<a href="<?php echo BASE_PATH; ?>here-spy-index">
+									<input type="button" value="Login" />
+								</a>
+							</div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div align="center">
+							<b style="color: blue;">or</b><br />
+							<b style="margin-top: 10px;">Register with us</b>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div align="center">
+							<a href="<?php echo BASE_PATH; ?>here-spy-index">
+								<input type="button" value="Register"/>
+							</a>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div id="fb-root"></div>
+</body>
 </html>
-
-

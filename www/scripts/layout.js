@@ -154,12 +154,6 @@ function removeError(that) {
 
 }
 
-
-
-var emailError = 0;
-
-var emailVal;
-
 function emailValidation() {
 
     $('#email_error').html('<img src="'+baseUrl+'public/www/images/waiting.gif"/>');
@@ -172,13 +166,9 @@ function emailValidation() {
 
         $('#email_error').html('Enter the email id');
 
-        emailVal = emailError = 1;
-
     } else if(!emailReg.test(email)) {
 
         $('#email_error').html('Enter the valid email id');
-
-        emailVal = emailError = 2;
 
     } else {
 
@@ -196,165 +186,13 @@ function emailValidation() {
 
             $('#email_error').html('Email id already exist');
 
-            emailVal = emailError = 3;
-
         }else {
 
             $('#email_error').html('');
 
-            emailVal = emailError = 0;
-
         }
 
     }
-
-}
-
-var emailval = 0;
-
-function emailLoginValidation() {
-
-    emailval = 0;
-
-    var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
-
-    var email = $.trim($('#emailLogin').val());
-
-    if(email == '') {
-
-        return emailval = 1;
-
-    } else if(!emailReg.test(email)) {
-
-        return emailval = 2;
-
-    } else {
-
-        return emailval = 0;
-
-    }
-
-}
-
-
-
-function loginValidation(){
-
-    clearError();
-
-    var emailValid = emailLoginValidation();
-
-    var email = $.trim($('#emailLogin').val());
-
-    var pass  = $.trim($('#passwordLogin').val());
-
-    if($('#remember').attr('checked')) {
-
-        var remember = $('#remember').attr('checked'); 
-
-    } else {
-
-        var remember = ""; 
-
-    } 
-
-    if(email != '' && pass != ''){
-
-        $(document).ready(function(){
-
-            $.post(baseUrl+'index/login/', {
-                'email': email, 
-                'pass': pass, 
-                'remember': remember
-            }, returnLogin, "text");
-
-        });
-
-    } else {
-
-        if(email == '') $('#emailLogin').css('border','1px solid red');
-
-        else if(pass == '') $('#passwordLogin').css('border','1px solid red');
-
-    }
-
-}
-
-
-
-function returnLogin(obj){
-
-    document.body.style.cursor = 'default';
-
-    var jsonObj = JSON.parse(obj);
-
-    if(jsonObj.error == 0) {
-
-        if(jsonObj.redirect.indexOf('edit-profile') > 0 && returnUrl != '') {
-
-            window.location.href = jsonObj.redirect+'?url='+returnUrl;
-
-			
-
-        } else { 
-
-            if(jsonObj.redirect.indexOf('home') > 0 && returnUrl != '') {
-
-                window.location.href = returnUrl;
-
-            } else {
-
-                window.location.href = jsonObj.redirect;
-
-            }
-
-        }
-
-    }else if(jsonObj.error == 1) {
-
-        $('#loginError').html('Invalid email or password.');
-
-    }else if(jsonObj.error == 2) {
-
-        $('#loginError').html('Inactive user account');
-
-    }
-
-}
-
-
-
-function clearError() {
-
-    $('#loginError').html('');
-
-    $('#name_error').html('');
-
-    $('#email_error').html('');
-
-    $('#pass_error').html('');
-
-    $('#repass_error').html('');
-
-    $('#gender_error').html('');
-
-    $('#street_error').html('');
-
-    $('#city_error').html('');
-
-    $('#state_error').html('');
-
-    $('#zip_error').html('');
-
-    $('#country_error').html('');
-
-    $('#user_id_error').html('');
-
-    $('#address_error').html('');
-
-    $('#emailLogin').css('border','1px solid #7F9DB9');
-
-    $('#passwordLogin').css('border','1px solid #7F9DB9');
 
 }
 
@@ -365,23 +203,6 @@ function fillAddress() {
     $("#address").attr('value',$("#currentAddress").attr('value'));
 
 }
-
-$(document).ready(function(e){
-
-    $('#passwordLogin , #emailLogin').bind('keypress', function(event) {
-
-        var code = (event.keyCode ? event.keyCode : event.which);
-
-        if(code===13){
-
-            loginValidation();
-
-        }
-
-    });  
-});
-
-
 
 // code for allow and denay for new friend request  
 
