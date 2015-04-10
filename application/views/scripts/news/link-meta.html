@@ -1,0 +1,24 @@
+<div style="border-color: #e9eaed #e9eaed #d1d1d1; border-style: solid; border-width: 1px; margin-top: 10px;">
+	<?php if ($this->image != null): ?>
+	<div style="text-align: center;">
+		<a href="<?php echo $this->link; ?>">
+			<img src="<?php echo $this->image; ?>" style="max-width: 364px;" />
+		</a>
+	</div>
+	<?php endif; ?>
+	<div style="text-align: left;">
+		<div style="margin: 10px 12px;">
+			<a href="<?php echo $this->link; ?>" style="color: #141823; text-decoration: none;font-size: 18px; font-weight: 500; line-height: 22px; word-wrap: break-word;"><?php echo $this->title; ?></a>
+			<?php if ($this->description != null): ?>
+			<div style="font-size: 12px; color: #141823;"><?php echo $this->description; ?></div>
+			<?php endif; ?>
+			<div>
+				<span><?php echo strtoupper(parse_url($this->link)['host']); ?></span>
+				<?php if ($this->author != null): ?>
+				<span style="padding-left: 10px; padding-right: 10px;">|</span>
+				<span>BY <?php echo strtoupper($this->author); ?></span>
+				<?php endif; ?>
+			</div>
+		</div>
+	</div>
+</div>

@@ -42,9 +42,9 @@ $hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => 
 						<?php endif; ?>
 					</div>
 					<div class="post-bottom">
-						<p class="short"><?php echo My_CommonUtils::renderHtml($this->item['news'], 350); ?></p>
-						<p class="full" style="display: none"><?php echo My_CommonUtils::renderHtml($this->item['news']); ?></p>
+						<p class="short"><?php echo My_CommonUtils::renderHtml($this->item['news'], 350, true); ?></p>
 						<?php if (strlen($this->item['news']) > 350): ?>
+						<p class="full" style="display: none"><?php echo My_CommonUtils::renderHtml($this->item['news'], 0, true); ?></p>
 						<a href="#" class="moreButton">More</a>
 						<?php
 						endif;

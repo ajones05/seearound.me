@@ -445,97 +445,61 @@ class MobileController extends Zend_Controller_Action
           } 
 
     }
-    
-   
-    /**
-      * Function to save news data posted by user via Android Mobile OS
-      * 
-      * @return returns json encode response 
-      */
-     public function addmobinewsAction(){
-         $newsFactory = new Application_Model_NewsFactory();
-         $votingTable = new Application_Model_Voting();
-         $newsTable   = new Application_Model_News();
-         $userid = $this->_request->getParam('user_id');  
-         $res = $this->_request->getParam('news'); 
-         $lat = $this->_request->getParam('latitude');
-         $lng = $this->_request->getParam('longitude');
-         $address = $this->_request->getParam('address');
-         $base = $this->_request->getParam('encodedImage');
-         $id  = $newsFactory->addmobileNews($userid, $res, $lat, $lng, $address,$base);
-         
-         if ($id){
-             $newsId = $id;
-            if ($newsId) {
-                $action = 'news';
-                $action_id = $newsId;
-                $votingTable = new Application_Model_Voting();
-                $insert = $votingTable->firstNewsExistence($action, $action_id, $userid);
-                if(isset($insert)){
-                   $resonse ="POSTED";
-                   echo(json_encode($resonse)); exit;
-                } else {
-                   $response ="NOT POSTED";   
-                   echo(json_encode($resonse)); exit;
-                }
-            }
-         }
-      }
-    
-    
-    /**
-      * Function to save news data posted by user via I Phone Mobile OS
-      * 
-      * @return returns json encode response 
-      */
-     public function addimobinewsAction() {
-         $newsFactory = new Application_Model_NewsFactory();
-         $votingTable = new Application_Model_Voting();
-         $newsTable   = new Application_Model_News();
-         if ($_FILES) {
-            if (getimagesize($_FILES['encodedImage']['tmp_name'])) {
-                $name = $_FILES['encodedImage']['name'];
-                $type = $_FILES['encodedImage']['type'];
-                $tmp  = $_FILES['encodedImage']['tmp_name'];
-                $size = $_FILES['encodedImage']['size'];
-            }
-        } else {
-            $name = null;
-            $type = null;
-            $tmp  = null;
-            $size = null;
-        }  
-          $userid  = $_REQUEST['user_id'];  
-          $res     = $_REQUEST['news']; 
-          $lat     = $_REQUEST['latitude'];
-          $lng     = $_REQUEST['longitude'];
-          $address = $_REQUEST['address'];
-          $id = $newsFactory->addNews($userid, $res, $lat, $lng, $address, $name, $type, $tmp, $size);
-        if ($id) {
-             $newsId = $id;
-             if ($newsId) {
-                 $action = 'news';
-                 $action_id = $newsId;
-                 $votingTable = new Application_Model_Voting();
-                 $insert = $votingTable->firstNewsExistence($action, $action_id, $userid);
-                 $response = new stdClass();
-                 if(isset($insert)){
-                      $response->status ="SUCCESS";
-                      $response->message = $res;
-                      $response->userid = $userid;
-                      echo(json_encode($response)); exit;
-                 } else {
-                       $response->status ="POSTING FAILED";  
-                       $response->message = $res;
-                       $response->userid = $userid; 
-                      echo(json_encode($response)); exit;
-                 }
-             }
-          }
-     }
-    
-   
-    
+
+	/**
+	 * Add news action.
+	 * 
+	 * @return	void
+	 */
+	public function addimobinewsAction()
+	{
+		try
+		{
+			$data = $this->_request->getPost();
+
+			// TODO: validate mobile app user authentication
+
+			if (!Application_Model_User::checkId(My_ArrayHelper::getProp($data, 'user_id'), $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$form = new Application_Form_News;
+
+			if (!$form->isValid($data))
+			{
+				throw new RuntimeException('Validate error', -1);
+			}
+
+			$model = new Application_Model_News;
+
+			$data = $form->getValues();
+
+			$data['id'] = $model->insert($form->getValues());
+
+			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $data['id'], $user->id))
+			{
+				throw new RuntimeException('Save voting error', -1);
+			}
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'message' => $data['news'],
+				'userid' => My_ArrayHelper::getProp($data, 'user_id')
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'POSTING FAILED',
+				'message' => My_ArrayHelper::getProp($data, 'news'),
+				'userid' => My_ArrayHelper::getProp($data, 'user_id')
+			);
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+	}
+
     /**
       * Function to update user profile
       * 

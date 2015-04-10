@@ -216,7 +216,7 @@ class HomeController extends My_Controller_Action_Herespy {
 
 			if (!Application_Model_User::checkId($this->auth['user_id'], $user))
 			{
-				throw new Exception('Session error', -1);
+				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
 			$form = new Application_Form_News;

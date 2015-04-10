@@ -9,10 +9,10 @@ class My_CommonUtils
 	 *
 	 * @param	string	$body
 	 * @param	integer	$limit
-	 *
+	 * @param	boolean	$metadata
 	 * @return	string
 	 */
-	public static function renderHtml($body, $limit = 0)
+	public static function renderHtml($body, $limit = 0, $metadata = false)
 	{
 		$output = '';
 
@@ -30,11 +30,24 @@ class My_CommonUtils
 					$text = My_StringHelper::stringLimit($text, $limit - $i);
 				}
 
-				$output .= self::renderLink($matches[0], $text);
+				$link = self::renderLink($matches[0]);
+
+				$output .= '<a href="' . htmlspecialchars($link) . '">' . $text . '</a>';
+
+				if ($metadata)
+				{
+					$link_metadata = self::renderLinkMetaData($link);
+
+					if ($link_metadata != '')
+					{
+						$output .= $link_metadata;
+						$metadata = false;
+					}
+				}
 			}
 			else
 			{
-				$output .= $body[$i];
+				$output .= nl2br($body[$i]);
 
 				$i++;
 			}
@@ -47,18 +60,16 @@ class My_CommonUtils
 			}
 		}
 
-		return nl2br($output);
+		return $output;
 	}
 
 	/**
 	 * Replaces link to href.
 	 *
 	 * @param	string	$link
-	 * @param	string	$text
-	 *
 	 * @return	string
 	 */
-	public static function renderLink($link, $text)
+	public static function renderLink($link)
 	{
 		$url = parse_url(trim($link));
 		$scheme = isset($url['scheme']) ? $url['scheme'] : 'http';
@@ -80,29 +91,93 @@ class My_CommonUtils
 			$link .= '#' . $url['fragment'];
 		}
 
-		return '<a href="' . htmlspecialchars($link) . '">' . $text . '</a>';
+		return $link;
 	}
 
 	/**
+	 * Renders url metadata info.
 	 *
-	 *
-	 * @param	string	$text
-	 *
+	 * @param	string	$url
 	 * @return	string
 	 */
-	public static function commentTexts($text)
+	public static function renderLinkMetaData($url)
 	{
-		$subContent = '';
-		$nextLine = 50;
-		$textCounter = 0;
+		libxml_use_internal_errors(true);
 
-		while ($textCounter < strlen($text))
+		$ch = curl_init();
+
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+		curl_setopt($ch, CURLOPT_COOKIESESSION, true);
+		curl_setopt($ch, CURLOPT_COOKIEFILE, '');
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:37.0) Gecko/20100101 Firefox/37.0');
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+		$html = curl_exec($ch);
+
+		curl_close($ch);
+
+		if (trim($html) !== '')
 		{
-			$substring = preg_replace('/\s+?(\S+)?$/', '', substr($text, $textCounter, $nextLine));
-			$subContent .= $substring."<br>";
-			$textCounter = $textCounter+($nextLine-1);
+			$dom = new DomDocument;
+			@$dom->loadHTML($html);
+
+			$names = $properties = array();
+
+			$meta = $dom->getElementsByTagName('meta');
+
+			if ($meta->length)
+			{
+				foreach ($meta as $tag)
+				{
+					$property = $tag->getAttribute('property');
+
+					if ($property != '')
+					{
+						$properties[$property] = $tag->getAttribute('content');
+						continue;
+					}
+
+					$name = $tag->getAttribute('name');
+
+					if ($name != '')
+					{
+						$names[$name] = $tag->getAttribute('content');
+					}
+				}
+			}
+
+			$title = My_ArrayHelper::getProp($properties, 'og:title');
+
+			if ($title == '')
+			{
+				$__title = $dom->getElementsByTagName('title');
+
+				if ($__title->length > 0)
+				{
+					$title = $__title->item(0)->textContent;
+				}
+			}
+
+			if ($title != null)
+			{
+				return My_ViewHelper::render(
+					'news/link-meta.html',
+					array(
+						'link' => $url,
+						'title' => $title,
+						'description' => My_ArrayHelper::getProp($properties, 'og:description',
+							My_ArrayHelper::getProp($names, 'description')),
+						'image' => My_ArrayHelper::getProp($properties, 'og:image'),
+						'author' => My_ArrayHelper::getProp($names, 'author'),
+					)
+				);
+			}
 		}
 
-		return $subContent;
+		return '';
 	}
 }
