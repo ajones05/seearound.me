@@ -1022,7 +1022,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 .post-top .post-date {color: #4276cd; font-family: Lato-LightItalic; font-size: 11px; letter-spacing: 0.6px; }
 
-.post-bottom p {color: #8d8d8d; font: normal 15px Lato-Regular; line-height: 16px; word-wrap: break-word;}
+.post-bottom .short, .post-bottom .full {color: #8d8d8d; font: normal 15px Lato-Regular; line-height: 16px; word-wrap: break-word;}
 
 .post-comment {position: relative;}
 
