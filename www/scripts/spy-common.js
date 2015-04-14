@@ -425,12 +425,28 @@ function updateNews(){
 	});
 	
 	$('.moreButton').click(function(e){
+		var $target = $(this),
+			$post = $target.closest('.myScrp');
+
 		e.preventDefault();
 
-		var $post = $(this).closest('.post-bottom');
-		$post.find('.short').remove();
-		$post.find('.full').show();
-		$(this).remove();
+		$.ajax({
+			url: baseUrl + 'home/read-more-news',
+			data: {id: $post.attr('id').replace('newsDiv', '')},
+			type: 'POST',
+			dataType: 'json'
+		}).done(function(response){
+			if (response && response.status){
+				$('.post-content', $post).html(response.html);
+				$target.remove();
+			} else if (response){
+				alert(response.error.message);
+			} else {
+				alert(ERROR_MESSAGE);
+			}
+		}).fail(function(jqXHR, textStatus){
+			alert(textStatus);
+		});
 	});
 }
 
@@ -499,12 +515,9 @@ function getKeycodes(direct) {
 */
 function focusOnNews(divId){
     $(document).scrollTo("#newsDiv"+divId);
-	$("#newsDiv"+divId).find('.post-bottom .short').remove();
-	$("#newsDiv"+divId).find('.post-bottom .moreButton').remove();
-	$("#newsDiv"+divId).find('.post-bottom .full').show();
+	$("#newsDiv"+divId).find('.post-bottom .moreButton').click();
     $("#newsDiv"+divId).parent().css('box-shadow','1px 1px 2px 2px #888888');
 }
-
 
 /*
 * Function to change the current location of user and update the new address in Database

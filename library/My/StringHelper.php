@@ -19,11 +19,11 @@ class My_StringHelper
 	 */
 	public static function stringLimit($text, $limit, $dots = "")
 	{
-		$count = strlen($text);
+		$count = mb_strlen($text, 'UTF-8');
 
 		if ($count > $limit)
 		{
-			$text = substr(trim($text, '.'), 0, $limit - strlen($dots)) . $dots;
+			$text = substr(trim($text, '.'), 0, $limit - mb_strlen($dots, 'UTF-8')) . $dots;
 		}
 
 		return $text;
@@ -47,5 +47,24 @@ class My_StringHelper
 		}
 
 		return $key;
+	}
+
+	public static function utf8_decode($string)
+	{
+		$__string = $string;
+		$count = 0;
+
+		while (mb_detect_encoding($__string) == 'UTF-8')
+		{
+			$__string = utf8_decode($__string);
+			$count++;
+		}
+
+		for ($i = 0; $i < $count - 1; $i++)
+		{
+			$string = utf8_decode($string);
+		}
+
+		return $string;
 	}
 }

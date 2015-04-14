@@ -32,17 +32,14 @@ class My_CommonUtils
 
 				$link = self::renderLink($matches[0]);
 
-				$output .= '<a href="' . htmlspecialchars($link) . '">' . $text . '</a>';
-
-				if ($metadata)
+				if ($metadata && ($link_metadata = self::renderLinkMetaData($link)) != '')
 				{
-					$link_metadata = self::renderLinkMetaData($link);
-
-					if ($link_metadata != '')
-					{
-						$output .= $link_metadata;
-						$metadata = false;
-					}
+					$output .= $link_metadata;
+					$metadata = false;
+				}
+				else
+				{
+					$output .= '<a href="' . htmlspecialchars($link) . '">' . $text . '</a>';
 				}
 			}
 			else
@@ -168,9 +165,9 @@ class My_CommonUtils
 					'news/link-meta.html',
 					array(
 						'link' => $url,
-						'title' => $title,
-						'description' => My_ArrayHelper::getProp($properties, 'og:description',
-							My_ArrayHelper::getProp($names, 'description')),
+						'title' => My_StringHelper::utf8_decode($title),
+						'description' => My_StringHelper::utf8_decode(My_ArrayHelper::getProp($properties, 'og:description',
+							My_ArrayHelper::getProp($names, 'description'))),
 						'image' => My_ArrayHelper::getProp($properties, 'og:image'),
 						'author' => My_ArrayHelper::getProp($names, 'author'),
 					)

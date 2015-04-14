@@ -46,7 +46,7 @@ $user = $this->news->findDependentRowset('Application_Model_User')->current();
                     </div>
 					<?php endif; ?>
 					<div class="post-bottom">
-						<div class="full"><?php echo My_CommonUtils::renderHtml($this->news->news, 0, $this->news->images == null); ?></div>
+						<div class="post-content"><?php echo My_CommonUtils::renderHtml($this->news->news, 0, $this->news->images == null); ?></div>
 					</div>
 				</li>
 				<li class="clr"></li>

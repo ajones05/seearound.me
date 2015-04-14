@@ -815,4 +815,34 @@ public function changeAddressAction() {
             echo "Sorry unable to vote";
         }
     }
+
+	/**
+	 * Read more news action.
+	 *
+	 * @return void
+	 */
+	public function readMoreNewsAction()
+	{
+		try
+		{
+			if (!Application_Model_News::checkId($this->_request->getPost('id'), $news))
+			{
+				throw new RuntimeException('Incorrect news ID', -1);
+			}
+
+			$response = array(
+				'status' => 1,
+				'html' => My_CommonUtils::renderHtml($news->news, 0, $news->images == null)
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+	}
 }
