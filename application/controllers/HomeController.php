@@ -232,6 +232,7 @@ class HomeController extends My_Controller_Action_Herespy {
 
 			$data = $form->getValues();
 
+			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], 0, true);
 			$data['id'] = $model->insert($form->getValues());
 
 			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $data['id'], $user->id))

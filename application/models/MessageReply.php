@@ -1,5 +1,5 @@
 <?php
-class Application_Model_MessageReplyRow extends My_Db_Table_Row_Abstract
+class Application_Model_MessageReplyRow extends Zend_Db_Table_Row_Abstract
 {
        
 }

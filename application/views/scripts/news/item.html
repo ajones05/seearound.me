@@ -4,9 +4,15 @@ $auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
 $comments = My_ArrayHelper::getProp($this, 'comments', array());
 $comments_count = My_ArrayHelper::getProp($this, 'comments_count', 0);
 $votings_count = My_ArrayHelper::getProp($this, 'votings_count', 0);
-$images = isset($this->item['images']) ? $this->item['images'] : null;
 $created_date = isset($this->item['created_date']) ? $this->item['created_date'] : date('Y-m-d H:i:s');
 $hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => $this->item['id']), $comments->toArray(), 1);
+
+$images = isset($this->item['images']) && file_exists(ROOT_PATH . '/newsimages/' . $this->item['images']) ? $this->item['images'] : null;
+
+if ($images)
+{
+	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $images);
+}
 ?>
 <div id="scrpBox_<?php echo $this->item['id']; ?>" class="scrpBox" onmouseover="toggleBounce('<?php echo $this->item['id']; ?>','<?php echo $this->user->id?>');" onmouseout="stopBounce('<?php echo $this->item['id']; ?>',<?php echo $this->user->id; ?>);">
 	<ul class="myScrp afterClr" id="newsDiv<?php echo $this->item['id']; ?>">
@@ -42,16 +48,10 @@ $hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => 
 						<?php endif; ?>
 					</div>
 					<div class="post-bottom">
-						<div class="post-content"><?php echo My_CommonUtils::renderHtml($this->item['news'], 350, $images == null); ?></div>
-						<?php if (strlen($this->item['news']) > 350): ?>
-						<a href="#" class="moreButton">More</a>
-						<?php
-						endif;
-						if ($images && file_exists(ROOT_PATH . '/newsimages/' . $images)):
-							list($width, $height) = getimagesize(ROOT_PATH . '/newsimages/' . $images);
-						?>
+						<div class="post-content"><?php echo $this->item['news_html']; ?></div>
+						<?php if ($images != null): ?>
 						<div class="post-image" style="margin-top: 10px;">
-							<img onclick="openImage('<?php echo $images; ?>','<?php echo $width; ?>', '<?php echo $height; ?>');" class="Image-Popup-Class" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>" style="cursor: pointer;width:100%;" />
+							<img onclick="openImage('<?php echo $images; ?>','<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" class="Image-Popup-Class" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>" style="cursor: pointer;width:100%;" />
 						</div>
 						<?php endif; ?>
 					</div>

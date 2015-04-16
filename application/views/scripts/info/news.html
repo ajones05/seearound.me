@@ -2,6 +2,13 @@
 $auth = Zend_Auth::getInstance()->getIdentity();
 $auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
 $user = $this->news->findDependentRowset('Application_Model_User')->current();
+
+$image = $this->news->images && file_exists(ROOT_PATH . '/newsimages/' . $this->news->images) ? $this->news->images : null;
+
+if ($image)
+{
+	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $image);
+}
 ?>
 <div class="scrpBox scrpBox_new" id="scrpBox_<?php echo $this->news->id; ?>">
 	<ul class="myScrp afterClr user_post">
@@ -46,25 +53,17 @@ $user = $this->news->findDependentRowset('Application_Model_User')->current();
                     </div>
 					<?php endif; ?>
 					<div class="post-bottom">
-						<div class="post-content"><?php echo My_CommonUtils::renderHtml($this->news->news, 0, $this->news->images == null); ?></div>
+						<div class="post-content"><?php echo $this->news->news_html; ?></div>
 					</div>
 				</li>
 				<li class="clr"></li>
 			</ul>
 		</li>
-         <li class="cmnt">
-            <?php if($this->news->images) :?>
-                <?if(file_exists(realpath('.').'/newsimages/'.$this->news->images)):?>
-                    <?list($source_image_width, $source_image_height, $source_image_type ) = getimagesize(realpath('.').'/newsimages/'.$this->news->images);?>
-                <?else:?>
-                    <?$source_image_width = ''?>
-                    <?$source_image_height = ''?>
-                <?endif?>
-                <div>
-                    <img onclick="openImage('<?=$this->news->images?>', '<?=$source_image_width?>', '<?=$source_image_height?>');" class="Image-Popup-Class" src="<?=BASE_PATH?>tbnewsimages/<?=$this->news->images?>" style="width: 100%;height: auto; cursor: pointer;">
-                </div> 
-            <?php endif;?>
-         </li>
+		<?php if ($image != null): ?>
+		<li class="cmnt">
+			<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" class="Image-Popup-Class" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $image; ?>" style="width: 100%; height: auto; cursor: pointer;" />
+		</li>
+		<?php endif; ?>
     </ul>
 	<?php if ($this->totalcomments > 5): ?>
 	<div class="dur" style="height: 25px;"></div>
