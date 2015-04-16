@@ -729,7 +729,7 @@ MainMap.prototype['toggleContent'] = MainMap.prototype.toggleContent;
 
 MainMap.prototype.createInfoWindow = function(marker,name,news,newsId,userImage,user_id){
   
-     var infoWindow = new InfoBubble();
+     var infoWindow = new InfoBubble({disableAnimation: true});
 
      var content = this.createContent(userImage,name,news,1,'first',(this.marker).length-1,newsId,true);   
 

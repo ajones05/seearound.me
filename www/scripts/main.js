@@ -670,7 +670,7 @@ function placeMarker(point,name,id,address,News,user_id) {
 
 	
 
-		var infoBubble = new InfoBubble();
+		var infoBubble = new InfoBubble({disableAnimation: true});
 
 		
 
@@ -758,7 +758,7 @@ function placeMarker(point,name,id,address,News,user_id) {
 
 		   markerArray[id].setMap(map);
 
-           var infoBubble = new InfoBubble();
+           var infoBubble = new InfoBubble({disableAnimation: true});
 
            if(infowindowArray[curPos]) {
 
