@@ -264,4 +264,71 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 		return parent::insert($data);
 	}
+
+	/**
+	 * Limits news content.
+	 *
+	 * @param  mixed $news
+	 * @return string
+	 */
+	public static function limitNews($news, $limit = 350)
+	{
+		$text = preg_replace(array('/<a[^<]+>/', '/<\/a>/', '/<div[\S\s]+\/div>/', '/\s+$/'), '', $news['news_html']);
+		$text_length = strlen($text);
+		$html_length = strlen($news['news_html']);
+
+		if ($text_length > $limit && $html_length != $text_length)
+		{
+			$link_limit = false;
+			$output = '';
+
+			for ($length = $i = 0; $i < $html_length;)
+			{
+				if (preg_match('/^<div[\S\s]+\/div>/', substr($news['news_html'], $i), $matches))
+				{
+					$output .= $matches[0];
+					$i += strlen($matches[0]);
+				}
+				elseif (preg_match('/^<a\s+href=\"(.+)\">(.+)<\/a>/', substr($news['news_html'], $i), $matches))
+				{
+					$i += strlen($matches[0]);
+					$length += strlen($matches[2]);
+
+					if ($length >= $limit)
+					{
+						$link_limit = true;
+						$output .= '<a href="' . $matches[1] . '">' . My_StringHelper::stringLimit($matches[2], $limit - $length) . '...</a>';
+					}
+					else
+					{
+						$output .= $matches[0];
+					}
+				}
+				else
+				{
+					$output .= $news['news_html'][$i];
+					$i++;
+					$length++;
+				}
+
+				if ($length >= $limit)
+				{
+					$output = trim($output);
+
+					if (!$link_limit)
+					{
+						$output .= '...';
+					}
+
+					$output .= ' <a href="#" class="moreButton">More</a>';
+
+					break;
+				}
+			}
+
+			return $output;
+		}
+
+		return $news['news_html'];
+	}
 }

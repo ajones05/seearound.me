@@ -48,7 +48,7 @@ if ($images)
 						<?php endif; ?>
 					</div>
 					<div class="post-bottom">
-						<div class="post-content"><?php echo $this->item['news_html']; ?></div>
+						<div class="post-content"><?php echo Application_Model_News::limitNews($this->item); ?></div>
 						<?php if ($images != null): ?>
 						<div class="post-image" style="margin-top: 10px;">
 							<img onclick="openImage('<?php echo $images; ?>','<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" class="Image-Popup-Class" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>" style="cursor: pointer;width:100%;" />

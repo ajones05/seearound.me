@@ -832,7 +832,7 @@ public function changeAddressAction() {
 
 			$response = array(
 				'status' => 1,
-				'html' => My_CommonUtils::renderHtml($news->news, 0, $news->images == null)
+				'html' => $news->news_html
 			);
 		}
 		catch (Exception $e)
