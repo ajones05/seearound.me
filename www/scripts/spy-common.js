@@ -274,7 +274,7 @@ function getAllNearestPoint(centerPosition){
 
 				for (i in response.result){
 					globalStart++;
-					$("#newsData").append(response.result[i].html);
+					updateNews($(response.result[i].html).appendTo($("#newsData")));
 				}
 
 				if (response.result.length == NEWS_LIMIT){
@@ -284,8 +284,6 @@ function getAllNearestPoint(centerPosition){
 				window.scrollTo(scrollPosition[0], scrollPosition[1])
 
 				commonMap.createMarkersOnMap1(response.result, UserMarker1);
-
-				updateNews();
 			} else if (typeof response.result === 'string'){
 				globalStart++;
 				$("#newsData").append(response.result);
@@ -404,10 +402,10 @@ function stopBounce(newsId,user_id){
     commonMap.searchNewsMarker(newsId,'stopbounce');
 }
 
-function updateNews(){
-	renderNews();
+function updateNews($news){
+	renderNews($news);
 
-	$('.post-comment span').on('click', showCommentHandle);
+	$('.post-comment span', $news).on('click', showCommentHandle);
 
 	$(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"});
 	$(".Message-Popup-Class").colorbox({width:"40%",height:"45%", inline:true, href:"#Message-Popup_Email"},function(){$('html, body').animate({ scrollTop: 0 }, 0);});
@@ -424,7 +422,7 @@ function updateNews(){
 		});
 	});
 	
-	$('.moreButton').click(function(e){
+	$('.moreButton', $news).click(function(e){
 		var $target = $(this),
 			$post = $target.closest('.myScrp');
 

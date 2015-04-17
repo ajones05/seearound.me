@@ -1,5 +1,5 @@
-function renderNews(){
-	$('.textAreaClass').live('input paste keypress', function(e){
+function renderNews($news){
+	$('.textAreaClass', $news).bind('input paste keypress', function(e){
 		if (!isLogin){
 			$.colorbox({
 				width: '26%',
@@ -52,9 +52,8 @@ function renderNews(){
 				if (response && response.status){
 					e.preventDefault();
 					$target.val('').attr('disabled', false).blur();
-					$target.closest('.cmntList-last').before(response.html);
+					renderComments($(response.html).insertBefore($target.closest('.cmntList-last')));
 					$('.commentLoading').hide();
-					renderComment();
 				} else {
 					// ???
 					alert(ERROR_MESSAGE);
@@ -72,7 +71,7 @@ function renderNews(){
 		}
 	});
 
-	$('.myScrp .deteleIcon1 img').on('click', function(e){
+	$('.myScrp .deteleIcon1 img', $news).on('click', function(e){
 		if (confirm('Are you sure you want to delete?')){
 			var $target = $(this).closest('.scrpBox'),
 				news_id = $target.attr('id').replace('scrpBox_', '');
@@ -179,7 +178,7 @@ function renderNews(){
 		}
 	});
 
-	$('.commentField').click(function(e){
+	$('.commentField', $news).click(function(e){
 		var target = $(this),
 			news_item = target.closest('.scrpBox'),
 			comment_list = $('.cmntRow', news_item).closest('ul');
@@ -198,7 +197,7 @@ function renderNews(){
 			if (response && response.status){
 				if (response.data){
 					for (var i in response.data){
-						$('.viewCount', comment_list).after(response.data[i]);
+						renderComments($(response.data[i]).insertAfter($('.viewCount', comment_list)));
 					}
 
 					if (response.label){
@@ -210,14 +209,12 @@ function renderNews(){
 			} else {
 				alert(ERROR_MESSAGE);
 			}
-
-			renderComment();
 		}).fail(function(jqXHR, textStatus){
 			alert(textStatus);
 		});
 	});
 
-	$('.myScrp').hover(
+	$('.myScrp', $news).hover(
 		function(){
 			$(this).find(".deteleIcon1").show();
 		},
@@ -226,7 +223,7 @@ function renderNews(){
 		}
 	);
 
-	renderComment();
+	renderComments($news.find('.cmntList'));
 }
 
 function showCommentHandle(){
@@ -256,8 +253,8 @@ function showCommentHandle(){
 	$(this).closest('.post-comment').hide();
 }
 
-function renderComment(){
-	$('.cmntList .deteleIcon1 img').on('click', function (e){
+function renderComments($comments){
+	$('.deteleIcon1 img', $comments).on('click', function (e){
 		if (confirm('Are you sure you want to delete?')){
 			var $target = $(this).closest('.cmntList'),
 				comment_id = $target.attr('id').replace('comment_', '');
@@ -279,7 +276,7 @@ function renderComment(){
 		}
 	});
 
-	$('.cmntList').hover(
+	$comments.closest('.cmntList').hover(
 		function(){
 			$(this).find(".deteleIcon1").show();
 		},

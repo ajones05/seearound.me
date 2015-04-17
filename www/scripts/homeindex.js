@@ -296,7 +296,7 @@ function addPost(location, address){
 		type: 'POST',
 	}).done(function(response){
 		if (response && response.status){
-			$('#newsData').prepend(response.news.html);
+			updateNews($(response.news.html).prependTo($('#newsData')));
 			$('#noNews').html('');
 			$('#newsWaitOnAdd').hide();
 
@@ -306,7 +306,6 @@ function addPost(location, address){
 
 			clearUpload();
 			reinitilizeUpload();
-			updateNews();
 
 			$('#postOptionId').hide();
 			$('#newsPost').val('').css('height', 36);

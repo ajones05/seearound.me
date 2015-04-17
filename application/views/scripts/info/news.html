@@ -90,13 +90,13 @@ if ($image)
 </div>
 <script type="text/javascript">
 	$(function(){
-		renderNews();
+		renderNews($('.scrpBox'));
 
         newsMap("<?php echo $this->news->latitude; ?>","<?php echo $this->news->longitude; ?>", {
             name: <?php echo json_encode($this->news_user->Name); ?>,
             image: $("#userImage").attr('src'),
             address: <?php echo json_encode($this->news->Address); ?>
-        }); 
+        });
 
         $(".voting-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#voting-id"},function(){
             $('html, body').animate({ scrollTop: 0 }, 0); 
