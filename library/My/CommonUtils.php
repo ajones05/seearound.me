@@ -8,11 +8,10 @@ class My_CommonUtils
 	 * Render html.
 	 *
 	 * @param	string	$body
-	 * @param	integer	$limit
 	 * @param	boolean	$metadata
 	 * @return	string
 	 */
-	public static function renderHtml($body, $limit = 0, $metadata = false)
+	public static function renderHtml($body, $metadata = false)
 	{
 		$output = '';
 
@@ -25,14 +24,9 @@ class My_CommonUtils
 
 				$text = $matches[0];
 
-				if ($limit && $i >= $limit)
-				{
-					$text = My_StringHelper::stringLimit($text, $limit - $i);
-				}
-
 				$link = self::renderLink($matches[0]);
 
-				if ($metadata && ($link_metadata = self::renderLinkMetaData($link)) != '')
+				if ($metadata && ($link_metadata = self::renderLinkMetaData($link, $matches[0])) != '')
 				{
 					$output .= $link_metadata;
 					$metadata = false;
@@ -47,13 +41,6 @@ class My_CommonUtils
 				$output .= nl2br($body[$i]);
 
 				$i++;
-			}
-
-			if ($limit && $i >= $limit)
-			{
-				$output .= '...';
-
-				break;
 			}
 		}
 
@@ -95,9 +82,10 @@ class My_CommonUtils
 	 * Renders url metadata info.
 	 *
 	 * @param	string	$url
+	 * @param	string	$text
 	 * @return	string
 	 */
-	public static function renderLinkMetaData($url)
+	public static function renderLinkMetaData($url, $text)
 	{
 		libxml_use_internal_errors(true);
 
@@ -165,6 +153,7 @@ class My_CommonUtils
 					'news/link-meta.html',
 					array(
 						'link' => $url,
+						'text' => $text,
 						'title' => My_StringHelper::utf8_decode($title),
 						'description' => My_StringHelper::utf8_decode(My_ArrayHelper::getProp($properties, 'og:description',
 							My_ArrayHelper::getProp($names, 'description'))),
