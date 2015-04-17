@@ -264,9 +264,6 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .cmntRow li{padding: 14px 5px 5px 18px;}
 
-
-.cmntRow li.viewCount{font:normal 18px Lato-Regular; color:#4276cd; background: #fff;padding: 6px 10px 6px 18px;position: absolute; margin-top: -43px;}
-
 .cmntRow .cmntList div.imgPro { float: left;}
 
 .cmntRow .cmntList ul { float: left; display: block;}
@@ -1025,9 +1022,50 @@ table tr td input { border: 1px solid #d7d7d7;}
 .post-bottom .post-content {color: #333333; font: normal 15px Lato-Regular; line-height: 16px; word-wrap: break-word;}
 .post-bottom .post-content a {color: #6699ff;}
 
-.post-comment {position: relative;}
-
-.post-comment span {position: absolute;left: 15px;left: 27px;bottom: -35px;font: normal 18px Lato-Regular;z-index:999;}
+.scrpBox > .dur {
+	height: 25px;
+}
+.post-comment, .view-comment, .edit-post, .edit-news-panel > input {
+	font: normal 18px Lato-Regular;
+	color: #4276cd;
+	cursor: pointer;
+}
+.post-comment, .view-comment, .edit-news-panel > input {
+	float: left;
+	margin-left: 18px;
+}
+.edit-post {
+	float: right;
+	margin-right: 10px;
+}
+.edit-news-panel {
+	display: none;
+}
+.edit-post, .edit-news-panel > input {
+	background: none;
+	border: none;
+}
+.write-news-content textarea {
+	width: 100%;
+    border: none;
+	color: #333333;
+	font: normal 15px Lato-Regular;
+	line-height: 16px;
+	resize: none;
+	box-sizing: border-box;
+	min-height: 18px;
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
+	background-color: #fff;
+	outline: none;
+}
+.write-news-content {
+	margin-bottom: -2px;
+}
+.write-news-content textarea:disabled {
+	background-color: #fff;
+}
 
 .post-top .crp { right: 3px; margin-top: 0px;cursor: pointer; position: absolute; width: 23px; height: auto; top: 3px;}
 

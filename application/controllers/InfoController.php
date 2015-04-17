@@ -32,14 +32,13 @@ class InfoController extends My_Controller_Action_Abstract
 
 		$news_id = $this->_request->getParam('nwid');
 
-		if (!Application_Model_News::checkId($news_id, $news) ||
-			!Application_Model_User::checkId($news->user_id, $news_user))
+		if (!Application_Model_News::checkId($news_id, $news, 0))
         {
 			$this->_redirect(BASE_PATH);
         }
 
 		$this->view->news = $news;
-		$this->view->news_user = $news_user;
+		$this->view->news_user = $news->findDependentRowset('Application_Model_User')->current();
 		$this->view->returnUrl = BASE_PATH . 'info/news/nwid/' . $news->id;
 
 		$this->view->comentsModel = new Application_Model_Comments;
@@ -51,8 +50,10 @@ class InfoController extends My_Controller_Action_Abstract
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
 		$this->view->headScript()
-			->prependFile('/www/scripts/publicNews.js?' . $mediaversion)
-			->prependFile('/www/scripts/news.js?' . $mediaversion);
+			->appendFile('/www/scripts/jquery.loadmask.js?' . $mediaversion)
+			->appendFile('/www/scripts/jquery.textarea_autosize.js?' . $mediaversion)
+			->appendFile('/www/scripts/publicNews.js?' . $mediaversion)
+			->appendFile('/www/scripts/news.js?' . $mediaversion);
     }
 
     public function totalCommentsAction()
@@ -113,7 +114,7 @@ class InfoController extends My_Controller_Action_Abstract
 
 			$news_id = $this->_request->getPost('news_id');
 
-			if (!Application_Model_News::checkId($news_id, $news))
+			if (!Application_Model_News::checkId($news_id, $news, 0))
 			{
 				throw new RuntimeException('Incorrect news ID', -1);
 			}

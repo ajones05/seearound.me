@@ -12,11 +12,6 @@ if ($image)
 ?>
 <div class="scrpBox scrpBox_new" id="scrpBox_<?php echo $this->news->id; ?>">
 	<ul class="myScrp afterClr user_post">
-		<?php if ($auth_user_id == $user->id): ?>
-		<div class="deteleIcon1">
-			<img src="<?php echo BASE_PATH; ?>www/images/delete-icon.png" />
-		</div>
-		<?php endif; ?>
 		<li>
 			<ul class="post">
 				<li class="imgPro">
@@ -65,17 +60,22 @@ if ($image)
 		</li>
 		<?php endif; ?>
     </ul>
-	<?php if ($this->totalcomments > 5): ?>
-	<div class="dur" style="height: 25px;"></div>
+	<?php if ($this->totalcomments > 5 || $auth_user_id == $user->id): ?>
+	<div class="dur">
+		<div class="news-footer">
+			<?php if ($this->totalcomments > 5): ?>
+			<div class="view-comment"><?php echo $this->comentsModel->viewMoreLabel($this->totalcomments - 5); ?></div>
+			<?php endif; ?>
+			<?php if ($auth_user_id == $user->id): ?>
+			<input type="button" class="edit-post" value="Edit Post" />
+			<?php endif; ?>
+		</div>
+		<?php echo My_ViewHelper::render('news/edit-panel.html', array('news' => $this->news)); ?>
+		<div class="clr"></div>
+	</div>
 	<?php endif;?>
 	<ul class="cmntRow afterClr">
-        <?php if ($this->totalcomments > 5): ?>
-        <li class="viewCount">
-			<div class="commentField"><?php echo $this->comentsModel->viewMoreLabel($this->totalcomments - 5); ?></div>
-        </li>
         <?php
-		endif;
-
 		if ($this->totalcomments)
 		{
 			for ($i = count($this->comments) - 1; $i >= 0; $i--)
@@ -84,7 +84,7 @@ if ($image)
 			}
 		}
 
-		echo My_ViewHelper::render('comment/add-item.html')
+		echo My_ViewHelper::render('comment/add-item.html');
 		?>
     </ul>
 </div>

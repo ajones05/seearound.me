@@ -7,7 +7,13 @@ class HomeController extends My_Controller_Action_Herespy {
          $this->view->changeLocation = false;
     }
 
-    public function indexAction() {
+	/**
+	 * Index action.
+	 *
+	 * @return void
+	 */
+	public function indexAction()
+	{
         $this->view->homePageExist = true;
         $this->view->changeLocation = true;
 
@@ -18,13 +24,14 @@ class HomeController extends My_Controller_Action_Herespy {
 			->appendStylesheet('/www/css/common.css?' . $mediaversion);
 
 		$this->view->headScript()
-			->prependFile('/www/scripts/publicNews.js?' . $mediaversion)
-			->prependFile('/www/scripts/jquery.loadmask.js?' . $mediaversion)
-			->prependFile('/www/scripts/news.js?' . $mediaversion)
-			->prependFile('/www/scripts/homeindex.js?' . $mediaversion);
+			->appendFile('/www/scripts/jquery.loadmask.js?' . $mediaversion)
+			->appendFile('/www/scripts/jquery.textarea_autosize.js?' . $mediaversion)
+			->appendFile('/www/scripts/publicNews.js?' . $mediaversion)
+			->appendFile('/www/scripts/news.js?' . $mediaversion)
+			->appendFile('/www/scripts/homeindex.js?' . $mediaversion);
 
 		$this->view->user = Application_Model_User::findById(Zend_Auth::getInstance()->getIdentity()['user_id']);
-    }
+	}
 
     public function editProfileAction() {
         $this->view->myeditprofileExist = true;
@@ -231,7 +238,7 @@ class HomeController extends My_Controller_Action_Herespy {
 			$model = new Application_Model_News;
 
 			$data = $form->getValues();
-			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], $data['images'] == null);
+			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], empty($data['images']));
 			$data['id'] = $model->insert($data);
 
 			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $data['id'], $user->id))
@@ -530,7 +537,7 @@ class HomeController extends My_Controller_Action_Herespy {
 		{
 			$news_id = $this->_getParam('news_id');
 
-			if (!Application_Model_News::checkId($news_id, $news))
+			if (!Application_Model_News::checkId($news_id, $news, 0))
 			{
 				throw new RuntimeException('Incorrect news ID');
 			}
@@ -825,7 +832,7 @@ public function changeAddressAction() {
 	{
 		try
 		{
-			if (!Application_Model_News::checkId($this->_request->getPost('id'), $news))
+			if (!Application_Model_News::checkId($this->_request->getPost('id'), $news, 0))
 			{
 				throw new RuntimeException('Incorrect news ID', -1);
 			}
@@ -833,6 +840,107 @@ public function changeAddressAction() {
 			$response = array(
 				'status' => 1,
 				'html' => $news->news_html
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+	}
+
+	/**
+	 * Edit news action.
+	 *
+	 * @return void
+	 */
+	public function editNewsAction()
+	{
+		try
+		{
+			$model = new Application_Model_News;
+
+			if (!$model->checkId($this->_request->getPost('id'), $news, 0))
+			{
+				throw new RuntimeException('Incorrect news ID', -1);
+			}
+
+			if (!Application_Model_User::checkId(My_ArrayHelper::getProp(Zend_Auth::getInstance()->getIdentity(), 'user_id'), $user) ||
+				$user->id != $news->user_id)
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$response = array(
+				'status' => 1,
+				'news' => $news->news
+			);
+		}
+		catch (RuntimeException $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => $e->getMessage())
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+	}
+
+	/**
+	 * Save news action.
+	 *
+	 * @return void
+	 */
+	public function saveNewsAction()
+	{
+		try
+		{
+			$model = new Application_Model_News;
+
+			if (!$model->checkId($this->_request->getPost('id'), $news, 0))
+			{
+				throw new RuntimeException('Incorrect news ID', -1);
+			}
+
+			if (!Application_Model_User::checkId(My_ArrayHelper::getProp(Zend_Auth::getInstance()->getIdentity(), 'user_id'), $user) ||
+				$user->id != $news->user_id)
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$body = $this->_request->getPost('news');
+
+			if (trim($body) === '')
+			{
+				throw new RuntimeException('News cannot be blank', -1);
+			}
+
+			$news->news = $body;
+			$news->news_html = $data['news_html'] = My_CommonUtils::renderHtml($body, $news->images == null);
+			$news->save();
+
+			$response = array(
+				'status' => 1,
+				'html' => $news->news_html
+			);
+		}
+		catch (RuntimeException $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => $e->getMessage())
 			);
 		}
 		catch (Exception $e)

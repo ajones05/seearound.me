@@ -55,14 +55,7 @@ $(function(){
 		.blur(function(){
 			$('#newsPost').attr('placeholder', $('#newsPost').attr('placeholder-data')).removeAttr('placeholder-data');
 		})
-		.live('input paste keypress', function(){
-			var text = $(this).val();
-
-			if (text.length > 500){
-				$(this).val(text.substring(0, 499));
-				alert("Sorry! You can not enter more then 500 charactes.");
-			}
-		});
+		.bind('input paste keypress', editNewsHandle);
 
 	$('.addNews').click(function(){
 		if ($.trim($('#newsPost').val()) === ''){

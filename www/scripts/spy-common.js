@@ -405,7 +405,7 @@ function stopBounce(newsId,user_id){
 function updateNews($news){
 	renderNews($news);
 
-	$('.post-comment span', $news).on('click', showCommentHandle);
+	$('.post-comment', $news).on('click', showCommentHandle);
 
 	$(".login-popup-class").colorbox({width:"26%",height:"32%", inline:true, href:"#login-id"});
 	$(".Message-Popup-Class").colorbox({width:"40%",height:"45%", inline:true, href:"#Message-Popup_Email"},function(){$('html, body').animate({ scrollTop: 0 }, 0);});

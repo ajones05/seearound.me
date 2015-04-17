@@ -474,7 +474,7 @@ class MobileController extends Zend_Controller_Action
 			$model = new Application_Model_News;
 
 			$data = $form->getValues();
-			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], $data['images'] == null);
+			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], empty($data['images']));
 			$data['id'] = $model->insert($data);
 
 			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $data['id'], $user->id))
