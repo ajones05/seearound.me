@@ -1030,7 +1030,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 	color: #4276cd;
 	cursor: pointer;
 }
-.post-comment, .view-comment, .edit-news-panel > input {
+.post-comment, .view-comment{
 	float: left;
 	margin-left: 18px;
 }
@@ -1041,11 +1041,12 @@ table tr td input { border: 1px solid #d7d7d7;}
 }
 .edit-news-panel {
 	display: none;
+    text-align: center;
 }
-.edit-post, .edit-news-panel > input {
-	background: none;
-	border: none;
-}
+.edit-post, .edit-news-panel > input {	background: none;	border: none;}
+.edit-news-panel > input{  display: inline-block;}
+.edit-news-panel > input:first-child{float: left;margin-left:18px;}
+.edit-news-panel > input:last-child{float: right;}
 .write-news-content textarea {
 	width: 100%;
     border: none;
