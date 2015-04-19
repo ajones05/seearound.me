@@ -20,12 +20,12 @@ class HomeController extends My_Controller_Action_Herespy {
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
 		$this->view->headLink()
-			->appendStylesheet('/www/css/jquery.loadmask.css?' . $mediaversion)
+			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css')
 			->appendStylesheet('/www/css/common.css?' . $mediaversion);
 
 		$this->view->headScript()
-			->appendFile('/www/scripts/jquery.loadmask.js?' . $mediaversion)
-			->appendFile('/www/scripts/jquery.textarea_autosize.js?' . $mediaversion)
+			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
+			->appendFile('/bower_components/textarea-autosize/src/jquery.textarea_autosize.js')
 			->appendFile('/www/scripts/publicNews.js?' . $mediaversion)
 			->appendFile('/www/scripts/news.js?' . $mediaversion)
 			->appendFile('/www/scripts/homeindex.js?' . $mediaversion);
@@ -144,6 +144,8 @@ class HomeController extends My_Controller_Action_Herespy {
                 $this->view->errors = $errors;
             }
         }
+
+		$this->view->headScript()->appendFile('/bower_components/jquery-form/jquery.form.js');
     }
 
     public function imageUploadAction(){

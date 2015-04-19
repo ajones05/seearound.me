@@ -142,7 +142,7 @@ $(document).ready(function() {
                 //return false;
             }
         })
-        .data("autocomplete")._renderItem = function (ul, item) {
+        .data("ui-autocomplete")._renderItem = function (ul, item) {
             var imgsrc ="";
             var address = "";
             if(item.Profile_image) {

@@ -2,9 +2,9 @@
 
     if(userLatitude == "" && userLongitude == "" ) { 
 
-        userLatitude = geoip_latitude();
+        userLatitude = geoiplatitude;
 
-        userLongitude = geoip_longitude();
+        userLongitude = geoiplongitude;
 
     }    
 
@@ -52,27 +52,12 @@
         
 
         $('#imageButton').click(function() {
-
-            //var content = "<form enctype='multipart/form-data' action='<?=BASE_PATH?>home/image-upload' id='imageform' method='POST'>"+
-
-              //  "<input type='file' id='ImageFile' name='ImageFile' accept='image/*'/>"+
-
-               // "<br/>"+
-
-               // "<div class='answers'></div></form>";
-
-            //boxy = new Boxy(content, {title: "Upload Image"});
-
             $('#ImageFile').trigger('click');
-
         });
 
 
 
         $('#ImageFile').live('change', function() { 
-
-            //boxy.hide();
-
             $(".proImgChange").toggle();
 
             $("#imageform").ajaxForm({

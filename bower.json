@@ -1,0 +1,13 @@
+{
+	"name": "seearround.me",
+	"dependencies": {
+		"jquery": "2.1.3",
+		"jquery-ui": "1.11.4",
+		"query-migrate": "jquery/jquery-migrate",
+		"jquery-validation": "latest",
+		"jquery-form": "latest",
+		"jquery-loadmask": "yuriyua/jquery-loadmask",
+		"textarea-autosize": "latest",
+		"jquery.scrollTo": "latest"
+	}
+}

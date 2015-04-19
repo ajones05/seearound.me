@@ -199,111 +199,6 @@ MainMap.prototype.clearMarkers = function(){
 
 MainMap.prototype['clearMarkers'] = MainMap.prototype.clearMarkers;
 
-
-
-MainMap.prototype.createMarkersOnMap = function(dataForMarkers,myPosition,markerIcon){
-    var markerPosition,markerContent,previousPosition;
-
-    var me = this;
-
-    for(i in dataForMarkers){
-
-        
-
-        markerPosition = new google.maps.LatLng(parseFloat(dataForMarkers[i]['latitude']),parseFloat(dataForMarkers[i]['longitude']));
-
-        var resultPosition = this.findPrevious(markerPosition);
-
-        if(resultPosition!=-1){
-
-            previousPosition = resultPosition;
-
-        }
-
-        markerContent = {name:dataForMarkers[i]['Name'],id:dataForMarkers[i]['id'],news:dataForMarkers[i]['news'],userImage:dataForMarkers[i]['Profile_image'],user_id:dataForMarkers[i]['user_id']};
-
-        if(resultPosition==-1){
-
-            var marker = new google.maps.Marker({
-
-                     position:markerPosition,
-
-                     map: this.map,
-
-                     draggable:false,
-
-                     icon:this.createIcon(markerIcon)
-
-            });
-
-            (marker).setMap(this.map);
-
-            (this.marker).push(marker);
-
-            markerArray.push(marker);
-
-            bubbleContent = me.bubbleArray;
-
-            (me.bubbleArray).push(this.createInfoWindow(marker,markerContent.name,markerContent.news,markerContent.id,markerContent.userImage,markerContent.user_id));
-
-        } else {
-
-            var allowToUpdate = true;
-
-            if(resultPosition==0){
-
-               if(!(me.bubbleArray[previousPosition].newsId).length){
-
-                 var currentBubble = (me.bubbleArray[previousPosition]);
-
-                 currentBubble.newsId[0] = markerContent.id;
-
-                 currentBubble.user_id[0] = markerContent.user_id;
-
-                 currentBubble.total = 1;
-
-                 currentBubble.currentNewsId = markerContent.id; 
-
-                 me.bubbleArray[previousPosition].divContent =  me.createContent(markerContent.userImage,markerContent.name,markerContent.news,1,'first',previousPosition,markerContent.id,true);
-
-                 me.bubbleArray[previousPosition].contentArgs[0] = ([markerContent.userImage,markerContent.name,markerContent.news,1,'first',previousPosition,markerContent.id]);
-
-                 allowToUpdate = false; 
-
-               }
-
-            }
-
-            if(me.findData(me.bubbleArray[previousPosition].newsId,markerContent.id,'CHECK')){
-
-                 var currentBubble = (me.bubbleArray[previousPosition]);
-
-                (currentBubble.newsId).push(markerContent.id);
-
-                (currentBubble.user_id).push(markerContent.user_id);
-
-                 currentBubble.total++;
-
-                 me.bubbleArray[previousPosition].divContent =  me.createContent(me.bubbleArray[previousPosition].contentArgs[0][0],me.bubbleArray[previousPosition].contentArgs[0][1],me.bubbleArray[previousPosition].contentArgs[0][2],me.bubbleArray[previousPosition].contentArgs[0][3],me.bubbleArray[previousPosition].contentArgs[0][4],me.bubbleArray[previousPosition].contentArgs[0][5],me.bubbleArray[previousPosition].contentArgs[0][6],me.bubbleArray[previousPosition].contentArgs[0][7],false);
-
-                (me.bubbleArray[previousPosition].contentArgs).push([markerContent.userImage,markerContent.name,markerContent.news,++(currentBubble.total),'second',previousPosition,markerContent.id]);
-
-            }
-
-            
-
-        }
-
-    }
-
-    
-
-    
-
-   
-
-}
-
 MainMap.prototype.createMarkersOnMap1 = function(dataForMarkers, markerIcon){
 	var me = this;
 
@@ -329,7 +224,6 @@ MainMap.prototype.createMarkersOnMap1 = function(dataForMarkers, markerIcon){
 
 			this.marker.push(marker);
 			markerArray.push(marker);
-			bubbleContent = me.bubbleArray;
 
 			me.bubbleArray.push(this.createInfoWindow(
 				marker,
@@ -407,8 +301,6 @@ MainMap.prototype.createMarkersOnMap1 = function(dataForMarkers, markerIcon){
 	}
 }
 
-MainMap.prototype['createMarkersOnMap'] = MainMap.prototype.createMarkersOnMap;
-
 MainMap.prototype.createMarker = function(markerPosition,markerIcon,type,markerContent){
 
     var previousPosition = this.findPrevious(markerPosition);
@@ -467,14 +359,17 @@ MainMap.prototype.createMarker = function(markerPosition,markerIcon,type,markerC
 
         }
 
-        
-
-        bubbleContent = me.bubbleArray;
-
-        (me.bubbleArray).push(this.createInfoWindow(marker,markerContent.name,markerContent.news,markerContent.id,markerContent.userImage,markerContent.user_id));
-
+        me.bubbleArray.push(
+			this.createInfoWindow(
+				marker,
+				markerContent.name,
+				markerContent.news,
+				markerContent.id,
+				markerContent.userImage,
+				markerContent.user_id
+			)
+		);
     }
-
 };
 
 MainMap.prototype['createMarker'] = MainMap.prototype.createMarker;
@@ -760,61 +655,6 @@ MainMap.prototype.createInfoWindow = function(marker,name,news,newsId,userImage,
 };
 
 MainMap.prototype['createInfoWindow'] = MainMap.prototype.createInfoWindow;
-
-
-
-MainMap.prototype.changeContent = function(newContent,counter,visibleDiv,newsId){
-
-    var currentTempBubble = (this.bubbleArray[counter]);
-
-    var content = newContent;
-
-    if(this.findData(this.bubbleArray[counter].newsId,newsId,'CHECK')){
-
-        (currentTempBubble.newsId).push(newsId);
-
-    }
-
-    currentTempBubble.divContent = newContent;
-
-    newContent = "<div id='mainContent_"+counter+"' class='bubbleContent' totalDiv='"+currentTempBubble.total+"' currentDiv='"+visibleDiv+"'  onmouseover='setPopupCloseTimer(0)'  onmouseout='setPopupCloseTimer(700)'>"+newContent+"</div>";
-
-    (currentTempBubble.infobubble).setContent(newContent);
-
-    return newContent;
-
-}
-
-MainMap.prototype['changeContent'] = MainMap.prototype.changeContent;
-
-
-
-MainMap.prototype.updateContent = function(newContent,counter,visibleDiv,newsId) {
-
-    var currentTempBubble = (this.bubbleArray[counter]);
-
-    var content = currentTempBubble.divContent;
-
-   
-
-    if(this.findData(this.bubbleArray[counter].newsId,newsId,'CHECK')){
-
-        (currentTempBubble.newsId).push(newsId);
-
-    }
-
-    currentTempBubble.divContent = newContent+" "+content;
-    newContent = "<div id='mainContent_"+counter+"' class='bubbleContent' totalDiv='"+currentTempBubble.total+"' currentDiv='"+visibleDiv+"'  onmouseover='setPopupCloseTimer(0)'  onmouseout='setPopupCloseTimer(700)'>"+newContent+""+content+"</div>";
-
-    (currentTempBubble.infobubble).setContent(newContent);
-
-    return newContent;
-
-}
-
-MainMap.prototype['updateContent'] = MainMap.prototype.updateContent;
-
-
 
 MainMap.prototype.updateNewsid = function(newsId,id){
 
@@ -1213,10 +1053,9 @@ MainMap.prototype.clearMapMarker = function(type){
 
     }
 
-    (this.marker).length = length;
+	this.marker.length = length;
 
-    (this.bubbleArray).length = length;
-
+	this.bubbleArray.length = length;
 }
 
 MainMap.prototype['clearMapMarker'] = MainMap.prototype.clearMapMarker;

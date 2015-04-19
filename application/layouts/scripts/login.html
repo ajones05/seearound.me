@@ -4,30 +4,35 @@ $geoip = My_Ip::geolocation();
 $request = Zend_Controller_Front::getInstance()->getRequest();
 $auth = Zend_Auth::getInstance()->getIdentity();
 
+$this->headLink()
+	->appendStylesheet('/bower_components/jquery-ui/themes/base/jquery-ui.min.css')
+	->appendStylesheet('/www/css/reset.css?' . $config->mediaversion)
+	->appendStylesheet('/www/css/global.css?' . $config->mediaversion)
+	->appendStylesheet('/www/css/login.css?' . $config->mediaversion);
+
 $this->headScript()
 	->appendScript(
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
+		"	var baseUrl = " . json_encode(BASE_PATH) . ";\n" .
 		"	var http_host = " . json_encode($request->getHttpHost()) . ";\n" .
 		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
 	)
-	->prependFile('/www/scripts/jquery.js')
-	->appendFile('/www/scripts/jquery.validate.min.js');
+	->prependFile('/bower_components/jquery/dist/jquery.min.js')
+	->appendFile('/bower_components/jquery-ui/jquery-ui.min.js')
+	// TODO: remove after fix deprecated
+	->appendFile('/bower_components/query-migrate/src/migrate.js')
+	->appendFile('/bower_components/query-migrate/src/core.js')
+	->appendFile('/bower_components/query-migrate/src/event.js')
+	->appendFile('/bower_components/jquery-validation/dist/jquery.validate.min.js');
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>seearound.me</title>
-	<?php echo $this->headScript(); ?>
+	<?php echo $this->headLink() . "\n" . $this->headScript() . "\n"; ?>
 	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/colorbox.css"/>
-	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/boxy.css"/>
-	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/jquery-ui.css"/>
-	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/reset.css"/>
-	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/global.css?3"/>
-	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/login.css"/>
-	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/jquery.mCustomScrollbar.css"/>
 	<script language="javascript" type="text/javascript">
-		var baseUrl = "<?php echo BASE_PATH; ?>";
 		var geoiplatitude  = <?php echo $geoip[0]; ?>;
 		var geoiplongitude = <?php echo $geoip[1]; ?>;
 		var userLatitude = <?php echo My_ArrayHelper::getProp($this->auth, 'latitude', $geoip[0]); ?>;
@@ -36,18 +41,14 @@ $this->headScript()
 		var returnUrl = "<?=$request->getParam('url')?$request->getParam('url'):''?>";
 	</script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery-ui.min.js"></script>
 	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/infobubble.js"></script>
 	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/customDatepicker.js"></script>
 	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery.colorbox.js"></script>
 	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/json2.js"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery.boxy.js"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery.form.js"></script>
 	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/main.js?<?php echo $config->mediaversion; ?>"></script>
 	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/custom.js?<?php echo $config->mediaversion; ?>"></script>
 	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/layout.js?<?php echo $config->mediaversion; ?>"></script>
 	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/common.js?<?php echo $config->mediaversion; ?>"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery.mCustomScrollbar.js"></script>
 </head>
 <body class="bgRegForm">
 	<?php include '_header.html'; ?>

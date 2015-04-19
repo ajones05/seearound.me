@@ -272,8 +272,10 @@ class ContactsController extends My_Controller_Action_Herespy
             $this->view->more = count($more);
             $this->view->page = $page+1;
         }
-        
-    }
+
+		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
+		$this->view->headScript()->appendFile('/www/scripts/friendlist.js?' . $mediaversion);
+	}
 
 	/**
 	 * Friend action.

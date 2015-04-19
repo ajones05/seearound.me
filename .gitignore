@@ -10,3 +10,4 @@
 /vendor/*
 /includes/*
 /composer.lock
+/bower_components/*

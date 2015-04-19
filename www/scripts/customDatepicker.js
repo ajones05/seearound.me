@@ -23,14 +23,6 @@ function setDate(dayfield,number) {
             }
         }
     }
-    
-	/*if(selectedDate){
-         dayfield.options[Number(selectedDate)]=new Option(Number(selectedDate),Number(selectedDate), true, true) //select today's day
-		 //selectedDate = '';
-    }else {
-        dayfield.options[0]=new Option('Day','Day', true, true) //select today's day 
-    }*/
-       
 }
 
 function setMonth(monthfield,number) {
@@ -45,12 +37,6 @@ function setMonth(monthfield,number) {
             monthfield.options[m]=new Option(monthtext[m], monthtext[m])
         }
     }
-    /*if(selectedMonth){
-        var index = monthtext.indexOf(selectedMonth);
-        monthfield.options[index]=new Option(monthtext[index], monthtext[index], true, true) //select today's month
-        //selectedMonth = '';
-    }else
-        monthfield.options[0]=new Option('Month','Month', true, true) //select today's month*/
 }
 
 function setYear(yearfield) {
@@ -68,12 +54,6 @@ function setYear(yearfield) {
             j = i-1;
         }
     }
-    /*if(selectedYear){
-        yearfield.options[j]=new Option(selectedYear,selectedYear, true, true) //select today's year
-        selectedYear = '';
-    }else
-        yearfield.options[j]=new Option('Year','Year', true, true) //select today's year*/
-
 }
 
 function populatedropdown(dayfield, monthfield, yearfield){
@@ -89,10 +69,6 @@ function populatedropdown(dayfield, monthfield, yearfield){
         setMonth(monthfield, 12); 
         setYear(yearfield);
     }
-    
-    
-    //if(selectedMonth)
-    //updateDate(selectedMonth-1,'month')
 }
 
 function updateDate(thisone,type) {

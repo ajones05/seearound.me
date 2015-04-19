@@ -3,7 +3,6 @@ var NEWS_LIMIT = 15;
 var commonMap;
 var map;
 var circle;
-var bubbleContent = null;
 var updatedContentId = 0;
 var geocoder = new google.maps.Geocoder();
 var previousBubble = null;

@@ -49,9 +49,12 @@ class InfoController extends My_Controller_Action_Abstract
 
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
+		$this->view->headLink()
+			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css');
+
 		$this->view->headScript()
-			->appendFile('/www/scripts/jquery.loadmask.js?' . $mediaversion)
-			->appendFile('/www/scripts/jquery.textarea_autosize.js?' . $mediaversion)
+			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
+			->appendFile('/bower_components/textarea-autosize/src/jquery.textarea_autosize.js')
 			->appendFile('/www/scripts/publicNews.js?' . $mediaversion)
 			->appendFile('/www/scripts/news.js?' . $mediaversion);
     }

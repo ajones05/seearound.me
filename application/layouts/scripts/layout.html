@@ -10,14 +10,29 @@ $config = Zend_Registry::get('config_global');
 $geoip = My_Ip::geolocation();
 $request = Zend_Controller_Front::getInstance()->getRequest();
 
+$this->headLink()
+	->appendStylesheet('/bower_components/jquery-ui/themes/base/jquery-ui.min.css')
+	->appendStylesheet('/www/css/reset.css?' . $config->mediaversion)
+	->appendStylesheet('/www/css/global.css?' . $config->mediaversion)
+	->appendStylesheet('/www/css/login.css?' . $config->mediaversion);
+
 $this->headScript()
 	->appendScript(
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
+		"	var baseUrl = " . json_encode(BASE_PATH) . ";\n" .
 		"	var http_host = " . json_encode($request->getHttpHost()) . ";\n" .
-		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
+		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
+		"	var	reciever_userid = " . json_encode($this->reciever) . ";\n" .
+		"	var	user_id = " . json_encode($this->isLogin ? $user->id : '') . ";\n"
 	)
-	->prependFile('/www/scripts/jquery.js')
-	->appendFile('/www/scripts/jquery.validate.min.js');
+	->prependFile('/bower_components/jquery/dist/jquery.min.js')
+	->appendFile('/bower_components/jquery-ui/jquery-ui.min.js')
+	// TODO: remove after fix deprecated
+	->appendFile('/bower_components/query-migrate/src/migrate.js')
+	->appendFile('/bower_components/query-migrate/src/core.js')
+	->appendFile('/bower_components/query-migrate/src/event.js')
+	->appendFile('/bower_components/jquery-validation/dist/jquery.validate.min.js')
+	->appendFile('/bower_components/jquery.scrollTo/jquery.scrollTo.min.js');
 
 $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 ?>
@@ -27,14 +42,8 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>seearound.me</title>
 	<?php echo $this->headLink() . "\n" . $this->headScript() . "\n"; ?>
-
 	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/colorbox.css"/>
-	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/boxy.css"/>
-	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery-ui.css"/>
-	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/reset.css"/>
-	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/global.css?3"/>
 	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/layout.css?1"/>
-	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/jquery.mCustomScrollbar.css"/>
 	<?php if ($this->hideRight): ?>
 	<style type="text/css">
     #midColLayout {
@@ -48,13 +57,10 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 	<script language="javascript" type="text/javascript">
 	var geoiplatitude  = <?php echo $geoip[0]; ?>;
 	var geoiplongitude = <?php echo $geoip[1]; ?>;
-	var baseUrl = "<?=BASE_PATH?>";
-	var userLatitude = <?php echo $this->isLogin ? $user->lat() : $geoip[0]; ?>;
-	var userLongitude = <?php echo $this->isLogin ? $user->lng() : $geoip[1]; ?>;
+	var userLatitude = <?php echo json_encode($this->isLogin ? $user->lat() : $geoip[0]); ?>;
+	var userLongitude = <?php echo json_encode($this->isLogin ? $user->lng() : $geoip[1]); ?>;
 	var userAddress = <?php echo json_encode($this->isLogin ? $user->address() : ''); ?>;
 	var isFbLogin = "<?php echo !empty($this->auth['is_fb_login']); ?>";
-	var user_id = <?php echo json_encode($this->isLogin ? $user->id : ''); ?>;
-	var reciever_userid =  "<?=$this->reciever?>";
 	var userName = <?php echo json_encode($this->isLogin ? $user->Name : ''); ?>;
 	var imagePath = "<?php echo $this->isLogin ? $user->getProfileImage($image) : $image; ?>";
 	var controller = "<?=$request->getParam('controller')?>";
@@ -63,13 +69,10 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 	var returnUrl = "<?=$request->getParam('url')?$request->getParam('url'):''?>";
 	var currentRequests = 0;
 	</script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery-ui.min.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/infobubble.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/customDatepicker.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.colorbox.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/json2.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.boxy.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.form.js"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js?<?php echo $config->mediaversion; ?>"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js?<?php echo $config->mediaversion; ?>"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/common.js?<?php echo $config->mediaversion; ?>"></script>
@@ -77,9 +80,6 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-common.js?<?php echo $config->mediaversion; ?>"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-mainMap.js?<?php echo $config->mediaversion; ?>"></script>
 	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/upclick.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.autogrowtextarea.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.scrollTo-min.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.mCustomScrollbar.js"></script>	   
 	<script type="text/javascript">
 	$(function(){
 		$('.result').html("View All");
