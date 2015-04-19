@@ -1,261 +1,102 @@
+var newsLocationMap, newsLocationMarker, newsLocationInfoWindow;
+
 function renderNews($news){
-	$('.textAreaClass', $news).bind('input paste keypress', function(e){
-		if (!isLogin){
-			$.colorbox({
-				width: '26%',
-				height: '20%',
-				inline: true,
-				href: '#login-id',
-				open: true
-			}, function(){
-				$('html, body').animate({scrollTop: 0}, 0);
-			});
+	$('.textAreaClass', $news)
+		.textareaAutoSize()
+		.bind('input paste keypress', function(e){
+			if (!isLogin){
+				$.colorbox({
+					width: '26%',
+					height: '20%',
+					inline: true,
+					href: '#login-id',
+					open: true
+				}, function(){
+					$('html, body').animate({scrollTop: 0}, 0);
+				});
 
-			return false;
-		}
-
-		var $target = $(this),
-			comment = $target.val(),
-			news_id = $target.closest('.scrpBox').attr('id').replace('scrpBox_', '');
-
-		if (comment.length == 0){
-			return true;
-		}
-
-		if (comment.length > 250){
-			$target.val(comment = comment.substring(0, 250));
-			alert("The comment should be less the 250 Characters");
-			return false;
-		}
-
-		if (comment.indexOf('<') > 0 || comment.indexOf('>') > 0){
-			alert('You enter invalid text');
-			$target.val(comment.replace('<', '').replace('>', ''));
-			return false;
-		}
-
-		if (e.keyCode === 13){
-			$target.attr('disabled', true);
-
-			$('.commentLoading').show();
-
-			$.ajax({
-				url: baseUrl + 'home/add-new-comments',
-				data: {
-					comment: comment,
-					news_id: news_id
-				},
-				type: 'POST',
-				dataType: 'json',
-				async: false
-			}).done(function(response){
-				if (response && response.status){
-					e.preventDefault();
-					$target.val('').attr('disabled', false).blur();
-					renderComments($(response.html).insertBefore($target.closest('.cmntList-last')));
-					$('.commentLoading').hide();
-				} else if (response){
-					alert(response.error.message);
-				} else {
-					alert(ERROR_MESSAGE);
-				}
-			}).fail(function(jqXHR, textStatus){
-				alert(textStatus);
-			});
-		} else {
-			$target.autoGrow();
-
-			if (Number($("#newsData").height()) > 714){
-				// ???
-				setThisHeight(Number($("#newsData").height()) + 100);
+				return false;
 			}
-		}
-	});
+
+			var $target = $(this),
+				comment = $target.val(),
+				news_id = getNewsID($target);
+
+			if (comment.length == 0){
+				return true;
+			}
+
+			if (comment.length > 250){
+				$target.val(comment = comment.substring(0, 250));
+				alert("The comment should be less the 250 Characters");
+				return false;
+			}
+
+			if (comment.indexOf('<') > 0 || comment.indexOf('>') > 0){
+				alert('You enter invalid text');
+				$target.val(comment.replace('<', '').replace('>', ''));
+				return false;
+			}
+
+			if (e.keyCode === 13){
+				$target.attr('disabled', true);
+
+				$('.commentLoading').show();
+
+				$.ajax({
+					url: baseUrl + 'home/add-new-comments',
+					data: {
+						comment: comment,
+						news_id: news_id
+					},
+					type: 'POST',
+					dataType: 'json',
+					async: false
+				}).done(function(response){
+					if (response && response.status){
+						e.preventDefault();
+						$target.val('').height('auto').attr('disabled', false).blur();
+						renderComments($(response.html).insertBefore($target.closest('.cmntList-last')));
+						$('.commentLoading').hide();
+					} else if (response){
+						alert(response.error.message);
+					} else {
+						alert(ERROR_MESSAGE);
+					}
+				}).fail(function(jqXHR, textStatus){
+					alert(textStatus);
+				});
+			} else {
+				if (Number($("#newsData").height()) > 714){
+					setThisHeight(Number($("#newsData").height()) + 100);
+				}
+			}
+		});
 
 	$('.edit-post', $news).click(function(){
-		var $target = $(this).closest('.scrpBox');
+		var $target = $(this).closest('.scrpBox'),
+			$editButtons = $('.location-post, .delete-post, .save-post', $target);
 
-		$('.location-post, .delete-post, .save-post', $target).attr('disabled', true);
+		$editButtons.attr('disabled', true);
 
 		$.ajax({
 			url: baseUrl + 'home/edit-news',
-			data: {id: $target.attr('id').replace('scrpBox_', '')},
+			data: {id: getNewsID($target)},
 			type: 'POST',
 			dataType: 'json'
 		}).done(function(response){
 			if (response && response.status){
 				$('.post-content, .news-footer', $target).hide();
 				$('.edit-news-panel', $target).show();
-				$('.post-bottom', $target).prepend(
-					$('<div/>', {'class': 'write-news-content'}).append(
-						$('<textarea/>', {rows: 1})
-							.val(response.news)
-							.bind('input paste keypress', editNewsHandle)
-					)
-				);
-				$('.write-news-content textarea', $target).textareaAutoSize().focus();
-				$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
 
-				var $deleteButton = $('.delete-post', $target);
+				$('<textarea/>', {rows: 1})
+					.appendTo($('<div/>', {'class': 'write-news-content'}).prependTo($('.post-bottom', $target)))
+					.val(response.news)
+					.bind('input paste keypress', editNewsHandle)
+					.textareaAutoSize()
+					.focus();
 
-				if (!$deleteButton.data('click.delete')){
-					$deleteButton.data('click.delete', true);
-					$deleteButton.click(function(e){
-						if (confirm('Are you sure you want to delete?')){
-							var news_id = $target.attr('id').replace('scrpBox_', '');
-
-							$('.location-post, .delete-post, .save-post', $target).attr('disabled', true);
-
-							$.ajax({
-								url: baseUrl + 'home/delete',
-								type: 'POST',
-								dataType: 'json',
-								data: {id: news_id}
-							}).done(function(response){
-								if (response && response.status){
-									$target.remove();
-
-									var doFlag = true;
-
-									for (x in commonMap.bubbleArray){
-										for (y in commonMap.bubbleArray[x].newsId){
-											if (commonMap.bubbleArray[x].newsId[y] == news_id){
-												if (commonMap.bubbleArray[x].newsId.length == 1){
-													if (x == 0){
-														commonMap.bubbleArray[0].contentArgs[0][2] = 'This is me!';
-														commonMap.bubbleArray[0].contentArgs[0][6] = 0;
-														commonMap.bubbleArray[0].newsId = new Array(); 
-														commonMap.bubbleArray[0].currentNewsId = null;
-														commonMap.bubbleArray[x].total = 0;
-														commonMap.bubbleArray[0].divContent = commonMap.createContent(
-															commonMap.bubbleArray[0].contentArgs[0][0],
-															commonMap.bubbleArray[0].contentArgs[0][1],
-															commonMap.bubbleArray[0].contentArgs[0][2],
-															commonMap.bubbleArray[0].contentArgs[0][3],
-															commonMap.bubbleArray[0].contentArgs[0][4],
-															commonMap.bubbleArray[0].contentArgs[0][5],
-															commonMap.bubbleArray[0].contentArgs[0][6],
-															true
-														);
-
-														$(document).find("#mainContent_0").each(function(){
-															if ($(this).html()==''){
-																$(this).remove();
-															} else {
-																$(this).attr('currentdiv', 1);
-																$(this).attr('totalDiv', 1);
-																$("#prevDiv_0").css('display', 'none');
-																$("#nextDiv_0").css('display', 'none');
-															}
-														});
-													} else {
-														commonMap.bubbleArray[x].contentArgs = new Array();
-														commonMap.bubbleArray[x].newsId = new Array();
-														commonMap.marker[x].setMap(null);
-														commonMap.marker = mergeArray(commonMap.marker,x);
-														doFlag = false;
-														break;
-													}
-												} else {
-													commonMap.bubbleArray[x].contentArgs = mergeArray(commonMap.bubbleArray[x].contentArgs, y);
-													commonMap.bubbleArray[x].newsId = mergeArray(commonMap.bubbleArray[x].newsId, y);
-													commonMap.bubbleArray[x].user_id = mergeArray(commonMap.bubbleArray[x].user_id, y);
-													commonMap.bubbleArray[x].currentNewsId = commonMap.bubbleArray[x].newsId[0];
-													commonMap.bubbleArray[x].total = commonMap.bubbleArray[x].user_id.length;
-													commonMap.bubbleArray[x].contentArgs[0][4] = 'first';
-													commonMap.bubbleArray[x].contentArgs[0][5] = 1;
-
-													var arrowflag = true;
-
-													if (commonMap.bubbleArray[x].newsId.length > 1){
-														arrowflag = false;
-													}
-
-													commonMap.bubbleArray[x].divContent = commonMap.createContent(
-														commonMap.bubbleArray[x].contentArgs[0][0],
-														commonMap.bubbleArray[x].contentArgs[0][1],
-														commonMap.bubbleArray[x].contentArgs[0][2],
-														1,
-														commonMap.bubbleArray[x].contentArgs[0][4],
-														commonMap.bubbleArray[x].contentArgs[0][5],
-														commonMap.bubbleArray[x].contentArgs[0][6],
-														arrowflag
-													);
-
-													$(document).find("#mainContent_"+x).each(function(){
-														if ($(this).html()==''){
-															$(this).remove();
-														} else {
-															$(this).attr('currentdiv',1);
-															$(this).attr('totalDiv',commonMap.bubbleArray[x].newsId.length);
-															$(this).html(commonMap.bubbleArray[x].divContent);
-														}
-													});
-												}
-											}
-										}
-
-										if (!doFlag){
-											break;
-										}
-									}
-								} else {
-									alert('Sorry! we are unable to performe delete action');
-								}
-
-								$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-							}).fail(function(jqXHR, textStatus){
-								alert(textStatus);
-								$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-							});
-						}
-					});
-				}
-
-				var $saveButton = $('.save-post', $target);
-
-				if (!$saveButton.data('click.save')){
-					$saveButton.data('click.save', true);
-					$saveButton.click(function(e){
-						var $editBox = $('.write-news-content textarea', $target),
-							value = $.trim($editBox.val());
-
-						if (value === ''){
-							$editBox.focus();
-							return false;
-						}
-
-						$editBox.attr('disabled', true);
-						$('.location-post, .delete-post, .save-post', $target).attr('disabled', true);
-
-						$.ajax({
-							url: baseUrl + 'home/save-news',
-							data: {
-								id: $(this).closest('.scrpBox').attr('id').replace('scrpBox_', ''),
-								news: value
-							},
-							type: 'POST',
-							dataType: 'json'
-						}).done(function(response){
-							if (response && response.status){
-								$('.edit-news-panel', $target).hide();
-								$('.write-news-content', $target).remove();
-								$('.post-content', $target).html(response.html).show();
-								$('.news-footer', $target).show();
-								$('.edit-post', $target).attr('disabled', false);
-							} else if (response){
-								alert(response.error.message);
-								$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-							} else {
-								alert(ERROR_MESSAGE);
-								$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-							}
-						}).fail(function(jqXHR, textStatus){
-							alert(textStatus);
-							$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-						});
-					});
-				}
+				$editButtons.attr('disabled', false);
 			} else if (response){
 				alert(response.error.message);
 			} else {
@@ -265,161 +106,7 @@ function renderNews($news){
 			alert(textStatus);
 		});
 	});
-/*
-	$('.save-post', $news).click(function(){
-		var $target = $(this).closest('.scrpBox'),
-			$editBox = $('.write-news-content textarea', $target),
-			value = $.trim($editBox.val());
 
-		if (value === ''){
-			$editBox.focus();
-			return false;
-		}
-
-		$editBox.attr('disabled', true);
-		$('.location-post, .delete-post, .save-post', $target).attr('disabled', true);
-
-		$.ajax({
-			url: baseUrl + 'home/save-news',
-			data: {
-				id: $(this).closest('.scrpBox').attr('id').replace('scrpBox_', ''),
-				news: value
-			},
-			type: 'POST',
-			dataType: 'json'
-		}).done(function(response){
-			if (response && response.status){
-				$('.edit-news-panel', $target).hide();
-				$('.write-news-content', $target).remove();
-				$('.post-content', $target).html(response.html).show();
-				$('.news-footer', $target).show();
-				$('.edit-post', $target).attr('disabled', false);
-			} else if (response){
-				alert(response.error.message);
-				$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-			} else {
-				alert(ERROR_MESSAGE);
-				$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-			}
-		}).fail(function(jqXHR, textStatus){
-			alert(textStatus);
-			$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-		});
-	});
-*/
-/*
-	$('.delete-post', $news).click(function(e){
-		if (confirm('Are you sure you want to delete?')){
-			var $target = $(this).closest('.scrpBox'),
-				news_id = $target.attr('id').replace('scrpBox_', '');
-
-			$('.location-post, .delete-post, .save-post', $target).attr('disabled', true);
-
-			$.ajax({
-				url: baseUrl + 'home/delete',
-				type: 'POST',
-				dataType: 'json',
-				data: {id: news_id}
-			}).done(function(response){
-				if (response && response.status){
-					$target.remove();
-
-					var doFlag = true;
-
-					for (x in commonMap.bubbleArray){
-						for (y in commonMap.bubbleArray[x].newsId){
-							if (commonMap.bubbleArray[x].newsId[y] == news_id){
-								if (commonMap.bubbleArray[x].newsId.length == 1){
-									if (x == 0){
-										commonMap.bubbleArray[0].contentArgs[0][2] = 'This is me!';
-										commonMap.bubbleArray[0].contentArgs[0][6] = 0;
-										commonMap.bubbleArray[0].newsId = new Array(); 
-										commonMap.bubbleArray[0].currentNewsId = null;
-										commonMap.bubbleArray[x].total = 0;
-										commonMap.bubbleArray[0].divContent = commonMap.createContent(
-											commonMap.bubbleArray[0].contentArgs[0][0],
-											commonMap.bubbleArray[0].contentArgs[0][1],
-											commonMap.bubbleArray[0].contentArgs[0][2],
-											commonMap.bubbleArray[0].contentArgs[0][3],
-											commonMap.bubbleArray[0].contentArgs[0][4],
-											commonMap.bubbleArray[0].contentArgs[0][5],
-											commonMap.bubbleArray[0].contentArgs[0][6],
-											true
-										);
-
-										$(document).find("#mainContent_0").each(function(){
-											if ($(this).html()==''){
-												$(this).remove();
-											} else {
-												$(this).attr('currentdiv', 1);
-												$(this).attr('totalDiv', 1);
-												$("#prevDiv_0").css('display', 'none');
-												$("#nextDiv_0").css('display', 'none');
-											}
-										});
-									} else {
-										commonMap.bubbleArray[x].contentArgs = new Array();
-										commonMap.bubbleArray[x].newsId = new Array();
-										commonMap.marker[x].setMap(null);
-										commonMap.marker = mergeArray(commonMap.marker,x);
-										doFlag = false;
-										break;
-									}
-								} else {
-									commonMap.bubbleArray[x].contentArgs = mergeArray(commonMap.bubbleArray[x].contentArgs, y);
-									commonMap.bubbleArray[x].newsId = mergeArray(commonMap.bubbleArray[x].newsId, y);
-									commonMap.bubbleArray[x].user_id = mergeArray(commonMap.bubbleArray[x].user_id, y);
-									commonMap.bubbleArray[x].currentNewsId = commonMap.bubbleArray[x].newsId[0];
-									commonMap.bubbleArray[x].total = commonMap.bubbleArray[x].user_id.length;
-									commonMap.bubbleArray[x].contentArgs[0][4] = 'first';
-									commonMap.bubbleArray[x].contentArgs[0][5] = 1;
-
-									var arrowflag = true;
-
-									if (commonMap.bubbleArray[x].newsId.length > 1){
-										arrowflag = false;
-									}
-
-									commonMap.bubbleArray[x].divContent = commonMap.createContent(
-										commonMap.bubbleArray[x].contentArgs[0][0],
-										commonMap.bubbleArray[x].contentArgs[0][1],
-										commonMap.bubbleArray[x].contentArgs[0][2],
-										1,
-										commonMap.bubbleArray[x].contentArgs[0][4],
-										commonMap.bubbleArray[x].contentArgs[0][5],
-										commonMap.bubbleArray[x].contentArgs[0][6],
-										arrowflag
-									);
-
-									$(document).find("#mainContent_"+x).each(function(){
-										if ($(this).html()==''){
-											$(this).remove();
-										} else {
-											$(this).attr('currentdiv',1);
-											$(this).attr('totalDiv',commonMap.bubbleArray[x].newsId.length);
-											$(this).html(commonMap.bubbleArray[x].divContent);
-										}
-									});
-								}
-							}
-						}
-
-						if (!doFlag){
-							break;
-						}
-					}
-				} else {
-					alert('Sorry! we are unable to performe delete action');
-				}
-
-				$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-			}).fail(function(jqXHR, textStatus){
-				alert(textStatus);
-				$('.location-post, .delete-post, .save-post', $target).attr('disabled', false);
-			});
-		}
-	});
-*/
 	$('.view-comment', $news).click(function(e){
 		var target = $(this),
 			news_item = target.closest('.scrpBox'),
@@ -431,7 +118,7 @@ function renderNews($news){
 			type: 'POST',
 			url: baseUrl + 'home/get-total-comments',
 			data: {
-				news_id: news_item.attr('id').replace('scrpBox_', ''),
+				news_id: getNewsID(news_item),
 				limitstart: comment_list.find('.cmntList').size()
 			},
 			dataType : 'json'
@@ -455,6 +142,257 @@ function renderNews($news){
 			}
 		}).fail(function(jqXHR, textStatus){
 			alert(textStatus);
+		});
+	});
+
+	$('.location-post', $news).click(function(){
+		var $target = $(this).closest('.scrpBox');
+
+		$('body').css({overflow: 'hidden'});
+
+		$('#post-location').dialog({
+			modal: true,
+			resizable: false,
+			drag: false,
+			width: 980,
+			height: 500,
+			dialogClass: 'colorbox',
+			beforeClose: function(event, ui){
+				$('body').css({overflow: 'visible'});
+			},
+			open: function(event, ui){
+				var newsId = getNewsID($target),
+					newsAddress = $target.attr('data-address'),
+					newsLatitude = $target.attr('data-lat'),
+					newsLongitude = $target.attr('data-lng'),
+					$submitField = $('#post-location [type=submit]').attr('disabled', false),
+					$addressField = $('#post-location [name=address]').val(newsAddress).attr('disabled', false),
+					$latitudeField = $('#post-location [name=latitude]').val(newsLatitude),
+					$longitudeField = $('#post-location [name=longitude]').val(newsLongitude),
+					$map = $('#post-location #map-canvas'),
+					autocomplete = new google.maps.places.Autocomplete($addressField[0]),
+					centerLocation = new google.maps.LatLng(newsLatitude, newsLongitude);
+
+				$map.unmask();
+
+				if (!newsLocationMap){
+					newsLocationMap = new google.maps.Map($map[0], {
+						zoom: 14,
+						center: centerLocation
+					});
+
+					newsLocationMarker = new google.maps.Marker({
+						map: newsLocationMap,
+						draggable: true,
+						position: newsLocationMap.getCenter(),
+						icon: new google.maps.MarkerImage(baseUrl + MainMarker1.image, null, null, null,
+							new google.maps.Size(MainMarker1.height,MainMarker1.width))
+					});
+
+					newsLocationInfoWindow = new google.maps.InfoWindow({
+						maxWidth: 220,
+						content: commonMap.addressContent(newsAddress, imagePath)
+					});
+
+					google.maps.event.addListener(newsLocationMarker, 'dragend', function(event){
+						var infoWindowContent = $('#post-location .profile-map-info .user-address');
+
+						newsLocationMap.setCenter(event.latLng);
+						infoWindowContent.html($('<div/>').css({textAlign: 'left'}).text('loading...'));
+
+						geocoder.geocode({
+							latLng: event.latLng
+						}, function(results, status){
+							if (status == google.maps.GeocoderStatus.OK){
+								infoWindowContent.text(results[0].formatted_address);
+								$addressField.val(results[0].formatted_address);
+							} else {
+								infoWindowContent.text('');
+								$addressField.val('');
+							}
+
+							$latitudeField.val(event.latLng.lat());
+							$longitudeField.val(event.latLng.lng());
+						});
+					});
+
+					google.maps.event.addListener(autocomplete, 'place_changed', function(){
+						$('#post-location .panel .search').click();
+					});
+
+					$addressField.keydown(function(e){
+						if (e.keyCode == 13){
+							e.preventDefault();
+						}
+					});
+
+					$('#post-location .panel .search').click(function(){
+						var value = $.trim($addressField.val());
+
+						if (value === ''){
+							$addressField.focus();
+							return;
+						}
+
+						$submitField.attr('disabled', true);
+
+						geocoder.geocode({
+							address: value
+						}, function(results, status){
+							if (status == google.maps.GeocoderStatus.OK){
+								$('#post-location .profile-map-info .user-address').text(results[0].formatted_address);
+								newsLocationMap.setCenter(results[0].geometry.location);
+								newsLocationMarker.setPosition(results[0].geometry.location);
+								$addressField.val(results[0].formatted_address);
+								$latitudeField.val(results[0].geometry.location.lat());
+								$longitudeField.val(results[0].geometry.location.lng());
+							} else {
+								alert('Sorry! We are unable to find this location.');
+								$latitudeField.val('');
+								$longitudeField.val('');
+							}
+
+							$submitField.attr('disabled', false);
+						});
+					});
+
+					$('#post-location .panel form').submit(function(e){
+						e.preventDefault();
+
+						if ($.trim($addressField.val()) === ''){
+							$addressField.focus();
+							return;
+						}
+
+						$('#post-location #map-canvas').mask('Waiting...');
+						$submitField.attr('disabled', true);
+
+						$.ajax({
+							url: baseUrl + 'home/save-news-location',
+							data: $(this).serialize(),
+							type: 'POST',
+							dataType: 'json',
+							beforeSend: function(jqXHR, settings){
+								$addressField.attr('disabled', true);
+							}
+						}).done(function(response){
+							if (response && response.status){
+								$target.attr('data-address', $addressField.val());
+								$target.attr('data-latitude', $latitudeField.val());
+								$target.attr('data-longitude', $longitudeField.val());
+
+								// TODO: change marker position
+								//	- if marker out of radius then remove
+
+								$('#post-location').dialog('close');
+							} else if (response){
+								alert(response.error.message);
+								$map.unmask();
+								$('[name=address],[type=submit]', '#post-location').attr('disabled', false);
+							} else {
+								alert(ERROR_MESSAGE);
+								$map.unmask();
+								$('[name=address],[type=submit]', '#post-location').attr('disabled', false);
+							}
+						}).fail(function(jqXHR, textStatus){
+							alert(textStatus);
+							$map.unmask();
+							$('[name=address],[type=submit]', '#post-location').attr('disabled', false);
+						});
+					});
+				} else {
+					newsLocationMap.setOptions({
+						draggable: true,
+						zoom: 14,
+						center: centerLocation
+					});
+
+					newsLocationMarker.setOptions({
+						draggable: true,
+						position: newsLocationMap.getCenter()
+					});
+				}
+
+				$('#post-location .profile-map-info .user-address').text(newsAddress);
+				$('#post-location [name=id]').val(newsId);
+
+				newsLocationInfoWindow.open(newsLocationMap, newsLocationMarker);
+			}
+		});
+	});
+
+	$('.delete-post', $news).click(function(e){
+		if (!confirm('Are you sure you want to delete?')){
+			return false;
+		}
+
+		var $target = $(this).closest('.scrpBox'),
+			$editButtons = $('.location-post, .delete-post, .save-post', $target),
+			news_id = getNewsID($target);
+
+		$editButtons.attr('disabled', true);
+
+		$.ajax({
+			url: baseUrl + 'home/delete',
+			type: 'POST',
+			dataType: 'json',
+			data: {id: news_id}
+		}).done(function(response){
+			if (response && response.status){
+				$target.remove();
+				removeNewsMarker(news_id);
+			} else {
+				alert('Sorry! we are unable to performe delete action');
+				$editButtons.attr('disabled', false);
+			}
+		}).fail(function(jqXHR, textStatus){
+			alert(textStatus);
+			$editButtons.attr('disabled', false);
+		});
+	});
+
+	$('.save-post', $news).click(function(e){
+		var $target = $(this).closest('.scrpBox'),
+			$editBox = $('.write-news-content textarea', $target),
+			$editButtons = $('.location-post, .delete-post, .save-post', $target),
+			value = $.trim($editBox.val()),
+			news_id = getNewsID($target);
+
+		if (value === ''){
+			$editBox.focus();
+			return false;
+		}
+
+		$editBox.attr('disabled', true);
+		$editButtons.attr('disabled', true);
+
+		$.ajax({
+			url: baseUrl + 'home/save-news',
+			data: {
+				id: news_id,
+				news: value
+			},
+			type: 'POST',
+			dataType: 'json'
+		}).done(function(response){
+			if (response && response.status){
+				$('.edit-news-panel', $target).hide();
+				$('.write-news-content', $target).remove();
+				$('.post-content', $target).html(response.html).show();
+				$('.news-footer', $target).show();
+				$('.edit-post', $target).attr('disabled', false);
+
+				// TODO: change marker tooltip text
+			} else if (response){
+				alert(response.error.message);
+				$editButtons.attr('disabled', false);
+			} else {
+				alert(ERROR_MESSAGE);
+				$editButtons.attr('disabled', false);
+			}
+		}).fail(function(jqXHR, textStatus){
+			alert(textStatus);
+			$editButtons.attr('disabled', false);
 		});
 	});
 
@@ -528,4 +466,96 @@ function editNewsHandle(){
 		$(this).val(text.substring(0, 499));
 		alert("Sorry! You can not enter more then 500 charactes.");
 	}
+}
+
+// TODO: test
+function removeNewsMarker(news_id){
+	var doFlag = true;
+
+	for (x in commonMap.bubbleArray){
+		for (y in commonMap.bubbleArray[x].newsId){
+			if (commonMap.bubbleArray[x].newsId[y] == news_id){
+				if (commonMap.bubbleArray[x].newsId.length == 1){
+					if (x == 0){
+						commonMap.bubbleArray[0].contentArgs[0][2] = 'This is me!';
+						commonMap.bubbleArray[0].contentArgs[0][6] = 0;
+						commonMap.bubbleArray[0].newsId = new Array(); 
+						commonMap.bubbleArray[0].currentNewsId = null;
+						commonMap.bubbleArray[x].total = 0;
+						commonMap.bubbleArray[0].divContent = commonMap.createContent(
+							commonMap.bubbleArray[0].contentArgs[0][0],
+							commonMap.bubbleArray[0].contentArgs[0][1],
+							commonMap.bubbleArray[0].contentArgs[0][2],
+							commonMap.bubbleArray[0].contentArgs[0][3],
+							commonMap.bubbleArray[0].contentArgs[0][4],
+							commonMap.bubbleArray[0].contentArgs[0][5],
+							commonMap.bubbleArray[0].contentArgs[0][6],
+							true
+						);
+
+						$("#mainContent_0").each(function(){
+							if ($(this).html()==''){
+								$(this).remove();
+							} else {
+								$(this).attr('currentdiv', 1);
+								$(this).attr('totalDiv', 1);
+								$("#prevDiv_0").css('display', 'none');
+								$("#nextDiv_0").css('display', 'none');
+							}
+						});
+					} else {
+						commonMap.bubbleArray[x].contentArgs = new Array();
+						commonMap.bubbleArray[x].newsId = new Array();
+						commonMap.marker[x].setMap(null);
+						commonMap.marker = mergeArray(commonMap.marker,x);
+						doFlag = false;
+						break;
+					}
+				} else {
+					commonMap.bubbleArray[x].contentArgs = mergeArray(commonMap.bubbleArray[x].contentArgs, y);
+					commonMap.bubbleArray[x].newsId = mergeArray(commonMap.bubbleArray[x].newsId, y);
+					commonMap.bubbleArray[x].user_id = mergeArray(commonMap.bubbleArray[x].user_id, y);
+					commonMap.bubbleArray[x].currentNewsId = commonMap.bubbleArray[x].newsId[0];
+					commonMap.bubbleArray[x].total = commonMap.bubbleArray[x].user_id.length;
+					commonMap.bubbleArray[x].contentArgs[0][4] = 'first';
+					commonMap.bubbleArray[x].contentArgs[0][5] = 1;
+
+					var arrowflag = true;
+
+					if (commonMap.bubbleArray[x].newsId.length > 1){
+						arrowflag = false;
+					}
+
+					commonMap.bubbleArray[x].divContent = commonMap.createContent(
+						commonMap.bubbleArray[x].contentArgs[0][0],
+						commonMap.bubbleArray[x].contentArgs[0][1],
+						commonMap.bubbleArray[x].contentArgs[0][2],
+						1,
+						commonMap.bubbleArray[x].contentArgs[0][4],
+						commonMap.bubbleArray[x].contentArgs[0][5],
+						commonMap.bubbleArray[x].contentArgs[0][6],
+						arrowflag
+					);
+
+					$("#mainContent_"+x).each(function(){
+						if ($(this).html()==''){
+							$(this).remove();
+						} else {
+							$(this).attr('currentdiv',1);
+							$(this).attr('totalDiv',commonMap.bubbleArray[x].newsId.length);
+							$(this).html(commonMap.bubbleArray[x].divContent);
+						}
+					});
+				}
+			}
+		}
+
+		if (!doFlag){
+			break;
+		}
+	}
+}
+
+function getNewsID(target){
+	return parseInt(target.attr('id').replace('scrpBox_', ''));
 }

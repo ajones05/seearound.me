@@ -1,7 +1,7 @@
 <?php if (My_ArrayHelper::getProp(Zend_Auth::getInstance()->getIdentity(), 'user_id') == $this->news['user_id']): ?>
 <div class="edit-news-panel">
-	<input type="button" class="location-post" value="Change location" />
-	<input type="button" class="delete-post" value="Delete" />
-	<input type="button" class="save-post" value="Done Editing" />
+	<input type="button" class="location-post" value="Change location" disabled="disabled" />
+	<input type="button" class="delete-post" value="Delete" disabled="disabled" />
+	<input type="button" class="save-post" value="Done Editing" disabled="disabled" />
 </div>
 <?php endif; ?>

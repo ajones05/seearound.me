@@ -955,4 +955,67 @@ public function changeAddressAction() {
 
 		die(Zend_Json_Encoder::encode($response));
 	}
+
+	/**
+	 * Save news location action.
+	 *
+	 * @return void
+	 */
+	public function saveNewsLocationAction()
+	{
+		try
+		{
+			$model = new Application_Model_News;
+
+			if (!$model->checkId($this->_request->getPost('id'), $news, 0))
+			{
+				throw new RuntimeException('Incorrect news ID', -1);
+			}
+
+			if (!Application_Model_User::checkId(My_ArrayHelper::getProp(Zend_Auth::getInstance()->getIdentity(), 'user_id'), $user) ||
+				$user->id != $news->user_id)
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$address = $this->_request->getPost('address');
+
+			$latitude = $this->_request->getPost('latitude');
+
+			if (My_Validate::emptyString($latitude) || !My_Validate::latitude($latitude))
+			{
+				throw new RuntimeException('Incorrect latitude value', -1);
+			}
+
+			$longitude = $this->_request->getPost('longitude');
+
+			if (My_Validate::emptyString($longitude) || !My_Validate::longitude($longitude))
+			{
+				throw new RuntimeException('Incorrect longitude value', -1);
+			}
+
+			$news->Address = $address;
+			$news->latitude = $latitude;
+			$news->longitude = $longitude;
+			$news->save();
+
+			$response = array('status' => 1);
+		}
+		catch (RuntimeException $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => $e->getMessage())
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
+		}
+
+		die(Zend_Json_Encoder::encode($response));
+	}
 }

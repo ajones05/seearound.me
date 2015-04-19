@@ -278,7 +278,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
  
 .cmntRow .cmntList-last .inpCmnt li.inpCmnt-last { padding-right: 43px; background: url(../images/textarea_symbol.png) no-repeat 357px 4px; width: 340px;}
 
-.cmntRow .cmntList-last .inpCmnt li.inpCmnt-last .textAreaClass { height: 38px !important; border: none; padding: 5px 10px; font: normal 15px Lato-LightItalic; width: 100% !important; color: #8d8d8d;}
+.cmntRow .cmntList-last .inpCmnt li.inpCmnt-last .textAreaClass { min-height: 38px; border: none; padding: 5px 10px; font: normal 15px Lato-LightItalic; width: 100% !important; color: #8d8d8d;}
  
 .cmntList{margin:0px; position: relative;}
 
@@ -826,7 +826,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 .gMap .gm-style { overflow: visible !important;}
 
-.mapCanvas {height: 480px;margin: 0; padding: 0px;width:100%; z-index: 9900; overflow: visible !important; border-bottom: 1px solid #d7d7d7;border-top: 1px solid #d7d7d7;}
+.mapCanvas {height: 480px;margin: 0; padding: 0px;width:100%; overflow: visible !important; border-bottom: 1px solid #d7d7d7;border-top: 1px solid #d7d7d7;}
 
 #zoomController { left: 365px !important;top: -44px !important;width: 95px; }
 
@@ -1347,4 +1347,115 @@ body .link-meta .delim {
 body .link-meta .meta-content {
 	text-align: left;
 	margin: 10px 12px;
+}
+.colorbox.ui-widget-content {
+	background: none;
+	border: none;
+}
+.colorbox .ui-dialog-titlebar {
+	cursor: inherit;
+	padding: 0;
+	border: none;
+	background: none;
+	z-index: 1;
+}
+.colorbox .ui-dialog-title {
+	display: none;
+}
+.colorbox.ui-dialog .ui-dialog-titlebar-close {
+	top: 0;
+	right: 0;
+	margin: 0;
+}
+.colorbox.ui-dialog .ui-dialog-content {
+	background-color: #fff;
+	margin: 5px;
+	padding: 0;
+}
+.colorbox .ui-dialog-titlebar-close {
+	background: url(../images/mycontrols.png) no-repeat center;
+	width: 22px;
+	height: 22px;
+	background-color: #fff;
+	-moz-border-radius: 20px;
+	-webkit-border-radius: 20px;
+	border-radius: 20px;
+	-khtml-border-radius: 20px;
+	border: 1px solid #7d7d7d;
+}
+.colorbox .ui-dialog-titlebar-close > span {
+	display: none;
+}
+.location-dialog {
+	text-align: center;
+	display: none;
+}
+.location-dialog #map-canvas {
+	height: 416px;
+}
+.location-dialog .panel {
+	text-align: center;
+	padding: 15px 0;
+	display: inline-block;
+}
+.location-dialog .panel input[type=text] {
+	width: 290px;
+	padding: 8px 10px;
+	font: normal 15px Lato-lightItalic;
+	color: #8d8d8d;
+	border: 1px solid #d7d7d7;
+	float: left;
+}
+.location-dialog .panel img.search {
+	cursor: pointer;
+	width: 39px;
+	height: 36px;
+	float: left;
+}
+.location-dialog .panel input[type=submit] {
+	font: normal 17px lato-Bold;
+	overflow:visible;
+	color:#fff;
+	background-color: #0064CD;
+	background-repeat: repeat-x;
+	background-image: -khtml-gradient(linear, left top, left bottom, from(#049cdb), to(#0064cd));
+	background-image: -moz-linear-gradient(top, #049cdb, #0064cd);
+	background-image: -ms-linear-gradient(top, #049cdb, #0064cd);
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #049cdb), color-stop(100%, #0064cd));
+	background-image: -webkit-linear-gradient(top, #049cdb, #0064cd);
+	background-image: -o-linear-gradient(top, #049cdb, #0064cd);
+	background-image: linear-gradient(top, #049cdb, #0064cd);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#049cdb', endColorstr='#0064cd', GradientType=0);
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+	border-color: #0064CD #0064CD #003F81;
+	border-color: rgba(0, 0, 0, 0.1);
+	padding: 7px 10px;
+	margin-left: 50px;
+	float: left;
+}
+#slider {
+    background-color: #878787;
+    border: medium none;
+    border-radius: 5px;
+    float: left;
+    height: 6px;
+    margin-top: 8px;
+    width: 330px;
+}
+#slider .ui-slider-handle {
+    border-color: #EDEDED;
+    border-radius: 8px;
+    height: 23px;
+    left: 0;
+    top: -8px;
+    width: 13px;
+}
+#slider .ui-slider-handle.ui-state-active,
+#slider .ui-slider-handle.ui-state-active.ui-state-hover {
+	background-color: #f6f6f6;
+	border-color: #aaaaaa;
+}
+#slider .ui-slider-handle.ui-state-hover {
+	background-color: #c6e2ff;
+	border-color: #c6e2ff;
 }

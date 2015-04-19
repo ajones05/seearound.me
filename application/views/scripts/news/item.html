@@ -14,7 +14,7 @@ if ($images)
 	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $images);
 }
 ?>
-<div id="scrpBox_<?php echo $this->item['id']; ?>" class="scrpBox" onmouseover="toggleBounce('<?php echo $this->item['id']; ?>','<?php echo $this->user->id?>');" onmouseout="stopBounce('<?php echo $this->item['id']; ?>',<?php echo $this->user->id; ?>);">
+<div id="scrpBox_<?php echo $this->item['id']; ?>" class="scrpBox" onmouseover="toggleBounce('<?php echo $this->item['id']; ?>','<?php echo $this->user->id?>');" onmouseout="stopBounce('<?php echo $this->item['id']; ?>',<?php echo $this->user->id; ?>);" data-lat="<?php echo $this->item['latitude']; ?>" data-lng="<?php echo $this->item['longitude']; ?>" data-address="<?php echo $this->item['Address']; ?>">
 	<ul class="myScrp afterClr" id="newsDiv<?php echo $this->item['id']; ?>">
 		<li>
 			<ul class="post">

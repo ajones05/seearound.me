@@ -10,7 +10,7 @@ if ($image)
 	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $image);
 }
 ?>
-<div class="scrpBox scrpBox_new" id="scrpBox_<?php echo $this->news->id; ?>">
+<div class="scrpBox scrpBox_new" id="scrpBox_<?php echo $this->news->id; ?>" data-lat="<?php echo $this->news->latitude; ?>" data-lng="<?php echo $this->news->longitude; ?>" data-address="<?php echo $this->news->Address; ?>">
 	<ul class="myScrp afterClr user_post">
 		<li>
 			<ul class="post">
@@ -108,3 +108,4 @@ if ($image)
 			function(){$.colorbox.resize({width:imageWidth+'px' , height:imageHeight+'px'});});
     });
 </script>
+<?php echo My_ViewHelper::render('news/_location-post.html'); ?>
