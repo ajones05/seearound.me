@@ -384,10 +384,6 @@ function voting(thisone, action, elid,userid) {
 
                     $('#thumbs_up2_'+elid).show('slow');
 
-                    $('#thumbs_up1_'+elid).hide();
-
-                    //$('#thumbsup_blck_'+elid).css('display:none');
-
                     $('#img1_'+elid).hide();
 
                     $('#img2_'+elid).show();
@@ -403,9 +399,6 @@ function voting(thisone, action, elid,userid) {
                     //$('#comment_'+elid).show();
 
                     } else if(action == 'news') {
-
-                        $('#thumbs_up1_'+elid).show('slow');
-
                         $('#thumbs_up2_'+elid).hide();
 
                         //  $('#thumbsup_blck_'+elid).hide();

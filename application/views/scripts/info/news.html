@@ -25,10 +25,6 @@ if ($image)
                         <a class="title" href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $user->id; ?>" style="z-index:9999;color: #0068C4;text-decoration: none;"><?=$this->news_user->Name?></a> 
                         <span class="post-date"><?php echo date("d F Y h:i a", strtotime($this->news->created_date));?></span>
                         <span class="message_number" id="message_success_<?=$this->news->id?>"><?=$this->newsVote?></span>
-                        <div id="thumbs_up1_<?=$this->news->id?>"  style="float: right; margin-right: -46px; margin-top: 22px;display:none;">
-                            <span id="message_success" style="color: rgb(51, 204, 0);">
-                            <img src="<?php echo BASE_PATH; ?>/www/images/correct_small.gif">Thanks!</span>
-                         </div>
                          <div id="thumbs_up2_<?=$this->news->id?>"  style="float: right; margin-right: -46px; margin-top: 22px;display:none;">
                             <span id="message_success" style="color: rgb(51, 204, 0);">Already-Voted</span>
                          </div>

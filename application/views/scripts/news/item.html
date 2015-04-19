@@ -32,9 +32,6 @@ if ($images)
 						<?php endif; if ($auth_user_id != $this->user->id): ?>
 						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo BASE_PATH; ?>www/images/<?php echo $votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>">
 						<img class="crp" id="img2_<?php echo $this->item['id']; ?>" style="display:none" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo BASE_PATH; ?>www/images/thumsup_voted.jpg" />
-						<div id="thumbs_up1_<?php echo $this->item['id']; ?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
-							<span id="message_success_5" style="color: rgb(51, 204, 0);"><img src="<?php echo BASE_PATH; ?>www/images/correct_small.gif" />Thanks!</span>
-						</div>
 						<div id="thumbs_up2_<?php echo $this->item['id']; ?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
 							<span id="message_success_5" style="color: rgb(51, 204, 0);">Already-Voted</span>
 						</div>
