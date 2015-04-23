@@ -449,42 +449,73 @@ class MobileController extends Zend_Controller_Action
              } 
        }
     }
-    
-    
-     /**
-      * Function to fetch list of message for user inbox
-      * 
-      * @return returns json encode response 
-      */
-    public function listmessageAction(){
-        $messageTable = new Application_Model_Message();
-        $newsFactory = new Application_Model_NewsFactory();
-        $user_id = $_REQUEST['user_id'];
-        //$user_id = 8;
-        //$messageData = $messageTable->getUserData(array('receiver_id' => $user_id),true);
-        $messageData = $messageTable->getUserInboxListData(array('receiver_id' => $user_id),true);
-        $page = ($page) ? $page : 1;
-          /*$paginator = Zend_Paginator::factory($messageData->toArray());
-            $paginator->setCurrentPageNumber($page);
-            $paginator->setItemCountPerPage(14); */
-        $user_data    = $newsFactory->getUserData($user_id);
-        $user_pro     = $newsFactory->getUserProfileData($user_id);
-        $address_data = $newsFactory->getUserAddress($user_id);
-        $response = new stdClass();
-        if(isset($messageData)){
-             $response->status ="SUCCESS";
-             $response->message = "Message list Send Successfully";
-             $response->result = $messageData->toArray(); 
-             echo(json_encode($response)); exit;
-           } else {
-             $response->status = "FAILED";
-             $response->message="Message list could not send Successfully";
-             $response->result = $messageData->toArray(); 
-             echo(json_encode($response)); exit;
-         } 
-    }
-    
-    
+
+	/**
+	 * Fetch list of user messages action.
+	 *
+	 * @return void
+	 */
+	public function listmessageAction()
+	{
+		try
+		{
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			{
+				throw new RuntimeException('Incorrect user ID', -1);
+			}
+
+			// TODO: auth
+
+			$model = new Application_Model_Message;
+
+			$messages = $model->fetchAll(
+				$model->publicSelect()
+					->where('message.receiver_id =?', $user->id)
+					->order('updated DESC')
+					// TODO: limit
+					// TODO: limit start
+			);
+
+			$result = array();
+
+			foreach ($messages as $message)
+			{
+				$user = $message->findDependentRowset('Application_Model_User', 'Receiver')->current();
+
+				$result[] = array(
+					'id' => $message->id,
+					'sender_id' => $message->sender_id,
+					'subject' => $message->subject,
+					'message' => $message->message,
+					'created' => $message->created,
+					'updated' => $message->updated,
+					'reciever_read' => $message->reciever_read,
+					'Name' => $user->Name,
+					'Email_id' => $user->Email_id,
+					'Profile_image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg')
+				);
+			}
+
+			$response = array(
+				'status' => 'SUCCESS',
+				// TODO: ???
+				'message' => 'Message list Send Successfully',
+				'result' => $result
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
    /**
      * Function to fetch list of unread message for user inbox
      * 
