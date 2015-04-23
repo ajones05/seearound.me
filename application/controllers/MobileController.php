@@ -1,4 +1,6 @@
 <?php
+require_once ROOT_PATH . '/vendor/autoload.php';
+
 /**
  * Mobile API class.
  */
@@ -133,6 +135,172 @@ class MobileController extends Zend_Controller_Action
 		$this->_logRequest($response);
 
 		die(Zend_Json_Encoder::encode($response));
+	}
+
+	/**
+	 * Authenticate user with facebook action.
+	 *
+	 * @return void
+	 */
+	public function fbLoginAction()
+	{
+		try
+		{
+			$token = $this->_request->getPost('access-token');
+
+			if (trim($token) === '')
+			{
+				throw new RuntimeException('Facebook access token cannot be blank', -1);
+			}
+
+			$config = Zend_Registry::get('config_global');
+
+			Facebook\FacebookSession::setDefaultApplication($config->facebook->app->id, $config->facebook->app->secret);
+
+			$session = new Facebook\FacebookSession($token);
+
+			$me = (new Facebook\FacebookRequest(
+			  $session, 'GET', '/me'
+			))->execute()->getGraphObject(Facebook\GraphUser::className());
+
+			$email = $me->getEmail();
+
+			if (!$email)
+			{
+				throw new Exception('Email not activated');
+			}
+
+			$user_model = new Application_Model_User;
+
+			$network_id = $me->getId();
+
+			$user = $user_model->findByNetworkId($network_id);
+
+			if (!$user)
+			{
+				$user = $user_model->findByEmail($email);
+
+				if ($user)
+				{
+					$user_model->update(
+						array('Network_id' => $network_id),
+						$user_model->getAdapter()->quoteInto('id =?', $user->id)
+					);
+				}
+				else
+				{
+					$user = $user_model->createRow(array(
+						'Network_id' => $network_id,
+						'Name' => $me->getName(),
+						'Email_id' => $email,
+						'Status' => 'active',
+						'Creation_date'=> new Zend_Db_Expr('NOW()'),
+						'Update_date' => new Zend_Db_Expr('NOW()')
+					));
+
+					$me_picture = (new Facebook\FacebookRequest(
+						$session, 'GET', '/me/picture', array('type' => 'square', 'redirect' => false)
+					))->execute()->getGraphObject();
+
+					$picture = $me_picture->getProperty('url');
+
+					if ($picture != null)
+					{
+						$user->Profile_image = $me_picture->getProperty('url');
+					}
+
+					$user->save();
+					
+					Application_Model_Profile::getInstance()->insert(array(
+						'user_id' => $user->id,
+						'Gender' => ucfirst($me->getGender())
+					));
+
+					$geolocation = My_Ip::geolocation();
+
+					Application_Model_Address::getInstance()->insert(array(
+						'user_id' => $user->id,
+						'latitude' => $geolocation[0],
+						'longitude' => $geolocation[1]
+					));
+
+					Application_Model_Invitestatus::getInstance()->insert(array(
+						'user_id' => $user->id,
+						'created' => new Zend_Db_Expr('NOW()'),
+						'updated' => new Zend_Db_Expr('NOW()')
+					));
+
+					$users = Application_Model_Fbtempusers::getInstance()->findAllByNetworkId($network_id);
+
+					if (count($users))
+					{
+						$users_model = new Application_Model_Friends;
+
+						foreach($users as $tmp_user)
+						{
+							$users_model->insert(array(
+								'sender_id' => $tmp_user->sender_id,
+								'reciever_id' => $user->id,
+								'cdate' => new Zend_Db_Expr('NOW()'),
+								'udate' => new Zend_Db_Expr('NOW()')
+							));
+
+							$tmp_user->delete();
+						}
+					}
+				}
+			}
+
+			$status_model = new Application_Model_Loginstatus;
+
+			$loginRow = $status_model->setData(array(
+				'user_id' => $user->id,
+				'login_time' => new Zend_Db_Expr('NOW()'),
+				'ip_address' => $_SERVER['REMOTE_ADDR']
+			));
+
+			// TODO: ???
+			if (date('D') == 'Mon')
+			{
+				$loginRows = $status_model->sevenDaysOldData($user->id);
+				$inviteCount = floor(count($loginRows) / $this->credit);
+				$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $user->id));
+
+				if ($inviteStatusRow && floor((time() - strtotime($inviteStatusRow->updated)) / (24 * 60 * 60)) >= 7)
+				{
+					$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + $inviteCount;
+					$inviteStatusRow->updated = new Zend_Db_Expr('NOW()');
+					$inviteStatusRow->save();
+				}
+			}
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'result' => array(
+					// TODO: add user data
+				)
+			);
+		}
+		catch (Exception $e)
+		{
+			if ($e instanceof RuntimeException || $e instanceof Facebook\FacebookAuthorizationException)
+			{
+				$message = $e->getMessage();
+			}
+			else
+			{
+				$message = 'Internal Server Error';
+			}
+
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $message
+			);
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
 	}
 
      /**
