@@ -121,7 +121,7 @@ class Application_Model_Voting extends My_Db_Table_Abstract
                 ->where('news_id=?', $action_id);
         $fetch = $votingTable->fetchRow($select);
 
-        if ($fetch->id) {
+        if ($fetch) {
             return $fetch->id;
         }
         $yes = 1;
