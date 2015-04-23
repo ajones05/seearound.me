@@ -41,26 +41,23 @@ class GeneralController extends  My_Controller_Action_Abstract
 	}
 
     public function logoutAction()
-
     {
+		$auth = Zend_Auth::getInstance();
+		$data = $auth->getIdentity();
 
-        $auth = Zend_Auth::getInstance();
+		if ($data)
+		{
+			$status = Application_Model_Loginstatus::getInstance()->find($data['login_id'])->current();
 
-        $authData = $auth->getIdentity();
+			if ($status)
+			{
+				$status->logout_time = date('Y-m-d H:i:s');
+				$status->save();
+			}
 
-        $loginStatus = new Application_Model_Loginstatus();
+			$auth->clearIdentity();
+		}
 
-        $row = $loginStatus->find($authData['login_id'])->current();
-
-        if($row) {
-
-            $row->logout_time = date('Y-m-d H:i:s');
-
-            $row->save();
-
-        }
-
-        $auth->clearIdentity();
 		$this->_redirect(BASE_PATH);
     }
 
