@@ -75,13 +75,14 @@ function renderNews($news){
 
 	$('.edit-post', $news).click(function(){
 		var $target = $(this).closest('.scrpBox'),
-			$editButtons = $('.location-post, .delete-post, .save-post', $target);
+			$editButtons = $('.location-post, .delete-post, .save-post', $target),
+			news_id = getNewsID($target);
 
 		$editButtons.attr('disabled', true);
 
 		$.ajax({
 			url: baseUrl + 'home/edit-news',
-			data: {id: getNewsID($target)},
+			data: {id: news_id},
 			type: 'POST',
 			dataType: 'json'
 		}).done(function(response){
@@ -89,9 +90,18 @@ function renderNews($news){
 				$('.post-content, .news-footer', $target).hide();
 				$('.edit-news-panel', $target).show();
 
-				$('<textarea/>', {rows: 1})
-					.appendTo($('<div/>', {'class': 'write-news-content'}).prependTo($('.post-bottom', $target)))
-					.val(response.news)
+				$('<textarea/>', {rows: 1, name: 'news'})
+					.appendTo(
+						$('<form/>', {'class': 'edit-news-content'})
+							.append(
+								$('<input/>', {type: 'hidden', name: 'latitude'}).val(response.news.latitude),
+								$('<input/>', {type: 'hidden', name: 'longitude'}).val(response.news.longitude),
+								$('<input/>', {type: 'hidden', name: 'address'}).val(response.news.address),
+								$('<input/>', {type: 'hidden', name: 'id'}).val(news_id)
+							)
+							.prependTo($('.post-bottom', $target))
+					)
+					.val(response.news.news)
 					.bind('input paste keypress', editNewsHandle)
 					.textareaAutoSize()
 					.focus();
@@ -161,17 +171,21 @@ function renderNews($news){
 				$('body').css({overflow: 'visible'});
 			},
 			open: function(event, ui){
-				var newsId = getNewsID($target),
-					newsAddress = $target.attr('data-address'),
-					newsLatitude = $target.attr('data-lat'),
-					newsLongitude = $target.attr('data-lng'),
-					$submitField = $('#post-location [type=submit]').attr('disabled', false),
-					$addressField = $('#post-location [name=address]').val(newsAddress).attr('disabled', false),
-					$latitudeField = $('#post-location [name=latitude]').val(newsLatitude),
-					$longitudeField = $('#post-location [name=longitude]').val(newsLongitude),
+				var $editForm = $('.edit-news-content', $target),
+					$addressField = $('[name=address]', $editForm),
+					$latitudeField = $('[name=latitude]', $editForm),
+					$longitudeField = $('[name=longitude]', $editForm),
+					newsAddress = $addressField.val(),
+					$locationDialog = $('#post-location');
+					$editAddress = $('[name=address]', $locationDialog)
+						.val(newsAddress)
+						.attr('disabled', false),
+					$submitField = $('#post-location [type=submit]')
+						.attr('disabled', false),
 					$map = $('#post-location #map-canvas'),
-					autocomplete = new google.maps.places.Autocomplete($addressField[0]),
-					centerLocation = new google.maps.LatLng(newsLatitude, newsLongitude);
+					autocomplete = new google.maps.places.Autocomplete($editAddress[0]),
+					centerLocation = new google.maps.LatLng($latitudeField.val(), $longitudeField.val()),
+					renderLocation = true;
 
 				$map.unmask();
 
@@ -205,14 +219,13 @@ function renderNews($news){
 						}, function(results, status){
 							if (status == google.maps.GeocoderStatus.OK){
 								infoWindowContent.text(results[0].formatted_address);
-								$addressField.val(results[0].formatted_address);
+								$editAddress.val(results[0].formatted_address);
 							} else {
 								infoWindowContent.text('');
-								$addressField.val('');
+								$editAddress.val('');
 							}
 
-							$latitudeField.val(event.latLng.lat());
-							$longitudeField.val(event.latLng.lng());
+							renderLocation = true;
 						});
 					});
 
@@ -220,17 +233,17 @@ function renderNews($news){
 						$('#post-location .panel .search').click();
 					});
 
-					$addressField.keydown(function(e){
+					$editAddress.keydown(function(e){
 						if (e.keyCode == 13){
 							e.preventDefault();
 						}
 					});
 
 					$('#post-location .panel .search').click(function(){
-						var value = $.trim($addressField.val());
+						var value = $.trim($editAddress.val());
 
 						if (value === ''){
-							$addressField.focus();
+							$editAddress.focus();
 							return;
 						}
 
@@ -243,13 +256,11 @@ function renderNews($news){
 								$('#post-location .profile-map-info .user-address').text(results[0].formatted_address);
 								newsLocationMap.setCenter(results[0].geometry.location);
 								newsLocationMarker.setPosition(results[0].geometry.location);
-								$addressField.val(results[0].formatted_address);
-								$latitudeField.val(results[0].geometry.location.lat());
-								$longitudeField.val(results[0].geometry.location.lng());
+								$editAddress.val(results[0].formatted_address);
+								renderLocation = true;
 							} else {
 								alert('Sorry! We are unable to find this location.');
-								$latitudeField.val('');
-								$longitudeField.val('');
+								renderLocation = false;
 							}
 
 							$submitField.attr('disabled', false);
@@ -259,28 +270,28 @@ function renderNews($news){
 					$('#post-location .panel form').submit(function(e){
 						e.preventDefault();
 
-						if ($.trim($addressField.val()) === ''){
-							$addressField.focus();
-							return;
+						if (!renderLocation){
+							$editAddress.focus();
+							return false;
 						}
 
 						$('#post-location #map-canvas').mask('Waiting...');
 						$submitField.attr('disabled', true);
 
+						$addressField.val($editAddress.val());
+						$latitudeField.val(newsLocationMarker.getPosition().lat());
+						$longitudeField.val(newsLocationMarker.getPosition().lng());
+
 						$.ajax({
 							url: baseUrl + 'home/save-news-location',
-							data: $(this).serialize(),
+							data: $(':not([name=news])', $editForm).serialize(),
 							type: 'POST',
 							dataType: 'json',
 							beforeSend: function(jqXHR, settings){
-								$addressField.attr('disabled', true);
+								$editAddress.attr('disabled', true);
 							}
 						}).done(function(response){
 							if (response && response.status){
-								$target.attr('data-address', $addressField.val());
-								$target.attr('data-latitude', $latitudeField.val());
-								$target.attr('data-longitude', $longitudeField.val());
-
 								// TODO: change marker position
 								//	- if marker out of radius then remove
 
@@ -301,6 +312,8 @@ function renderNews($news){
 						});
 					});
 				} else {
+					google.maps.event.trigger(newsLocationMap, 'resize');
+
 					newsLocationMap.setOptions({
 						draggable: true,
 						zoom: 14,
@@ -314,8 +327,6 @@ function renderNews($news){
 				}
 
 				$('#post-location .profile-map-info .user-address').text(newsAddress);
-				$('#post-location [name=id]').val(newsId);
-
 				newsLocationInfoWindow.open(newsLocationMap, newsLocationMarker);
 			}
 		});
@@ -353,31 +364,31 @@ function renderNews($news){
 
 	$('.save-post', $news).click(function(e){
 		var $target = $(this).closest('.scrpBox'),
-			$editBox = $('.write-news-content textarea', $target),
+			$editForm = $('.edit-news-content', $target),
+			$editNews = $('[name=news]', $editForm),
 			$editButtons = $('.location-post, .delete-post, .save-post', $target),
-			value = $.trim($editBox.val()),
+			value = $.trim($editNews.val()),
 			news_id = getNewsID($target);
 
 		if (value === ''){
-			$editBox.focus();
+			$editNews.focus();
 			return false;
 		}
 
-		$editBox.attr('disabled', true);
 		$editButtons.attr('disabled', true);
 
 		$.ajax({
 			url: baseUrl + 'home/save-news',
-			data: {
-				id: news_id,
-				news: value
-			},
+			data: $('[name=id],[name=news]', $editForm).serialize(),
 			type: 'POST',
-			dataType: 'json'
+			dataType: 'json',
+			beforeSend: function(jqXHR, settings){
+				$editNews.attr('disabled', true);
+			}
 		}).done(function(response){
 			if (response && response.status){
 				$('.edit-news-panel', $target).hide();
-				$('.write-news-content', $target).remove();
+				$editForm.remove();
 				$('.post-content', $target).html(response.html).show();
 				$('.news-footer', $target).show();
 				$('.edit-post', $target).attr('disabled', false);

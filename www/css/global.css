@@ -1047,7 +1047,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 .edit-news-panel > input{  display: inline-block;}
 .edit-news-panel > input:first-child{float: left;margin-left:18px;}
 .edit-news-panel > input:last-child{float: right;}
-.write-news-content textarea {
+.edit-news-content textarea {
 	width: 100%;
     border: none;
 	color: #333333;
@@ -1062,10 +1062,10 @@ table tr td input { border: 1px solid #d7d7d7;}
 	background-color: #fff;
 	outline: none;
 }
-.write-news-content {
+.edit-news-content {
 	margin-bottom: -2px;
 }
-.write-news-content textarea:disabled {
+.edit-news-content textarea:disabled {
 	background-color: #fff;
 }
 

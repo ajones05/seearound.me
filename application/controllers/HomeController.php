@@ -879,7 +879,12 @@ public function changeAddressAction() {
 
 			$response = array(
 				'status' => 1,
-				'news' => $news->news
+				'news' => array(
+					'latitude' => $news->latitude,
+					'longitude' => $news->longitude,
+					'address' => $news->Address,
+					'news' => $news->news
+				)
 			);
 		}
 		catch (RuntimeException $e)
