@@ -225,6 +225,7 @@ class MobileController extends Zend_Controller_Action
 
 		$this->_logRequest($response);
 
+		header('Content-Type: application/json');
 		die(Zend_Json::encode($response));
     }
 
