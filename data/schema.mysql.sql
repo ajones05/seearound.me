@@ -27,11 +27,13 @@ ALTER TABLE `friends` ADD FOREIGN KEY `user_data_fk_2`(`reciever_id`) REFERENCES
 --
 -- Table structure for table `invite_status`
 --
+ALTER TABLE `invite_status` ENGINE = InnoDB;
 ALTER TABLE `invite_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 
 --
 -- Table structure for table `login_status`
 --
+ALTER TABLE `login_status` ENGINE = InnoDB;
 ALTER TABLE `login_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 
 --
@@ -44,9 +46,10 @@ ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_2`(`receiver_id`) REFERENCES
 --
 -- Table structure for table `message_reply`
 --
-ALTER TABLE `message_reply` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `message_reply` ADD FOREIGN KEY `user_data_fk_2`(`receiver_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `message_reply` ADD FOREIGN KEY `user_data_fk_3`(`message_id`) REFERENCES `message`(`id`) ON DELETE CASCADE;
+ALTER TABLE `message_reply` ENGINE = InnoDB;
+ALTER TABLE `message_reply` ADD FOREIGN KEY `message_reply_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
+ALTER TABLE `message_reply` ADD FOREIGN KEY `message_reply_fk_2`(`receiver_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
+ALTER TABLE `message_reply` ADD FOREIGN KEY `message_reply_fk_3`(`message_id`) REFERENCES `message`(`id`) ON DELETE CASCADE;
 
 --
 -- Table structure for table `news`
@@ -67,9 +70,11 @@ ALTER TABLE `votings` ADD FOREIGN KEY `user_data_fk_3`(`comments_id`) REFERENCES
 --
 -- Table structure for table `facebook_temp_users`
 --
-ALTER TABLE `facebook_temp_users` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE SET NULL;
+ALTER TABLE `facebook_temp_users` ENGINE = InnoDB;
+ALTER TABLE `facebook_temp_users` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 
 --
 -- Table structure for table `email_invites`
 --
+ALTER TABLE `email_invites` ENGINE = InnoDB;
 ALTER TABLE `email_invites` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE SET NULL;
