@@ -70,7 +70,16 @@ class Application_Model_Message extends My_Db_Table_Abstract
 
     );
 
-    
+	/**
+	 * @var	array
+	 */
+	protected $_referenceMap = array(
+		'Receiver' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_User',
+			'refColumns' => 'receiver_id'
+        )
+    );
 
     public static function getInstance() 
 
@@ -86,7 +95,16 @@ class Application_Model_Message extends My_Db_Table_Abstract
 
     }
 
-    
+	/**
+     * Returns an instance of a Zend_Db_Table_Select object.
+     *
+     * @param bool $withFromPart Whether or not to include the from part of the select based on the table
+     * @return Zend_Db_Table_Select
+     */
+    public function publicSelect($withFromPart = self::SELECT_WITHOUT_FROM_PART)
+    {
+		return parent::select($withFromPart)->where('is_deleted =?', 'false')->where('is_valid =?', 'true');
+    }
 
     public function validateData($request, &$data, &$errors) 
 
@@ -183,48 +201,6 @@ class Application_Model_Message extends My_Db_Table_Abstract
         }
 
     }
-
-
-  function getUserInboxListData($data = array(), $reply=false) {
-
-        $messageTable = new Application_Model_Message();
-
-        $select = $messageTable->select()->setIntegrityCheck(false)
-
-            ->from('message');
-
-        if($data && is_array($data) && array_key_exists("receiver_id", $data)) {
-
-            $select->joinLeft('user_data', 'user_data.id = message.sender_id', array('Name','Email_id','Profile_image'))
-
-                ->where('message.receiver_id =?', $data['receiver_id'])
-
-                ->where('message.is_deleted =?', 'false')
-
-                ->where('message.is_valid =?', 'true');
-
-        } else if($data && is_array($data) && array_key_exists("sender_id", $data)) {
-
-            $select->joinLeft('user_data', 'user_data.id = message.sender_id', array('Name','Email_id','Profile_image'))
-
-                ->where('message.sender_id =?', $data['sender_id'])
-
-                ->where('message.is_deleted =?', 'false')
-
-                ->where('message.is_valid =?', 'true');
-
-        }
-
-        $select->order('updated DESC'); //echo $select; exit;
-     
-        if($row = $messageTable->fetchAll($select)) {
-
-            return $row;
-
-        }
-
-    }
-    
     
      function getUnreadUserMessage($data = array(), $reply=false) {
         $messageTable = new Application_Model_Message();

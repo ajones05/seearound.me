@@ -127,7 +127,8 @@ class Application_Model_User extends My_Db_Table_Abstract
     protected $_dependentTables = array(
 		'Application_Model_News',
 		'Application_Model_Comments',
-		'Application_Model_Address'
+		'Application_Model_Address',
+		'Application_Model_Message'
 	);
 
 	protected $_referenceMap = array(
@@ -140,6 +141,11 @@ class Application_Model_User extends My_Db_Table_Abstract
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Comments',
 			'refColumns' => 'user_id'
+		),
+		'Receiver' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_Message',
+			'refColumns' => 'receiver_id'
 		)
 	); 
 
