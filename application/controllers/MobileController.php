@@ -134,7 +134,7 @@ class MobileController extends Zend_Controller_Action
 
 		$this->_logRequest($response);
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
 	/**
@@ -341,7 +341,6 @@ class MobileController extends Zend_Controller_Action
                 $response->message = "Individual Friend details rendered successfully";
               }
               $response->result = $result->toArray(); 
-              echo(json_encode($response)); exit;
          } else {
               $response->status = "FAILED";
               if($type=='ALL'){ 
@@ -350,8 +349,11 @@ class MobileController extends Zend_Controller_Action
                 $response->message="Individual Friend details could not be render";
               }
               $response->result = $result->toArray(); 
-              echo(json_encode($response)); exit;
          }
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
     }
     
     public function getotheruserprofileAction()
@@ -393,8 +395,7 @@ class MobileController extends Zend_Controller_Action
 
 		$this->_logRequest($response);
 
-		header('Content-Type: application/json');
-		die(Zend_Json::encode($response));
+		$this->_helper->json($response);
     }
 
     
@@ -418,7 +419,7 @@ class MobileController extends Zend_Controller_Action
         $response = new stdClass();
         $data = array();
         $errors = array();
-        if($_REQUEST) {
+
             $messageTable = new Application_Model_Message(); 
             $newsFactory = new Application_Model_NewsFactory();
               
@@ -440,14 +441,15 @@ class MobileController extends Zend_Controller_Action
                  $response->status ="SUCCESS";
                  $response->message = "Message Send Successfully";
                  $response->result = $result->toArray(); 
-                 echo(json_encode($response)); exit;
                } else {
                  $response->status = "FAILED";
                  $response->message="Message did not send Successfully";
                  $response->result = $result->toArray(); 
-                 echo(json_encode($response)); exit;
              } 
-       }
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
     }
 
 	/**
@@ -532,93 +534,98 @@ class MobileController extends Zend_Controller_Action
              $response->status ="SUCCESS";
              $response->message = "Message list Send Successfully";
              $response->result = $messageData->toArray(); 
-             echo(json_encode($response)); exit;
            } else {
              $response->status = "FAILED";
              $response->message="Message list could not send Successfully";
              $response->result = $messageData->toArray(); 
-             echo(json_encode($response)); exit;
          } 
-             
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
     }
-    
-    
+
     /**
+	 * TODO: test
      * Function to retrieve message conversation between two users
      * 
      * *@return returns json encode response 
      */
-    public function messageConversationAction(){
-          $response = new stdClass();
-          $messageTable = new Application_Model_Message();
-          $newsFactory = new Application_Model_NewsFactory();
-          $firstUserId    = $_REQUEST['user_id'];  //logined one
-          $scondUserId    = $_REQUEST['other_user_id'];  // another
-    
-        if(isset($firstUserId)){
-           $messageData = $messageTable->getConversationMessage(array('receiver_id' => $firstUserId,'sender_id' => $scondUserId),true);
-           if(count($messageData) > 0){ 
-              $response->status ="SUCCESS";
-              $response->message = "Inbox Message between two user rendered Successfully";
-              $response->result = $messageData->toArray(); 
-              echo(json_encode($response)); exit;
-           } else {
-              $response->status = "FAILED";
-              $response->message="seding inbox message between two user failed";
-              $response->result = $messageData->toArray();
-              echo(json_encode($response)); exit;
-          }  
-            
-        }
-    }
-    
-    
+    public function messageConversationAction()
+	{
+		$firstUserId = $this->_request->getPost('user_id');
+		$scondUserId = $this->_request->getPost('other_user_id');
 
-  public function notificationLoop($id,$user_id){
-        if(isset($id)){
-              $messageTable = new Application_Model_Message();
-              $messageReplyTable = new Application_Model_MessageReply();
-              $rowId  =  $id;
-              $result =  $messageTable->viewed($rowId, $user_id);
-              if($result){
-                return true;
-              } else {
-                return false;
-              }
-        }
+		try
+		{
+			// TODO: validate users
+			if (!$firstUserId || !$scondUserId)
+			{
+				throw new RuntimeException('Incorrect user id', -1);
+			}
+
+			$messageData = (new Application_Model_Message)->getConversationMessage(array(
+				'receiver_id' => $firstUserId,
+				'sender_id' => $scondUserId
+			), true);
+
+			if(!count($messageData))
+			{
+				// TODO: ???
+				throw new RuntimeException('Seding inbox message failed', -1);
+			}
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'message' => 'Inbox Message between two user rendered Successfully',
+				'result' => $messageData->toArray()
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => 'seding inbox message between two user failed'
+			);
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
     }
-   
+
     /**
+	 * TODO: test
      * Function to set notificatations status
      * 
      * *@return returns json encode response 
      */
-    public function viewedAction() {
-       // $idListArray = array();
+	public function viewedAction()
+	{
         $response = new stdClass();
-       //echo "<pre>"; print_r($_REQUEST); exit;
         $idArray      = $_REQUEST['post_id'];
         $user_id = $_REQUEST['user_id'];
         $idListArray = explode(",", $idArray);
-        
-        for ($i = 0; $i < count($idListArray); $i++) {
-             $rowSet = $this->notificationLoop($idListArray[$i],$user_id);
-         }
+		$messageTable = new Application_Model_Message();
 
+        for ($i = 0; $i < count($idListArray); $i++) {
+             $rowSet = $messageTable->viewed($idListArray[$i], $user_id);
+         }
 
          if($rowSet){
                $response->status ="SUCCESS";
                $response->message = "Read Inbox Message Successfully";
                $response->result = "Read"; 
-              echo(json_encode($response)); exit;
            } else {
                $response->status = "FAILED";
                $response->message="You did not read notifications sucessfully";
                $response->result = "Not Read";
-               echo(json_encode($response)); exit;
           } 
 
-    }
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
 
 	/**
 	 * Add news action.
@@ -680,7 +687,8 @@ class MobileController extends Zend_Controller_Action
       * 
       * @return returns success or failed json encoded message.
       */
-    public function editProfileAction() {   
+    public function editProfileAction()
+	{
         $newsFactory  = new Application_Model_NewsFactory();
         $userTable    = new Application_Model_User;
         $profileTable = new Application_Model_Profile;
@@ -751,13 +759,15 @@ class MobileController extends Zend_Controller_Action
             $response->status = "SUCCESS";
             $response->message = "User profile has been updated successfully";
             $response->result = $udatedUserdata; 
-            echo(json_encode($response)); exit;  
         } else {
            $response->status = "FAILED";
            $response->message = "Sorry,user profile did not updated";
            $response->result = $udatedUserdata; 
-           echo(json_encode($response)); exit;    
         }
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
     }
 
 	/**
@@ -860,7 +870,7 @@ class MobileController extends Zend_Controller_Action
 
 		$this->_logRequest($response);
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
 	/**
@@ -991,7 +1001,7 @@ class MobileController extends Zend_Controller_Action
 
 		$this->_logRequest($response);
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
     /**
@@ -1011,13 +1021,15 @@ class MobileController extends Zend_Controller_Action
               $response->message = "Comments rendred successfully";
               $response->result = $comments;
               $response->nextpage = ++$limit;
-              echo(json_encode($response)); exit;
          } else {
                $response->status ="FAILED";  
                $response->message = "Comments rendring failed";
                $response->result = $comments; 
-              echo(json_encode($response)); exit;
          }
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
     }
     
     
@@ -1042,14 +1054,16 @@ class MobileController extends Zend_Controller_Action
               $response->status ="SUCCESS";
               $response->message = "Comments Post Successfully";
               $response->result = $commentRowSet;
-              echo(json_encode($response)); exit;
          } else {
               $response->status  = "FAILED";  
               $response->message = "Comments Posting failed";
               $response->result  = $id; 
               $response->image  =  Application_Model_User::getImage($userId);
-              echo(json_encode($response)); exit;
          }
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
      }
     
     /**
@@ -1059,7 +1073,9 @@ class MobileController extends Zend_Controller_Action
      */
     public function  postLikeAction(){
         $response = new stdClass();
-        if ($_REQUEST) {
+
+        if ($_REQUEST)
+		{
             $action	 = $_REQUEST['action'];
             $news_id = $_REQUEST['news_id'];
             $user_id = $_REQUEST['user_id'];
@@ -1068,22 +1084,28 @@ class MobileController extends Zend_Controller_Action
             $userTable = new Application_Model_User();
             $votingTable = new Application_Model_Voting();
             $row = $votingTable->saveVotingData($action, $news_id, $user_id);
-            if ($row) {
+
+            if ($row)
+			{
                 $response->successalready = 'registered already';
                 $response->noofvotes_1 = $votingTable->getTotalVoteCounts($action, $news_id, $user_id);
-                echo(json_encode($response)); exit; 
-            } else {
+            }
+			else
+			{
                 $response->news = Application_Model_News::getInstance()->findById($news_id, 0)->toArray();
                 $response->success = 'voted successfully';
                 $response->noofvotes_2 = $votingTable->getTotalVoteCounts($action, $news_id, $user_id);
-                 /*Code for score measurement*/
                 $score = $votingTable->measureLikeScore($action, $news_id, $user_id);
-                echo(json_encode($response)); exit; 
             }
-        } else {
-             $response->resonfailed = 'Sorry unable to vote';
-             echo(json_encode($response)); exit; 
-        } 
+        }
+		else
+		{
+			$response->resonfailed = 'Sorry unable to vote';
+        }
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
     }
 
 	/**
