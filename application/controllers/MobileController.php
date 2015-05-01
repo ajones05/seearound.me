@@ -620,32 +620,6 @@ class MobileController extends Zend_Controller_Action
 
     }
 
-
-     /**
-     * Function to set notificatations status
-     * 
-     * *@return returns json encode response 
-     */
-    public function setReadStatusAction() {
-        $response = new stdClass();
-        $postId      = $_REQUEST['message_id'];
-        $user_id = $_REQUEST['user_id'];
-        $result =  $messageTable->viewed($rowId, $user_id);
-      
-         if($result){
-               $response->status  = "SUCCESS";
-               $response->message = "Message set to read Successfully";
-               $response->result  = "Read"; 
-              echo(json_encode($response)); exit;
-           } else {
-               $response->status = "FAILED";
-               $response->message= "Message did not set to read Successfully";
-               $response->result = "Not Read";
-               echo(json_encode($response)); exit;
-          } 
-
-    }
-
 	/**
 	 * Add news action.
 	 * 
