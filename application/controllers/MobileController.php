@@ -1106,7 +1106,7 @@ class MobileController extends Zend_Controller_Action
 				$model->measureLikeScore('news', $news->id, $user->id);
 			}
         }
-		catch
+		catch (Exception $e)
 		{
 			$response = array(
 				'resonfailed' => 'Sorry unable to vote',
