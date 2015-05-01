@@ -1065,48 +1065,59 @@ class MobileController extends Zend_Controller_Action
 
 		$this->_helper->json($response);
      }
-    
-    /**
-     * Function to add like to a news
-     * 
-     * *@return returns json encode response 
-     */
-    public function  postLikeAction(){
-        $response = new stdClass();
 
-        if ($_REQUEST)
+	/**
+	 * Function to add like to a news.
+	 * 
+	 * @return void
+	 */
+	public function postLikeAction()
+	{
+		try
 		{
-            $action	 = $_REQUEST['action'];
-            $news_id = $_REQUEST['news_id'];
-            $user_id = $_REQUEST['user_id'];
-            $action = 'news';
-            $data = $this->_request->getPost();
-            $userTable = new Application_Model_User();
-            $votingTable = new Application_Model_Voting();
-            $row = $votingTable->saveVotingData($action, $news_id, $user_id);
-
-            if ($row)
+			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
 			{
-                $response->successalready = 'registered already';
-                $response->noofvotes_1 = $votingTable->getTotalVoteCounts($action, $news_id, $user_id);
-            }
+				throw new RuntimeException('Incorrect news ID', -1);
+			}
+
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			{
+				throw new RuntimeException('Incorrect user ID', -1);
+			}
+
+            $model = new Application_Model_Voting;
+			$vote_count = $model->getTotalVoteCounts('news', $news->id, $user->id);
+
+			if ($model->saveVotingData('news', $news->id, $user->id))
+			{
+				$response = array(
+					'successalready' => 'registered already',
+					'noofvotes_1' => $vote_count
+				);
+			}
 			else
 			{
-                $response->news = Application_Model_News::getInstance()->findById($news_id, 0)->toArray();
-                $response->success = 'voted successfully';
-                $response->noofvotes_2 = $votingTable->getTotalVoteCounts($action, $news_id, $user_id);
-                $score = $votingTable->measureLikeScore($action, $news_id, $user_id);
-            }
+				$response = array(
+					'news' => $news->toArray(),
+					'success' => 'voted successfully',
+					'noofvotes_2' => $vote_count
+				);
+
+				$model->measureLikeScore('news', $news->id, $user->id);
+			}
         }
-		else
+		catch
 		{
-			$response->resonfailed = 'Sorry unable to vote';
-        }
+			$response = array(
+				'resonfailed' => 'Sorry unable to vote',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
 
 		$this->_logRequest($response);
 
 		$this->_helper->json($response);
-    }
+	}
 
 	/**
 	 * Writes to log rurrent request and response
