@@ -659,19 +659,20 @@ class MobileController extends Zend_Controller_Action
 			$response = array(
 				'status' => 'SUCCESS',
 				'message' => $data['news'],
-				'userid' => My_ArrayHelper::getProp($data, 'user_id')
+				'userid' => $data['user_id']
 			);
 		}
 		catch (Exception $e)
 		{
 			$response = array(
-				'status' => 'POSTING FAILED',
-				'message' => My_ArrayHelper::getProp($data, 'news'),
-				'userid' => My_ArrayHelper::getProp($data, 'user_id')
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
 	}
 
     /**
