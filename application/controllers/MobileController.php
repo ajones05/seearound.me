@@ -777,57 +777,42 @@ class MobileController extends Zend_Controller_Action
 	 */
 	public function requestNearestAction()
 	{
-		$response = array(
-			// TODO: remove
-			'result' => array()
-		);
-
 		try
 		{
-			$user_id = $this->_request->getPost('userId');
-
-			if (!Application_Model_User::checkId($user_id, $user))
+			if (!Application_Model_User::checkId($this->_request->getPost('userId'), $user))
 			{
-				throw new RuntimeException('Incorrect user id: ' . var_export($user_id, true), -1);
+				throw new RuntimeException('Incorrect user id', -1);
 			}
 
 			$latitude = $this->_request->getPost('latitude');
 
-			if (My_Validate::emptyString($latitude))
+			if (!is_numeric($latitude) || !My_Validate::latitude($latitude))
 			{
-				throw new RuntimeException('Latitude cannot be blank', -1);
-			}
-
-			if (!My_Validate::latitude($latitude))
-			{
-				throw new RuntimeException('Incorrect latitude value: ' . var_export($latitude, true), -1);
+				throw new RuntimeException('Incorrect latitude value', -1);
 			}
 
 			$longitude = $this->_request->getPost('longitude');
 
-			if (My_Validate::emptyString($longitude))
+			if (!is_numeric($longitude) || !My_Validate::longitude($longitude))
 			{
-				throw new RuntimeException('Longitude cannot be blank', -1);
-			}
-
-			if (!My_Validate::longitude($longitude))
-			{
-				throw new RuntimeException('Incorrect longitude value: ' . var_export($longitude, true), -1);
+				throw new RuntimeException('Incorrect longitude value', -1);
 			}
 
 			$radius = $this->_request->getPost('radious', 1);
 
 			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
 			{
-				throw new RuntimeException('Incorrect radius value: ' . var_export($radius, true), -1);
+				throw new RuntimeException('Incorrect radius value', -1);
 			}
 
 			$fromPage = $this->_request->getPost('fromPage', 0);
 
 			if (!My_Validate::digit($fromPage) || $fromPage < 0)
 			{
-				throw new RuntimeException('Incorrect fromPage value: ' . var_export($fromPage, true), -1);
+				throw new RuntimeException('Incorrect fromPage value', -1);
 			}
+
+			$response = array();
 
 			$result = Application_Model_News::getInstance()->findByLocation($latitude, $longitude, $radius, 15, $fromPage);
 
@@ -838,9 +823,11 @@ class MobileController extends Zend_Controller_Action
 
 				foreach ($result as $row)
 				{
+					$owner = $row->findDependentRowset('Application_Model_User')->current();				
+
 					$response['result'][] = array(
 						'id' => $row->id,
-						'user_id' => $row->user_id,
+						'user_id' => $owner->id,
 						'news' => $row->news,
 						'images' => $row->images,
 						'created_date' => My_Time::time_ago($row->created_date),
@@ -855,6 +842,8 @@ class MobileController extends Zend_Controller_Action
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
 						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
+						'Name' => $owner->Name,
+						'Profile_image' => $owner->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg')
 					);
 				}
 			}
@@ -864,8 +853,10 @@ class MobileController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
-			$response['status'] = 'FAILED';
-			$response['message'] = 'Nearest point data could not be render successfully';
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
 		}
 
 		$this->_logRequest($response);
@@ -880,56 +871,39 @@ class MobileController extends Zend_Controller_Action
 	 */
 	public function mypostsAction()
 	{
-		$response = array(
-			// TODO: remove
-			'result' => array()
-		);
-
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!Application_Model_User::checkId($user_id, $user))
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
 			{
-				throw new RuntimeException('Incorrect user id: ' . var_export($user_id, true), -1);
+				throw new RuntimeException('Incorrect user id', -1);
 			}
 
 			$latitude = $this->_request->getPost('latitude');
 
-			if (My_Validate::emptyString($latitude))
+			if (!is_numeric($latitude) || !My_Validate::latitude($latitude))
 			{
-				throw new RuntimeException('Latitude cannot be blank', -1);
-			}
-
-			if (!My_Validate::latitude($latitude))
-			{
-				throw new RuntimeException('Incorrect latitude value: ' . var_export($latitude, true), -1);
+				throw new RuntimeException('Incorrect latitude value', -1);
 			}
 
 			$longitude = $this->_request->getPost('longitude');
 
-			if (My_Validate::emptyString($longitude))
+			if (!is_numeric($longitude) || !My_Validate::longitude($longitude))
 			{
-				throw new RuntimeException('Longitude cannot be blank', -1);
-			}
-
-			if (!My_Validate::longitude($longitude))
-			{
-				throw new RuntimeException('Incorrect longitude value: ' . var_export($longitude, true), -1);
+				throw new RuntimeException('Incorrect longitude value', -1);
 			}
 
 			$radius = $this->_request->getPost('radious', 0.8);
 
 			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
 			{
-				throw new RuntimeException('Incorrect radius value: ' . var_export($radius, true), -1);
+				throw new RuntimeException('Incorrect radius value', -1);
 			}
 
 			$fromPage = $this->_request->getPost('fromPage', 0);
 
 			if (!My_Validate::digit($fromPage) || $fromPage < 0)
 			{
-				throw new RuntimeException('Incorrect fromPage value: ' . var_export($fromPage, true), -1);
+				throw new RuntimeException('Incorrect fromPage value', -1);
 			}
 
 			$newsTable = new Application_Model_News;
@@ -941,6 +915,8 @@ class MobileController extends Zend_Controller_Action
 			{
 				$select->where('news LIKE ?', '%' . $keywords . '%');
 			}
+
+			$response = array();
 
 			$filter = $this->_request->getPost('filter');
 
@@ -969,9 +945,11 @@ class MobileController extends Zend_Controller_Action
 
 				foreach ($result as $row)
 				{
+					$owner = $row->findDependentRowset('Application_Model_User')->current();
+
 					$response['result'][] = array(
 						'id' => $row->id,
-						'user_id' => $row->user_id,
+						'user_id' => $owner->id,
 						'news' => $row->news,
 						'images' => $row->images,
 						'created_date' => My_Time::time_ago($row->created_date),
@@ -986,6 +964,8 @@ class MobileController extends Zend_Controller_Action
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
 						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
+						'Name' => $owner->Name,
+						'Profile_image' => $owner->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg')
 					);
 				}
 			}
@@ -995,8 +975,10 @@ class MobileController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
-			$response['status'] = 'FAILED';
-			$response['message'] = 'Posts rendring failed';
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
 		}
 
 		$this->_logRequest($response);
