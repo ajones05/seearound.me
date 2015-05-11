@@ -8,15 +8,17 @@
 		</a>
 	</li>
 	<li class="bgTxtArea">
-		<textarea id="newsPost" class="textAreaClassPost" placeholder="Share something from your current location..."></textarea>
-		<div id="postOptionId" style="margin-right: 4px;margin-top:-5px;display:none;">
-			<input type="button" value="Post" class="floatR marginT10 btnBlueRpt post addNews" />
-			<input type="button" class="btnBlueRpt" value="Post From Different Location" id="postlocationButton" />
-			<input id="uploader" type="button" class="floatR marginT10 crp imgInput" style="margin-right:10px;"/>
-		</div>
-		<img id="newsWaitOnAdd" class="waitimg" src="<?php echo BASE_PATH; ?>www/images/wait.gif" />
-		<div class="clr"></div>
-		<div style="display:inline;width:80px;" id="fileNm"></div>
+		<form id="addNewsForm" action="<?php echo BASE_PATH; ?>home/add-news" method="post" enctype="multipart/form-data">
+			<textarea id="newsPost" name="news" class="textAreaClassPost" placeholder="Share something from your current location..."></textarea>
+			<div id="postOptionId">
+				<input type="submit" value="Post" class="floatR marginT10 btnBlueRpt post addNews" />
+				<input type="button" class="btnBlueRpt" value="Post From Different Location" id="postlocationButton" />
+				<div class="imgInput"></div>
+			</div>
+			<input id="newsFile" type="file" name="images" accept="image/*" size="1" style="display: none;" />
+			<img id="newsWaitOnAdd" class="waitimg" src="<?php echo BASE_PATH; ?>www/images/wait.gif" />
+			<div class="clr"></div>
+		</form>
 	</li>
 	<div class="clr"></div>
 </ul>

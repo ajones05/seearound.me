@@ -25,7 +25,6 @@ class HomeController extends My_Controller_Action_Herespy {
 		$this->view->headScript()
 			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
 			->appendFile('/bower_components/textarea-autosize/src/jquery.textarea_autosize.js')
-			->appendFile('/www/scripts/upclick.js?' . $mediaversion)
 			->appendFile('/www/scripts/news.js?' . $mediaversion)
 			->appendFile('/www/scripts/homeindex.js?' . $mediaversion);
 

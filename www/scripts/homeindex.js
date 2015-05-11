@@ -295,7 +295,9 @@ $(function(){
 		})
 		.bind('input paste keypress', editNewsHandle);
 
-	$('.addNews').click(function(){
+	$('#addNewsForm').submit(function(e){
+		e.preventDefault();
+
 		if ($.trim($('#newsPost').val()) === ''){
 			$('#newsPost').focus();
 			return false;
@@ -307,8 +309,6 @@ $(function(){
 			$("#locationButton").click();
 			return false;
 		}
-
-		$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', true);
 
 		preparePost(userPosition, userAddress);
 	});
@@ -473,32 +473,18 @@ $(function(){
 			});
 	});
 
-	upclick({
-		dataname: 'images',
-		element: 'uploader',
-		onstart: function(filename){
-			var uploadedImage = filename.split('\\');
-			var imageRealName = uploadedImage[uploadedImage.length-1];
+	$('#newsFile').change(function(){
+		$('.fileNm').remove();
 
-			if (((imageRealName.length) - 50) > 4){
-				var fileExtension = imageRealName.split('.');
-				imageRealName = imageRealName.substring(0,50)+"..."+fileExtension[fileExtension.length-1];
-			}
+		$(this).after(
+			$('<div/>', {'class': 'fileNm'}).html($(this).val()).append(
+				$('<img/>', {src: baseUrl + 'www/images/delete-icon12x12.png'}).click(clearUpload)
+			)
+		);
+	})
 
-			filename = "<br/><div id='case1' style='margin-left: -25px;margin-top: -9px;'><div style='float:left;font: normal 12px lato-Regular;'>"+imageRealName;
-			filename += '</div><div>&nbsp;<img class="image_delete" onclick="clearUpload();" src="'+baseUrl+'www/images/delete-icon.png"/></div></div>';
-			$("#fileNm").html(filename);
-			filename = uploadedImage[uploadedImage.length-1].split('.');
-
-			var filenameArrayLength = filename.length;
-
-			if (filename[filenameArrayLength-1] != 'jpg' && filename[filenameArrayLength-1] != 'gif' &&
-				filename[filenameArrayLength-1] != 'jpeg' && filename[filenameArrayLength-1] != 'png' &&
-				filename[filenameArrayLength-1] != 'bmp' && filename[filenameArrayLength-1] != 'JPG'){
-				alert("Invalid file format");	
-				clearUpload();
-			}
-		}
+	$('.imgInput').click(function(){
+		$('#newsFile').click();
 	});
 
 	$(".menu dd ul li a").click(function(e){
@@ -541,9 +527,8 @@ $(function(){
 });
 
 function clearUpload(){
-    $('#fileNm').html("");
-    var ufchilds = $("#mainForm").children();
-    $(ufchilds[0]).val("");
+	$('.fileNm').remove();
+	$('#newsFile').val('');
 }
 
 function preparePost(location, address){
@@ -572,25 +557,21 @@ function preparePost(location, address){
 	});
 }
 
-var formContainor = '';
-
 function addPost(location, address){
-	var data = new FormData();
+	var $form = $('#addNewsForm'),
+		data = new FormData($form[0]);
+
+	$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', true);
 
 	if (address){
 		data.append('address', address);
 	}
 
-	if ($('#fileNm').html()){
-		data.append('images', $('[name=images]', formContainor)[0].files[0]);
-	}
-
-	data.append('news', $('#newsPost').val());
 	data.append('latitude', location.lat());
 	data.append('longitude', location.lng());
 
 	$.ajax({
-		url: baseUrl + 'home/add-news',
+		url: $form.attr('action'),
 		data: data,
 		cache: false,
 		contentType: false,
@@ -614,25 +595,6 @@ function addPost(location, address){
 			}, .1);
 
 			clearUpload();
-
-			 upclick({
-				dataname: 'images',
-				element: 'uploader',
-				onstart: function(filename){
-					var uploadedImage = filename.split('\\');
-					var imageRealName = uploadedImage[uploadedImage.length - 1];
-					if ((imageRealName.length - 50) > 4){
-						var fileExtension = imageRealName.split('.');
-						imageRealName = imageRealName.substring(0,50) + "..." + fileExtension[fileExtension.length-1];
-					}
-
-					filename = "<br/><div id='case2' style='margin-left:0px;margin-top:-37px;'><div style='margin-bottom : 2px;float:left;'>" +
-						imageRealName + '</div><div>&nbsp;<img onclick="clearUpload();" src="'+baseUrl +
-						'www/images/delete-icon.png" style="cursor:pointer;"/></div></div>';
-
-					$("#fileNm").html(filename);
-				}
-			});
 
 			$('#postOptionId').hide();
 			$('#newsPost').val('').css('height', 36);

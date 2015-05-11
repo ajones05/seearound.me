@@ -203,7 +203,6 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 
 .myProf h3{font:bold 14px/40px tahoma; padding:0px 20px; color:#0068c4;}
 
-img.image_delete {cursor: pointer; width: 12px; margin-top: 2px; margin-left: 10px;}
 /******************/	
 
 /*.mainContainer .midCol{float:left; width:440px; padding:0;min-height: 570px;}*/
@@ -672,7 +671,15 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 #Change-Postlocation-Map-Popup-id .useNewAddress {font: normal 17px lato-Bold;margin-left: 50px;padding: 8px 10px;}
 /**/
 #postlocationButton {float:right;margin-right:10px;margin-top:10px;height:22px;cursor: pointer; overflow: visible; border: 0px none; color: #4276cd;}
-#postOptionId .floatR.post {height:22px; color: #4276cd;}
+#postOptionId {
+	margin-right: 4px;
+	margin-top: -5px;
+	display: none;
+}
+#postOptionId .floatR.post {
+	height:22px;
+	color: #4276cd;
+}
 
 .btnBarM20 {text-align: center; background:#668cd5; padding: 4px 0px;}
 
@@ -1666,10 +1673,13 @@ input[type=submit], input[type=button] {
 	display: none;
 }
 .imgInput {
-	z-index: 999;
 	height: 22px;
 	width: 30px;
 	background: url('../images/30px-Image_Upload.png') no-repeat right top;
+	cursor: pointer;
+	float: left;
+	margin-left: 9px;
+	margin-top: 10px;
 }
 .loginerror{
 	font: Verdana, Arial, Helvetica, sans-serif; 
@@ -1711,4 +1721,18 @@ input[type=submit], input[type=button] {
 }
 .hidden {
 	display: none;
+}
+.fileNm {
+    margin-bottom: 2px;
+    margin-left: -25px;
+    margin-top: 6px;
+    text-align: left;
+    word-wrap: break-word;
+}
+.fileNm > img {
+    cursor: pointer;
+    margin-bottom: -2px;
+    margin-left: 10px;
+    width: 12px;
+    height: 12px;
 }
