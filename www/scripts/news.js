@@ -294,6 +294,21 @@ function renderNews($news){
 
 															if (newsMap.get('isListing')){
 																resetMarkersCluster();
+
+																if (isRootMarker(news_id)){
+																	newsMarkers[news_id].setIcon({
+																		url: baseUrl + 'www/images/icons/icon_1.png',
+																		width: 25,
+																		height: 36
+																	});
+																} else {
+																	newsMarkers[news_id].setIcon({
+																		url: baseUrl + 'www/images/icons/icon_2.png',
+																		width: 20,
+																		height: 29
+																	});
+																}
+
 																updateMarkersCluster();
 															}
 
