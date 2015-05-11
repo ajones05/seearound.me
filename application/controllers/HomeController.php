@@ -26,7 +26,7 @@ class HomeController extends My_Controller_Action_Herespy {
 		$this->view->headScript()
 			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
 			->appendFile('/bower_components/textarea-autosize/src/jquery.textarea_autosize.js')
-			->appendFile('/www/scripts/publicNews.js?' . $mediaversion)
+			->appendFile('/www/scripts/upclick.js?' . $mediaversion)
 			->appendFile('/www/scripts/news.js?' . $mediaversion)
 			->appendFile('/www/scripts/homeindex.js?' . $mediaversion);
 
@@ -145,7 +145,9 @@ class HomeController extends My_Controller_Action_Herespy {
             }
         }
 
-		$this->view->headScript()->appendFile('/bower_components/jquery-form/jquery.form.js');
+		$this->view->headScript()
+			->appendFile('/bower_components/jquery-form/jquery.form.js')
+			->appendFile('/www/scripts/customDatepicker.js');
     }
 
     public function imageUploadAction(){
@@ -205,11 +207,18 @@ class HomeController extends My_Controller_Action_Herespy {
 				'id' => $user->id,
 				'name' => ucwords($user->Name),
 				'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+				'address' => $user->address(),
 				'lat' => $user->lat(),
 				'lng' => $user->lng(),
 				'latestPost' => $latest_post ? $latest_post->news : 'N/A'
 			)) . ';');
 		}
+
+		$this->view->headLink()
+			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css');
+
+		$this->view->headScript()
+			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js');
 	}
 
 	/**
@@ -294,11 +303,11 @@ class HomeController extends My_Controller_Action_Herespy {
 	{
 		try
 		{
-			$user_id = $this->_getParam('user_id');
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
-			if (!Application_Model_User::checkId($user_id, $user))
+			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $user))
 			{
-				throw new RuntimeException('Permission denied', -1);
+				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
 			$latitude = $this->_getParam('latitude');
@@ -325,12 +334,14 @@ class HomeController extends My_Controller_Action_Herespy {
 				throw new RuntimeException('Incorrect longitude value: ' . var_export($longitude, true), -1);
 			}
 
-			$radius = $this->_getParam('radious', 1);
+			$radius = $this->_getParam('radius', 0.8);
 
 			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
 			{
 				throw new RuntimeException('Incorrect radius value: ' . var_export($radius, true), -1);
 			}
+
+			$radius = $radius - 0.01;
 
 			$fromPage = $this->_getParam('fromPage', 0);
 
@@ -342,7 +353,7 @@ class HomeController extends My_Controller_Action_Herespy {
 			$newsTable = new Application_Model_News;
 			$select = $newsTable->select();
 
-			$keywords = $this->_getParam('search_txt');
+			$keywords = $this->_getParam('search');
 
 			if (!My_Validate::emptyString($keywords))
 			{
@@ -500,7 +511,7 @@ class HomeController extends My_Controller_Action_Herespy {
 
 				if ($news->user_id != $user->id)
 				{
-					$news_user = Application_Model_User::findById($news->user_id);
+					$news_user = $news->findDependentRowset('Application_Model_User')->current();
 
 					My_Email::send(
 						array($news_user->Name => $news_user->Email_id),
@@ -584,64 +595,69 @@ class HomeController extends My_Controller_Action_Herespy {
         die(Zend_Json_Encoder::encode($response));
     }
 
-public function changeAddressAction() {
+	/**
+	 * Change user address news action.
+	 *
+	 * @return void
+	 */
+	public function changeAddressAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
-        $response = new stdClass();
+			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
 
-        $auth = Zend_Auth::getInstance()->getStorage()->read();
+			$address = $this->_request->getPost('address');
 
-        $addressArray = array(
-            'address' => $this->_getParam('address'),
-            'latitude' => $this->_getParam('latitude'),
-            'longitude' => $this->_getParam('longitude')
-        );
+			$latitude = $this->_request->getPost('latitude');
 
-        $addressRow = null;
+			if (!is_numeric($latitude) || !My_Validate::latitude($latitude))
+			{
+				throw new RuntimeException('Incorrect latitude value', -1);
+			}
 
-		$addressTable = new Application_Model_Address;
-		
-        if ($auth['user_id']) {
+			$longitude = $this->_request->getPost('longitude');
 
-            $addressRow = $addressTable->searchRow('user_id', $auth['user_id']);
+			if (!is_numeric($longitude) || !My_Validate::longitude($longitude))
+			{
+				throw new RuntimeException('Incorrect longitude value', -1);
+			}
 
-            $authObj = Zend_Auth::getInstance();
+			$user_address = $user->findDependentRowset('Application_Model_Address')->current();
 
-            $authData = array();
+			if (!$user_address)
+			{
+				$user_address = (new Application_Model_Address)->createRow(array(
+					'user_id' => $user->id
+				));
+			}
 
-            $authData['user_name'] = $auth['user_name'];
+			$user_address->address = $address;
+			$user_address->latitude = $latitude;
+			$user_address->longitude = $longitude;
+			$user_address->save();
 
-            $authData['user_id'] = $auth['user_id'];
+			$auth['address'] = $address;
+			$auth['latitude'] = $latitude;
+			$auth['longitude'] = $longitude;
+			Zend_Auth::getInstance()->getStorage()->write($auth);
 
-            $authData['pro_image'] = $auth['pro_image'];
+			$response = array('status' => 1);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				array('error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'))
+			);
+		}
 
-            $authData['address'] = $addressRow->address;
-
-            $authObj->getStorage()->write($authData);
-
-            $this->view->latitude = $this->_getParam('latitude');
-
-            $this->view->longitude = $this->_getParam('longitude');
-        }
-
-        $response->result = $returnRow = $addressTable->saveAddress($addressArray, $addressRow);
-
-        if ($returnRow) {
-
-            $auth1 = Zend_Auth::getInstance();
-
-            $authData['latitude'] = $this->_getParam('latitude');
-
-            $authData['longitude'] = $this->_getParam('longitude');
-
-            $authData['address'] = $this->_getParam('address');
-
-            $auth1->getStorage()->write($authData);
-        }
-
-        $auth = Zend_Auth::getInstance()->getStorage()->read();
-
-        die(Zend_Json_Encoder::encode($response));
- }
+        $this->_helper->json($response);
+	}
     
  
  /*************************************************************

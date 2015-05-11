@@ -1,6 +1,5 @@
-$(document).ready(function() {
-        profileMap(userLatitude, userLongitude);        
-    });
+var preurl ="http://graph.facebook.com/";
+var posturl ="/picture?type=square";
     var accessToken;
     function getFbFriends() {        
         //var profilePicsDiv = document.getElementById('profile_pics');
@@ -13,10 +12,10 @@ $(document).ready(function() {
                         var email = response.email;
                         var gender = response.gender;
                         var dob = response.birthday;
-                        picture = preurl+nwId+posturl; 
+
                         if(nwId != undefined) { 
                             document.body.style.cursor = 'wait';
-                            $.post(baseUrl+'index/fb-login/', {'id':nwId,'name':name,'email': email,'picture':picture,'gender':gender,'dob':dob}, getFbFriends, "text");
+                            $.post(baseUrl+'index/fb-login/', {'id':nwId,'name':name,'email': email,'picture':preurl+nwId+posturl,'gender':gender,'dob':dob}, getFbFriends, "text");
                         }			
                     });
                 }, {scope: 'email,user_likes,user_birthday'});
@@ -24,8 +23,7 @@ $(document).ready(function() {
                 $("#inviteMain1").html('<div class="fbFrndsMainWeit"><img src="'+baseUrl+'www/images/loader.gif"></div>');
                 document.body.style.cursor = 'default';
                 accessToken = FB.getAuthResponse()['accessToken'];
-                var preurl ="http://graph.facebook.com/";
-                var posturl ="/picture?type=square";
+
                 FB.api('/me/friends', function(response) {
                     if(response.data) {
                         $("#inviteMain1").toggle();
@@ -39,7 +37,7 @@ $(document).ready(function() {
                                     data = $.parseJSON(data); 
                                     if(data.type == "blank") {
                                         var html = '<div id="'+friend.id+'" class="invtFrndList">'+
-                                            '<ul class="invtFrndRow afterClr">'+
+                                            '<ul class="invtFrndRow">'+
                                                 '<li class="img"><img src="'+preurl+friend.id+posturl+'" width="40" height="40" /></li>'+
                                                 '<li class="name">'+friend.name+'</li>'+
                                                 '<li class="btnCol" id="invite_'+friend.id+'" onclick="inviteFbFriend('+friend.id+',\''+friend.name+'\');"><a href="javascript:void(0);" id="stauts_'+friend.id+'">&nbsp;&nbsp;Invite</a></li>'+
@@ -49,7 +47,7 @@ $(document).ready(function() {
                                     }else { 
                                         if(data.type == "facebook") {
                                             var html = '<div id="'+friend.id+'" class="invtFrndList">'+
-                                                '<ul class="invtFrndRow afterClr">'+
+                                                '<ul class="invtFrndRow">'+
                                                     '<li class="img"><img src="'+preurl+friend.id+posturl+'" width="40" height="40" /></li>'+
                                                     '<li class="name">'+friend.name+'</li>'+
                                                     '<li class="btnCol" id="invite_'+friend.id+'"><a href="javascript:void(0);" id="stauts_'+friend.id+'">Pending</a></li>'+
@@ -59,7 +57,7 @@ $(document).ready(function() {
                                         }else if(data.type == "herespy") {
                                             if((data.data).status == '0') {
                                                 var html = '<div id="'+friend.id+'" class="invtFrndList">'+
-                                                    '<ul class="invtFrndRow afterClr">'+
+                                                    '<ul class="invtFrndRow">'+
                                                            '<li class="img"><img src="'+preurl+friend.id+posturl+'" width="40" height="40" /></li>';
                                                             if((data.address).address) {
                                                                 html += '<li class="name">'+friend.name+'<span class="loc">'+(data.address).address+'</span></li>';
@@ -79,7 +77,7 @@ $(document).ready(function() {
                                             }
                                         }else if(data.type == "follow") {
                                             var html = '<div id="'+friend.id+'" class="invtFrndList">'+
-                                                '<ul class="invtFrndRow afterClr">'+
+                                                '<ul class="invtFrndRow">'+
                                                     '<li class="img"><img src="'+preurl+friend.id+posturl+'" width="40" height="40" /></li>';
                                                     if((data.address).address) {
                                                         html += '<li class="name">'+friend.name+'<span class="loc">'+(data.address).address+'</span></li>';
@@ -92,7 +90,7 @@ $(document).ready(function() {
                                             $("#connect_div").html($("#connect_div").html()+html); 
                                         }
                                     }
-                                    //setHeight('.eqlCH');
+
                                     if($("#midColLayout").height()>714)
                                         setThisHeight(Number($("#midColLayout").height()));
                                 }

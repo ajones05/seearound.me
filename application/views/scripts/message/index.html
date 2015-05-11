@@ -4,11 +4,10 @@
 
 <? if(count($this->inbox) > 0):?>
 
-<div class="inboxSec appendClr">
+<div class="inboxSec">
 
     <? foreach($this->inbox as $inboxData):?>
-<?php //var_dump($inboxData);?>
-    <ul class="afterClr">
+    <ul>
 
         <li onclick="showData(this, '<?=$inboxData->id?>');" id="row_<?=$inboxData->id?>" class="message-list 
 
@@ -41,13 +40,14 @@ highLight
                     <span class="message"><?=$inboxData->message; ?></span>
 
                 </div>
-                <div class="message-third afterClr">
+                <div class="message-third">
                    
                     <span class="dateTime"><?=date('Y-m-d H:i', strtotime($inboxData->created))?></span>
                     <img class="checking" src="<?=BASE_PATH?>www/images/message_check.png"<?php if($inboxData['reciever_read']=="true") echo "style='display: none;'"?>>
                     <img class="checked" src="<?=BASE_PATH?>www/images/message_checked.png" <?php if($inboxData['reciever_read']=="true") echo "style='display: inline-block;'"?>>
 
                 </div>
+				<div class="clr"></div>
             </div>
             <ul id="show_data_<?=$inboxData->id?>" class="replyFrm" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;}"></ul>
 
@@ -56,6 +56,7 @@ highLight
         <div class="clr"></div>        
 
     </ul>
+	<div class="clr"></div>
 
     <?endforeach;?>
 

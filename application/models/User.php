@@ -101,6 +101,8 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 			return $address->address;
 		}
 
+		// TODO: remove
+		
 		if (!My_Ip::geolocation(false))
 		{
 			return Zend_Registry::get('config_global')->geolocation->address;

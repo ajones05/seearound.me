@@ -11,7 +11,7 @@ class ContactsController extends My_Controller_Action_Herespy
     public function indexAction()
     {
         $inviteStatus = new Application_Model_Invitestatus();
-        if($inviteStatus = $inviteStatus->getData(array(user_id=>$this->auth['user_id']))) {
+        if($inviteStatus = $inviteStatus->getData(array('user_id'=>$this->auth['user_id']))) {
             if($inviteStatus->invite_count <= 0) {
                 $this->_redirect(BASE_PATH.'contacts/friends-list');
             } else {
@@ -259,22 +259,48 @@ class ContactsController extends My_Controller_Action_Herespy
         $offset = $page*$limit;
         if(isset($this->auth['user_id']) && $this->auth['user_id'] != "") {
             $frlist = $tableFriends->getTotalFriends($this->auth['user_id'], $limit, $offset);
+
+			if (count($frlist))
+			{
+				foreach ($frlist as $row)
+				{
+					// TODO: change $row->findDependentRowset('Application_Model_User', 'Receiver')->current()...
+					$_user = $tableUser->findById($row->id);
+
+					$response->frlist[] = array(
+						'Profile_image' => $_user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+						'id' => $_user->id,
+						'Name' => $_user->Name,
+						'address' => $_user->address(),
+						'latitude' => $_user->lat(),
+						'longitude' => $_user->lng()
+					);
+				}
+			}
+			
             $more = $tableFriends->getTotalFriends($this->auth['user_id'], $limit, $offset+$limit);
             $this->view->inviteStatus = $inviteStatus->getData(array('user_id'=>$this->auth['user_id']));
         } 
         if($this->request->isXmlHttpRequest()) {
-            $response->frlist = $frlist->toArray();
             $response->more = count($more);
             $response->page = $page+1;
-            die(Zend_Json_Encoder::encode($response));
+
+			$this->_helper->json($response);
         } else {
-            $this->view->frlist = $frlist;
-            $this->view->more = count($more);
+			$this->view->more = count($more);
+            $this->view->frlist = $frlist->toArray();
             $this->view->page = $page+1;
         }
 
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
-		$this->view->headScript()->appendFile('/www/scripts/friendlist.js?' . $mediaversion);
+
+		$this->view->headLink()
+			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css');
+
+		$this->view->headScript()
+			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
+			->appendFile('/www/scripts/news.js?' . $mediaversion)
+			->appendFile('/www/scripts/friendlist.js?' . $mediaversion);
 	}
 
 	/**

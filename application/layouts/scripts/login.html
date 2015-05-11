@@ -7,23 +7,21 @@ $auth = Zend_Auth::getInstance()->getIdentity();
 $this->headLink()
 	->appendStylesheet('/bower_components/jquery-ui/themes/base/jquery-ui.min.css')
 	->appendStylesheet('/www/css/reset.css?' . $config->mediaversion)
-	->appendStylesheet('/www/css/global.css?' . $config->mediaversion)
-	->appendStylesheet('/www/css/login.css?' . $config->mediaversion);
+	->appendStylesheet('/www/css/global.css?' . $config->mediaversion);
 
 $this->headScript()
 	->appendScript(
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
 		"	var baseUrl = " . json_encode(BASE_PATH) . ";\n" .
-		"	var http_host = " . json_encode($request->getHttpHost()) . ";\n" .
-		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
+		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
+		"	var	geoipaddress = " . json_encode($geoip[2]) . ";\n" .
+		"	var	returnUrl = " . json_encode($request->getParam('url', '')) . ";\n"
 	)
+	->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 	->prependFile('/bower_components/jquery/dist/jquery.min.js')
 	->appendFile('/bower_components/jquery-ui/jquery-ui.min.js')
-	// TODO: remove after fix deprecated
-	->appendFile('/bower_components/query-migrate/src/migrate.js')
-	->appendFile('/bower_components/query-migrate/src/core.js')
-	->appendFile('/bower_components/query-migrate/src/event.js')
-	->appendFile('/bower_components/jquery-validation/dist/jquery.validate.min.js');
+	->appendFile('/bower_components/jquery-validation/dist/jquery.validate.min.js')
+	->appendFile('/www/scripts/common.js');
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -31,24 +29,6 @@ $this->headScript()
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>seearound.me</title>
 	<?php echo $this->headLink() . "\n" . $this->headScript() . "\n"; ?>
-	<link rel="stylesheet" media="screen" href="<?php echo BASE_PATH; ?>www/css/colorbox.css"/>
-	<script language="javascript" type="text/javascript">
-		var geoiplatitude  = <?php echo $geoip[0]; ?>;
-		var geoiplongitude = <?php echo $geoip[1]; ?>;
-		var userLatitude = <?php echo My_ArrayHelper::getProp($this->auth, 'latitude', $geoip[0]); ?>;
-		var userLongitude = <?php echo My_ArrayHelper::getProp($this->auth, 'longitude', $geoip[1]); ?>;
-		var user_id = "<?=$this->auth['user_id']?>";
-		var returnUrl = "<?=$request->getParam('url')?$request->getParam('url'):''?>";
-	</script>
-	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/infobubble.js"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/customDatepicker.js"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/jquery.colorbox.js"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/json2.js"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/main.js?<?php echo $config->mediaversion; ?>"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/custom.js?<?php echo $config->mediaversion; ?>"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/layout.js?<?php echo $config->mediaversion; ?>"></script>
-	<script language="javascript" type="text/javascript" src="<?php echo BASE_PATH; ?>www/scripts/common.js?<?php echo $config->mediaversion; ?>"></script>
 </head>
 <body class="bgRegForm">
 	<?php include '_header.html'; ?>
@@ -57,111 +37,6 @@ $this->headScript()
 	</div>
 	<div class="opacity-dev"></div>
 	<?php include '_footer.html'; ?>
-	<div style="display: none;">
-		<div id="Map-Popup-id">
-			<div style="height: 100%; width: 100%; position: relative; background-color: rgb(229, 227, 223); overflow: hidden;" id="mapSection" class="mapScreen"></div>
-			<div align="center" style="width: 100%;">
-				<input class="btnBlueRpt" id="useAddress" type="button" disabled="disabled" value="Use this address" onClick="fillAddress()"/>
-				<input class="btnBlueRpt" id="useNewAddress" type="button" disabled="disabled" value="Use this address" onClick="fillUserAddress()"/>
-				<input type="hidden"  id="currentAddress" name="currentAddress"/>
-				<input class="btnBlueRpt" id="closeOpenPopup" class='btn primary' type="button" value="Cancel Search" onClick="closePopup();"/>
-			</div>
-		</div>
-	</div>
-	<div style="display: none;">
-		<div style="display:none;">
-			<input type="button" class="Thanks-Popup-Class" id="thanksButton" />
-		</div>
-		<div id="Thanks-Popup">
-			<table width="100%">
-				<tr>
-					<td colspan="2">&nbsp;</td>
-				</tr>    
-				<tr>
-					<td colspan="2">
-						<div align="center">
-							<span style="color:#33CC00" id="messageSuccess" >
-								<img src="<?php echo BASE_PATH; ?>www/images/correct.gif" />&nbsp;Message sent successful
-							</span>
-						</div>
-					</td>
-				</tr>
-			</table>
-		</div>
-	</div>
-	<div style="display: none;">
-		<div id="Message-Popup">
-			<img style="vertical-align:middle;" src="<?php echo BASE_PATH; ?>www/images/mail_send.gif" />
-			<span style="font-size:18px;font-weight:800;margin-left:150px; margin-bottom:10px;">Send Message</span>
-			<center>
-				<div style="text-align:center; width:500px;">
-					<table width="50%">
-						<tbody id="messageForm">
-							<tr>
-								<td valign="top">
-									<b>Subject:</b>
-								</td>
-								<td>
-									<input type="text" id="subject" name="subject" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter subject..."/><br />
-									<span style="margin-left:0px;" class="errorField" id="subject_error"></span>
-								</td>
-							</tr>
-							<tr>
-								<td valign="top">
-									<b>Message:</b>
-								</td>
-								<td>
-									<textarea id="message" name="message" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter message..."></textarea><br />
-									<span style="margin-left:0px;" class="errorField" id="message_error"></span>
-								</td>
-							</tr>
-							<tr>
-								<td colspan="2" style="text-align:center;">
-									<input id="closeLocationPopup" class='btn primary' type="button" value="Send" onClick="message();"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-									<input type="button" onClick="closePopup();" class='btn primary' value="Cancel" />
-								</td>
-							</tr>
-						</tbody>
-					</table>	
-				</div>
-			</center>
-		</div>
-	</div>
-	<div style="display: none;">
-		<div id="login-id" style="padding:10px;">
-			<table cellpadding="10" cellspacing="10" align="center">
-				<tr>
-					<td>
-						<div align="center">
-							<b>Please Login to post comment</b><br />
-							<div align="center" style="margin-top: 10px;">
-								<a href="<?php echo BASE_PATH; ?>here-spy-index">
-									<input type="button" value="Login" />
-								</a>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<div align="center">
-							<b style="color: blue;">or</b><br />
-							<b style="margin-top: 10px;">Register with us</b>
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<div align="center">
-							<a href="<?php echo BASE_PATH; ?>here-spy-index">
-								<input type="button" value="Register"/>
-							</a>
-						</div>
-					</td>
-				</tr>
-			</table>
-		</div>
-	</div>
 	<div id="fb-root"></div>
 </body>
 </html>

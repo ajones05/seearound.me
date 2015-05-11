@@ -18,7 +18,7 @@ class Application_Model_Emailinvites extends My_Db_Table_Abstract
         return self::$_instance;
     }
     
-    function getData($data = array(), $all) 
+    function getData($data = array(), $all = false) 
     {
         $select = $this->select();
         if($data && is_array($data)) {

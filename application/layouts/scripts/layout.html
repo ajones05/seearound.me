@@ -13,26 +13,22 @@ $request = Zend_Controller_Front::getInstance()->getRequest();
 $this->headLink()
 	->appendStylesheet('/bower_components/jquery-ui/themes/base/jquery-ui.min.css')
 	->appendStylesheet('/www/css/reset.css?' . $config->mediaversion)
-	->appendStylesheet('/www/css/global.css?' . $config->mediaversion)
-	->appendStylesheet('/www/css/login.css?' . $config->mediaversion);
+	->appendStylesheet('/www/css/global.css?' . $config->mediaversion);
 
 $this->headScript()
 	->appendScript(
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
 		"	var baseUrl = " . json_encode(BASE_PATH) . ";\n" .
-		"	var http_host = " . json_encode($request->getHttpHost()) . ";\n" .
 		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
 		"	var	reciever_userid = " . json_encode($this->reciever) . ";\n" .
 		"	var	user_id = " . json_encode($this->isLogin ? $user->id : '') . ";\n"
 	)
+	->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 	->prependFile('/bower_components/jquery/dist/jquery.min.js')
 	->appendFile('/bower_components/jquery-ui/jquery-ui.min.js')
-	// TODO: remove after fix deprecated
-	->appendFile('/bower_components/query-migrate/src/migrate.js')
-	->appendFile('/bower_components/query-migrate/src/core.js')
-	->appendFile('/bower_components/query-migrate/src/event.js')
 	->appendFile('/bower_components/jquery-validation/dist/jquery.validate.min.js')
-	->appendFile('/bower_components/jquery.scrollTo/jquery.scrollTo.min.js');
+	->appendFile('/bower_components/jquery.scrollTo/jquery.scrollTo.min.js')
+	->appendFile('/www/scripts/common.js');
 
 $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 ?>
@@ -42,8 +38,6 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>seearound.me</title>
 	<?php echo $this->headLink() . "\n" . $this->headScript() . "\n"; ?>
-	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/colorbox.css"/>
-	<link rel="stylesheet" media="screen" href="<?=BASE_PATH?>www/css/layout.css?1"/>
 	<?php if ($this->hideRight): ?>
 	<style type="text/css">
     #midColLayout {
@@ -53,77 +47,19 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 	}
 	</style>
 	<?php endif; ?>
-	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
 	<script language="javascript" type="text/javascript">
-	var geoiplatitude  = <?php echo $geoip[0]; ?>;
-	var geoiplongitude = <?php echo $geoip[1]; ?>;
 	var userLatitude = <?php echo json_encode($this->isLogin ? $user->lat() : $geoip[0]); ?>;
 	var userLongitude = <?php echo json_encode($this->isLogin ? $user->lng() : $geoip[1]); ?>;
 	var userAddress = <?php echo json_encode($this->isLogin ? $user->address() : ''); ?>;
-	var isFbLogin = "<?php echo !empty($this->auth['is_fb_login']); ?>";
 	var userName = <?php echo json_encode($this->isLogin ? $user->Name : ''); ?>;
 	var imagePath = "<?php echo $this->isLogin ? $user->getProfileImage($image) : $image; ?>";
 	var controller = "<?=$request->getParam('controller')?>";
 	var action = "<?=$request->getParam('action')?>";
-	var showMy = "<?=$request->getParam('my')?'search':'no'?>";
-	var returnUrl = "<?=$request->getParam('url')?$request->getParam('url'):''?>";
-	var currentRequests = 0;
-	</script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/infobubble.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/customDatepicker.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/jquery.colorbox.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/json2.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/custom.js?<?php echo $config->mediaversion; ?>"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/layout.js?<?php echo $config->mediaversion; ?>"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/common.js?<?php echo $config->mediaversion; ?>"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/areaCircle.js"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-common.js?<?php echo $config->mediaversion; ?>"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/spy-mainMap.js?<?php echo $config->mediaversion; ?>"></script>
-	<script language="javascript" type="text/javascript" src="<?=BASE_PATH?>www/scripts/upclick.js"></script>
-	<script type="text/javascript">
+
 	$(function(){
-		$('.result').html("View All");
-
-		$(document).bind('click', function(e){
-			var $clicked = $(e.target);
-
-			if (!$clicked.parents().hasClass("menu")){
-				$(".menu dd ul").hide();
-				$(".menu dt a").removeClass("selected");
-			}
-		});
-
-		$(".menu dt a").click(function(){
-			var clickedId = "#" + this.id.replace(/^link/,"ul");
-
-			$(".menu dd ul").not(clickedId).hide();
-			$(clickedId).toggle();
-			if ($(clickedId).css("display") == "none"){
-				$(this).removeClass("selected");
-			} else {
-				$(this).addClass("selected");
-			}
-		});
-
-		$(".menu dd ul li a").click(function(e){
-			e.preventDefault();
-			$('#filter_type').val($(this).prop("hash").substring(1));
-			globalStart = 0;
-			getAllNearestPoint();
-
-			$(this).closest('dl').find('.result').html($(this).html());
-			$(".menu dd ul").hide();
-		});
-
-		$('#searchText').keydown(function(e){
-			if (e.keyCode == 13){
-				searchLatest(); 
-			} 
-		});
-		
 		$(window).resize(function(){
 			var height, windowHeight = $(window).height();
-				
+
 			if (windowHeight > 770){
 				height = 500;
 			} else if (windowHeight > 450) {
@@ -138,11 +74,9 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 	</script>
 </head>
 <body>
-        <div id="fb-root"></div>
-        <div style="display: none;"></div>
 		<?php include '_header.html'; ?>
         <div id="line_1" class="mainContainer_line"></div>
-        <div id="mainDiv" class="mainContainer appendClr">
+        <div id="mainDiv" class="mainContainer">
             <?php if(isset($this->currentPage) && ($this->currentPage == 'Message')): ?>
                 <div style="float:left;width:100%;">
                 <div class="midCol eqlCH" id="midColLayout" style="min-height: auto; height: 100%; position: relative; float: right; margin-right: 0px;width: 100%;">
@@ -153,7 +87,6 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
                         <?php else: ?>
                             <div class="midCol eqlCH" id="midColLayout" ddd="ccc"  style="min-height: auto; height: 100%; position: relative; float: right; margin-right: 0px;">
                         <?php endif ?>
-                        
                     <?php endif ?>
                           <?=$this->layout()->content;?>
                         </div>
@@ -162,11 +95,10 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
             <?if(!$this->hideRight):?>
                   <div style="float:right;width:49%;margin-left:0px;">
                <?if(!isset($this->homePageExist)) { ?>
-                  <div id="mapDiv" class="rightCol textAlignCenter eqlCH" style="">                
+                  <div id="mapDiv" class="rightCol textAlignCenter eqlCH">
                <? } else { ?>
-                  <div id="mapDiv" class="rightColUpdated textAlignCenter" style="margin-left: 0px;">                
+                  <div id="mapDiv" class="rightColUpdated textAlignCenter" style="margin-left: 0px;">
             <? } ?>
-              
           <?php if(!isset($this->friendListExist) && !isset($this->myprofileExist) && !isset($this->newsDetailExist) && !isset($this->message)  && !isset($this->myeditprofileExist)) { ?>
             <div style="height:44px;position:relative;width: 355px;border-right: 1px solid #d7d7d7;">
     			<div>
@@ -177,7 +109,6 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
                               <span class="result" style="text-align: left;color: #8d8d8d; font: normal 15px lato-lightItalic;padding: 5px 0px 4px 15px;"></span>
                           </a>
                        </dt>
-
                        <dd style="margin-left:0px;">
                            <ul style="display: none;z-index:99999;" id="ulglobal" >
                                <li><a id="filter_all" href="#"><b>View All</b></a></li>
@@ -186,7 +117,6 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
                               <li><a id="filter_friends" href="#Friends"><b>Friends</b></a></li>
                            </ul>
                        </dd>
-                       
     			    </dl>
     			</div>
 		  </div>
@@ -203,13 +133,32 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
                     <div class="gMapSec" style="margin-top: 0px">
                       <?php } ?>   
                         <?php if(!$this->message) :?>
+						<?php if (!empty($this->homePageExist)): ?>
+						<div id="zoomController">
+							<div>
+								<img id="zoomIn" src="<?php echo BASE_PATH; ?>www/images/zoom_in.gif" />
+							</div>
+							<div>
+								<img id="zoomOut" src="<?php echo BASE_PATH; ?>www/images/zoom_out.gif" />
+							</div>
+						</div>
+						<?php endif; ?>
                          <div class="gMap">
                             <div id="map_canvas" class="mapCanvas"></div>
                          </div>
+						<?php if (!empty($this->homePageExist)): ?>
+						<div class="sliderBackground">
+							<div>
+								<span id="radious">0.8</span>
+								<span>Miles</span>
+							</div>
+							<div id="slider"></div>
+						</div>
+						<?php endif; ?>
                         <?php endif; ?>  
                         <?if($this->changeLocation) :?>
                         <div class="gMapBtnBar">
-                            <input id="locationButton" type="button" value="Change Location" class="Location-Popup-Class Map-Popup-Class1 btnBlueRpt" style="width: 100%; padding: 11px 0;"/>
+                            <input id="locationButton" type="button" value="Change Location" class="btnBlueRpt" style="width: 100%; padding: 11px 0;"/>
                         </div>
                         <?endif;?>
                     </div>
@@ -222,9 +171,10 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
                         <li>
 							<a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
                         </li>
-                        <li class="afterClr">
+                        <li>
 							<span class="copyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
 						</li>
+						<div class="clr"></div>
                     </ul>
                 </div> <?} else {?>
                   <div class="footer">
@@ -235,12 +185,12 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
                         <li>
 							<a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
                         </li>
-                        <li class="afterClr">
+                        <li>
 							<span class="copyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
 						</li>
+						<div class="clr"></div>
                     </ul>
                 </div>
-                 
                 <? } ?>
             </div>
             <?else:?>            
@@ -252,152 +202,17 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
                     <li>
                         <a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
                     </li>
-                    <li class="afterClr">
+                    <li>
 						<span class="copyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
                     </li>
-                </ul>                    
-            </div>             
+					<div class="clr"></div>
+                </ul>
+            </div>
             <?endif?>
-        </div>
+		</div>
+		<div class="clr"></div>
      </div>
     <?endif?>
-        <div style="display: none;">
-            <div style="display:none;"><input type="button" class="Thanks-Popup-Class" id="thanksButton" /></div>
-            <div id="Thanks-Popup">
-                <table width="100%">
-                    <tr>
-                        <td colspan="2">&nbsp;</td>
-                    </tr>    
-                    <tr>
-                        <td colspan="2">
-                            <div align="center">
-                                <span style="color:#33CC00" id="messageSuccess" >
-                                    <img src="<?=BASE_PATH?>www/images/correct.gif" />
-                                    &nbsp;Message sent successful
-                                </span>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        <div style="display: none;">
-            <div id="Message-Popup">
-                <img style="vertical-align:middle;" src="<?=BASE_PATH?>www/images/mail_send.gif" />
-                <span class="locppmsgimg">Send Message</span>                
-                <div class="locationPopup">
-                    <ul id="messageForm">
-                        <? if($this->publicMessage):?>
-                        <li>
-                            <input type="email" id="to" name="to" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter receiver email address..."/><br />
-                            <span class="errors marginL" id="to_error"></span>
-                        </li>
-                        <? else:?>
-                        <li>
-                            <input type="text" id="subject" name="subject" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter subject..."/><br />
-                            <span class="errors marginL" id="subject_error"></span>
-                        </li>
-                        <? endif;?>
-                        <li>
-                            <textarea id="message" name="message" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter message..."></textarea><br />
-                            <span class="errors marginL" id="message_error"></span>
-                        </li>
-                        <input id="closeLocationPopup" class="btnBlueRpt" type="button" value="Send" <? if($this->publicMessage):?> onClick="publicMessage();"<?else:?> onClick="message();"<?endif;?> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <input type="button" onClick="closePopup();" class="btnBlueRpt" value="Cancel" />
-                    </ul>
-                </div>
-            </div>
-            <div id="Message-Popup_Email">
-                <img style="vertical-align:middle;" src="<?=BASE_PATH?>www/images/mail_send.gif" />
-                <span class="locppmsgimg">Send Message</span>                
-                <div class="locationPopup">
-                    <ul id="messageForm">
-                        <li>
-                            <input type="email" id="to" name="to" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter receiver email address..."/><br />
-                            <span class="errors marginL" id="to_error"></span>
-                        </li>
-                        <li>
-                            <textarea id="message" name="message" onFocus="removeError(this);" style="width:300px;" placeholder="Please enter message..."></textarea><br />
-                            <span class="errors marginL" id="message_error"></span>
-                        </li>
-                      
-                        <input id="closeLocationPopup" class="btnBlueRpt" type="button" value="Send" onClick="publicMessageEmail();" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <input type="button" onClick="closePopup();" class="btnBlueRpt" value="Cancel" />
-						<input type="hidden" id="news_id" name="news_id" />
-                    </ul>
-                 </div>
-             </div>
-        </div>
-        <div style="display: none;">
-            <div id="login-id" class="post-login">
-                <span class="loginMsg">Please register or log in to do that.</span>
-                <div class="loginPopup">
-                    <ul>
-                        <li>
-                            <a class="hypDecNone" href="<?=BASE_PATH?><?php if ($this->returnUrl): ?>?url=<?php echo $this->returnUrl; endif; ?>">
-								<input style="width:70px;" class="btnBlueRpt" type="button" value="OK" />
-							</a>
-                        </li>
-                     </ul>
-                </div>
-            </div>
-        </div>
-           <div style="display: none;">
-            <div id="voting-id">
-                <span class="loginMsg">Please Login to vote!</span>
-                <div class="loginPopup">
-                    <ul>
-                        <li>
-                            <?php if($this->returnUrl) :?> 
-                            <a class="hypDecNone" href="<?=BASE_PATH?>?url=<?=$this->returnUrl?>"><input onclick="goLoc('?url=<?=$this->returnUrl?>');" style="width:70px;" class="btnBlueRpt" type="button" value="Login"/></a>
-                            <?php else :?>
-                            <a class="hypDecNone" href="<?=BASE_PATH?>"><input onclick="goLoc('');" style="width:70px;" class="btnBlueRpt" type="button" value="Login"/></a>
-                            <?php endif;?>
-                        </li>
-                        <li>
-                            <span style="color: blue; font-size:17px;">or</span>
-                        </li>
-                        <li>
-                            <span style="margin-top: 10px;font-size: 15px;">Register with us</b></span>
-                        </li>
-                        <li>
-                            <?php if($this->returnUrl) :?> 
-                            <a class="hypDecNone" href="<?=BASE_PATH?>?url=<?=$this->returnUrl?>"><input onclick="goLoc('?url=<?=$this->returnUrl?>');" style="width:80px;" class="btnBlueRpt" type="button" value="Register"/></a>
-                            <?php else :?>
-                            <a class="hypDecNone" href="<?=BASE_PATH?>"><input onclick="goLoc('');" style="width:70px;" class="btnBlueRpt" type="button" value="Register"/></a>
-                            <?php endif;?>
-                        </li>                    
-                    </ul>
-                </div>
-            </div>
-        </div>
-                    <div style="display: none;">
-                     <div id="Map-Popup-id">
-                         <div id="mapSection"  class="normalScreen" style="height: 432px;"></div>
-                             <div style="text-align:center; padding: 15px 0; position: relative;">
-                                 <input type="text" placeholder="Enter address" class="homemap-address" id="searchAddresHome">
-                                 <img src="<?=BASE_PATH?>www/images/map_search.png" class="homemap-srh-img" onclick="changeHomeLocation('draw');">
-                                 <input class="btnBlueRpt" id="useNewAddress" type="button" disabled="disabled" value="Use This Address" onclick="fillUserAddress()" />
-                                 <img id="waitingAddress" src="<?=BASE_PATH?>www/images/wait.gif" style="display: none;" />
-                              </div>
-                        </div>
-                     </div>
-					<div style="display: none;">
-						<div id="Change-Postlocation-Map-Popup-id">
-							<div id="mapSection"  class="normalScreen" style="height: 432px;"></div>
-							<div style="text-align: center;padding: 15px 0;position: relative;">
-								<input type="text" placeholder="Enter address" class="Change-homemap-address" />
-								<img src="<?=BASE_PATH?>www/images/map_search.png" class="Change-srh-img" />
-								<input class="btnBlueRpt useNewAddress" type="button" value="Use This Address" />
-							</div>
-						</div>
-					</div>
-                        <div style="display: none;">
-                            <div id="Image-Popup">
-                                <img id="imagePopup" src="" style="padding: 3px; min-height : 100px; min-width: 100px;" />            
-                            </div>
-                        </div>
-                        <div id="contentUpdator" style="display: none;">
-                        </div>
+	<div id="fb-root"></div>
 </body>
 </html>

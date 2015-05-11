@@ -1,9 +1,9 @@
 <script type="text/javascript" src="<?=BASE_PATH?>www/scripts/messageindex.js"></script>
 <h3 class="topHdGrayB12"><img src="<?=BASE_PATH?>www/images/icn-inbox.gif" width="26" height="20" class="tIcn" alt="My Connections" /> Inbox</h3>
 <? if(count($this->inbox) > 0):?>
-<div class="inboxSec appendClr">
+<div class="inboxSec">
     <? foreach($this->inbox as $inboxData):?>
-    <ul class="afterClr">
+    <ul>
         <li onclick="showData(this, '<?=$inboxData->id?>');" id="row_<?=$inboxData->id?>" class="
                 <?if($inboxData->sender_id == $this->auth['user_id'] && $inboxData->sender_read == "false"):?>
                 highLight
@@ -14,13 +14,14 @@
             <a href="javascript:void(0);"><? if($inboxData->subject != ""):?><?=$inboxData->subject?><? else:?>--<? endif;?></a> 
             <span class="name">(<?=$inboxData->Name;?>)</span><span id="showAlll_<?=$inboxData->id?>" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;} showAllReply(this, '<?=$inboxData->id?>'); " style="margin-left: 50px;display: none;" class="name">Show all</span>
             <span class="name"><img id="loading_<?=$inboxData->id?>" style="display:none;padding-left: 14px;" src="<?=BASE_PATH?>www/images/wait.gif" /></span>
-            <span class="dateTime afterClr"><?=date('Y-m-d H:i', strtotime($inboxData->created))?></span>
+            <span class="dateTime"><?=date('Y-m-d H:i', strtotime($inboxData->created))?></span>
+			<div class="clr"></div>
             <ul id="show_data_<?=$inboxData->id?>" class="replyFrm" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;}"></ul>
         </li>
         <div class="clr"></div>        
     </ul>
+	<div class="clr"></div>
     <?endforeach;?>
-    <div class="clr"></div>
     <?= $this->paginationControl($this->paginator, 'Sliding', 'message/message-paging.html'); ?>            
     <div class="clr"></div>
 </div>

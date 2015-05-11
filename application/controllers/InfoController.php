@@ -27,7 +27,6 @@ class InfoController extends My_Controller_Action_Abstract
 	{
         $this->view->layout()->setLayout('layout');
         $this->view->hideRight = false;
-        $this->view->publicMessage = true;
         $this->view->newsDetailExist = true;
 
 		$news_id = $this->_request->getParam('nwid');
@@ -38,7 +37,7 @@ class InfoController extends My_Controller_Action_Abstract
         }
 
 		$this->view->news = $news;
-		$this->view->news_user = $news->findDependentRowset('Application_Model_User')->current();
+		$this->view->news_owner = $news->findDependentRowset('Application_Model_User')->current();
 		$this->view->returnUrl = BASE_PATH . 'info/news/nwid/' . $news->id;
 
 		$this->view->comentsModel = new Application_Model_Comments;
@@ -53,50 +52,26 @@ class InfoController extends My_Controller_Action_Abstract
 			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css');
 
 		$this->view->headScript()
+			->appendScript("	var news = " . json_encode(array(
+				'id' => $news->id,
+				'address' => $news->Address,
+				'news' => $news->news,
+				'latitude' => $news->latitude,
+				'longitude' => $news->longitude,
+			)) . ";\n" .
+			"	var newsOwner = " . json_encode(array(
+				'address' => $this->view->news_owner->address(),
+				'name' => $this->view->news_owner->Name,
+				'image' => $this->view->news_owner->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+			)) . ";\n")
 			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
 			->appendFile('/bower_components/textarea-autosize/src/jquery.textarea_autosize.js')
-			->appendFile('/www/scripts/publicNews.js?' . $mediaversion)
 			->appendFile('/www/scripts/news.js?' . $mediaversion);
     }
 
     public function totalCommentsAction()
     {
         $this->_helper->layout()->disableLayout();
-    }
-    
-    /*
-     * function to send public meaasage
-     */
-    public function publicMessageAction() 
-    {
-        /*
-         * creating the instance of auth class
-         */
-        $response = new stdClass();
-        if($this->_request->isPost()) {
-            /*
-             * accessing the requested parameters and setuping mail parameters
-             */
-            $message = $this->_request->getPost('message', null);
-            $to = $this->_request->getPost('to', null);
-            if(!$message) {
-                $response->errors->message = "Invalid messags information";
-            } elseif(!$to) {
-                $response->errors->to = "Invalid reciever information";
-            } else { 
-                $this->to = $to;
-                $this->from = $this->auth['user_email'];
-                $this->subject = "News invitation";
-                $this->view->name = $this->auth['user_name'];
-                $this->view->message = "<p align='justify'>$message</p>";
-                $this->view->adminName = "Admin";
-                $this->view->response = "seearound.me";
-                $this->message = $this->view->action("index","general",array());
-                $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-                $response->success = "done";
-            }
-        } 
-        die(Zend_Json_Encoder::encode($response));
     }
 
 	/**
@@ -148,42 +123,4 @@ class InfoController extends My_Controller_Action_Abstract
 
 		die(Zend_Json_Encoder::encode($response));
 	}
-
-     public function storeVotingIndividualAction(){
-         $response = new stdClass();
-         if($this->_request->isPost()) {
-            $data = $this->_request->getPost();
-           // $votingTable = new Application_Model_Voting();
-           
-            $userTable     = new Application_Model_User();
-            $votingTable   = new Application_Model_Voting();
-            $row =$votingTable->saveVotingData($data['action'],$data['id'],$data['user_id']);
-            if($row){
-               $response->successalready = 'registered already'; 
-               $response->noofvotes_1 = $votingTable->getTotoalVoteCounts($data['action'],$data['id'],$data['user_id']);
-               
-              }
-            else {
-                $response->success =   'voted successfully';
-                $response->noofvotes_2 = $votingTable->getTotoalVoteCounts($data['action'],$data['id'],$data['user_id']);
-                //$response->successalready = 'registered already'; 
-            } 
-         /*$exist = checkExistUser($data['id'],$data['user_id']);
-               if($exist){
-                   $response->exist  ='User Exist';
-               }  */
-        if($this->_request->isXmlHttpRequest()) {
-            die(Zend_Json_Encoder::encode($response));
-         }
-       } else {
-           echo "Sorry unable to vote";
-       }
-     }
-     
-   
 }    
-
-
-
-
-

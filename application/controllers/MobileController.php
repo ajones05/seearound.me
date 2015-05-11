@@ -427,7 +427,6 @@ class MobileController extends Zend_Controller_Action
                 $data['user']['receiver_id'] = $recieverId;
                 $data['user']['created']     = date('Y-m-d H:i:s');
                 $data['user']['updated']     = date('Y-m-d H:i:s');
-                $data['user']['is_read']     = 'false';
                 $data['user']['is_deleted']  = 'false';
                 $data['user']['is_valid']    = 'true';
                 $data['user']['subject']     = $subject;

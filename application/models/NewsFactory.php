@@ -213,59 +213,6 @@ class Application_Model_NewsFactory {
      
     }
 
-    function fbLogin($data){
-        $userTable = new Application_Model_User();
-        $inviteStausTable = new Application_Model_Invitestatus();
-        $tableFbTable = new Application_Model_Fbtempusers();
-        $tableFriends = new Application_Model_Friends();
-        $profileTable = new Application_Model_Profile();
-        $select = $userTable->select()->setIntegrityCheck(false)
-                ->from('user_data')
-                ->joinLeft('address','address.user_id = user_data.id',array('latitude','longitude'))
-                ->where('Network_id =?', $data['Network_id']); //echo $select; exit;
-        if($row = $userTable->fetchRow($select)) {
-            return $row;
-        } else {
-            $select = $userTable->select()->setIntegrityCheck(false)
-                    ->from('user_data')
-                    ->join('address','address.user_id = user_data.id',array('latitude','longitude'))
-                    ->where('Email_id =?', $data['Email_id']);
-            if($row = $userTable->fetchRow($select)) {
-                $where = $userTable->getAdapter()->quoteInto('id = ?', $row->id);
-                $userTable->update(array('Network_id' => $data['Network_id']),$where);
-                return $row;
-            } else {
-                $row = $userTable->createRow($data);
-                if($row) {
-                    $row->save();
-                    $inviteStausTable->createRow(array(user_id=>$row->id, created => date('Y-m-d H:i:s'), updated => date('Y-m-d H:i:s')))->save();
-                    $row1 = $profileTable->createRow(array('user_id'=>$row->id, 'Gender'=>ucfirst($data['Gender'])));
-                    $row1->save();
-
-                    //code for fruends request notification
-                    if($row->Network_id != "") {
-                        $select = $tableFbTable->select()
-                                ->where('reciever_nw_id =?', $row->Network_id);
-                        if($frows = $tableFbTable->fetchAll($select)) {
-                            foreach($frows as $frow) {
-                                $friendData = array(
-                                    'sender_id' => $frow->sender_id,
-                                    'reciever_id' => $row->id,
-                                    'cdate' => date('Y-m-d H:i:s'),
-                                    'udate' => date('Y-m-d H:i:s')
-                                );
-                                $friendRow = $tableFriends->createRow($friendData);
-                                $friendRow->save();
-                                $frow->delete();
-                            }
-                        }
-                    }
-                }
-                return $row;
-            }
-        }	
-    }
-
     function addComments($comments, $newsId, $userId){
         $commentTable = new Application_Model_Comments();
         $data = array(

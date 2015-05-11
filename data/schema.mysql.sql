@@ -42,6 +42,7 @@ ALTER TABLE `login_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCE
 ALTER TABLE `message` ENGINE = InnoDB;
 ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_2`(`receiver_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
+ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_3`(`reply_to`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 
 --
 -- Table structure for table `message_reply`

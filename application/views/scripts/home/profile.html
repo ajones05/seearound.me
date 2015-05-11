@@ -21,20 +21,24 @@ $auth_id = $auth ? $auth['user_id'] : null;
 	<li>
 		<label>Email Address</label>
 		<span><?php echo $this->user_data->Email_id; ?></span>
+		<div class="clr"></div>
 	</li>
 	<?php endif; ?>
     <li>
         <label>Gender</label>
         <span><?php echo $this->user_data->Gender; ?></span>
+		<div class="clr"></div>
     </li>
     <li>
 		<label>Intererst</label>
         <span><?php echo $this->user_data->Activities; ?></span>
+		<div class="clr"></div>
     </li>
     <?php if ($this->user_data->address && !$this->publicProfile): ?>
 	<li>
         <label>Location</label>
         <span><?php echo $this->user_data->address; ?></span>
+		<div class="clr"></div>
     </li>
     <?php endif; ?>
     <li>
@@ -42,6 +46,7 @@ $auth_id = $auth ? $auth['user_id'] : null;
 		<?php if ($this->user_data->Birth_date): ?>
         <span><?php echo $this->dateConversion(strtotime($this->user_data->Birth_date)); ?></span>
 		<?php endif; ?>
+		<div class="clr"></div>
     </li>
 </ul>
 <?php if ($this->user_data->id == $auth_id): ?>
@@ -49,7 +54,7 @@ $auth_id = $auth ? $auth['user_id'] : null;
 	<a style="z-index: 999;" class="hypDecNone btnBlueRpt wAuto" href="<?=BASE_PATH?>home/edit-profile">Edit Profile Info</a>
 </div>
 <?php elseif (!$this->publicProfile): ?>
-<div id="friendAction" class="btnBarM20">
+<div class="friendAction btnBarM20">
 	<?php if($auth_id != $this->user_id): ?>
 		<?if(count($this->friendStatus) > 0) :?>
 			<?if($this->friendStatus->status == '0'):?>
@@ -72,38 +77,63 @@ $auth_id = $auth ? $auth['user_id'] : null;
 		<?endif;?>
 	<?endif;?>
     <img class="frndReqImg" src="<?php echo BASE_PATH; ?>www/images/wait.gif" />
-    <input class="wAuto btnBlueRpt Message-Popup-Class" type="button" value="Message" onclick="clearErrors();user_id=<?=$this->reciever?>;" />
+    <input class="message wAuto btnBlueRpt" type="button" value="Message" />
 </div>
 <?php endif; ?>
 <script type="text/javascript">
 $(function(){
+	$('.viewForm li:even').addClass('bgEven');
+	$('.viewForm li:odd').addClass('bgOdd');
+
+	var otherProfile = reciever_userid != user_id;
+
 	$(window).scroll(function(){
 		if ($("#midColLayout").height() > 714){
 			setThisHeight(Number($("#midColLayout").height()));
 		}
 	});
 
-	if (reciever_userid == user_id){
-		profileMap(userLatitude, userLongitude, '', {
-			name: userName,
-			id: user_id,
-			news: '',
-			userImage: imagePath,
-			user_id: user_id
+	var map = new google.maps.Map($('#map_canvas')[0], {
+		zoom: 14,
+		minZoom: 13,
+		maxZoom: 15,
+		center: otherProfile ? new google.maps.LatLng(user_profile.lat, user_profile.lng) :
+			new google.maps.LatLng(userLatitude, userLongitude),
+        disableDefaultUI: true,
+        panControl: false,
+    	zoomControl: false,
+        scaleControl: false,
+    	streetViewControl: false,
+    	overviewMapControl: false,
+	    mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+
+	google.maps.event.addListenerOnce(map, 'idle', function(){
+		var marker = new google.maps.Marker({
+			position: map.getCenter(),
+			map: map,
+			icon: baseUrl + 'www/images/icons/icon_1.png'
 		});
-	} else {
-		profileMapOther(user_profile.lat, user_profile.lng, '', {
-			name: user_profile.name,
-			id: user_id,
-			news: '',
-			userImage: user_profile.image,
-			user_id: user_id,
-			comment: user_profile.latestPost
+
+		if (!otherProfile){
+			var infowindow = new google.maps.InfoWindow({
+				content: userAddressTooltip(userAddress, imagePath)
+			});
+
+			infowindow.open(map, marker);
+		}
+	});
+
+	if (otherProfile){
+		$('.friendAction .message').click(function(){
+			userMessageDialog(user_profile.id);
 		});
 	}
 
 	setHeight('.eqlCH');
 });
+
+// TODO: merge with friendRequest
 
 function makeFriend(action, isnew){
 	$('.frndReqImg').show();
@@ -121,19 +151,22 @@ function makeFriend(action, isnew){
 			$('.frndReqImg').hide();
 
 			if (isnew){
-				$("#friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Pending" />');
+				$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Pending" />');
 			} else {
 				if (action == 'confirm'){
-					$("#friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Unfriend" onclick="makeFriend(\'reject\');" />');
+					$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Unfriend" onclick="makeFriend(\'reject\');" />');
 				} else if (action == 'reject'){
-					$("#friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend(\'confirm\');" />');
+					$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend(\'confirm\');" />');
 				}
 			}
 
-			$("#friendAction").append(
-				'<img class="frndReqImg" src="<?=BASE_PATH?>www/images/wait.gif">' +
-				'&nbsp;&nbsp;&nbsp;&nbsp;' +
-				'<input class="wAuto btnBlueRpt Message-Popup-Class" type="button" value="Message" onclick="clearErrors();user_id='+user_profile.id+';" />'
+			$(".friendAction").append(
+				$('<img/>', {src: baseUrl + 'www/images/wait.gif', 'class': 'frndReqImg'}),
+				$('<input/>', {type: 'button', 'class': 'message wAuto btnBlueRpt'})
+					.val('Message')
+					.click(function(){
+						userMessageDialog(user_profile.id);
+					})
 			);
 		} else {
 			alert(ERROR_MESSAGE);

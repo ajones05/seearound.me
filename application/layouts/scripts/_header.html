@@ -13,7 +13,7 @@ $auth = Zend_Auth::getInstance()->getIdentity();
 			<li class="midCol">
 				<span class="sIcn">
 					<input type="text" id="searchText" value="<?php $request->getParam('sv', null); ?>" placeholder="Search posts..." />
-					<img src="<?php echo BASE_PATH; ?>www/images/icn-search.png" alt="Search" onclick="getKeycodes(true);" />
+					<img src="<?php echo BASE_PATH; ?>www/images/icn-search.png" alt="Search" onclick="getKeycodes();" />
 				</span>
 			</li>
 			<li class="rightCol">

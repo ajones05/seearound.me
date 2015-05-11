@@ -102,6 +102,11 @@ class IndexController extends My_Controller_Action_Abstract {
             }
         }
 
+		$geolocation = My_Ip::geolocation();
+
+		$this->view->RLatitude = $this->_request->getPost('RLatitude', $geolocation[0]);
+		$this->view->RLongitude = $this->_request->getPost('RLongitude', $geolocation[1]);
+
         if ($this->request->isXmlHttpRequest()) {
 
             die(Zend_Json_Encoder::encode($response));
@@ -524,95 +529,6 @@ class IndexController extends My_Controller_Action_Abstract {
 		$this->_redirect(BASE_PATH . 'home');
 	}
 
-	/**
-	 * TODO: move to mobile controller
-	 */
-	public function wsfbLoginAction(){
-        $response = new stdClass();
-        if($_REQUEST) {
-            $newsFactory = new Application_Model_NewsFactory();
-            $loginStatus = new Application_Model_Loginstatus();
-            $inviteStatus = new Application_Model_Invitestatus();
-            
-            $id = $_REQUEST['id'];
-            $name = $_REQUEST['name'];
-            $email = $_REQUEST['email'];
-            $picture = $_REQUEST['picture'];
-            $gender = $_REQUEST['gender'];
-            $dob = date('Y-m-d H:i:s', strtotime($_REQUEST['dob'])); 
-          
-            $data = array(
-                'Network_id' => $id,
-                'Name' => $name,
-                'Email_id' => $email,
-                'Gender' => $gender,
-                'Status' => 'active',
-                'Birth_date' => $dob,
-                'Profile_image' => $picture,
-                'Creation_date'=> date('Y-m-d H:i:s'),
-                'Update_date' => date('Y-m-d H:i:s')
-            );
-            
-            $reponseSuccesssFull = false;
-            if($row = $newsFactory->fbLogin($data)) {
-                 $authData = array();
-                 $reponseSuccesssFull = true;
-                 $row = $newsFactory->getUser(array("user_data.id" => $row->id));
-                 $loginRow = $loginStatus->setData(array(user_id=>$row->id, login_time=>date('Y-m-d H:i:s'), ip_address=>$_SERVER['REMOTE_ADDR']));
-                 $authData = array(
-                     'is_fb_login' => true,
-                     'Activities' => $row->Activities,
-                     'Birth_Date' => $row->Birth_date,
-                     'Conf_code' => $row->Conf_code,
-                     'Creation_date' => $row->Creation_date,
-                     'Email_id' => $row->Email_id,
-                     'Gender' => $row->Gender,
-                     'Name' => $row->Name,
-                     'Network_id' => $row->Network_id,
-                     'Old_email' => $row->Old_email,
-                     'Password' => (isset($row->Password))?$row->Password:'',
-                     'Profile_image' => $row->Profile_image,
-                     'Status' => $row->Status,
-                     'Update_date' => $row->Update_date,
-                     'User_id' => $row->User_id,
-                     'address' => (isset($row->address))?$row->address:'',
-                     'id' =>  $row->id,
-                     'latitude' => (isset($row->latitude))?trim($row->latitude):'',
-                     'login_id' => $loginRow->id,
-                     'longitude' => (isset($row->longitude))?trim($row->longitude):''
-                );
-                
-                /*
-                * Calculation for the invites counts for thw login user   
-                */
-                if(date('D') == "Mon") {
-                    $loginRows = $loginStatus->sevenDaysOldData($row->id);
-                    $inviteCount = floor((count($loginRows))/($this->credit));
-                    if($inviteStatusRow = $inviteStatus->getData(array('user_id'=>$row->id))) {
-                        if(floor(((strtotime(date('Y-m-d H:i:s')))-(strtotime($inviteStatusRow->updated)))/(24*60*60)) >= 7) {
-                         $inviteStatusRow->invite_count = ($inviteStatusRow->invite_count+$inviteCount);
-                         $inviteStatusRow->updated = date('Y-m-d H:i:s');
-                         $inviteStatusRow->save();
-                        }
-                    }  
-                }
-            
-                $response = new stdClass();
-                if(isset($reponseSuccesssFull)){
-                      $response->status  = "SUCCESS";
-                      $response->message = "AUTHENTICATED";
-                      $response->result  = $authData;
-                       die(Zend_Json_Encoder::encode($response));
-                 } else {
-                       $response->status  = "FAILED";  
-                       $response->message = "Posts rendring failed";
-                       $response->result  = $authData; 
-                      die(Zend_Json_Encoder::encode($response));
-                 }
-             }
-         }
-    }
-
     public function registerAction()
 
     {
@@ -961,21 +877,4 @@ class IndexController extends My_Controller_Action_Abstract {
         
 
     }
-
-    
-
-    function sendinvitesSuccessAction()
-
-    {
-
-        $this->view->success = true;
-
-        $this->view->layout()->setLayout('login');
-
-    }
-
-
-
-    
-
 }

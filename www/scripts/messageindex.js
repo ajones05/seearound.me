@@ -39,7 +39,7 @@
                             _this.find(".message-third img.checking").css("display", "none");
                         }
 
-                        msg = JSON.parse(msg);
+                        msg = $.parseJSON(msg);
 
                         if(msg && msg.errors) {
 
@@ -70,7 +70,7 @@
 
 										}
 
-										html +='><div class="desc-frist"><img src="' +baseUrl + 'uploads/' + msg.replyData[x].sender_image + '"></div><div class="desc-second"><b style="color: #4276cd;font-size:16px;">'+(msg.replyData[x]).name+'</b><span>'+(msg.replyData[x]).reply_text+'</div><div class="desc-third"><span class="dateTime afterClr">'+(msg.replyData[x]).created+'</span></div><div class="clr"></div></li>';
+										html +='><div class="desc-frist"><img src="' +baseUrl + 'uploads/' + msg.replyData[x].sender_image + '"></div><div class="desc-second"><b style="color: #4276cd;font-size:16px;">'+(msg.replyData[x]).name+'</b><span>'+(msg.replyData[x]).reply_text+'</div><div class="desc-third"><span class="dateTime">'+(msg.replyData[x]).created+'</span></div><div class="clr"></div></li>';
 
 									}
 
@@ -104,7 +104,7 @@
 
 									 html +='" />'+
 
-                                    '<input type="hidden" id="reply_subject_'+(msg.inboxData).id+'" name="reply_subject_'+(msg.inboxData).id+'" value="'+(msg.inboxData).subject+'" />'+ '<div class="afterClr">'+'<textarea id="reply_text_area_'+(msg.inboxData).id+'" placeholder="Enter your message"></textarea></div>'+
+                                    '<input type="hidden" id="reply_subject_'+(msg.inboxData).id+'" name="reply_subject_'+(msg.inboxData).id+'" value="'+(msg.inboxData).subject+'" />'+ '<div>'+'<textarea id="reply_text_area_'+(msg.inboxData).id+'" placeholder="Enter your message"></textarea></div>'+
 
                                 '</li>'+
 
@@ -202,7 +202,7 @@
 
                     $("#rpl_loading_"+id).hide();
                     $("#forFocus_"+id).attr("disabled", false);
-                    msg = JSON.parse(msg);
+                    msg = $.parseJSON(msg);
                     if(msg && msg.errors) {
 
                         $('#error_'+id).html('There are some errors');	
@@ -214,7 +214,7 @@
 						var stripmessage = msg.replyData[0].reply_text;
                         var stringArray = [];
                         if(stripmessage.length <= 185){
-                         var html = '<li class="desc" style="border-top: 0px solid #E9EAEB;"><b style="color: #0069D6;font-size:12px;">'+(msg.replyData[0]).name+'</b><span class="dateTime afterClr">'+(msg.replyData[0]).created+'</span><div style="padding:4px 4px 4px 0;">'+(msg.replyData[0]).reply_text+'</div><div class="clr"></div></li>';   
+                         var html = '<li class="desc" style="border-top: 0px solid #E9EAEB;"><b style="color: #0069D6;font-size:12px;">'+(msg.replyData[0]).name+'</b><span class="dateTime">'+(msg.replyData[0]).created+'</span><div style="padding:4px 4px 4px 0;">'+(msg.replyData[0]).reply_text+'</div><div class="clr"></div></li>';   
                         } else {
                               stringArray[0]= stripmessage.substring(0,185);
                            if(stripmessage.length > 185){
@@ -222,7 +222,7 @@
                            } if(stripmessage.length > 371){
                               //stringArray[2]= stripmessage.substring(372,557);
                            }
-                         var html = '<li class="desc" style="border-top: 0px solid #E9EAEB;"><b style="color: #0069D6;font-size:12px;">'+(msg.replyData[0]).name+'</b><span class="dateTime afterClr">'+(msg.replyData[0]).created+'</span><div style="padding:4px 4px 4px 0;">'+stringArray[0]+'<br/>'+stringArray[1]+'<br/></div><div class="clr"></div></li>';
+                         var html = '<li class="desc" style="border-top: 0px solid #E9EAEB;"><b style="color: #0069D6;font-size:12px;">'+(msg.replyData[0]).name+'</b><span class="dateTime">'+(msg.replyData[0]).created+'</span><div style="padding:4px 4px 4px 0;">'+stringArray[0]+'<br/>'+stringArray[1]+'<br/></div><div class="clr"></div></li>';
                         }
 						$('#replyDiv_'+id).append(html);
 
@@ -270,13 +270,13 @@
 
                 success: function (msg) { 
 
-					msg = JSON.parse(msg);
+					msg = $.parseJSON(msg);
 
                     var html = '';
 
 					for(x in msg.replyData) {
 
-						html += '<li class="desc" style="border-top: 0px none;;"><b style="color: #0069D6;font-size:12px;">'+(msg.replyData[x]).name+'</b><span class="dateTime afterClr">'+(msg.replyData[x]).created+'</span><div style="padding:4px 4px 4px 0;">'+(msg.replyData[x]).reply_text+'</div><div class="clr"></div></li>';
+						html += '<li class="desc" style="border-top: 0px none;;"><b style="color: #0069D6;font-size:12px;">'+(msg.replyData[x]).name+'</b><span class="dateTime">'+(msg.replyData[x]).created+'</span><div style="padding:4px 4px 4px 0;">'+(msg.replyData[x]).reply_text+'</div><div class="clr"></div></li>';
 
 					}					
 

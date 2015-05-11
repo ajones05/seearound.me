@@ -1,90 +1,99 @@
 <h3 class="topHdGrayB12"><img width="21" height="17" alt="My Connections" class="tIcn" src="<?=BASE_PATH?>www/images/icn-myconn-w.gif"> Friend Requests:</h3>
 <?if(count($this->data) > 0) :?>
 	<div class="invtFrndList">
-		<?foreach($this->data as $index => $row) :?>
-			<div class="invtFrndList">
-				<ul class="invtFrndRow afterClr">
-					<li class="img">
-						<a href="<?=BASE_PATH?>home/profile/user/<?=$row->id?>">
-							<?php if($row->Profile_image != 'null' && $row->Profile_image != '') {?> 
-								<img class="small" <? if(strpos($row->Profile_image, '://')):?>src="<?=$row->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$row->Profile_image?>"<?endif;?> style='width:55px;height:55px;'/>
-							<?php } else { ?>
-								<img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" style='width:55px;height:55px;'/>
-							<?php } ?>
-						</a>
-					</li>
-					<li class="name"> 
-						<?=$row->Name?> <a style="float:right;margin-right: -57px; font-size:12px;text-decoration:none;" href="javascript:void(0);" onclick="userOnMap('<?=$index?>', this, '<?=$row->latitude?>', '<?=$row->longitude?>','<?=$row->Profile_image?>');" >View on map</a>         
-						<span id="loc_<?=$index?>" class="loc">
-							<?=$row->address?>    
-						</span>
-						<input class="curPnt requestInput" type="button" value="Accept" onclick="friendRequest(this,<?=$row->sender_id?>,'confirm');" />	
-						<input class="curPnt requestInput" type="button" value="Deny" onclick="friendRequest(this,<?=$row->sender_id?>,'reject');" />&nbsp;&nbsp;
-						<img class="imgAlowDeny" width="50" height="20" src="<?=BASE_PATH?>www/images/loader.gif" style="margin-right: 108px;">
-					</li>
-				</ul>
-			</div>
+	<?php
+	foreach($this->data as $index => $row):
+		// TODO: change to $row->findDependentRowset('Application_Model_User')->current()...
+		$user = Application_Model_User::getInstance()->findById($row->id);
+	?>
+		<div class="invtFrndList" data-lat="<?php echo $user->lat(); ?>" data-lng="<?php echo $user->lng(); ?>">
+			<ul class="invtFrndRow">
+				<li class="img">
+					<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $row->id; ?>">
+						<img class="userImage" src="<?php echo $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" />
+					</a>
+				</li>
+				<li class="name"> 
+					<?php echo $user->Name; ?> <a href="#" class="view-map">View on map</a>
+					<span class="loc"><?php echo $user->address; ?></span>
+					<input class="curPnt requestInput" type="button" value="Accept" onclick="friendRequest(this,<?=$row->sender_id?>,'confirm');" />
+					<input class="curPnt requestInput" type="button" value="Deny" onclick="friendRequest(this,<?=$row->sender_id?>,'reject');" />
+					<img class="imgAlowDeny" src="<?=BASE_PATH?>www/images/loader.gif" />
+				</li>
+			</ul>
 			<div class="clr"></div>
+		</div>
+		<div class="clr"></div>
 		<? endforeach;?>
 	</div>
 <?else:?>
 	<img style="margin-left: 96px;padding-top: 134px;" height="80" width="250" src="<?=BASE_PATH?>www/images/no-record.jpeg" />
 <?endif;?>
 <script type="text/javascript">
-	$(document).ready(function(){
-		var profileLat = userLatitude;
-		var profileLng = userLongitude;
-		profileMap(profileLat, profileLng,'','');
+	$(function(){
+		var marker, infowindow, infowindowTimer;
+
+		var map = new google.maps.Map($('#map_canvas')[0], {
+			zoom: 14,
+			minZoom: 13,
+			maxZoom: 15,
+			center: new google.maps.LatLng(userLatitude, userLongitude),
+			disableDefaultUI: true,
+			panControl: false,
+			zoomControl: false,
+			scaleControl: false,
+			streetViewControl: false,
+			overviewMapControl: false,
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		});
+
+		var userMarker = new google.maps.Marker({
+			position: map.getCenter(),
+			map: map,
+			icon: baseUrl + 'www/images/icons/icon_1.png'
+		});
+
+		infowindow = new google.maps.InfoWindow({
+			content: userAddressTooltip(userAddress, imagePath)
+		});
+
+		infowindow.open(map, userMarker);
+
+		$('.view-map').click(function(e){
+			e.preventDefault();
+
+			var $target = $(this).closest('.invtFrndList');
+
+			if (marker){
+				marker.setMap(null);
+			}
+
+			if (infowindow){
+				infowindow.close();
+			}
+
+			map.setCenter(new google.maps.LatLng($target.attr('data-lat'), $target.attr('data-lng')));
+
+			marker = new google.maps.Marker({
+				map: map,
+				draggable: false,
+				animation: google.maps.Animation.DROP,
+				position: map.getCenter(),
+				icon: baseUrl + 'www/images/icons/icon_2.png'
+			});
+
+			infowindow = new google.maps.InfoWindow({
+				content: userAddressTooltip($target.find('.loc').html(), $target.find('.userImage').attr('src'))
+			});
+
+			clearTimeout(infowindowTimer);
+
+			infowindowTimer = setTimeout(function(){
+				infowindow.open(map, marker);
+			}, 500);
+			
+		});
+
 		setHeight('.eqlCH');
 	});
-	var reqMarker; 
-	var reqInfoWindow;
-	function userOnMap(numb,thisone, profileLat, profileLng, image) {
-		var position;
-		if(reqMarker) {
-			reqMarker.setMap(null);
-			reqMarker = null;
-			position = new google.maps.LatLng(userLatitude, userLongitude);
-			map.setCenter(position);
-		}
-		if(reqInfoWindow) {
-			reqInfoWindow.close();
-			reqInfoWindow = null;
-		}
-		var contentString = '<table><tbody><tr><td valign="middle">'+
-				$("#loc_"+numb).html()+
-			'</td><td valign="middle">&nbsp;';
-			if (image) { 
-    		if(image.indexOf('://') > 0) {
-    			contentString += '<img width="55" height="55" src="' + image + '"  style="width:35px;height:35px;"/>';
-    		}else {
-    			contentString += '<img width="55" height="55" src="'+baseUrl+'uploads/' + image + '"  style="width:35px;height:35px;"/>';
-    		}
-    	}else contentString += '<img width="55" height="55" src="'+baseUrl+'www/images/img-prof40x40.jpg"  style="width:35px;height:35px;"/>';
-			contentString += '</td></tr></tbody></table>';
-		if(profileLat == "" && profileLng == "") {
-	
-		} else {
-			position = new google.maps.LatLng(profileLat, profileLng);
-			reqMarker = new google.maps.Marker({
-				map:map,
-				draggable:false,
-				animation: google.maps.Animation.DROP,
-				position: position,
-				icon: baseUrl+'www/images/icons/icon_2.png',
-				height:24,
-				width:36
-			});
-			map.setCenter(position);
-			reqInfoWindow = new google.maps.InfoWindow({
-				content: contentString,
-                                maxWidth: 200,
-				noCloseOnClick : 'true',
-				buttons:{close:{show:0}}
-			});
-			reqInfoWindow.open(map, reqMarker);
-		}
-	}
 </script>
-
-    

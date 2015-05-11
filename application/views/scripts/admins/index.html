@@ -2,18 +2,19 @@
 <div id="inviteMain2">
     <div class="fbFrndsLeftCol" style="width: 538px;">
         <div class="fbFrndsBar">
-            <ul class="afterClr">
+            <ul>
                 <li class="txtBold floatL">Approve invitation</li>
                 <li class="floatR"></li>
                 <li><img id="waitImage" style="margin-left: 91px;display: none;" src="<?=BASE_PATH?>www/images/wait.gif" /></li>
             </ul>
+			<div class="clr"></div>
         </div>    
         <div id="invite_div" class="invtFrndSec">
             <div class="invtFrndList">
                 <?php if(count($this->users) > 0) :?>
                     <?php foreach ($this->users as $user) :?>
                     <div class="invtFrndList">
-                        <ul class="invtFrndRow afterClr">
+                        <ul class="invtFrndRow">
                             <li class="name"><?=$user->self_email?></li>
                             <li class="btnCol" onclick="inviteUser(this, '<?=$user->self_email?>', 'approve');">
                                 <a href="javascript:void(0);">Invite</a>
@@ -22,6 +23,7 @@
                                 <a href="javascript:void(0);">Deny</a>
                             </li>
                         </ul>
+						<div class="clr"></div>
                     </div>
                     <div class="clr"></div>
                     <?php endforeach;?>

@@ -77,13 +77,30 @@ class My_Ip
 
 		if ($city && isset($city->location->latitude) && isset($city->location->longitude))
 		{
-			return array($city->location->latitude, $city->location->longitude);
+			$addrress = '';
+			
+			if (isset($city->city->names['en']))
+			{
+				$addrress .= $city->city->names['en'];
+
+				if (isset($city->postal->code))
+				{
+					$addrress .= ' ' . $city->postal->code;
+				}
+
+				if (isset($city->subdivisions[0]->isoCode))
+				{
+					$addrress .= ' ' . $city->subdivisions[0]->isoCode;
+				}
+			}
+
+			return array($city->location->latitude, $city->location->longitude, $addrress);
 		}
 
 		if ($default)
 		{
 			$config = Zend_Registry::get('config_global');
-			return array($config->geolocation->lat, $config->geolocation->lng);
+			return array($config->geolocation->lat, $config->geolocation->lng, $config->geolocation->address);
 		}
 
 		return false;

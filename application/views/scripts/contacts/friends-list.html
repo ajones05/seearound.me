@@ -1,10 +1,5 @@
-<link href="<?=BASE_PATH?>www/css/search.css" rel="stylesheet" type="text/css" />
-
-<div class="listHight" id="frindsListMain">
-
-    <!--<h3 class="topHdGrayB13_updated"><img src="<?=BASE_PATH?>www/images/icn-myconn-w.gif" width="21" height="17" class="tIcn" style="margin-left:85px;" alt="My Connections" /> My Connections:</h3>-->
-
-    <ul class="connListSecTopNav afterClr">
+<div class="listHight" id="frindsListMain" style="width:100%;">
+    <ul class="connListSecTopNav">
 
         <li class="txtBold">
              
@@ -51,8 +46,7 @@
         </li>
 
     </ul>
-
-   <!--<div class="existConnBar"><a href="javascript:void(0);">Existing Connections</a></div>-->
+	<div class="clr"></div>
 
     <?if(count($this->frlist) > 0) :?>
 
@@ -66,7 +60,7 @@
 
         <div class="connList">
 
-            <ul class="connRow afterClr">
+            <ul class="connRow">
 
                 <li></li>
 
@@ -75,7 +69,7 @@
                 <li class="adrs"></li>
 
             </ul>
-
+			<div class="clr"></div>
         </div>
 
     </div>

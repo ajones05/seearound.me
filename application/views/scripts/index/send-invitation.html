@@ -80,10 +80,11 @@ text-decoration:none;
 		
 	});
 </script>
-<div class="loginCopyArea appendClr">
+<div class="loginCopyArea">
     <div class="regForm">
-        <h2  class="appendClr" style="padding: 30px 0 53px; color:#FEA427;margin-top: 63px;">
+        <h2 style="padding: 30px 0 53px; color:#FEA427;margin-top: 63px;">
             Sign up for an invite to join seearound.me*
+			<div class="clr"></div>
         </h2>
         <div id="regForm">
             <ul class="frm">
@@ -112,45 +113,8 @@ text-decoration:none;
             happening near you and talk
             to other people in the area 
     </div>
+	<div class="clr"></div>
 </div>
-
-<!-- code for location popup -->
-<span class="Popup-Class"></span>
-<div style="display: none;">
-    <div id="Location-Popup">
-        <table width="100%" height="100%">
-            <tr>
-                <td width="100%" height="10%" align="center" style="text-align:center;">
-                    <div style="font-weight: bold; font-size: 18px;color: #8CBEFE;"> Enter your address or chose your location on the map</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div>
-                        <input type="hidden" class="registerField" id="address" name="address" value="" style="display: inline;"/>
-                    </div><br />
-                    <div id="mapSection1" class="normalScreen" style="height: 420px;"></div>						
-                </td>
-            </tr>
-            <tr>
-                <td width="100%" height="10%" align="center" style="text-align:center;"><br />
-                    <label style="font-size: 12px; font-weight: bold;">Address : </label><input id="searchAddres" type="text" class="" placeholder="Enter sddress" />&nbsp;&nbsp;
-                    <label style="font-size: 12px; font-weight: bold;">City : </label><input id="searchCity" type="text" class="" placeholder="Enter city" />&nbsp;&nbsp;
-                    <label style="font-size: 12px; font-weight: bold;">State : </label><input id="searchState" type="text" class="" placeholder="Enter state" />&nbsp;&nbsp;
-                    <input type="button" onclick="changeUserAddress('draw');" class="btnBlueRpt" value="Search" />
-                </td>
-            </tr>
-            <tr>
-                <td width="100%" height="10%" align="center" style="text-align:center;"><br />
-                    <input type="button" onclick="locationDone()" class="btnBlueRpt" value="Done" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <input type="button" onclick="closePopup();" class="btnBlueRpt" value="Cancel" />
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>	
-<!-- end of location popup -->
- 
 <!-- code for displaying popup on success -->
 <div id="popup_box">	<!-- OUR PopupBox DIV-->
     <h1 style="position:relative; top:20px; color:green;">Thank you for requesting an invite to seearound.me, we'll be sending out more soon!</h1>

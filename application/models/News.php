@@ -274,10 +274,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	public static function limitNews($news, $limit = 350)
 	{
 		$text = preg_replace(array('/<a[^<]+>/', '/<\/a>/', '/<div[\S\s]+\/div>/', '/\s+$/'), '', $news['news_html']);
-		$text_length = strlen($text);
 		$html_length = strlen($news['news_html']);
 
-		if ($text_length > $limit && $html_length != $text_length)
+		if ($html_length > $limit)
 		{
 			$link_limit = false;
 			$output = '';

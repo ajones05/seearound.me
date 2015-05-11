@@ -207,93 +207,83 @@ class MessageController extends My_Controller_Action_Herespy
 
     }
 
-    
+	/**
+	 * Send user message action.
+	 *
+	 * @return void
+	 */
+	public function sendAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
-    public function sendAction() { 
+			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
 
-		$config = Zend_Registry::get('config_global');
-        $response = new stdClass();
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $receiver))
+			{
+				throw new RuntimeException('Incorrect receiver ID', -1);
+			}
+			
+			$subject = $this->_request->getPost('subject');
 
-        $data = array();
+			if (My_Validate::emptyString($subject))
+			{
+				throw new RuntimeException('Incorrect subject value', -1);
+			}
+			
+			$message = $this->_request->getPost('message');
 
-        $errors = array();
+			if (My_Validate::emptyString($message))
+			{
+				throw new RuntimeException('Incorrect message value', -1);
+			}
 
-        if($this->request->isPost()) {
+			(new Application_Model_Message)->insert(array(
+				'sender_id' => $user->id,
+				'receiver_id' => $receiver->id,
+				'subject' => $subject,
+				'message' => $message,
+				'created' => new Zend_Db_Expr('NOW()'),
+				'updated' => new Zend_Db_Expr('NOW()'),
+				'is_deleted' => 'false',
+				'is_valid' => 'true',
+				'sender_read' => 'true',
+				'reciever_read' => 'false',
+			));
 
-            $messageTable = new Application_Model_Message(); 
+			My_Email::send(
+				array($receiver->Name => $receiver->Email_id),
+				$subject,
+				array(
+					'template' => 'message-notification',
+					'assign' => array(
+						'sender' => $user,
+						'receiver' => $receiver,
+						'subject' => $subject,
+						'message' => $message
+					)
+				)
+			);
 
-            $newsFactory = new Application_Model_NewsFactory();
+			$response = array('status' => 1);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array(
+					'message' => $e instanceof RuntimeException ?
+						$e->getMessage() : 'Internal Server Error'
+				)
+			);
+		}
 
-            $messageTable->validateData($this->getRequest(), $data, $errors); 
-
-            if(empty($errors)) { 
-
-            	$data['user']['sender_id'] = $this->auth['user_id'];
-
-                $data['user']['receiver_id'] = $this->getRequest()->getPost('user_id', null);
-
-                $data['user']['created'] = date('Y-m-d H:i:s');
-
-                $data['user']['updated'] = date('Y-m-d H:i:s');
-
-                $data['user']['is_read'] = 'false';
-
-                $data['user']['is_deleted'] = 'false';
-
-                $data['user']['is_valid'] = 'true';
-
-                $user_data = $newsFactory->getUserData($data['user']['receiver_id']);
-
-                // Code to sending mail to reciever
-
-                
-
-                $this->view->name = $user_data->Name;
-                $this->view->sender_name = $this->auth['user_name'];
-                $this->view->mail_subject = $data['user']['subject'];
-                $this->view->mail_body = $data['user']['subject'];
-
-                $this->view->adminName = "Admin";
-
-                $this->view->response = "seearound.me";
-
-                
-
-                $this->to = $user_data->Email_id;
-
-                $this->from = $config->email->noreply;
-
-                $this->subject = $data['user']['subject'];  
-
-                $this->message = $this->view->action("message-notification","general",array());
-
-                $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-
-                //save data in to data base 
-
-                $result = $messageTable->saveData($data['user']);
-
-                if($result) {
-
-                    $response->success = $result->toArray();    
-
-                }
-
-            }else {
-
-                $response->errors = $errors;
-
-            }
-
-                
-
-        }
-
-        die(Zend_Json_Encoder::encode($response));
-
-    }
-
-    
+		$this->_helper->json($response);
+	}
 
     public function replyAction()
 

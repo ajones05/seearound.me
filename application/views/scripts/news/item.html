@@ -14,8 +14,8 @@ if ($images)
 	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $images);
 }
 ?>
-<div id="scrpBox_<?php echo $this->item['id']; ?>" class="scrpBox" onmouseover="toggleBounce('<?php echo $this->item['id']; ?>','<?php echo $this->user->id?>');" onmouseout="stopBounce('<?php echo $this->item['id']; ?>',<?php echo $this->user->id; ?>);">
-	<ul class="myScrp afterClr" id="newsDiv<?php echo $this->item['id']; ?>">
+<div id="scrpBox_<?php echo $this->item['id']; ?>" class="scrpBox">
+	<ul class="myScrp">
 		<li>
 			<ul class="post">
 				<li class="imgPro">
@@ -43,7 +43,7 @@ if ($images)
 						<div class="post-content"><?php echo Application_Model_News::limitNews($this->item); ?></div>
 						<?php if ($images != null): ?>
 						<div class="post-image" style="margin-top: 10px;">
-							<img onclick="openImage('<?php echo $images; ?>','<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" class="Image-Popup-Class" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>" style="cursor: pointer;width:100%;" />
+							<img onclick="openImage('<?php echo $images; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>" style="cursor: pointer;width:100%;" />
 						</div>
 						<?php endif; ?>
 					</div>
@@ -52,6 +52,7 @@ if ($images)
 			</ul>
 		</li>
 	</ul>
+	<div class="clr"></div>
 	<div class="dur">
 		<div class="news-footer">
 			<?php if ($hide_comments): ?>
@@ -62,27 +63,20 @@ if ($images)
 			<?php endif; ?>
 			<span class="floatR">
 				<span style="display: block; float: left;">Share:</span>
-				<a class="crp" onclick="fbshare('scrpBox_<?php echo $this->item['id']; ?>','<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>','<?php echo $this->item['news']; ?>','<?php echo BASE_PATH; ?>info/news/nwid/<?php echo $this->item['id']; ?>')">
+				<a class="crp" onclick="fbshare('<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>','<?php echo $this->item['news']; ?>','<?php echo BASE_PATH; ?>info/news/nwid/<?php echo $this->item['id']; ?>')">
 					<img src="<?php echo BASE_PATH; ?>www/images/facebook.png" style="width: 25px; height: 25px;" />
 				</a>
-				<?php if ($auth_user_id): ?>
-				<a class="crp Message-Popup-Class cboxElement" onclick="clearErrors('<?php echo $this->item['id']; ?>');">
+				<a href="#" class="crp email-share">
 					<img src="<?php echo BASE_PATH; ?>www/images/email.png" style="width: 25px; height: 25px;" />
 				</a>
-				<?php else: ?>
-				<a class="login-popup-class crp">
-					<img src="<?php echo BASE_PATH; ?>www/images/email.png" />
-				</a>
-				<?php endif; ?>
 			</span>
 			<?php if ($auth_user_id == $this->user->id): ?>
 			<input type="button" class="edit-post" value="Edit Post" />
 			<?php endif; ?>
 		</div>
-		<?php echo My_ViewHelper::render('news/edit-panel.html', array('news' => $this->item)); ?>
 		<div class="clr"></div>
 	</div>
-	<ul id="comment_list_<?php echo $this->item['id']; ?>" class="cmntRow afterClr">
+	<ul id="comment_list_<?php echo $this->item['id']; ?>" class="cmntRow">
 	<?php
 		if ($comments_count)
 		{
@@ -95,4 +89,5 @@ if ($images)
 		echo My_ViewHelper::render('comment/add-item.html', array('hidden' => $hide_comments));
 	?>
 	</ul>
+	<div class="clr"></div>
 </div>

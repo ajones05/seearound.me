@@ -6,8 +6,7 @@ $auth = Zend_Auth::getInstance()->getIdentity();
 $this->headLink()
 	->appendStylesheet('/bower_components/jquery-ui/themes/base/jquery-ui.min.css')
 	->appendStylesheet('/www/css/reset.css?' . $config->mediaversion)
-	->appendStylesheet('/www/css/global.css?' . $config->mediaversion)
-	->appendStylesheet('/www/css/login.css?' . $config->mediaversion);
+	->appendStylesheet('/www/css/global.css?' . $config->mediaversion);
 
 $this->headScript()
 	->appendScript(
@@ -17,10 +16,6 @@ $this->headScript()
 	)
 	->prependFile('/bower_components/jquery/dist/jquery.min.js')
 	->appendFile('/bower_components/jquery-ui/jquery-ui.min.js')
-	// TODO: remove after fix deprecated
-	->appendFile('/bower_components/query-migrate/src/migrate.js')
-	->appendFile('/bower_components/query-migrate/src/core.js')
-	->appendFile('/bower_components/query-migrate/src/event.js')
 	->appendFile('/bower_components/jquery-validation/dist/jquery.validate.min.js')
 	->appendFile('/www/scripts/common.js');
 ?>

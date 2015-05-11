@@ -1,4 +1,4 @@
-<div class="loginCopyArea appendClr">
+<div class="loginCopyArea">
     <div class="rightBoxArea">
         <h2>See and Share What's Happening Near You</h2>
     </div> 
@@ -6,12 +6,13 @@
         <div class="users-popup">
             
         </div><!-- users-popup end -->
-        <div class="regForm afterClr">
+        <div class="regForm">
 
            <div class="fbImageMw">
                 <span>Register Here or</span>
 				<a id="facebookLogin" href="<?php echo BASE_PATH; ?>index/fb-login">
-					<img class="afterClr" style="cursor: pointer;" src="<?=BASE_PATH?>www/images/signupFacebookButton.png" alt="Sign Up" />
+					<img style="cursor: pointer;" src="<?=BASE_PATH?>www/images/signupFacebookButton.png" alt="Sign Up" />
+					<div class="clr"></div>
 				</a>
            </div>
            <p class="fbtext">
@@ -95,19 +96,14 @@
 
                         <? endif;?>
 
-                        <li>
+						<li>
+							<input id="Location" name="Location" readonly="true" type="text" placeholder="User Location" value="<?=$this->request->getParam('Location')?>" />
+							<img class="myLoc" src="<?=BASE_PATH?>www/images/icn-location.gif" alt="My Location" />
+							<input type="hidden" name="RLatitude" id="RLatitude" value="<?php echo $this->RLatitude; ?>" />
+							<input type="hidden" name="RLongitude" id="RLongitude" value="<?php echo $this->RLongitude; ?>" />
+						</li>
 
-                            <input class="Location-Popup-Class" id="Location" name="Location" readonly="true" type="text" placeholder="User Location" value="<?=$this->request->getParam('Location')?>" />
-
-                            <img class="Location-Popup-Class myLoc" src="<?=BASE_PATH?>www/images/icn-location.gif" alt="My Location"/>
-
-                            <input type="hidden" name="RLatitude" id="RLatitude" value="<?=$this->request->getParam('RLatitude')?>"/>
-
-                            <input type="hidden" name="RLongitude" id="RLongitude" value="<?=$this->request->getParam('RLongitude')?>"/>                            
-
-                        </li>
-
-                        <? if($this->errors['Location']):?>
+                        <? if(isset($this->errors['Location'])):?>
 
                         <span class="errors floatL" id="Name_Errors">
 
@@ -128,125 +124,178 @@
            </div>
 
     </div>
+	<div class="clr"></div>
     </div>
     
-
+	<div class="clr"></div>
 </div>
-
-
-
-<!-- code for location popup -->
-
-
-
-<div style="display: none;">
-
-    <div id="Location-Popup">
-
-        <table width="100%" height="100%">
-
-            <!--<tr>
-
-                <td width="100%" height="10%" align="center" style="text-align:center;">
-
-                    <div style="font-weight: bold; font-size: 18px;color: #8CBEFE;"> Enter your address or chose your location on the map</div>
-
-                </td>
-
-            </tr>-->
-
-            <tr>
-
-                <td>
-
-                    <div>
-
-                        <input type="hidden" class="registerField" id="address" name="address" value="" style="display: inline;"/>
-
-                    </div>
-
-                    <div id="mapSection1" class="normalScreen" style="height: 420px;"></div>						
-
-                </td>
-
-            </tr>
-
-            <tr>
-
-                <td width="100%" height="10%" align="center" style="text-align:center; padding: 13px 0; position: relative;">
-
-                    <!--<label style="font-size: 12px; font-weight: bold;">Address : </label>-->
-                    
-                    <input id="searchAddres" type="text" class="loginmap-address" placeholder="Enter address" />
-
-                    <!--<label style="font-size: 12px; font-weight: bold;">City : </label><input id="searchCity" type="text" class="" placeholder="Enter city" />
-
-                    <label style="font-size: 12px; font-weight: bold;">State : </label><input id="searchState" type="text" class="" placeholder="Enter state" />-->
-
-                   <!-- <input type="button" onclick="changeUserAddress('draw');" class="loginmap-srh" value="Search"/>-->
-                    
-                    <img class="loginmap-srh-img" onclick="changeUserAddress('draw');" src="<?=BASE_PATH?>www/images/map_search.png"/>
-                    
-                    <input type="button" id="useaddress" onclick="locationDone()" class="btnBlueRpt" value="Use This Address" />
-                    
-                    <img id="waitingAddress" src="<?=BASE_PATH?>www/images/wait.gif" style="display: none;" />
-
-                </td>
-
-            </tr>
-
-        </table>
-
-    </div>
-</div>	
-
-<!-- end of location popup -->
-
-
-
 <script>
+$(function(){
+	$('#Location, .myLoc').click(function(){
+		$('body').css({overflow: 'hidden'});
 
-    $(document).ready(function(){
+		$('<div/>', {'class': 'location-dialog'})
+			.append(
+				$('<div/>', {id: 'map-canvas'}),
+				$('<div/>', {'class': 'panel'}).append(
+					$('<form/>').append(
+						$('<input/>', {type: 'text', name: 'address', placeholder: 'Enter your Address'}),
+						$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
+						$('<input/>', {type: 'submit', value: 'Use This Address'})
+					)
+				)
+			)
+			.appendTo($('body'))
+			.dialog({
+				modal: true,
+				resizable: false,
+				drag: false,
+				width: 980,
+				height: 500,
+				dialogClass: 'colorbox',
+				beforeClose: function(event, ui){
+					$('body').css({overflow: 'visible'});
+					$(event.target).dialog('destroy').remove();
+				},
+				open: function(event, ui){
+					var $editForm = $('#reg_form'),
+						$addressField = $('[name=Location]', $editForm),
+						$latitudeField = $('[name=RLatitude]', $editForm),
+						$longitudeField = $('[name=RLongitude]', $editForm),
+						newsAddress = $.trim($addressField.val()) !== '' ? $addressField.val() : geoipaddress,
+						$editAddress = $('[name=address]', event.target)
+							.val(newsAddress)
+							.attr('disabled', false),
+						$submitField = $('[type=submit]', event.target)
+							.attr('disabled', false),
+						$map = $('#map-canvas', event.target),
+						autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]),
+						centerLocation = new google.maps.LatLng($latitudeField.val(), $longitudeField.val()),
+						geocoder = new google.maps.Geocoder(),
+						renderLocation = true;
 
-		$(".Location-Popup-Class").colorbox({width:"70%",height:"", inline:true, href:"#Location-Popup"},function(){
+					var map = new google.maps.Map($map[0], {
+						zoom: 10,
+						center: centerLocation,
+						disableDefaultUI: true,
+						panControl: false,
+						zoomControl: true,
+						scaleControl: false,
+						streetViewControl: false,
+						overviewMapControl: false,
+						draggable: true,
+						mapTypeId: google.maps.MapTypeId.ROADMAP
+					});
 
-			$('html, body').animate({ scrollTop: 0 }, 0); 
+					var marker = new google.maps.Marker({
+						map: map,
+						draggable: true,
+						position: map.getCenter(),
+						icon: baseUrl + 'www/images/man.png'
+					});
 
-			$("#address").val("");
+					function infowindowUpdateContent(address){
+						if (!address){
+							address = '<i>undefined</i>';
+						}
 
-			$("#Location").val("");
+						return '<div class="userLocation"><div>Address:</div><div>' + address + '</div></div>';
+					}
 
-			$("#RLatitude").val("");
+					function updateMarker(event){
+						geocoder.geocode({
+							latLng: event.latLng
+						}, function(results, status){
+							if (status == google.maps.GeocoderStatus.OK){
+								infowindow.setContent(infowindowUpdateContent(results[0].formatted_address));
+								$editAddress.val(results[0].formatted_address);
+							} else {
+								infowindow.setContent(infowindowUpdateContent());
+								$editAddress.val('');
+							}
 
-			$("#RLongitude").val("");
+							autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
+							renderLocation = true;
+							infowindow.open(map, marker);
+						});
+					}
 
-                        $("#searchAddres").val("");
+					var infowindow = new google.maps.InfoWindow({
+						maxWidth: 220,
+						content: infowindowUpdateContent(newsAddress)
+					});
 
-                        $("#searchCity").val("");
+					infowindow.open(map, marker);
 
-                        $("#searchState").val("");
+					google.maps.event.addListener(map, 'click', function(mapEvent){
+						infowindow.close();
+						marker.setPosition(mapEvent.latLng);
+						updateMarker(mapEvent);
+					});
 
-			initializeMap('search'); 
+					google.maps.event.addListener(marker, 'dragstart', function(){
+						infowindow.close();
+					});
 
-		});
+					google.maps.event.addListener(marker, 'dragend', function(markerEvent){
+						updateMarker(markerEvent);
+					});
+
+					google.maps.event.addListener(autocomplete, 'place_changed', function(){
+						$('.search', event.target).click();
+					});
+
+					$editAddress.keydown(function(e){
+						if (e.keyCode == 13){
+							e.preventDefault();
+						}
+					});
+
+					$('.search', event.target).click(function(){
+						var value = $.trim($editAddress.val());
+
+						if (value === ''){
+							$editAddress.focus();
+							return;
+						}
+
+						$submitField.attr('disabled', true);
+
+						geocoder.geocode({
+							address: value
+						}, function(results, status){
+							if (status == google.maps.GeocoderStatus.OK){
+								infowindow.setContent(infowindowUpdateContent(results[0].formatted_address));
+								map.setCenter(results[0].geometry.location);
+								marker.setPosition(results[0].geometry.location);
+								$editAddress.val(results[0].formatted_address);
+								autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
+								renderLocation = true;
+							} else {
+								alert('Sorry! We are unable to find this location.');
+								renderLocation = false;
+							}
+
+							$submitField.attr('disabled', false);
+						});
+					});
+
+					$('form', event.target).submit(function(e){
+						e.preventDefault();
+
+						if (!renderLocation){
+							$editAddress.focus();
+							return false;
+						}
+
+						$addressField.val($editAddress.val());
+						$latitudeField.val(marker.getPosition().lat());
+						$longitudeField.val(marker.getPosition().lng());
+
+						$(event.target).dialog('close');
+					});
+				}
+			});
 	});
-
-	function locationDone() {
-
-		if($("#address").val()) {
-
-                    $("#Location").val($("#address").val());
-
-                    closePopup();
-
-		} else {
-
-                    alert("Please select location form map");
-
-		}
-
-	}
-
-	
-
+});
 </script>

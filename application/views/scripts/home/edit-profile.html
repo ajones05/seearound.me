@@ -1,13 +1,4 @@
 <script type="text/javascript">
-
-    if(userLatitude == "" && userLongitude == "" ) { 
-
-        userLatitude = geoiplatitude;
-
-        userLongitude = geoiplongitude;
-
-    }    
-
     var selectedDate = '';
 
     var selectedYear = '';
@@ -32,20 +23,181 @@
 
     }
 
-    $(document).ready(function() {
+    $(function(){
+		$("#locationButton, #Location").click(function(){
+			$('body').css({overflow: 'hidden'});
 
-        $(".Location-Popup-Class").colorbox({width:"70%",height:"", inline:true, href:"#Location-Popup"},function(){ 
+			$('<div/>', {'class': 'location-dialog'})
+				.append(
+					$('<div/>', {id: 'map-canvas'}),
+					$('<div/>', {'class': 'panel'}).append(
+						$('<form/>').append(
+							$('<input/>', {type: 'text', name: 'address', placeholder: 'Enter your Address'}),
+							$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
+							$('<input/>', {type: 'submit', value: 'Use This Address'})
+						)
+					)
+				)
+				.appendTo($('body'))
+				.dialog({
+					modal: true,
+					resizable: false,
+					drag: false,
+					width: 980,
+					height: 500,
+					dialogClass: 'colorbox',
+					beforeClose: function(event, ui){
+						$('body').css({overflow: 'visible'});
+						$(event.target).dialog('destroy').remove();
+					},
+					open: function(event, ui){
+						var $editForm = $('#editProfileForm'),
+							$addressField = $('[name=Location]', $editForm),
+							$latitudeField = $('[name=RLatitude]', $editForm),
+							$longitudeField = $('[name=RLongitude]', $editForm),
+							newsAddress = $addressField.val(),
+							$editAddress = $('[name=address]', event.target)
+								.val(newsAddress)
+								.attr('disabled', false),
+							$submitField = $('[type=submit]', event.target)
+								.attr('disabled', false),
+							$map = $('#map-canvas', event.target),
+							autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]),
+							centerLocation = new google.maps.LatLng($latitudeField.val(), $longitudeField.val()),
+							geocoder = new google.maps.Geocoder(),
+							renderLocation = true;
 
-            $("#searchAddres").val("");
+						var map = new google.maps.Map($map[0], {
+							zoom: 14,
+							center: centerLocation
+						});
 
-            
-            relatedMap($("#RLatitude").val(),$("#RLongitude").val()); 
+						var marker = new google.maps.Marker({
+							map: map,
+							draggable: true,
+							position: map.getCenter(),
+							icon: baseUrl + 'www/images/icons/icon_1.png'
+						});
 
-            $('html, body').animate({ scrollTop: 0 }, 0);
+						function updateMarker(event){
+							geocoder.geocode({
+								latLng: event.latLng
+							}, function(results, status){
+								if (status == google.maps.GeocoderStatus.OK){
+									infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
+									$editAddress.val(results[0].formatted_address);
+								} else {
+									infowindow.setContent(userAddressTooltip('', imagePath));
+									$editAddress.val('');
+								}
 
-        });
+								autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
+								renderLocation = true;
+								infowindow.open(map, marker);
+							});
+						}
 
-        profileMap(userLatitude, userLongitude,'','');
+						var infowindow = new google.maps.InfoWindow({
+							maxWidth: 220,
+							content: userAddressTooltip(newsAddress, imagePath)
+						});
+
+						infowindow.open(map, marker);
+
+						google.maps.event.addListener(map, 'click', function(mapEvent){
+							infowindow.close();
+							marker.setPosition(mapEvent.latLng);
+							updateMarker(mapEvent);
+						});
+
+						google.maps.event.addListener(marker, 'dragend', function(markerEvent){
+							updateMarker(markerEvent);
+						});
+
+						google.maps.event.addListener(autocomplete, 'place_changed', function(){
+							$('.search', event.target).click();
+						});
+
+						$editAddress.keydown(function(e){
+							if (e.keyCode == 13){
+								e.preventDefault();
+							}
+						});
+
+						$('.search', event.target).click(function(){
+							var value = $.trim($editAddress.val());
+
+							if (value === ''){
+								$editAddress.focus();
+								return;
+							}
+
+							$submitField.attr('disabled', true);
+
+							geocoder.geocode({
+								address: value
+							}, function(results, status){
+								if (status == google.maps.GeocoderStatus.OK){
+									infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
+									map.setCenter(results[0].geometry.location);
+									marker.setPosition(results[0].geometry.location);
+									$editAddress.val(results[0].formatted_address);
+									autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
+									renderLocation = true;
+								} else {
+									alert('Sorry! We are unable to find this location.');
+									renderLocation = false;
+								}
+
+								$submitField.attr('disabled', false);
+							});
+						});
+
+						$('form', event.target).submit(function(e){
+							e.preventDefault();
+
+							if (!renderLocation){
+								$editAddress.focus();
+								return false;
+							}
+
+							$addressField.val($editAddress.val());
+							$latitudeField.val(marker.getPosition().lat());
+							$longitudeField.val(marker.getPosition().lng());
+
+							$(event.target).dialog('close');
+						});
+					}
+				});
+		});
+
+		var map = new google.maps.Map($('#map_canvas')[0], {
+			zoom: 14,
+			minZoom: 13,
+			maxZoom: 15,
+			center: new google.maps.LatLng(userLatitude, userLongitude),
+			disableDefaultUI: true,
+			panControl: false,
+			zoomControl: false,
+			scaleControl: false,
+			streetViewControl: false,
+			overviewMapControl: false,
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		});
+
+		google.maps.event.addListenerOnce(map, 'idle', function(){
+			var marker = new google.maps.Marker({
+				position: map.getCenter(),
+				map: map,
+				icon: baseUrl + 'www/images/icons/icon_1.png'
+			});
+			
+			var infowindow = new google.maps.InfoWindow({
+				content: userAddressTooltip(userAddress, imagePath)
+			});
+
+			infowindow.open(map, marker);
+		});
 
         setHeight('.eqlCH');
 
@@ -57,7 +209,7 @@
 
 
 
-        $('#ImageFile').live('change', function() { 
+        $('#ImageFile').bind('change', function() { 
             $(".proImgChange").toggle();
 
             $("#imageform").ajaxForm({
@@ -95,33 +247,6 @@
         });	
 
     });
-
-    
-
-    function locationDone() {
-		commonMap.movingMarker.setMap(null);
-		commonMap.infoWindow.close();
-
-        if($("#Location").val()) {
-
-            closePopup();
-
-            $("#RLatitude").val(commonMap2.centerPoint.lat());
-
-            $("#RLongitude").val(commonMap2.centerPoint.lng());
-
-            commonMap.centerPoint = commonMap2.centerPoint;
-
-            commonMap.getCenterAddress(commonMap2.centerPoint,"CHANGE");
-
-        }else {
-
-            alert("Please select location form map");
-
-        }
-
-    }	
-
 </script>
 <h3 class="topHdGrayB12">Edit Profile Info</h3>
 
@@ -150,18 +275,15 @@
 
                  </a> 
              </div>
-             <div class="profile-describe afterClr">
-                 <a class="hypDecNone" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>"><h3 class="name"><?php echo ucfirst($this->user_data->Name);?></h3></a>
-
-                 <p class="loc"><?php //echo ucfirst($this->user_data->address);?>
-                 <?php 
-                    $string = (strlen($this->user_data->address) > 50) ? substr($this->user_data->address,0,50).'...' : $this->user_data->address;
-                    echo ucfirst($string);
-                  ?>
-                 
+             <div class="profile-describe">
+                 <a class="hypDecNone" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>">
+					<h3 class="name"><?php echo ucfirst($this->user_data->Name);?></h3>
+				</a>
+                 <p class="loc">
+					<?php echo ucfirst(My_StringHelper::stringLimit($this->user_data->address, 50, '...')); ?>
                  </p>
-
              </div>
+			 <div class="clr"></div>
              <?else :?>
                  <div class="profile-img">
                     <a style="z-index:9999;" href="<?=BASE_PATH?>home/profile">
@@ -182,16 +304,13 @@
 
                     </a> 
                  </div>
-                 <div class="profile-describe afterClr">   
+                 <div class="profile-describe">   
                      <a class="hypDecNone" href="<?=BASE_PATH?>home/profile"><h3 class="name"><?php echo ucfirst($this->auth['user_name']);?></h3></a>
-
-                     <p class="loc"><?php //echo ucfirst($this->auth['address']);?>
-                          <?php 
-                            //echo ucfirst($this->auth['address']);
-                            $string = (strlen($this->auth['address']) > 50) ? substr($this->auth['address'],0,50).'...' : $this->auth['address'];
-                            echo ucfirst($string); ?>
+                     <p class="loc">
+						<?php echo ucfirst(My_StringHelper::stringLimit($this->auth['address'], 50, '...')); ?>
                      </p>
                  </div>
+				 <div class="clr"></div>
              <?endif;?>                    
 
          </div>
@@ -224,23 +343,24 @@
 
     </li>
 
-    <li class="afterClr">
+    <li>
 
         <div class='answers'></div>
 
     </li>
+	<div class="clr"></div>
 
 </ul>
 
- <form method="post">
+ <form method="post" id="editProfileForm">
 
-    <ul class="editProfInfoForm afterClr">
+    <ul class="editProfInfoForm">
 
         <li>
 
             <label>Email Address</label>
 
-            <div class="afterClr" style="float: right; display: inline-block; width: 300px;">
+            <div style="float: right; display: inline-block; width: 300px;">
                 <input type="text" name="Email_id" value="<?=$this->user_data->Email_id?>" style="float: none;"/>
 
                 <?if($this->errors['Email_id']):?>
@@ -262,6 +382,7 @@
                 </span>
                 <div class="clr"></div> 
             </div>
+			<div class="clr"></div>
         </li>
 
         <li>
@@ -318,33 +439,21 @@
         </li>
 
         <li>
-
             <label>Location</label>
-
-            <input type="text" value="<?=$this->user_data->address?>" name="Location" id="Location" class="Location-Popup-Class" />
-
-            <?if($this->errors['Location']):?>
-
-            <span class="errors">
-
-                <?=$this->errors['Location']?>
-
-            </span>
-
-            <?endif;?>
-
-            <input type="hidden" name="RLatitude" id="RLatitude" value="<?=$this->user_data->latitude?>" />
-
-            <input type="hidden" name="RLongitude" id="RLongitude" value="<?=$this->user_data->longitude?>" />
+            <input type="text" value="<?php echo htmlspecialchars($this->user_data->address); ?>" name="Location" />
+            <?php if ($this->errors['Location']): ?>
+            <span class="errors"><?php echo $this->errors['Location']; ?></span>
+            <?php endif; ?>
+            <input type="hidden" name="RLatitude" value="<?php echo $this->user_data->latitude; ?>" />
+            <input type="hidden" name="RLongitude" value="<?php echo $this->user_data->longitude; ?>" />
             <div class="clr"></div>
-
         </li>
 
         <li>
 
             <label>Date of Birth</label>
 
-            <span class="dob appendClr">
+            <span class="dob">
 
                 <select id="monthdropdown" name="monthdropdown" class="selectClass" onchange="updateDate(this.value,'month')"></select> 
 
@@ -352,6 +461,7 @@
 
                 <select id="yeardropdown" name="yeardropdown"  class="selectClass" onchange="updateDate(this.value,'year')"></select> 
 
+				<div class="clr"></div>
             </span>
 
             <input type="hidden" name="url" value="<?=$this->request->getParam('url')?$this->request->getParam('url'):''?>" />
@@ -360,6 +470,7 @@
         </li>
 
     </ul>
+	<div class="clr"></div>
 
     <div class="btnBarM20">
 
@@ -368,85 +479,3 @@
     </div>
 
 </form>
-
- <!-- Code for Profile picture -->
-
-    
-
- <!-- end of profile picture-->
-
-
-
-<!-- code for location popup -->
-
-<div style="display: none;z-index:9999;">
-
-    <div id="Location-Popup">
-
-        <table width="100%" height="100%">
-
-            <!--<tr>
-
-                <td width="100%" height="10%" align="center" style="text-align:center;">
-
-                    <div style="font-weight: bold; font-size: 18px;color: #8CBEFE;"> Enter your address or chose your location on the map</div>
-
-                </td>
-
-            </tr>-->  
-
-            <tr>
-
-                <td>
-
-                    <div>
-
-                        <input type="hidden" class="registerField" id="address" name="address" value="" style="display: inline;"/>
-
-                    </div>
-
-                    <div id="mapSection" class="normalScreen" style="height: 420px;"></div>						
-
-                </td>
-
-            </tr>
-
-            <tr>
-
-                <td width="100%" height="10%" align="center" style="text-align:center; padding: 13px 0; position: relative;">
-
-                    <!--<label style="font-size: 12px; font-weight: bold;">Address : </label>-->
-                    <input id="searchAddres" class="profilemap-address" type="text" placeholder="Enter your Address" />
-
-                    <!--<label style="font-size: 12px; font-weight: bold;">City : </label><input id="searchCity" type="text" class="" placeholder="Enter city" />
-
-                    <label style="font-size: 12px; font-weight: bold;">State : </label><input id="searchState" type="text" class="" placeholder="Enter state" />-->
-                    <img class="profilemap-srh-img" onclick="searchloactionOnMap('editProfile');;" src="<?=BASE_PATH?>www/images/map_search.png">
-
-                    <!--<input type="button" onclick="searchloactionOnMap('editProfile');" class="btnBlueRpt" value="Search" />-->
-                    
-                    <input id="useprofileaddress" type="button" onclick="locationDone()" class="btnBlueRpt" value="Use This Address" />
-                    
-                    <img id="waitingAddress" src="<?=BASE_PATH?>www/images/wait.gif" style="display: none;" />
-
-                </td>
-
-            </tr>
-
-            <!--<tr>
-
-                <td width="100%" height="10%" align="center" style="text-align:center">
-
-                    <input type="button" onclick="locationDone()" class="btnBlueRpt" value="Use This Address" />
-
-                    <input type="button" onclick="closePopup();" class="btnBlueRpt" value="Cancel" />
-
-                </td>
-
-            </tr>-->
-
-        </table>
-
-    </div>
-
-</div>	

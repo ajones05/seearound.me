@@ -1,51 +1,289 @@
-var changePostLocationMap, changePostLocationMarker;
-var imageHeight = '';
-var imageWidth = '';
-
-/*
-* Function to open the post image in colorbox
-* @pram {imageName : Name of the image,w : width of image,h : height of image}
-*/    
-function openImage(imageName, w, h) {
-  
-    	if(w==0 && h==0) {
-		var newImg = new Image();										
-		newImg.src = baseUrl+'newsimages/'+imageName;
-		w = newImg.width;
-		h = newImg.height;
-	}
-	$("#imagePopup").attr('src', '');
-        $('html, body').animate({ scrollTop: 0 }, 0);
-        aaa =w;
-		if(Number(w) < 400) {
-			imageWidth = Number(w)+40;
-		} else {
-			imageWidth = w;
-		}
-		if(Number(h) < 400) {
-			imageHeight = Number(h)+40;
-		} else {
-			imageHeight = h;  
-		}
-    $("#imagePopup").attr('src', baseUrl+"newsimages/"+imageName);
-    self.focus();
-}
-
-/*
-* Function to initialize the map and sub map popup
-*/  
 $(function(){
-    initialize();
-    $(".Map-Popup-Class1").colorbox({width:"70%",height:"", inline:true, href:"#Map-Popup-id"},function(){
-          $('html, body').animate({ scrollTop: 0 }, 0);																										   	
-          $("#useNewAddress").show();
-          $("#useAddress").hide();
-		  $("#searchAddresHome").val('');
-	  	  $("#searchCityHome").val('');
-		  $("#searchStateHome").val('');
-          $("#colorbox").css("top", "85px");
-          relatedMap();
-     });
+	var center = new google.maps.LatLng(userLatitude, userLongitude);
+
+	renderNewsMap({
+		center: center,
+		isListing: true
+	});
+
+	google.maps.event.addListener(newsMap, 'click', function(event){
+		if (!newsMarkerClick){
+			$('.scrpBox').removeClass('higlight-news');
+		}
+
+		newsMarkerClick = false;
+	});
+
+	currentLocationMarker = new NewsMarker({
+		position: newsMap.getCenter(),
+		map: newsMap,
+		id: 'currentLocationMarker',
+		icon: {
+			url: baseUrl + 'www/images/icons/icon_1.png',
+			width: 25,
+			height: 36
+		},
+		addClass: 'newsMarker'
+	});
+
+	google.maps.event.addListener(currentLocationMarker, 'mouseover', function(){
+		var self = this, $markerElement = $('#' + self.id);
+
+		if ($markerElement.data('ui-tooltip')){
+			return true;
+		}
+
+		$markerElement
+			.tooltip({
+				items: '*',
+				show: 0,
+				hide: .1,
+				tooltipClass: 'news-tooltip',
+				content: newsUserTooltipContent(imagePath, userName, 'This is me!'),
+				position: {
+					of: $markerElement,
+					within: '#map_canvas',
+					my: "center bottom",
+					at: "center top"
+				},
+				close: function(event, ui){
+					ui.tooltip.hover(
+						function(){$(this).stop(true).show(); },
+						function(){$(this).remove(); }
+					);
+				}
+		})
+		.tooltip('open');
+	});
+
+	loadNews(0);
+
+	$('#zoomIn').click(function(){
+		var zoom = newsMap.getZoom();
+        newsMap.setZoom(++zoom);
+	});
+
+	$('#zoomOut').click(function(){
+		var zoom = newsMap.getZoom();
+        newsMap.setZoom(--zoom);
+	});
+
+	newsMapCircle = new AreaCircle({
+		map: newsMap,
+		center: newsMap.getCenter(),
+		radious: getRadius()
+	});
+
+	$("#slider")
+		.slider({
+			max: 1.5,
+			min: 0.5,
+			step: 0.1,
+			value: getRadius(),
+			animate: true
+		})
+		.bind("slidestop", function(event, ui){
+			newsMapCircle.changeCenter(newsMap.getCenter(), getRadius());
+			loadNews(0);
+		})
+		.bind("slide", function(event, ui){
+			$("#radious").html(ui.value == 1 ? '1.0' : ui.value);
+		});
+
+	google.maps.event.addListener(newsMap, 'dragend', function(){
+		google.maps.event.clearListeners(newsMap, 'idle');
+
+		google.maps.event.addListener(newsMap, 'idle', function(){
+			$('html, body').animate({scrollTop: '0px'}, 300);
+			newsMapCircle.changeCenter(newsMap.getCenter(), getRadius());
+			loadNews(0);
+		});
+	});
+
+	$("#locationButton").click(function(){
+		$('body').css({overflow: 'hidden'});
+
+		$('<div/>', {'class': 'location-dialog'})
+			.append(
+				$('<div/>', {id: 'map-canvas'}),
+				$('<div/>', {'class': 'panel'}).append(
+					$('<form/>').append(
+						$('<input/>', {type: 'text', name: 'address', placeholder: 'Enter address'}),
+						$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
+						$('<input/>', {type: 'submit', value: 'Use This Address'})
+					)
+				)
+			)
+			.appendTo($('body'))
+			.dialog({
+				modal: true,
+				resizable: false,
+				drag: false,
+				width: 980,
+				height: 500,
+				dialogClass: 'colorbox',
+				beforeClose: function(event, ui){
+					$('body').css({overflow: 'visible'});
+					$(event.target).dialog('destroy').remove();
+				},
+				open: function(event, ui){
+					var $editAddress = $('[name=address]', event.target)
+							.val(userAddress)
+							.attr('disabled', false),
+						$submitField = $('[type=submit]', event.target)
+							.attr('disabled', false),
+						$map = $('#map-canvas', event.target),
+						autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]),
+						centerLocation = newsMapCircle.center,
+						geocoder = new google.maps.Geocoder(),
+						renderLocation = true;
+
+					var map = new google.maps.Map($map[0], {
+						zoom: 14,
+						center: centerLocation
+					});
+
+					var marker = new google.maps.Marker({
+						map: map,
+						draggable: true,
+						position: map.getCenter(),
+						icon: baseUrl + 'www/images/icons/icon_1.png'
+					});
+
+					function updateMarker(event){
+						geocoder.geocode({
+							latLng: event.latLng
+						}, function(results, status){
+							if (status == google.maps.GeocoderStatus.OK){
+								infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
+								$editAddress.val(results[0].formatted_address);
+							} else {
+								infowindow.setContent(userAddressTooltip('', imagePath));
+								$editAddress.val('');
+							}
+
+							autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
+							renderLocation = true;
+							infowindow.open(map, marker);
+						});
+					}
+
+					var infowindow = new google.maps.InfoWindow({
+						maxWidth: 220,
+						content: userAddressTooltip(userAddress, imagePath)
+					});
+
+					infowindow.open(map, marker);
+
+					google.maps.event.addListener(map, 'click', function(mapEvent){
+						infowindow.close();
+						marker.setPosition(mapEvent.latLng);
+						updateMarker(mapEvent);
+					});
+
+					google.maps.event.addListener(marker, 'dragend', function(markerEvent){
+						updateMarker(markerEvent);
+					});
+
+					google.maps.event.addListener(autocomplete, 'place_changed', function(){
+						$('.search', event.target).click();
+					});
+
+					$editAddress.keydown(function(e){
+						if (e.keyCode == 13){
+							e.preventDefault();
+						}
+					});
+
+					$('.search', event.target).click(function(){
+						var value = $.trim($editAddress.val());
+
+						if (value === ''){
+							$editAddress.focus();
+							return;
+						}
+
+						$submitField.attr('disabled', true);
+
+						geocoder.geocode({
+							address: value
+						}, function(results, status){
+							if (status == google.maps.GeocoderStatus.OK){
+								infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
+								map.setCenter(results[0].geometry.location);
+								marker.setPosition(results[0].geometry.location);
+								$editAddress.val(results[0].formatted_address);
+								autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
+								renderLocation = true;
+							} else {
+								alert('Sorry! We are unable to find this location.');
+								renderLocation = false;
+							}
+
+							$submitField.attr('disabled', false);
+						});
+					});
+
+					$('form', event.target).submit(function(e){
+						e.preventDefault();
+
+						if (!renderLocation){
+							$editAddress.focus();
+							return false;
+						}
+
+						$map.mask('Waiting...');
+						$submitField.attr('disabled', true);
+
+						$.ajax({
+							url: baseUrl + 'home/change-address',
+							data: {
+								address: $editAddress.val(),
+								latitude: marker.getPosition().lat(),
+								longitude: marker.getPosition().lng()
+							},
+							type: 'POST',
+							dataType: 'json',
+							beforeSend: function(jqXHR, settings){
+								$editAddress.attr('disabled', true);
+							}
+						}).done(function(response){
+							if (response && response.status){
+								userAddress = $editAddress.val();
+								userLatitude = marker.getPosition().lat();
+								userLongitude = marker.getPosition().lng();
+
+								newsMap.setCenter(marker.getPosition());
+								newsMapCircle.changeCenter(marker.getPosition(), 0.8);
+								currentLocationMarker.setPosition(marker.getPosition());
+
+								var $markerElement = $('#' + currentLocationMarker.id);
+
+								if ($markerElement.data('ui-tooltip')){
+									$markerElement.tooltip('destroy');
+								}								
+
+								loadNews(0);
+
+								$(event.target).dialog('close');
+							} else if (response){
+								alert(response.error.message);
+								$map.unmask();
+								$('[name=address],[type=submit]', event.target).attr('disabled', false);
+							} else {
+								alert(ERROR_MESSAGE);
+								$map.unmask();
+								$('[name=address],[type=submit]', event.target).attr('disabled', false);
+							}
+						}).fail(function(jqXHR, textStatus){
+							alert(textStatus);
+							$map.unmask();
+							$('[name=address],[type=submit]', event.target).attr('disabled', false);
+						});
+					});
+				}
+			});
+	});
 
 	$('#newsPost')
 		.focus(function(){
@@ -63,12 +301,16 @@ $(function(){
 			return false;
 		}
 
-		if (commonMap.mapMoved){
+		var userPosition = new google.maps.LatLng(parseFloat(userLatitude), parseFloat(userLongitude));
+
+		if (userPosition.toString() != newsMapCircle.center.toString()){
 			$("#locationButton").click();
 			return false;
 		}
 
-		preparePost(new google.maps.LatLng(parseFloat(userLatitude), parseFloat(userLongitude)), userAddress);
+		$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', true);
+
+		preparePost(userPosition, userAddress);
 	});
 
 	$('#postlocationButton').click(function(){
@@ -77,98 +319,158 @@ $(function(){
 			return false;
 		}
 
-		$(".Change-Post-Location-Popup-Class").colorbox({
-			width: '70%',
-			height: '',
-			inline: true,
-			href: '#Change-Postlocation-Map-Popup-id',
-			open: true
-		}, function(){
-			var customAddress = '';
+		$('body').css({overflow: 'hidden'});
 
-			$('html, body').animate({scrollTop: 0}, 0);
-			$('.Change-homemap-address').val('');
+		$('<div/>', {'class': 'location-dialog'})
+			.append(
+				$('<div/>', {id: 'map-canvas'}),
+				$('<div/>', {'class': 'panel'}).append(
+					$('<form/>').append(
+						$('<input/>', {type: 'text', name: 'address', placeholder: 'Enter Address'}),
+						$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
+						$('<input/>', {type: 'submit', value: 'Use This Address'})
+					)
+				)
+			)
+			.appendTo($('body'))
+			.dialog({
+				modal: true,
+				resizable: false,
+				drag: false,
+				width: 980,
+				height: 500,
+				dialogClass: 'colorbox',
+				beforeClose: function(event, ui){
+					$('body').css({overflow: 'visible'});
+					$(event.target).dialog('destroy').remove();
+				},
+				open: function(event, ui){
+					var $editForm = $('#reg_form'),
+						$addressField = $('[name=Location]', $editForm),
+						$latitudeField = $('[name=RLatitude]', $editForm),
+						$longitudeField = $('[name=RLongitude]', $editForm),
+						$editAddress = $('[name=address]', event.target)
+							.val(userAddress)
+							.attr('disabled', false),
+						$submitField = $('[type=submit]', event.target)
+							.attr('disabled', false),
+						$map = $('#map-canvas', event.target),
+						autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]),
+						centerLocation = new google.maps.LatLng(userLatitude, userLongitude),
+						geocoder = new google.maps.Geocoder(),
+						renderLocation = true;
 
-			if (changePostLocationMap){
-				changePostLocationMap.setZoom(14);
-				changePostLocationMap.setCenter(changePostLocationMarker.getPosition());
-			} else {
-				changePostLocationMap = new google.maps.Map($('#Change-Postlocation-Map-Popup-id #mapSection')[0], {
-					zoom: 14,
-					center: new google.maps.LatLng(userLatitude, userLongitude)
-				});
+					var map = new google.maps.Map($map[0], {
+						zoom: 14,
+						center: centerLocation
+					});
 
-				changePostLocationMarker = new google.maps.Marker({
-					map: changePostLocationMap,
-					draggable: true,
-					position: changePostLocationMap.getCenter(),
-					icon: new google.maps.MarkerImage(baseUrl + MainMarker1.image, null, null, null,
-						new google.maps.Size(MainMarker1.height,MainMarker1.width))
-				});
+					var marker = new google.maps.Marker({
+						map: map,
+						draggable: true,
+						position: map.getCenter(),
+						icon: baseUrl + 'www/images/icons/icon_1.png'
+					});
 
-				var infoWindow = new google.maps.InfoWindow({
-					maxWidth: 220,
-					content: commonMap.addressContent(userAddress, imagePath)
-				});
+					function updateMarker(marker, event){
+						geocoder.geocode({
+							latLng: event.latLng
+						}, function(results, status){
+							if (status == google.maps.GeocoderStatus.OK){
+								infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
+								$editAddress.val(results[0].formatted_address);
+							} else {
+								infowindow.setContent(userAddressTooltip('<i>undefined</i>', imagePath));
+								$editAddress.val('');
+							}
 
-				infoWindow.open(changePostLocationMap, changePostLocationMarker);
+							autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
+							renderLocation = true;
+							infowindow.open(map, marker);
+						});
+					}
 
-				google.maps.event.addListener(changePostLocationMarker, 'dragend', function(event){
-					changePostLocationMap.setCenter(event.latLng);
-					infoWindow.close();
+					var infowindow = new google.maps.InfoWindow({
+						maxWidth: 220,
+						content: userAddressTooltip(userAddress, imagePath)
+					});
 
-					geocoder.geocode({
-						'latLng': event.latLng
-					}, function(results, status){
-						if (status != google.maps.GeocoderStatus.OK){
+					infowindow.open(map, marker);
+
+					google.maps.event.addListener(map, 'click', function(mapEvent){
+						infowindow.close();
+						marker.setPosition(mapEvent.latLng);
+						updateMarker(marker, mapEvent);
+					});
+
+					google.maps.event.addListener(marker, 'dragstart', function(){
+						infowindow.close();
+					});
+
+					google.maps.event.addListener(marker, 'dragend', function(markerEvent){
+						updateMarker(this, markerEvent);
+					});
+
+					google.maps.event.addListener(autocomplete, 'place_changed', function(){
+						$('.search', event.target).click();
+					});
+
+					$editAddress.keydown(function(e){
+						if (e.keyCode == 13){
+							e.preventDefault();
+						}
+					});
+
+					$('.search', event.target).click(function(){
+						var value = $.trim($editAddress.val());
+
+						if (value === ''){
+							$editAddress.focus();
+							return;
+						}
+
+						$submitField.attr('disabled', true);
+
+						geocoder.geocode({
+							address: value
+						}, function(results, status){
+							if (status == google.maps.GeocoderStatus.OK){
+								$('.profile-map-info .user-address', event.target).text(results[0].formatted_address);
+								map.setCenter(results[0].geometry.location);
+								marker.setPosition(results[0].geometry.location);
+								$editAddress.val(results[0].formatted_address);
+								autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
+								renderLocation = true;
+							} else {
+								alert('Sorry! We are unable to find this location.');
+								renderLocation = false;
+							}
+
+							$submitField.attr('disabled', false);
+						});
+					});
+
+					$('form', event.target).submit(function(e){
+						e.preventDefault();
+
+						if (!renderLocation){
+							$editAddress.focus();
 							return false;
 						}
 
-						customAddress = results[0].formatted_address;
-						infoWindow.setContent(commonMap.addressContent(customAddress, imagePath))
-						infoWindow.open(changePostLocationMap, changePostLocationMarker);
-					});
-				});
+						preparePost(marker.getPosition(), $editAddress.val());
 
-				var autocomplete = new google.maps.places.Autocomplete($('.Change-homemap-address')[0]);
+						if (latlngDistance(newsMap.getCenter(), marker.getPosition(), 'M') > getRadius()){
+							newsMap.setCenter(marker.getPosition());
+							newsMapCircle.changeCenter(newsMap.getCenter(), 0.8);
 
-				$('#Change-Postlocation-Map-Popup-id .Change-srh-img').click(function(){
-					var $address_target = $('.Change-homemap-address');
-						address = $.trim($address_target.val());
-
-					if (address === ''){
-						$address_target.focus();
-						return;
-					}
-
-					geocoder.geocode({
-						'address': address
-					}, function(results, status){
-						if (status == google.maps.GeocoderStatus.OK){
-							customAddress = results[0].formatted_address;
-							infoWindow.setContent(results[0].formatted_address);
-							changePostLocationMap.setCenter(results[0].geometry.location);
-							changePostLocationMarker.setPosition(results[0].geometry.location);
-						} else {
-							alert('Sorry! We are unable to find this location.');
-							$address_target.val('');
+							loadNews(0);
 						}
+
+						$(event.target).dialog('close');
 					});
-				});
-
-				$('#Change-Postlocation-Map-Popup-id .useNewAddress').click(function(){
-					$('#cboxClose').trigger('click');
-
-					if (distance(commonMap.map.getCenter(), changePostLocationMap.getCenter(), 'M') > getRadius()){
-						commonMap.showMapElement = false;
-						commonMap.map.setCenter(changePostLocationMap.getCenter());
-						commonMap.onMapDragen('CENTER');
-					}
-
-					preparePost(changePostLocationMap.getCenter(), customAddress);
-				});
-			}
-		});
+				}
+			});
 	});
 
 	upclick({
@@ -198,45 +500,50 @@ $(function(){
 			}
 		}
 	});
+
+	$(".menu dd ul li a").click(function(e){
+		e.preventDefault();
+		$('#filter_type').val($(this).prop("hash").substring(1));
+		loadNews(0);
+
+		$(this).closest('dl').find('.result').html($(this).html());
+		$(".menu dd ul").hide();
+	});
+
+	$('.result').html("View All");
+
+	$(document).bind('click', function(e){
+		var $clicked = $(e.target);
+
+		if (!$clicked.parents().hasClass("menu")){
+			$(".menu dd ul").hide();
+			$(".menu dt a").removeClass("selected");
+		}
+	});
+
+	$(".menu dt a").click(function(){
+		var clickedId = "#" + this.id.replace(/^link/,"ul");
+
+		$(".menu dd ul").not(clickedId).hide();
+		$(clickedId).toggle();
+		if ($(clickedId).css("display") == "none"){
+			$(this).removeClass("selected");
+		} else {
+			$(this).addClass("selected");
+		}
+	});
+
+	$(window).scroll(function(){
+		if ($("#midColLayout").height() > 714){
+			setThisHeight(Number($("#midColLayout").height()));
+		}
+	});
 });
 
-$(window).scroll(function(){
-	if ($("#midColLayout").height()>714){
-		setThisHeight(Number($("#midColLayout").height()));
-	}
-});
-
-/*
-* Function to clear the upload div form and iframe
-*/      
-function clearUpload() {
+function clearUpload(){
     $('#fileNm').html("");
     var ufchilds = $("#mainForm").children();
     $(ufchilds[0]).val("");
-}
-
-
-var formContainor = '';
-
-/*
-* Function to reinitialize uploader for the next accesss
-*/    
-function reinitilizeUpload() {
-     upclick({
-		dataname: 'images',
-        element: 'uploader',
-        onstart: function(filename) {
-            var uploadedImage = filename.split('\\');
-            var imageRealName = uploadedImage[uploadedImage.length-1];
-            if(((imageRealName.length) - 50)>4){
-                var fileExtension = imageRealName.split('.');
-                imageRealName = imageRealName.substring(0,50)+"..."+fileExtension[fileExtension.length-1];
-            }    
-            filename = "<br/><div id='case2' style='margin-left:0px;margin-top:-37px;'><div style='margin-bottom : 2px;float:left;'>"+imageRealName;
-            filename += '</div><div>&nbsp;<img onclick="clearUpload();" src="'+baseUrl+'www/images/delete-icon.png" style="cursor:pointer;"/></div></div>';
-            $("#fileNm").html(filename);
-        }
-    });
 }
 
 function preparePost(location, address){
@@ -244,6 +551,7 @@ function preparePost(location, address){
 
    	if (news.indexOf('<') > 0 || news.indexOf('>') > 0){
 		alert('You enter invalid text');
+		$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', false);
 		return false;
 	}
 
@@ -253,7 +561,7 @@ function preparePost(location, address){
 		return addPost(location, address);
 	}
 
-	geocoder.geocode({
+	(new google.maps.Geocoder()).geocode({
 		'latLng': location
 	}, function(results, status){
 		if (status == google.maps.GeocoderStatus.OK){
@@ -263,6 +571,8 @@ function preparePost(location, address){
 		}
 	});
 }
+
+var formContainor = '';
 
 function addPost(location, address){
 	var data = new FormData();
@@ -295,10 +605,34 @@ function addPost(location, address){
 
 			$('html, body').animate({scrollTop: 0}, 0);
 
-			commonMap.createMarkersOnMap1([response.news], UserMarker1);
+			renderListingMarker(response.news);
+
+			resetMarkersCluster();
+
+			setTimeout(function(){
+				updateMarkersCluster();
+			}, .1);
 
 			clearUpload();
-			reinitilizeUpload();
+
+			 upclick({
+				dataname: 'images',
+				element: 'uploader',
+				onstart: function(filename){
+					var uploadedImage = filename.split('\\');
+					var imageRealName = uploadedImage[uploadedImage.length - 1];
+					if ((imageRealName.length - 50) > 4){
+						var fileExtension = imageRealName.split('.');
+						imageRealName = imageRealName.substring(0,50) + "..." + fileExtension[fileExtension.length-1];
+					}
+
+					filename = "<br/><div id='case2' style='margin-left:0px;margin-top:-37px;'><div style='margin-bottom : 2px;float:left;'>" +
+						imageRealName + '</div><div>&nbsp;<img onclick="clearUpload();" src="'+baseUrl +
+						'www/images/delete-icon.png" style="cursor:pointer;"/></div></div>';
+
+					$("#fileNm").html(filename);
+				}
+			});
 
 			$('#postOptionId').hide();
 			$('#newsPost').val('').css('height', 36);
@@ -308,8 +642,11 @@ function addPost(location, address){
 		} else {
 			alert(ERROR_MESSAGE);
 		}
+
+		$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', false);
 	}).fail(function(jqXHR, textStatus){
 		alert(textStatus);
+		$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', false);
 	});
 
 	$("#mainForm").parent().remove();

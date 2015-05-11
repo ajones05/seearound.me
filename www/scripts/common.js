@@ -1,23 +1,27 @@
-/* facebook */
-window.fbAsyncInit = function(){
-	FB.init({
-		appId: facebook_appId,
-		xfbml: true,
-		cookie: true,
-		version: 'v2.1'
-	});
-};
-
-(function(d, s, id){
-	var js, fjs = d.getElementsByTagName(s)[0];
-	if (d.getElementById(id)) {return;}
-	js = d.createElement(s); js.id = id;
-	js.src = "//connect.facebook.net/en_US/sdk.js";
-	fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
+var currentRequests = 0;
 
 $(function(){
+	window.fbAsyncInit = function(){
+		FB.init({
+			appId: facebook_appId,
+			xfbml: true,
+			cookie: true,
+			version: 'v2.1'
+		});
+	};
+
+	(function(d, s, id){
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id)) {return;}
+		js = d.createElement(s); js.id = id;
+		js.src = "//connect.facebook.net/en_US/sdk.js";
+		fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+
 	if (isLogin){
+        notification();
+        setInterval('notification()', 120000);
+
 		$('#logoutLi a').click(function(e){
 			var url = $(this).attr('href');
 
@@ -56,6 +60,12 @@ $(function(){
 				$('#ddMyConnList').hide();
 				$(this).off('click.menu');
 			});
+		});
+
+		$('#searchText').keydown(function(e){
+			if (e.keyCode == 13){
+				getKeycodes();
+			} 
 		});
 	} else {
 		$('#facebookLogin').click(function(e){
@@ -152,7 +162,7 @@ function showFriendRequest(thisone){
                                 }
                             }
 
-                            html += '<ul class="connList afterClr">'+
+                            html += '<ul class="connList">'+
                             '<li class="thumb">'+
                             '<img src="'+imgsrc+'" width="40" height="40" />'+
                             '</li>'+
@@ -162,7 +172,7 @@ function showFriendRequest(thisone){
                             '<li class="adrs">';
 
                             if((obj.data[x]).address) {
-                                html += (obj.data[x]).address.breakAt(32);
+                                html += obj.data[x].address;
                             } else {
                                 html += '<br><br>';
                             }
@@ -231,4 +241,221 @@ function friendRequest(thisone, id, action){
 	}).fail(function(jqXHR, textStatus){
 		alert(textStatus);
 	});
+}
+
+// TODO: merge with friendRequest
+
+function deleteFriend(userId, target){
+	if (!confirm("Are you sure to delete this friend?")){
+		return false;
+	}
+
+	$.ajax({
+		url: baseUrl + 'contacts/friend',
+		type: 'POST',
+		data: {
+			user: userId,
+			action: 'reject'
+		},
+		dataType: 'json'
+	}).done(function(response){
+		if (response && response.status){
+			$(target).remove();
+		} else {
+			alert(ERROR_MESSAGE);
+		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
+	});
+}
+
+function googleMapsPlacesAutocompleteReset(input){
+	google.maps.event.clearInstanceListeners(input);
+	$('.pac-container').remove();
+	return new google.maps.places.Autocomplete(input);
+}
+
+function userMessageDialog(userId){
+	$('body').css({overflow: 'hidden'});
+
+	$('<div/>', {'class': 'message-dialog'})
+		.append(
+			$('<img/>', {src: baseUrl + 'www/images/mail_send.gif'}),
+			$('<span/>', {'class': 'locppmsgimg'}).text('Send Message'),
+			$('<div/>', {'class': 'row-content'}).append(
+				$('<form/>').append(
+					$('<div/>').append(
+						$('<input/>', {
+							type: 'text',
+							name: 'subject',
+							placeholder: 'Please enter subject...'
+						})
+					),
+					$('<div/>').append(
+						$('<textarea/>', {
+							name: 'message',
+							placeholder: 'Please enter message...'
+						})
+					),
+					$('<div/>').append(
+						$('<input/>', {
+							type: 'submit',
+							value: 'Send',
+							'class': 'btnBlueRpt'
+						}),
+						$('<input/>', {
+							type: 'button',
+							value: 'Cancel',
+							'class': 'btnBlueRpt'
+						}).click(function(){
+							$('.message-dialog').dialog('close');
+						})
+					),
+					$('<input/>', {type: 'hidden', name: 'user_id'}).val(userId)
+				)
+			)
+		)
+		.appendTo($('body'))
+		.dialog({
+			modal: true,
+			resizable: false,
+			drag: false,
+			width: 540,
+			height: 260,
+			dialogClass: 'colorbox',
+			beforeClose: function(event, ui){
+				$('body').css({overflow: 'visible'});
+				$(event.target).dialog('destroy').remove();
+			},
+			open: function(event, ui){
+				$('form', event.target).validate({
+					rules: {
+						subject: {
+							required: true
+						},
+						message: {
+							required: true
+						}
+					},
+					submitHandler: function(form){
+						$(event.target).mask('Loading...');
+
+						$.ajax({
+							url: baseUrl + 'message/send',
+							data: $(form).serialize(),
+							type: 'POST',
+							dataType: 'json'
+						}).done(function(response){
+								if (response && response.status){
+									$(event.target)
+										.empty()
+										.append(
+											$('<div/>', {'class': 'messageSuccess'}).append(
+												$('<img/>', {src: baseUrl + 'www/images/correct.gif'}),
+												$('<span/>').text('Message sent successful')
+											)
+										);
+								} else {
+									$(event.target).unmask();
+									alert(response ? response.error.message : ERROR_MESSAGE);
+								}
+							}).fail(function(jqXHR, textStatus){
+								$(event.target).unmask();
+								alert(textStatus);
+							});
+					}
+				});
+			}
+		});
+}
+
+function userAddressTooltip(address, image){
+    return '<div class="profile-map-info">' +
+		'<div class="user-img">' +
+			'<img src="' + image + '" />' +
+		'</div>' +
+		'<div class="user-address">' + address + '</div>' +
+	'</div>';
+}
+
+// TODO: test
+
+function getKeycodes(){
+	if (controller == 'home' && action == 'index'){
+		loadNews(0);
+	} else {
+		window.location = baseUrl+'home/index/sv/'+$('#searchText').val();
+	}
+}
+
+function notification(){
+	$.ajax({
+		url : baseUrl + 'contacts/friends-notification',
+		type: 'post',
+		success: function(obj){
+
+			obj = $.parseJSON(obj);
+
+			if (obj && obj.total > 0){
+				if ($("#noteTotal")){
+					$("#noteTotal").html(obj.total);
+					$("#noteTotal").show();
+				}
+			}
+
+			if (obj && obj.totalFriends){
+				if ($("#totalFriend")){
+					$("#totalFriend").html(obj.totalFriends);
+				}
+			} else {
+				if ($("#totalFriend")){
+					$("#totalFriend").html(0);
+				}
+			}
+
+			if (obj && obj.msgTotal > 0){
+				if ($("#msgTotal")){
+					$("#msgTotal").html(obj.msgTotal);
+					$("#msgTotal").show();
+				}
+			} else {
+				$("#msgTotal").html(obj.msgTotal);
+				$("#msgTotal").hide();
+			}
+		}
+	});
+}
+
+// TODO: ???
+function setThisHeight(height){
+	var commentClass = ['leftCol eqlCH', 'rightCol textAlignCenter eqlCH'];
+
+	$(".mainContainer div").each(function(){
+		for (var xxx in commentClass){
+			if (commentClass[xxx].indexOf($(this).attr('class')) >= 0){
+				$(this).css('min-height','auto');
+				$(this).height("100%");
+					if($(this).attr('id')!='mapDiv') {
+					$(this).css("position","absolute");
+				}
+			}
+		}
+	});
+
+	$('#loading').hide();
+	$("#newsData").css("position","relative");
+	$("#newsData").css("height","100%");
+}
+
+// TODO: ???
+function setHeight(col){
+	var maxHeight = 0;
+
+    $(col).each(function(){
+		if ($(this).height() > maxHeight){
+            maxHeight = $(this).height();
+        }
+    });
+
+	$(col).css('min-height', maxHeight);
 }
