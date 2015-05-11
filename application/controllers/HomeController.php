@@ -20,8 +20,7 @@ class HomeController extends My_Controller_Action_Herespy {
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
 		$this->view->headLink()
-			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css')
-			->appendStylesheet('/www/css/common.css?' . $mediaversion);
+			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css');
 
 		$this->view->headScript()
 			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
