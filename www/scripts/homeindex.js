@@ -558,17 +558,23 @@ function preparePost(location, address){
 }
 
 function addPost(location, address){
-	var $form = $('#addNewsForm'),
-		data = new FormData($form[0]);
+	var $form = $('#addNewsForm'), 
+		$images = $('[name=images]', $form),
+		data = new FormData();
 
-	$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', true);
+	data.append('news', $('[name=news]', $form).val());
+	data.append('latitude', location.lat());
+	data.append('longitude', location.lng());
 
 	if (address){
 		data.append('address', address);
 	}
 
-	data.append('latitude', location.lat());
-	data.append('longitude', location.lng());
+	if ($.trim($images.val()) !== ''){
+		data.append('images', $images[0].files[0]);
+	}
+
+	$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', true);
 
 	$.ajax({
 		url: $form.attr('action'),
