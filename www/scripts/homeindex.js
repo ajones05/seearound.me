@@ -42,9 +42,13 @@ $(function(){
 				content: newsUserTooltipContent(imagePath, userName, 'This is me!'),
 				position: {
 					of: $markerElement,
-					within: '#map_canvas',
 					my: "center bottom",
-					at: "center top"
+					at: "center top",
+					using: function(position, feedback){
+						position.top = position.top - 17;
+						$(this).css(position);
+						$("<div>").addClass("arrow").appendTo(this);
+					}
 				},
 				close: function(event, ui){
 					ui.tooltip.hover(
