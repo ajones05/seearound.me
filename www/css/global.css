@@ -1518,6 +1518,29 @@ body .link-meta .meta-content {
 	font: italic 12px lato-Bold;
 	margin-left: 3px;
 }
+.ui-tooltip.news-tooltip .arrow {
+	width: 70px;
+	height: 16px;
+	overflow: hidden;
+	position: absolute;
+	left: 50%;
+	margin-left: -34px;
+	bottom: -16px;
+}
+.ui-tooltip.news-tooltip .arrow:after {
+	background: #fff;
+	border: 2px solid white;
+	content: "";
+	position: absolute;
+	left: 20px;
+	top: -20px;
+	width: 25px;
+	height: 25px;
+	box-shadow: 6px 5px 9px -6px #aaa;
+	-webkit-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	transform: rotate(45deg);
+}
 .higlight-news {
 	box-shadow: 1px 1px 2px 2px #888888;
 }
