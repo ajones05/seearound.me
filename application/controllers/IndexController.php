@@ -8,7 +8,8 @@ class IndexController extends My_Controller_Action_Abstract {
 	{
 		if (count(Zend_Auth::getInstance()->getIdentity()) > 0)
 		{
-			$this->_redirect($this->view->baseUrl() . "/home");
+			// var_dump($this->view->baseUrl("home"));exit;
+			$this->_redirect($this->view->baseUrl("home"));
 		}
 
 		$this->credit = 5;

@@ -62,7 +62,7 @@ class InfoController extends My_Controller_Action_Abstract
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
 		$this->view->headLink()
-			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css');
+			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$this->view->headScript()
 			->appendScript("	var news = " . json_encode(array(
@@ -77,9 +77,9 @@ class InfoController extends My_Controller_Action_Abstract
 				'name' => $this->view->news_owner->Name,
 				'image' => $this->view->news_owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 			)) . ";\n")
-			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
-			->appendFile('/bower_components/textarea-autosize/src/jquery.textarea_autosize.js')
-			->appendFile('/www/scripts/news.js?' . $mediaversion);
+			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
+			->appendFile($this->view->baseUrl('bower_components/textarea-autosize/src/jquery.textarea_autosize.js'))
+			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion));
     }
 
     public function totalCommentsAction()

@@ -331,12 +331,12 @@ class ContactsController extends Zend_Controller_Action
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
 		$this->view->headLink()
-			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css');
+			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$this->view->headScript()
-			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
-			->appendFile('/www/scripts/news.js?' . $mediaversion)
-			->appendFile('/www/scripts/friendlist.js?' . $mediaversion);
+			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
+			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion))
+			->appendFile($this->view->baseUrl('www/scripts/friendlist.js?' . $mediaversion));
 	}
 
 	/**

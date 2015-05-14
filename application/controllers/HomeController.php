@@ -20,13 +20,13 @@ class HomeController extends Zend_Controller_Action
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
 		$this->view->headLink()
-			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css');
+			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$this->view->headScript()
-			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
-			->appendFile('/bower_components/textarea-autosize/src/jquery.textarea_autosize.js')
-			->appendFile('/www/scripts/news.js?' . $mediaversion)
-			->appendFile('/www/scripts/homeindex.js?' . $mediaversion);
+			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
+			->appendFile($this->view->baseUrl('bower_components/textarea-autosize/src/jquery.textarea_autosize.js'))
+			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion))
+			->appendFile($this->view->baseUrl('www/scripts/homeindex.js?' . $mediaversion));
 
 		$this->view->user = Application_Model_User::findById(Zend_Auth::getInstance()->getIdentity()['user_id']);
 	}
@@ -231,10 +231,10 @@ class HomeController extends Zend_Controller_Action
 		}
 
 		$this->view->headLink()
-			->appendStylesheet('/bower_components/jquery-loadmask/src/jquery.loadmask.css');
+			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$this->view->headScript()
-			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js');
+			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'));
 	}
 
 	/**
