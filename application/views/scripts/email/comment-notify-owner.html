@@ -1,5 +1,5 @@
 <?php
-$url = BASE_PATH . 'info/news/nwid/' . $this->news->id;
+$url = $this->serverUrl() . $this->baseUrl('info/news/nwid/' . $this->news->id);
 ?>
 <p><?php echo $this->user->Name; ?> has commented on your post.</p>
 <p><?php echo nl2br(htmlspecialchars(substr($this->comment, 0, 100))); ?></p>

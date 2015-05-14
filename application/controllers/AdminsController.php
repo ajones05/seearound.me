@@ -1,6 +1,6 @@
 <?php
 
-class AdminsController extends My_Controller_Action_Herespy
+class AdminsController extends Zend_Controller_Action
 {
     
     public function init() {
@@ -9,12 +9,17 @@ class AdminsController extends My_Controller_Action_Herespy
     
     public function indexAction()
     {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user)) {
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
+        if ($user->is_admin == 'false') {
+            $this->_redirect($this->view->baseUrl('/'));
+        }
+
 		$config = Zend_Registry::get('config_global');
-        $userTable = new Application_Model_User();
-        $userRow = $userTable->find($this->auth['user_id'])->current(); 
-        if($userRow->is_admin == 'false') {
-            $this->_redirect(BASE_PATH);
-        } 
         $this->view->hideRight = true;
         $response = new stdClass();
         $emailInvites  = new Application_Model_Emailinvites();
@@ -24,7 +29,7 @@ class AdminsController extends My_Controller_Action_Herespy
            $select = $emailInvites->select()->where('self_email =?', $email);
            if($row = $emailInvites->fetchRow($select)) {
                if($status == 'approve') {
-                    $url = $url = BASE_PATH."index/send-invitation/regType/email/q/".$row->code;
+                    $url = $this->view->serverUrl() . $this->view->baseUrl("index/send-invitation/regType/email/q/" . $row->code);
                     $this->to = $row->self_email;
                     $this->subject = "seearound.me Invitation";
                     $this->from = $config->email->from_email . ':' . $config->email->from_name;

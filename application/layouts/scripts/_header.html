@@ -6,21 +6,21 @@ $auth = Zend_Auth::getInstance()->getIdentity();
 	<div class="uprBar-wrapper">
 		<ul class="uprBarInr">
 			<li class="leftCol">
-				<a class="logo" href="<?php echo BASE_PATH; ?>">
-					<img src="<?php echo BASE_PATH; ?>www/images/logo.png" />
+				<a class="logo" href="<?php echo $this->baseUrl('/'); ?>">
+					<img src="<?php echo $this->baseUrl("www/images/logo.png"); ?>" />
 				</a>
 			</li>
 			<li class="midCol">
 				<span class="sIcn">
 					<input type="text" id="searchText" value="<?php $request->getParam('sv', null); ?>" placeholder="Search posts..." />
-					<img src="<?php echo BASE_PATH; ?>www/images/icn-search.png" alt="Search" onclick="getKeycodes();" />
+					<img src="<?php echo $this->baseUrl("www/images/icn-search.png"); ?>" alt="Search" onclick="getKeycodes();" />
 				</span>
 			</li>
 			<li class="rightCol">
 				<ul class="primNav">
 					<li>
 						<a href="#" id="ddMyConn" onclick="showFriendRequest(this);">
-							<img src="<?php echo BASE_PATH; ?>www/images/friends.png" style="margin-top:-6px; width: 27px; height: auto" alt="My Connections"  id="icnMyConn" />
+							<img src="<?php echo $this->baseUrl("www/images/friends.png"); ?>" style="margin-top:-6px; width: 27px; height: auto" alt="My Connections"  id="icnMyConn" />
 							<span style="padding-left:33px;color: #5d5d5d;">My Friends</span>
 						</a>
 						<span style="display:none;" id="noteTotal" class="connQty"></span>
@@ -28,25 +28,25 @@ $auth = Zend_Auth::getInstance()->getIdentity();
 						<div id="ddMyConnList" class="ddMyConnList"></div>
 					</li>
 					<li>
-						<a class="messageLiMargin" href="<?php echo BASE_PATH; ?>message">
-							<img src="<?php echo BASE_PATH; ?>www/images/message.png" style="margin-top:-1px; width: 24px; height: 18px" alt="My Messages" id="icnMyMsg" />
+						<a class="messageLiMargin" href="<?php echo $this->baseUrl("message"); ?>">
+							<img src="<?php echo $this->baseUrl("www/images/message.png"); ?>" style="margin-top:-1px; width: 24px; height: 18px" alt="My Messages" id="icnMyMsg" />
 							<span class="linkText" style="color: #5d5d5d;">My Messages</span>
 							<span style="display:none;" id="msgTotal" class="connQty"></span>
 						</a>
 					</li>
 					<li class="last">
 						<a href="#" id="myProfLink">
-							<img src="<?php echo $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" class="imgProf_Header" />
+							<img src="<?php echo $user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="imgProf_Header" />
 							<span style="color:#5d5d5d;">My Profile</span>
 						</a>
 						<div class="clr"></div>
 						<div id="ddMyProf" class="ddMyProf dispNone">
 							<ul class="ddMyProfLinks">
 								<li>
-									<a href="<?php echo BASE_PATH; ?>home/profile">Profile</a>
+									<a href="<?php echo $this->baseUrl("home/profile"); ?>">Profile</a>
 								</li>
 								<li id="logoutLi">
-									<a href="<?php echo BASE_PATH; ?>general/logout">Logout</a>
+									<a href="<?php echo $this->baseUrl("general/logout"); ?>">Logout</a>
 								</li>
 							</ul>
 							<div class="clr"></div>
@@ -61,10 +61,10 @@ $auth = Zend_Auth::getInstance()->getIdentity();
 	</div>
 	<?php else: ?>
 	<div class="loginHdr">
-		<a href="<?php echo BASE_PATH; ?>">
-			<img src="<?php echo BASE_PATH; ?>www/images/logo.png" style="height: auto;width:200px;margin: 8px 0px 8px 3px;" />
+		<a href="<?php echo $this->baseUrl('/'); ?>">
+			<img src="<?php echo $this->baseUrl("www/images/logo.png"); ?>" style="height: auto;width:200px;margin: 8px 0px 8px 3px;" />
 		</a>
-		<form id="loginForm" action="<?php echo BASE_PATH; ?>index/login" method="POST" class="loginForm">
+		<form id="loginForm" action="<?php echo $this->baseUrl("index/login"); ?>" method="POST" class="loginForm">
 			<ul>
 				<li>
 					<span id="loginError" class="loginerror"></span>
@@ -79,7 +79,7 @@ $auth = Zend_Auth::getInstance()->getIdentity();
 				</li>
 				<li>
 					<input type="password" name="password" placeholder="Password" tabindex="2" />
-					<a class="hypDecNone" href="<?php echo BASE_PATH; ?>index/forgot"><span>Forgot your password?</span></a>
+					<a class="hypDecNone" href="<?php echo $this->baseUrl("index/forgot"); ?>"><span>Forgot your password?</span></a>
 				</li>
 				<li class="btn">
 					<input class="floatL" type="submit" value="Login" tabindex="4" />

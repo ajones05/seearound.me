@@ -1,4 +1,4 @@
-<h3 class="topHdGrayB12"><img width="21" height="17" alt="My Connections" class="tIcn" src="<?=BASE_PATH?>www/images/icn-myconn-w.gif"> Friend Requests:</h3>
+<h3 class="topHdGrayB12"><img width="21" height="17" alt="My Connections" class="tIcn" src="<?php echo $this->baseUrl("www/images/icn-myconn-w.gif"); ?>"> Friend Requests:</h3>
 <?if(count($this->data) > 0) :?>
 	<div class="invtFrndList">
 	<?php
@@ -9,8 +9,8 @@
 		<div class="invtFrndList" data-lat="<?php echo $user->lat(); ?>" data-lng="<?php echo $user->lng(); ?>">
 			<ul class="invtFrndRow">
 				<li class="img">
-					<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $row->id; ?>">
-						<img class="userImage" src="<?php echo $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" />
+					<a href="<?php echo $this->baseUrl("home/profile/user/" . $row->id); ?>">
+						<img class="userImage" src="<?php echo $user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
 					</a>
 				</li>
 				<li class="name"> 
@@ -18,7 +18,7 @@
 					<span class="loc"><?php echo $user->address; ?></span>
 					<input class="curPnt requestInput" type="button" value="Accept" onclick="friendRequest(this,<?=$row->sender_id?>,'confirm');" />
 					<input class="curPnt requestInput" type="button" value="Deny" onclick="friendRequest(this,<?=$row->sender_id?>,'reject');" />
-					<img class="imgAlowDeny" src="<?=BASE_PATH?>www/images/loader.gif" />
+					<img class="imgAlowDeny" src="<?php echo $this->baseUrl("www/images/loader.gif"); ?>" />
 				</li>
 			</ul>
 			<div class="clr"></div>
@@ -27,7 +27,7 @@
 		<? endforeach;?>
 	</div>
 <?else:?>
-	<img style="margin-left: 96px;padding-top: 134px;" height="80" width="250" src="<?=BASE_PATH?>www/images/no-record.jpeg" />
+	<img style="margin-left: 96px;padding-top: 134px;" height="80" width="250" src="<?php echo $this->baseUrl("www/images/no-record.jpeg"); ?>" />
 <?endif;?>
 <script type="text/javascript">
 	$(function(){

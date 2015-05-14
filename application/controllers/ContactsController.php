@@ -1,19 +1,20 @@
 <?php
 
-class ContactsController extends My_Controller_Action_Herespy
+class ContactsController extends Zend_Controller_Action
 {
-
-    public function init()
-    {
-        
-    }
-
     public function indexAction()
     {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
         $inviteStatus = new Application_Model_Invitestatus();
-        if($inviteStatus = $inviteStatus->getData(array('user_id'=>$this->auth['user_id']))) {
+        if($inviteStatus = $inviteStatus->getData(array('user_id' => $user->id))) {
             if($inviteStatus->invite_count <= 0) {
-                $this->_redirect(BASE_PATH.'contacts/friends-list');
+                $this->_redirect($this->view->baseUrl('contacts/friends-list'));
             } else {
                 $this->view->inviteStatus = $inviteStatus;
             }
@@ -23,36 +24,43 @@ class ContactsController extends My_Controller_Action_Herespy
     
     public function invitesAction() 
     {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
 		$config = Zend_Registry::get('config_global');
         $this->view->hideRight = true;
         $inviteStatus = new Application_Model_Invitestatus();
         $newsFactory = new Application_Model_NewsFactory();
         $emailInvites = new Application_Model_Emailinvites();
         $userTable = new Application_Model_User();
-        if($inviteStatusData = $inviteStatus->getData(array(user_id=>$this->auth['user_id']))) {
+        if($inviteStatusData = $inviteStatus->getData(array("user_id" => $user->id))) {
             if($inviteStatusData->invite_count <= 0) {
-                $this->_redirect(BASE_PATH.'contacts/friends-list');
+                $this->_redirect($this->view->baseUrl('contacts/friends-list'));
             } else {
                 $this->view->inviteStatus = $inviteStatusData;
             }
         }
-        if($this->request->isPost()) {
-            $emails = $this->request->getPost("emails", null);
-            $emailMessage = $this->request->getPost("messageText", null);
+        if($this->_request->isPost()) {
+            $emails = $this->_request->getPost("emails", null);
+            $emailMessage = $this->_request->getPost("messageText", null);
             $emails = explode(",", $emails);
             $total = (($inviteStatusData->invite_count) >= count($emails))?(count($emails)):($inviteStatusData->invite_count); 
-            $name = $this->auth['user_name']; 
+            $name = $user->Name;
             $alreadyUser = 0;
             for ($i=1; $i <= $total; $i++) {
                 if($userRow = $userTable->getUsers(array('Email_id' => trim($emails[$i-1])))) {
                     /*
                      * Email to invited user 
                      */
-                    $url = BASE_PATH."home/profile/user/".$this->auth['user_id'];
+                    $url = $this->view->serverUrl() . $this->view->baseUrl("home/profile/user/".$user->id);
                     $this->to = $emails[$i-1];
-                    $this->from = $this->auth['user_email'].':'.$this->auth['user_name'];
+                    $this->from = $user->Email_id.':'.$user->Name;
                     $this->subject = "seearound.me connect request";
-                    $message = $this->auth['user_name']." wants to connect with you on seearound.me. Please visit the link below to view ".$this->auth['user_name']." public profile.<br><a href='$url'>$url</a>";
+                    $message = $user->Name." wants to connect with you on seearound.me. Please visit the link below to view ".$user->Name." public profile.<br><a href='$url'>$url</a>";
                     $this->view->name = $userRow->Name;
                     $this->view->message = "<p align='justify'>$message</p>";
                     $this->view->adminPart = "no";
@@ -63,12 +71,12 @@ class ContactsController extends My_Controller_Action_Herespy
                     /*
                      * Email to login user 
                      */
-                    $url = BASE_PATH."home/profile/user/".$userRow->id;
-                    $this->to = $this->auth['user_email'];
+                    $url = $this->view->serverUrl() . $this->view->baseUrl("home/profile/user/".$userRow->id);
+                    $this->to = $user->Email_id;
 					$this->from = $config->email->from_email . ':' . $config->email->from_name;
                     $this->subject = "User already registered";
                     $message = $emails[$i-1]." is already register with seearound.me  Please visit the link below to view ".$userRow->Name." public profile.<br><a href='$url'>$url</a>";
-                    $this->view->name = $this->auth['user_name'];
+                    $this->view->name = $user->Name;
                     $this->view->message = "<p align='justify'>$message</p>";
                     $this->view->adminPart = "no";
                     $this->view->adminName = "Admin";
@@ -78,15 +86,15 @@ class ContactsController extends My_Controller_Action_Herespy
                     $alreadyUser++;
                 } else { 
                     $data = array(
-                        sender_id => $this->auth['user_id'],
-                        receiver_email => trim($emails[$i-1]),
-                        code => $newsFactory->generateCode(),
-                        created => date('y-m-d H:i:s')
+                        "sender_id" => $user->id,
+                        "receiver_email" => trim($emails[$i-1]),
+                        "code" => $newsFactory->generateCode(),
+                        "created" => date('y-m-d H:i:s')
                     ); 
-                    $url = BASE_PATH."index/send-invitation/regType/email/q/".$data['code'];
+                    $url = $this->view->serverUrl() . $this->view->baseUrl("index/send-invitation/regType/email/q/".$data['code']);
                     $row[] = $emailInvites->createRow($data)->save();
                     $this->to = $emails[$i-1];
-                    $this->from = $this->auth['user_email'].':'.$this->auth['user_name'];
+                    $this->from = $user->Email_id.':'.$user->Name;
                     $this->subject = "seearound.me join request";
                     $message = $emailMessage."<br><br>Please visit the link below to join $name.<br><a href='$url'>$url</a>"; //echo $message; exit;
                     $this->view->name = $emails[$i-1];
@@ -101,7 +109,7 @@ class ContactsController extends My_Controller_Action_Herespy
                 }               
                 
             }
-            $this->view->inviteStatus = $inviteStatus->getData(array(user_id=>$this->auth['user_id']));
+            $this->view->inviteStatus = $inviteStatus->getData(array("user_id"=>$user->id));
             $this->view->success = count($row);
             $this->view->already = $alreadyUser;
         }
@@ -110,6 +118,13 @@ class ContactsController extends My_Controller_Action_Herespy
 
     public function checkfbstatusAction() 
     {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
         $response = new stdClass();
         $tableUser = new Application_Model_User;
         $tableFriends = new Application_Model_Friends;
@@ -124,7 +139,7 @@ class ContactsController extends My_Controller_Action_Herespy
             if(count($resultRow) > 0) {
                 $select = $tableFbFriends->select()
                     ->where("reciever_nw_id =?", $resultRow->Network_id)
-                    ->where("sender_id =?", $this->auth['user_id']);
+                    ->where("sender_id =?", $user->id);
                 if($fbFriebds = $tableFbFriends->fetchRow($select)) {
                     $response->data = $fbFriebds->toArray();
                     $response->count = count($fbFriebds);
@@ -136,8 +151,8 @@ class ContactsController extends My_Controller_Action_Herespy
                         $response->address = $addressRow->toArray();
                     }
                     $select = $tableFriends->select()
-                        ->where("friends.sender_id = ".$this->auth['user_id']." AND friends.reciever_id = ".$resultRow->id)
-                        ->orWhere("friends.sender_id = ".$resultRow->id." AND friends.reciever_id = ".$this->auth['user_id']);
+                        ->where("friends.sender_id = ".$user->id." AND friends.reciever_id = ".$resultRow->id)
+                        ->orWhere("friends.sender_id = ".$resultRow->id." AND friends.reciever_id = ".$user->id);
                     if($friends = $tableFriends->fetchRow($select)) {                        
                         $response->data = $friends->toArray();
                         $response->count = count($fbFriebds);
@@ -151,7 +166,7 @@ class ContactsController extends My_Controller_Action_Herespy
             }else {
                 $select = $tableFbFriends->select()
                     ->where("reciever_nw_id =?", $nwId)
-                    ->where("sender_id =?", $this->auth['user_id']);
+                    ->where("sender_id =?", $user->id);
                 if($fbFriebds = $tableFbFriends->fetchRow($select)) {
                     $response->data = $fbFriebds->toArray();
                     $response->count = count($fbFriebds);
@@ -171,16 +186,23 @@ class ContactsController extends My_Controller_Action_Herespy
     }
     
     public function inviteAction() 
-    { 
+    {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
         $response = new stdClass();
         $tableUser = new Application_Model_User(); 
         $tableFbFriends = new Application_Model_Fbtempusers(); 
         $inviteStatus = new Application_Model_Invitestatus();
         if($this->_request->isPost()) {
-            if($inviteRow = $inviteStatus->getData(array(user_id => $this->auth['user_id']))) {
+            if($inviteRow = $inviteStatus->getData(array("user_id" => $user->id))) {
                 if($inviteRow->invite_count > 0) {
                     $data = array(
-                        "sender_id" => $this->auth['user_id'],
+                        "sender_id" => $user->id,
                         "reciever_nw_id" => $this->_request->getPost("network_id", null),
                         "full_name" => $this->_request->getPost("name", null)
                     );
@@ -206,21 +228,28 @@ class ContactsController extends My_Controller_Action_Herespy
     
     public function followAction() 
     {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
         $response = new stdClass();
         $tableUser = new Application_Model_User;
         $tableFriends = new Application_Model_Friends;
         if($this->_request->isPost()) {
             $nwId = $this->_request->getPost("network_id", null);
             $reciewerRow = $tableUser->getUsers(array("Network_id"=>$nwId));
-            $mailValues = $tableUser->recordForEmail($this->auth['user_id'], $reciewerRow->id);
-            $url = BASE_PATH."home/profile/user/".$this->auth['user_id'];
+            $mailValues = $tableUser->recordForEmail($user->id, $reciewerRow->id);
+            $url = $this->view->serverUrl() . $this->view->baseUrl("home/profile/user/".$user->id);
             $this->to = $mailValues->recieverEmail;
-            $this->from = $this->auth['user_email'].':'.$this->auth['user_name'];
+            $this->from = $user->Email_id.':'.$user->Name;
             $this->view->name = $mailValues->recieverName;
             $this->subject = "seearound.me connect request";
             $data = array(
                 "reciever_id" => $reciewerRow->id,
-                "sender_id" => $this->auth['user_id'],
+                "sender_id" => $user->id,
                 "source" => "connect",
                 "cdate" => date("Y-m-d H:i:s"),
                 "udate" => date("Y-m-d H:i:s")
@@ -230,7 +259,7 @@ class ContactsController extends My_Controller_Action_Herespy
                 $resultData['reciever_nw_id'] = $nwId;
             }
             $response->data = $resultData;
-            $message = $this->auth['user_name']." wants to connect with you on seearound.me. Please visit the link below to view ".$this->auth['user_name']." public profile.<br><a href='$url'>$url</a>";
+            $message = $user->Name." wants to connect with you on seearound.me. Please visit the link below to view ".$user->Name." public profile.<br><a href='$url'>$url</a>";
             
             $this->view->message = "<p align='justify'>$message</p>";
             $this->view->adminPart = "no";
@@ -247,7 +276,7 @@ class ContactsController extends My_Controller_Action_Herespy
     }
     
     public function friendsListAction()
-    {  
+    {
         $this->view->friendListExist =true;
 
         $response = new stdClass();
@@ -255,10 +284,17 @@ class ContactsController extends My_Controller_Action_Herespy
         $tableFriends = new Application_Model_Friends();
         $inviteStatus = new Application_Model_Invitestatus();
         $limit = 5;
-        $page = $this->request->getParam("page", 0);
+        $page = $this->_request->getParam("page", 0);
         $offset = $page*$limit;
-        if(isset($this->auth['user_id']) && $this->auth['user_id'] != "") {
-            $frlist = $tableFriends->getTotalFriends($this->auth['user_id'], $limit, $offset);
+
+		$auth = Zend_Auth::getInstance()->getIdentity();
+        if($auth) {
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+            $frlist = $tableFriends->getTotalFriends($user->id, $limit, $offset);
 
 			if (count($frlist))
 			{
@@ -268,7 +304,7 @@ class ContactsController extends My_Controller_Action_Herespy
 					$_user = $tableUser->findById($row->id);
 
 					$response->frlist[] = array(
-						'Profile_image' => $_user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+						'Profile_image' => $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 						'id' => $_user->id,
 						'Name' => $_user->Name,
 						'address' => $_user->address(),
@@ -278,10 +314,10 @@ class ContactsController extends My_Controller_Action_Herespy
 				}
 			}
 			
-            $more = $tableFriends->getTotalFriends($this->auth['user_id'], $limit, $offset+$limit);
-            $this->view->inviteStatus = $inviteStatus->getData(array('user_id'=>$this->auth['user_id']));
+            $more = $tableFriends->getTotalFriends($user->id, $limit, $offset+$limit);
+            $this->view->inviteStatus = $inviteStatus->getData(array('user_id'=>$user->id));
         } 
-        if($this->request->isXmlHttpRequest()) {
+        if($this->_request->isXmlHttpRequest()) {
             $response->more = count($more);
             $response->page = $page+1;
 
@@ -486,20 +522,27 @@ class ContactsController extends My_Controller_Action_Herespy
     }
     
     public function friendsNotificationAction()
-    {   
+    {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
         /*
          * Making instance of models class 
          */
         $response = new stdClass();
         $tableFriends = new Application_Model_Friends();
         $messageTable = new Application_Model_Message();
-        if($this->request->isPost()) {  
+        if($this->_request->isPost()) {  
             $data = array(
-                'reciever_id' => $this->auth['user_id'],
+                'reciever_id' => $user->id,
                 'status' => '0'
             );
             $friendRow = $tableFriends->getFriends($data, true);
-            $msgRow    = $messageTable->getNoteMessage($this->auth['user_id']);
+            $msgRow    = $messageTable->getNoteMessage($user->id);
             if($friendRow) {
                 $friendRow = $friendRow->toArray();
             }
@@ -510,18 +553,25 @@ class ContactsController extends My_Controller_Action_Herespy
             $response->total = count($friendRow);
             $response->msg = $msgRow;
             $response->msgTotal = count($msgRow);
-            $response->totalFriends = count( $tableFriends->getTotalFriends($this->auth['user_id']));
+            $response->totalFriends = count( $tableFriends->getTotalFriends($user->id));
         }
         die(Zend_Json_Encoder::encode($response));
     }
     
     public function requestsAction() 
     {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
         $response = new stdClass();
         $tableFriends = new Application_Model_Friends;
-        if($this->request->isPost()) {
-            $friendRows = $tableFriends->frendsList($this->auth['user_id'], true);
-            $friendRow = $tableFriends->frendsList($this->auth['user_id'], true, false, 5);
+        if($this->_request->isPost()) {
+            $friendRows = $tableFriends->frendsList($user->id, true);
+            $friendRow = $tableFriends->frendsList($user->id, true, false, 5);
             if($friendRow) {
                 $friendRow = $friendRow->toArray();
             }
@@ -533,8 +583,15 @@ class ContactsController extends My_Controller_Action_Herespy
     
     public function allRequestsAction() 
     {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
         $tableFriends = new Application_Model_Friends;
-        $this->view->data = $friendRows = $tableFriends->frendsList($this->auth['user_id'], true);
+        $this->view->data = $friendRows = $tableFriends->frendsList($user->id, true);
         $this->view->total = count($friendRows);
     }
 
@@ -544,7 +601,7 @@ class ContactsController extends My_Controller_Action_Herespy
         $data = array();
         $resultRows = array();
         if($this->_request->isPost() || $this->_request->isGet()) {
-            $searchKey = $this->request->getParam('search', null);
+            $searchKey = $this->_request->getParam('search', null);
             if($searchKey != null) {
                 if(strpos($searchKey, "@")){
                     $data['Email_id'] = $searchKey;
@@ -552,14 +609,14 @@ class ContactsController extends My_Controller_Action_Herespy
                     $data['Name'] = $searchKey;
                 }
                 $resultRows = $newsFactory->searchUsers($data, true);
-                if($this->request->isXmlHttpRequest()) {
+                if($this->_request->isXmlHttpRequest()) {
                     $response->success = $resultRows->toArray();
                     die(Zend_Json_Encoder::encode($response));
                 }else {
                     $this->view->suceess = $resultRows->toArray();
                 }
             }else {
-                if($this->request->isXmlHttpRequest()) {
+                if($this->_request->isXmlHttpRequest()) {
                     $response->error = $resultRows;
                     die(Zend_Json_Encoder::encode($response));
                 }else {
@@ -570,4 +627,3 @@ class ContactsController extends My_Controller_Action_Herespy
     }   
     
 }
-

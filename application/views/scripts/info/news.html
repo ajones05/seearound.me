@@ -2,7 +2,7 @@
 $auth = Zend_Auth::getInstance()->getIdentity();
 $auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
 $user = $this->news->findDependentRowset('Application_Model_User')->current();
-$user_image = $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg');
+$user_image = $user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
 
 $image = $this->news->images && file_exists(ROOT_PATH . '/newsimages/' . $this->news->images) ? $this->news->images : null;
 
@@ -16,14 +16,14 @@ if ($image)
 		<li>
 			<ul class="post">
 				<li class="imgPro">
-					<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $user->id; ?>">
+					<a href="<?php echo $this->baseUrl("home/profile/user/" . $user->id); ?>">
 						<img src="<?php echo $user_image; ?>" class="smallImage" />
 					</a>
 				</li>
 				<li>
-					<?php if ($this->auth): ?>
+					<?php if ($this->user): ?>
                     <div class="post-top">
-                        <a class="title" href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $user->id; ?>" style="z-index:9999;color: #0068C4;text-decoration: none;"><?=$user->Name?></a> 
+                        <a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $user->id); ?>" style="z-index:9999;color: #0068C4;text-decoration: none;"><?=$user->Name?></a> 
                         <span class="post-date"><?php echo date("d F Y h:i a", strtotime($this->news->created_date));?></span>
                         <span class="message_number" id="message_success_<?=$this->news->id?>"><?=$this->newsVote?></span>
                          <div id="thumbs_up2_<?=$this->news->id?>"  style="float: right; margin-right: -46px; margin-top: 22px;display:none;">
@@ -31,11 +31,11 @@ if ($image)
                          </div>
                          <div id="thumbsup_blck" class="deteleIcon12" style="display:inline;">
                           <?php if($this->newsVote == 0) { ?>      
-                                <img id="img1_<?=$this->news->id?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted_gray.png" <?php if ($user->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
+                                <img id="img1_<?=$this->news->id?>" class="crp" src="<?php echo $this->baseUrl("www/images/thumsup_voted_gray.png"); ?>" <?php if ($user->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
                           <?php } else { ?>     
-                                <img id="img1_<?=$this->news->id?>" class="crp" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if ($user->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
+                                <img id="img1_<?=$this->news->id?>" class="crp" src="<?php echo $this->baseUrl("www/images/thumsup_voted.jpg"); ?>" <?php if ($user->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
                           <?php } ?> 
-                                <img id="img2_<?=$this->news->id?>" class="crp" style="display: none" src="<?=BASE_PATH?>www/images/thumsup_voted.jpg" <?php if ($user->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
+                                <img id="img2_<?=$this->news->id?>" class="crp" style="display: none" src="<?php echo $this->baseUrl("www/images/thumsup_voted.jpg"); ?>" <?php if ($user->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
                          </div>
                     </div>
 					<?php endif; ?>
@@ -48,7 +48,7 @@ if ($image)
 		</li>
 		<?php if ($image != null): ?>
 		<li class="cmnt">
-			<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $image; ?>" style="width: 100%; height: auto; cursor: pointer;" />
+			<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" style="width: 100%; height: auto; cursor: pointer;" />
 		</li>
 		<?php endif; ?>
     </ul>

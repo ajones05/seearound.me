@@ -1,4 +1,4 @@
 <?php
-$url = BASE_PATH . 'index/reg-confirm?id=' . $this->user->id . '&q=' . $this->user->Conf_code;
+$url = $this->serverUrl() . $this->baseUrl('index/reg-confirm?id=' . $this->user->id . '&q=' . $this->user->Conf_code);
 ?>
 <p>Your new activation link is: <a href="<?php echo $url; ?>"><?php echo $url; ?></a></p>

@@ -253,66 +253,22 @@
 <div id="userDiv" class="leftCol" >
 
          <div class="profDtl"> 
-
-             <?if($this->publicProfile) :?>
-
-             <div class="profile-img">
-                <a style="z-index:9999;" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>">
-
-                     <span id="image_upload_field">
-
-                         <?php if($this->user_data->Profile_image != 'null' && $this->user_data->Profile_image != '') {?> 
-
-                         <img <? if(strpos($this->user_data->Profile_image, '://')):?>src="<?=$this->user_data->Profile_image?>" <?else:?>src="<?=BASE_PATH?>uploads/<?=$this->user_data->Profile_image?>"<?endif;?> class="imgProf" />
-
-                         <?php } else { ?>
-
-                         <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="imgProf"/>
-
-                         <?php } ?>
-
-                     </span>
-
-                 </a> 
-             </div>
-             <div class="profile-describe">
-                 <a class="hypDecNone" href="<?=BASE_PATH?>home/profile/user/<?=$this->user_data->id?>">
-					<h3 class="name"><?php echo ucfirst($this->user_data->Name);?></h3>
-				</a>
-                 <p class="loc">
-					<?php echo ucfirst(My_StringHelper::stringLimit($this->user_data->address, 50, '...')); ?>
-                 </p>
-             </div>
-			 <div class="clr"></div>
-             <?else :?>
                  <div class="profile-img">
-                    <a style="z-index:9999;" href="<?=BASE_PATH?>home/profile">
-
-                             <span id="image_upload_field">
-
-                                 <?if($this->auth["pro_image"]){?> 
-
-                                     <img src="<?if(strpos($this->auth['pro_image'], '://')){ echo $this->auth['pro_image']; } else { echo BASE_PATH.'uploads/'.$this->auth['pro_image'];}?>" class="imgProf"/> 
-
-                                 <? } else { ?>
-
-                                     <img src="<?=BASE_PATH?>www/images/img-prof40x40.jpg" class="imgProf"/>
-
-                                 <? } ?>
-
-                             </span>
-
+                    <a style="z-index:9999;" href="<?php echo $this->baseUrl("home/profile"); ?>">
+						<span id="image_upload_field">
+							<img src="<?php echo $this->user->getprofileImage($this->baseUrl("www/images/img-prof40x40.jpg")); ?>" class="imgProf" />
+						</span>
                     </a> 
                  </div>
                  <div class="profile-describe">   
-                     <a class="hypDecNone" href="<?=BASE_PATH?>home/profile"><h3 class="name"><?php echo ucfirst($this->auth['user_name']);?></h3></a>
+					<a class="hypDecNone" href="<?php echo $this->baseUrl("home/profile"); ?>">
+						<h3 class="name"><?php echo ucfirst($this->user->Name);?></h3>
+					</a>
                      <p class="loc">
-						<?php echo ucfirst(My_StringHelper::stringLimit($this->auth['address'], 50, '...')); ?>
+						<?php echo ucfirst(My_StringHelper::stringLimit($this->user->address(), 50, '...')); ?>
                      </p>
                  </div>
 				 <div class="clr"></div>
-             <?endif;?>                    
-
          </div>
  
  </div>
@@ -325,7 +281,7 @@
 
         <div style="height: 1px; width: 1px;"> 
 
-            <form enctype='multipart/form-data' action='<?=BASE_PATH?>home/image-upload' id='imageform' method='POST'>
+            <form enctype='multipart/form-data' action='<?php echo $this->baseUrl("home/image-upload"); ?>' id='imageform' method='POST'>
 
                 <input style="height: 0px; width: 1px;background-color: white;color: white;" type='file' id='ImageFile' name='ImageFile' accept='image/*'/>                
 
@@ -339,7 +295,7 @@
 
     <li>
 
-        <img src="<?=BASE_PATH?>www/images/wait.gif" class="proImgChange" />
+        <img src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>" class="proImgChange" />
 
     </li>
 
@@ -361,7 +317,7 @@
             <label>Email Address</label>
 
             <div style="float: right; display: inline-block; width: 300px;">
-                <input type="text" name="Email_id" value="<?=$this->user_data->Email_id?>" style="float: none;"/>
+                <input type="text" name="Email_id" value="<?=$this->user->Email_id?>" style="float: none;"/>
 
                 <?if($this->errors['Email_id']):?>
 
@@ -389,7 +345,7 @@
 
             <label>Name</label>
 
-            <input type="text" value="<?=$this->user_data->Name?>" name="Name" />
+            <input type="text" value="<?=$this->user->Name?>" name="Name" />
 
             <?if($this->errors['Name']):?>
 
@@ -440,12 +396,12 @@
 
         <li>
             <label>Location</label>
-            <input type="text" value="<?php echo htmlspecialchars($this->user_data->address); ?>" name="Location" />
+            <input type="text" value="<?php echo htmlspecialchars($this->user->address()); ?>" name="Location" />
             <?php if ($this->errors['Location']): ?>
             <span class="errors"><?php echo $this->errors['Location']; ?></span>
             <?php endif; ?>
-            <input type="hidden" name="RLatitude" value="<?php echo $this->user_data->latitude; ?>" />
-            <input type="hidden" name="RLongitude" value="<?php echo $this->user_data->longitude; ?>" />
+            <input type="hidden" name="RLatitude" value="<?php echo $this->user->lat(); ?>" />
+            <input type="hidden" name="RLongitude" value="<?php echo $this->user->lng(); ?>" />
             <div class="clr"></div>
         </li>
 
@@ -464,7 +420,7 @@
 				<div class="clr"></div>
             </span>
 
-            <input type="hidden" name="url" value="<?=$this->request->getParam('url')?$this->request->getParam('url'):''?>" />
+            <input type="hidden" name="url" value="<?php echo $this->_request->getParam('url'); ?>" />
             <div class="clr"></div>
 
         </li>
@@ -474,7 +430,7 @@
 
     <div class="btnBarM20">
 
-        <input type="submit" value="Apply"  class="btnBlueRptType2" style="margin-right:8%"/><input type="button" onclick="window.location.href = '<?=BASE_PATH?>home/profile'" value="Cancel" class="btnBlueRptType2" />
+        <input type="submit" value="Apply"  class="btnBlueRptType2" style="margin-right:8%"/><input type="button" onclick="window.location.href = '<?php echo $this->baseUrl("home/profile"); ?>'" value="Cancel" class="btnBlueRptType2" />
 
     </div>
 

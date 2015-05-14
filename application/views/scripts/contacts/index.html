@@ -1,5 +1,5 @@
-<script type="text/javascript" src="<?=BASE_PATH?>www/scripts/contactsindex.js"></script>
-<h3 class="topHdGrayB12"><img src="<?=BASE_PATH?>www/images/icn-myconn-w.gif" width="21" height="17" class="tIcn" alt="My Connections" /> My FB Connections</h3>
+<script type="text/javascript" src="<?php echo $this->baseUrl("www/scripts/contactsindex.js"); ?>"></script>
+<h3 class="topHdGrayB12"><img src="<?php echo $this->baseUrl("www/images/icn-myconn-w.gif"); ?>" width="21" height="17" class="tIcn" alt="My Connections" /> My FB Connections</h3>
 <div id="inviteMain1">
     <div class="importMessage">
         Import contacts from facebook <br>
@@ -7,7 +7,7 @@
     </div>
     <div class="fbMainInvite">
         <div class="crp fbFrndsMain" onclick="getFbFriends();" style="text-align: center;">
-                <img style="border-color: #1A356E;" height="30" width="100" src="<?=BASE_PATH?>www/images/facebook-button4.jpg"><br><br>  
+                <img style="border-color: #1A356E;" height="30" width="100" src="<?php echo $this->baseUrl("www/images/facebook-button4.jpg"); ?>"><br><br>  
                 Please click the button to import your contacts from facebook
 
         </div>

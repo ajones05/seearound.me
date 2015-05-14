@@ -78,6 +78,11 @@ class Application_Model_Message extends My_Db_Table_Abstract
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'receiver_id'
+        ),
+		'Sender' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_User',
+			'refColumns' => 'sender_id'
         )
     );
 

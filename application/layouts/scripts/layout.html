@@ -11,26 +11,26 @@ $geoip = My_Ip::geolocation();
 $request = Zend_Controller_Front::getInstance()->getRequest();
 
 $this->headLink()
-	->appendStylesheet('/bower_components/jquery-ui/themes/base/jquery-ui.min.css')
-	->appendStylesheet('/www/css/reset.css?' . $config->mediaversion)
-	->appendStylesheet('/www/css/global.css?' . $config->mediaversion);
+	->appendStylesheet($this->baseUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
+	->appendStylesheet($this->baseUrl('www/css/reset.css?' . $config->mediaversion))
+	->appendStylesheet($this->baseUrl('www/css/global.css?' . $config->mediaversion));
 
 $this->headScript()
 	->appendScript(
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
-		"	var baseUrl = " . json_encode(BASE_PATH) . ";\n" .
+		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
 		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
 		"	var	reciever_userid = " . json_encode($this->reciever) . ";\n" .
-		"	var	user_id = " . json_encode($this->isLogin ? $user->id : '') . ";\n"
+		"	var	user_id = " . json_encode($auth ? $user->id : '') . ";\n"
 	)
 	->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
-	->prependFile('/bower_components/jquery/dist/jquery.min.js')
-	->appendFile('/bower_components/jquery-ui/jquery-ui.min.js')
-	->appendFile('/bower_components/jquery-validation/dist/jquery.validate.min.js')
-	->appendFile('/bower_components/jquery.scrollTo/jquery.scrollTo.min.js')
-	->appendFile('/www/scripts/common.js');
+	->prependFile($this->baseUrl('bower_components/jquery/dist/jquery.min.js'))
+	->appendFile($this->baseUrl('bower_components/jquery-ui/jquery-ui.min.js'))
+	->appendFile($this->baseUrl('bower_components/jquery-validation/dist/jquery.validate.min.js'))
+	->appendFile($this->baseUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js'))
+	->appendFile($this->baseUrl('www/scripts/common.js'));
 
-$image = BASE_PATH . 'www/images/img-prof40x40.jpg';
+$image = $this->baseUrl('www/images/img-prof40x40.jpg');
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -48,11 +48,11 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 	</style>
 	<?php endif; ?>
 	<script language="javascript" type="text/javascript">
-	var userLatitude = <?php echo json_encode($this->isLogin ? $user->lat() : $geoip[0]); ?>;
-	var userLongitude = <?php echo json_encode($this->isLogin ? $user->lng() : $geoip[1]); ?>;
-	var userAddress = <?php echo json_encode($this->isLogin ? $user->address() : ''); ?>;
-	var userName = <?php echo json_encode($this->isLogin ? $user->Name : ''); ?>;
-	var imagePath = "<?php echo $this->isLogin ? $user->getProfileImage($image) : $image; ?>";
+	var userLatitude = <?php echo json_encode($auth ? $user->lat() : $geoip[0]); ?>;
+	var userLongitude = <?php echo json_encode($auth ? $user->lng() : $geoip[1]); ?>;
+	var userAddress = <?php echo json_encode($auth ? $user->address() : ''); ?>;
+	var userName = <?php echo json_encode($auth ? $user->Name : ''); ?>;
+	var imagePath = "<?php echo $auth ? $user->getProfileImage($image) : $image; ?>";
 	var controller = "<?=$request->getParam('controller')?>";
 	var action = "<?=$request->getParam('action')?>";
 
@@ -136,10 +136,10 @@ $image = BASE_PATH . 'www/images/img-prof40x40.jpg';
 						<?php if (!empty($this->homePageExist)): ?>
 						<div id="zoomController">
 							<div>
-								<img id="zoomIn" src="<?php echo BASE_PATH; ?>www/images/zoom_in.gif" />
+								<img id="zoomIn" src="<?php echo $this->baseUrl("www/images/zoom_in.gif"); ?>" />
 							</div>
 							<div>
-								<img id="zoomOut" src="<?php echo BASE_PATH; ?>www/images/zoom_out.gif" />
+								<img id="zoomOut" src="<?php echo $this->baseUrl("www/images/zoom_out.gif"); ?>" />
 							</div>
 						</div>
 						<?php endif; ?>

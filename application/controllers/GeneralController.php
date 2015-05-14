@@ -6,20 +6,6 @@ class GeneralController extends  My_Controller_Action_Abstract
 
 {
 
-
-
-    public function init()
-
-    {
-
-        /* Initialize action controller here */
-
-        $this->view->request = $this->getRequest();
-
-    }
-
-
-
     public function indexAction()
 
     {
@@ -58,7 +44,7 @@ class GeneralController extends  My_Controller_Action_Abstract
 			$auth->clearIdentity();
 		}
 
-		$this->_redirect(BASE_PATH);
+		$this->_redirect($this->view->baseUrl('/'));
     }
 
     public function inviteSelfAction()
@@ -73,7 +59,7 @@ class GeneralController extends  My_Controller_Action_Abstract
 
             foreach ($emailToInvite as $row) {
 
-                $url = $url = BASE_PATH."index/send-invitation/regType/email/q/".$row->code;
+                $url = $this->serverUrl() . $this->view->baseUrl("index/send-invitation/regType/email/q/".$row->code);
 
                 $this->to = $row->self_email;
 

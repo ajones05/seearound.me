@@ -5,17 +5,17 @@
              
             <div class="txtbold-top"><span class="hdB15">  Invite your friends by </span></div>
             <div class="txtBold-bottom">
-                <a class="hypDecNone" href="<?=BASE_PATH?>contacts/invites">
+                <a class="hypDecNone" href="<?php echo $this->baseUrl("contacts/invites"); ?>">
 
-                    <img style="margin-right: 25px;" src="<?=BASE_PATH?>www/images/email_big.png"  alt="Facebook" />
+                    <img style="margin-right: 25px;" src="<?php echo $this->baseUrl("www/images/email_big.png"); ?>"  alt="Facebook" />
 
                 </a>
 
                 <span>Or</span>  
 
-                <a class="hypDecNone" href="<?=BASE_PATH?>contacts">
+                <a class="hypDecNone" href="<?php echo $this->baseUrl("contacts"); ?>">
 
-                    <img style="margin-left: 25px;" src="<?=BASE_PATH?>www/images/btn-fblogo.gif"  alt="Facebook" />
+                    <img style="margin-left: 25px;" src="<?php echo $this->baseUrl("www/images/btn-fblogo.gif"); ?>"  alt="Facebook" />
 
                 </a>
 
@@ -37,9 +37,9 @@
             
                 <input name="search" id="search" placeholder="Search People..." type="text" value="" />
 
-                <img class="search-btn" src="<?=BASE_PATH?>www/images/icn-search.png" alt="Search" />
+                <img class="search-btn" src="<?php echo $this->baseUrl("www/images/icn-search.png"); ?>" alt="Search" />
 
-                <img id="sacrchWait" class="searchWait" src="<?=BASE_PATH?>www/images/wait.gif"/>
+                <img id="sacrchWait" class="searchWait" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>"/>
 
             </div>
             <div class="clr"></div>
@@ -86,7 +86,7 @@
 
         <div align="center" onclick="moreFriends(<?=$this->page?>)" class="postClass_after">
 
-            <label id="moreText" style="margin-left:-254px;">More</label><img id="sacrchWait2" class="searchWait" src="<?=BASE_PATH?>www/images/wait.gif"/>
+            <label id="moreText" style="margin-left:-254px;">More</label><img id="sacrchWait2" class="searchWait" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>"/>
 
         </div>
 

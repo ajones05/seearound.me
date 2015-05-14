@@ -61,4 +61,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			)
 		);
 	}
+
+	protected function _initLog()
+	{
+		$log_path = ROOT_PATH . '/log';
+		is_dir($log_path) || mkdir($log_path, 0700);
+		$writer = new Zend_Log_Writer_Stream($log_path . '/bootstrap_log_' . date('Y-m-d') . '.log');
+		$logger = new Zend_Log($writer);
+
+		return $logger;
+	}
 }

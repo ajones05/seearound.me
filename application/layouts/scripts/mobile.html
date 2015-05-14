@@ -1,6 +1,6 @@
 <?php
 $config = Zend_Registry::get('config_global');
-$this->headLink()->appendStylesheet('/www/css/mobile.css');
+$this->headLink()->appendStylesheet($this->baseUrl('/www/css/mobile.css'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,7 +11,7 @@ $this->headLink()->appendStylesheet('/www/css/mobile.css');
 </head>
 <body>
 	<div class="wraper-mobile">
-		<img src="<?php echo BASE_PATH; ?>www/images/mobile/logo-mobile.png" alt="" class="logo-mobile">
+		<img src="<?php echo $this->baseUrl("www/images/mobile/logo-mobile.png"); ?>" alt="" class="logo-mobile" />
 		<h1>See &amp; Share What's Happening Near You</h1>
 		<?php echo $this->layout()->content; ?>
 	</div>

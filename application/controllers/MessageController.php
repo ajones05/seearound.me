@@ -2,7 +2,7 @@
 
 
 
-class MessageController extends My_Controller_Action_Herespy
+class MessageController extends Zend_Controller_Action
 
 {
 
@@ -16,171 +16,98 @@ class MessageController extends My_Controller_Action_Herespy
 
     }
 
+	public function indexAction()
+	{
+		$auth = Zend_Auth::getInstance()->getIdentity();
 
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
 
-    public function indexAction()
+		$this->view->user = $user;
 
-    {
-        $messageTable = new Application_Model_Message();
+        $messageTable = new Application_Model_Message;
 
-        $newsFactory = new Application_Model_NewsFactory();
-
-        $user_id = $this->auth['user_id'];
-
-        $page = $this->getRequest()->getParam('page',1);
-
-        $paginator = Zend_Paginator::factory($messageTable->getUserData(array('receiver_id' => $user_id),true));
-
-        $paginator->setCurrentPageNumber($page);
-
+        $paginator = Zend_Paginator::factory($messageTable->getUserData(array('receiver_id' => $user->id),true));
+        $paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
         $paginator->setItemCountPerPage(14);
 
         $this->view->inbox = $this->view->paginator = $paginator;
 
-        $user_data = $newsFactory->getUserData($user_id);
-
-        $user_pro = $newsFactory->getUserProfileData($user_id);
-
-		
-
-        $address_data = $newsFactory->getUserAddress($user_id);
-
-        $this->view->address_data = $address_data;
-
-			
-
-        $this->view->user_data = $user_data;
-
-        $this->view->user_name = $user_data->Name;
-
-       	$this->view->latitude = $this->auth['latitude'];
-
-       	$this->view->longitude = $this->auth['longitude'];
-
-        $this->view->userImage = $user_data->Profile_image;
-
-        $this->view->user_pro = $user_pro; 
-         
-        $this->view->currentPage = 'Message';
-        $senders = array();
-        foreach($paginator as $inboxData){
-            $sender = $newsFactory->getUserData($inboxData->sender_id);
-            $senders[$inboxData->sender_id]=$sender->Profile_image;
-        }
-        $this->view->senders = $senders;
-
-              
-
-    }
+		$this->view->currentPage = 'Message';
+	}
 
     
 
-    public function sendsAction()
+	public function sendsAction()
+	{
+		$auth = Zend_Auth::getInstance()->getIdentity();
 
-    { 
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
 
-        $messageTable = new Application_Model_Message();
+		$this->view->user = $user;
 
-        $newsFactory = new Application_Model_NewsFactory();
+        $messageTable = new Application_Model_Message;
 
-        $user_id = $this->auth['user_id']; 
-
-        $page = $this->getRequest()->getParam('page',1); 
-
-        $paginator = Zend_Paginator::factory($messageTable->getUserData(array('sender_id' => $user_id))); 
-
-        $paginator->setCurrentPageNumber($page);
-
+        $paginator = Zend_Paginator::factory($messageTable->getUserData(array('sender_id' => $user->id)));
+        $paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
         $paginator->setItemCountPerPage(14);
 
         $this->view->inbox = $this->view->paginator = $paginator;
-
-        $user_data = $newsFactory->getUserData($user_id);
-
-        $user_pro = $newsFactory->getUserProfileData($user_id);
-
-
-
-        $address_data = $newsFactory->getUserAddress($user_id);
-
-        $this->view->address_data = $address_data;
-
-
-
-        $this->view->user_data = $user_data;
-
-        $this->view->user_name = $user_data->Name;
-
-        $this->view->latitude = $this->auth['latitude'];
-
-        $this->view->longitude = $this->auth['longitude'];
-
-        $this->view->userImage = $user_data->Profile_image;
-
-        $this->view->user_pro = $user_pro;  
-
-    }
+	}
 
     
 
-    public function viewedAction()
+	public function viewedAction()
+	{
+        try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
-    {
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
 
-        $response = new stdClass();
-        
+            $messageTable = new Application_Model_Message;
+            $messageReplyTable = new Application_Model_MessageReply;
+            $newsFactory = new Application_Model_NewsFactory;
 
-        if($this->getRequest()->isPost()) {
+			// TODO: validate
+            $rowId = $this->_request->getPost('id', 131);
+            $result = $messageTable->viewed($rowId, $user->id);
 
-            $messageTable = new Application_Model_Message();
+			if (!count($result))
+			{
+				// TODO: error details
+				throw new RuntimeException('...', -1);
+			}
 
-            $messageReplyTable = new Application_Model_MessageReply();
-            
-            $newsFactory = new Application_Model_NewsFactory();
-            
-            $rowId = $this->getRequest()->getPost('id', null);
+			$response = array(
+				"inboxData" => $result->toArray(),
+				"replyData" => $messageReplyTable->replyWithUserData(array("message_reply.message_id"=>$rowId))->toArray(),
+				"replyDataTotal" => count($messageReplyTable->replyWithUserData(array("message_reply.message_id"=>$rowId), true)),
+				"user_image" => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+				"success" => "done"
+			);
 
-            $result = $messageTable->viewed($rowId, $this->auth['user_id']);
-
-            if(count($result) > 0) {
-
-                $response->inboxData = $result->toArray();
-
-                $response->replyData = $messageReplyTable->replyWithUserData(array("message_reply.message_id"=>$rowId))->toArray();
-
-                $response->replyDataTotal = count($messageReplyTable->replyWithUserData(array("message_reply.message_id"=>$rowId), true));
-
-                $response->success = "done";
-                
-                $receiver_id = $response->inboxData[receiver_id];
-                $receiver_data = $newsFactory->getUserData($receiver_id);
-                $receiver_image = $receiver_data->Profile_image;
-                $user_image = $newsFactory->getUserData($this->auth['user_id'])->Profile_image;
-                $response->receiver_image=$receiver_image;
-                $response->user_image = $user_image;
-                
-                $replyData = $response->replyData;
-
-                foreach($replyData as $key => $areply){
-                    $rsender_id = $areply['sender_id'];
-
-                    $rs_data = $newsFactory->getUserData($rsender_id);
-                    $rs_image = $rs_data->Profile_image;
-
-                    $replyData[$key]['sender_image']=$rs_image;
-                }
-
-                $response->replyData = $replyData;
-            }else {
-
-                $response->errors = "error";
-
-            }
-
+			foreach ($response["replyData"] as &$row)
+			{
+				$sender = Application_Model_User::findById($row['sender_id']);
+				$row['sender_image'] = $sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'));
+			}
         }
+		catch (Exception $e)
+		{
+			// TODO: error details
+			$response = array("errors" => "error");
+		}
 
-        die(Zend_Json_Encoder::encode($response));
-
+        $this->_helper->json($response);
     }
 
     
@@ -188,6 +115,12 @@ class MessageController extends My_Controller_Action_Herespy
     public function replyViewedAction()
 
     {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
 
         $response = new stdClass();
 
@@ -197,7 +130,7 @@ class MessageController extends My_Controller_Action_Herespy
 
             $rowId = $this->getRequest()->getPost('id', null);
 
-            $response->result = $messageReplyTable->replyViewed($rowId, $this->auth['user_id']);
+            $response->result = $messageReplyTable->replyViewed($rowId, $user->id);
 
             
 
@@ -288,6 +221,12 @@ class MessageController extends My_Controller_Action_Herespy
     public function replyAction()
 
     {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
 
         /*
 
@@ -301,20 +240,14 @@ class MessageController extends My_Controller_Action_Herespy
 
         $messageReplyTable = new Application_Model_MessageReply();
 
-        if($this->request->isPost()) {
+        if($this->_request->isPost()) {
 
             $data = array(
-
-                message_id  => $this->getRequest()->getPost('id', null),
-
-                sender_id   => $this->auth['user_id'],
-
-                receiver_id => $this->getRequest()->getPost('user_id', null),
-
-                reply_text  => $this->getRequest()->getPost('message', null),
-
-                created     => date('Y-m-d H:i:s')
-
+                "message_id" => $this->_request->getPost('id', null),
+                "sender_id" => $user->id,
+                "receiver_id" => $this->_request->getPost('user_id', null),
+                "reply_text" => $this->_request->getPost('message', null),
+                "created" => date('Y-m-d H:i:s')
             );
 
             if($messageRow = $messageReplyTable->createRow($data)) {
@@ -327,7 +260,7 @@ class MessageController extends My_Controller_Action_Herespy
 
                 $row = $messageTable->find($this->getRequest()->getPost('id', null))->current();
 
-                if($this->auth['user_id'] == $row->sender_id) {
+                if($user->id == $row->sender_id) {
 
                     $row->reciever_read = 'false';
 
@@ -359,7 +292,7 @@ class MessageController extends My_Controller_Action_Herespy
 
          */
 
-        if($this->request->isXmlHttpRequest()) {
+        if($this->_request->isXmlHttpRequest()) {
 
             die(Zend_Json_Encoder::encode($response));
 
@@ -375,7 +308,7 @@ class MessageController extends My_Controller_Action_Herespy
 
         $messageReplyTable = new Application_Model_MessageReply();
 
-        if($this->request->isPost()) {
+        if($this->_request->isPost()) {
 
             $response->replyData = $messageReplyTable->replyWithUserData(array("message_reply.message_id"=>$this->getRequest()->getPost('id', 0)), true)->toArray();
 
@@ -391,7 +324,7 @@ class MessageController extends My_Controller_Action_Herespy
 
          */
 
-        if($this->request->isXmlHttpRequest()) {
+        if($this->_request->isXmlHttpRequest()) {
 
             die(Zend_Json_Encoder::encode($response));
 

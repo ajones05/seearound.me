@@ -4,23 +4,15 @@ require_once ROOT_PATH . '/vendor/autoload.php';
 
 class IndexController extends My_Controller_Action_Abstract {
 
+	public function init()
+	{
+		if (count(Zend_Auth::getInstance()->getIdentity()) > 0)
+		{
+			$this->_redirect($this->view->baseUrl() . "/home");
+		}
 
-
-    public function init()
-
-    {
-    
-       if(count(Zend_Auth::getInstance()->getIdentity()) > 0) {
-
-           $this->_redirect(BASE_PATH."home");
-
-       }
-
-       $this->credit = 5;
-
-    }
-
-
+		$this->credit = 5;
+	}
 
     public function indexAction() {
 		$config = Zend_Registry::get('config_global');
@@ -73,7 +65,9 @@ class IndexController extends My_Controller_Action_Abstract {
 
                 if ($row = $newsFactory->registration($data)) {
 
-                    $this->view->activate_url = BASE_PATH . "index/reg-confirm/id/" . $row->id . "/q/" . $row->Conf_code;
+                    $this->view->activate_url = $this->view->serverUrl() . $this->view->baseUrl("index/reg-confirm/id/" . $row->id . "/q/" .
+						$row->Conf_code);
+
                     // Code to sending mail to reciever
 
                     $this->to = $row->Email_id;
@@ -91,7 +85,7 @@ class IndexController extends My_Controller_Action_Abstract {
                     //@mail($to, $subject, $message, $headers);
 
 
-                    $this->_redirect(BASE_PATH . "home/index");
+                    $this->_redirect($this->view->baseUrl("home/index"));
                 } else {
 
                     $this->view->errors = "errors";
@@ -107,7 +101,7 @@ class IndexController extends My_Controller_Action_Abstract {
 		$this->view->RLatitude = $this->_request->getPost('RLatitude', $geolocation[0]);
 		$this->view->RLongitude = $this->_request->getPost('RLongitude', $geolocation[1]);
 
-        if ($this->request->isXmlHttpRequest()) {
+        if ($this->_request->isXmlHttpRequest()) {
 
             die(Zend_Json_Encoder::encode($response));
         }
@@ -155,7 +149,7 @@ class IndexController extends My_Controller_Action_Abstract {
             $auth->getStorage()->write($authData);
 
             $response->error = 0;
-            $response->redirect = BASE_PATH . "home";
+            $response->redirect = $this->view->baseUrl("home");
             return $response;
         }
     } 
@@ -345,12 +339,12 @@ class IndexController extends My_Controller_Action_Abstract {
 				}
 
 				$response['active'] = 1;
-				$response['redirect'] = BASE_PATH . 'home';
+				$response['redirect'] = $this->view->baseUrl('home');
 			}
 			else
 			{
 				$response['active'] = 0;
-				$response['redirect'] = BASE_PATH . 'index/reg-success/id/' . $returnvalue->id;
+				$response['redirect'] = $this->view->baseUrl('index/reg-success/id/' . $returnvalue->id);
 			}
 
 			$response['status'] = 1;
@@ -526,7 +520,7 @@ class IndexController extends My_Controller_Action_Abstract {
 			}
 		}
 
-		$this->_redirect(BASE_PATH . 'home');
+		$this->_redirect($this->view->baseUrl('home'));
 	}
 
     public function registerAction()
@@ -646,7 +640,8 @@ class IndexController extends My_Controller_Action_Abstract {
 
                     $this->from = $config->email->from_email . ':' . $config->email->from_name;
 
-                    $this->view->forgot_url  = BASE_PATH."index/change-password/pc/yes/em/".urlencode($row->Email_id)."/cd/".urlencode($row->Conf_code);
+                    $this->view->forgot_url  = $this->view->serverUrl() . $this->view->baseUrl("index/change-password/pc/yes/em/" .
+						urlencode($row->Email_id) . "/cd/" . urlencode($row->Conf_code));
 
                     $this->subject = "Forgot Password";
 
@@ -683,36 +678,30 @@ class IndexController extends My_Controller_Action_Abstract {
     
 
     public function changePasswordAction() 
-
     {
+		if (Zend_Auth::getInstance()->hasIdentity()) {
+			$this->_redirect($this->view->baseUrl('/'));    
+		}
 
-        $this->view->layout()->setLayout('login');
-
-        if(isset($this->auth['user_id'])) {
-
-            $this->_redirect(BASE_PATH);    
-
-        }
+		$this->view->layout()->setLayout('login');
 
         $erorrs = array();
 
-        $this->view->email = $email = $this->request->getParam("em", null);
+        $this->view->email = $email = $this->_request->getParam("em", null);
 
-        $this->view->code = $code = $this->request->getParam("cd", null);
+        $this->view->code = $code = $this->_request->getParam("cd", null);
 
         if($this->_request->isPost()) { 
 
             $tableUser = new Application_Model_User;
 
-            $this->view->email = $email = $this->request->getPost("email", null);
+            $this->view->email = $email = $this->_request->getPost("email", null);
 
-            $this->view->code = $code   = $this->request->getPost("code", null);
+            $this->view->code = $code   = $this->_request->getPost("code", null);
 
-            $password = $this->request->getPost("password", null);
+            $password = $this->_request->getPost("password", null);
 
-            $repassword = $this->request->getPost("re-password", null);
-
-            //echo strlen($password), strlen($repassword); exit;
+            $repassword = $this->_request->getPost("re-password", null);
 
             if($password == "") { 
 
@@ -866,10 +855,7 @@ class IndexController extends My_Controller_Action_Abstract {
 
             } else {
 
-                $this->_redirect(BASE_PATH);
-
-                $this->_redirect(BASE_PATH);
-
+                $this->_redirect($this->view->baseUrl('/'));
             }
 
         }

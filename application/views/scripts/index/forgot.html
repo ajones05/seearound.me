@@ -6,14 +6,14 @@
                         If you don't receive it, please also check your spam box.
             </span>
             <script type="text/javascript">
-                window.setTimeout("window.location='<?=BASE_PATH?>'; ",20000);
+                window.setTimeout("window.location='<?php echo $this->baseUrl('/'); ?>'; ",20000);
             </script>
             <?else:?>
             <form method="post" class="forFrm">
 				<span class="formTitle">Forgot your password? Enter your email address and hit submit to be sent a link to create a new one</span>
                 <ul class="forFormUl">
                     <li class="forFormLi">
-                        <input type="text" name="email" id="email" value="<?=$this->request->getPost('email')?>" class="forFormInput" placeholder="Email Address" />
+                        <input type="text" name="email" id="email" value="<?=$this->_request->getPost('email')?>" class="forFormInput" placeholder="Email Address" />
 						<span style="font-size: 30px;position: absolute;right: 7px;top: 7px;">*</span>
                     </li>
                 </ul>
@@ -24,7 +24,7 @@
 					<div class="floatR" style="margin-left:10px;">
 						<input style="width:110px;" class="blueButton" type="submit" value="Submit" />
 					</div>
-					<a class="hypDecNone floatR" href="<?php echo BASE_PATH; ?>">
+					<a class="hypDecNone floatR" href="<?php echo $this->baseUrl('/'); ?>">
 						<input style="width:110px;" class="blueButton" type="button" value="Cancel" />
 					</a>
                 </div>

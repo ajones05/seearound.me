@@ -47,7 +47,7 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 				return $this->Profile_image;
 			}
 
-			return BASE_PATH . 'uploads/' . $this->Profile_image;
+			return $this->baseUrl('uploads/' . $this->Profile_image);
 		}
 
 		return $default;
@@ -148,6 +148,11 @@ class Application_Model_User extends My_Db_Table_Abstract
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Message',
 			'refColumns' => 'receiver_id'
+		),
+		'Sender' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_Message',
+			'refColumns' => 'sender_id'
 		)
 	); 
 

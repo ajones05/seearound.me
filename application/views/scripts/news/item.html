@@ -19,31 +19,31 @@ if ($images)
 		<li>
 			<ul class="post">
 				<li class="imgPro">
-					<a href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $this->user->id; ?>">
-						<img src="<?php echo $this->user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'); ?>" class="smallImage" />
+					<a href="<?php echo $this->baseUrl("home/profile/user/" . $this->user->id); ?>">
+						<img src="<?php echo $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="smallImage" />
 					</a>
 				</li>
 				<li>
 					<div class="post-top">
-						<a class="title" href="<?php echo BASE_PATH; ?>home/profile/user/<?php echo $this->user->id; ?>"><?php echo ucfirst($this->user->Name); ?></a>
+						<a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $this->user->id); ?>"><?php echo ucfirst($this->user->Name); ?></a>
 						<span class="post-date"><?php echo date("d F Y h:i a", strtotime($created_date)); ?></span>
 						<?php if ($this->item['id']): ?>
 						<span class="message_number" id="message_success_<?php echo $this->item['id']; ?>"><?php echo $votings_count; ?></span>
 						<?php endif; if ($auth_user_id != $this->user->id): ?>
-						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo BASE_PATH; ?>www/images/<?php echo $votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>">
-						<img class="crp" id="img2_<?php echo $this->item['id']; ?>" style="display:none" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo BASE_PATH; ?>www/images/thumsup_voted.jpg" />
+						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo $this->baseUrl("www/images/" . ($votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png')); ?>">
+						<img class="crp" id="img2_<?php echo $this->item['id']; ?>" style="display:none" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo $this->baseUrl("www/images/thumsup_voted.jpg"); ?>" />
 						<div id="thumbs_up2_<?php echo $this->item['id']; ?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
 							<span id="message_success_5" style="color: rgb(51, 204, 0);">Already-Voted</span>
 						</div>
 						<?php endif; if ($auth_user_id == $this->user->id): ?>
-						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="alert('You can not vote your own post!');" src="<?php echo BASE_PATH; ?>www/images/<?php echo $votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png'; ?>" />
+						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="alert('You can not vote your own post!');" src="<?php echo $this->baseUrl("www/images/" . ($votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png')); ?>" />
 						<?php endif; ?>
 					</div>
 					<div class="post-bottom">
 						<div class="post-content"><?php echo Application_Model_News::limitNews($this->item); ?></div>
 						<?php if ($images != null): ?>
 						<div class="post-image" style="margin-top: 10px;">
-							<img onclick="openImage('<?php echo $images; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>" style="cursor: pointer;width:100%;" />
+							<img onclick="openImage('<?php echo $images; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $images); ?>" style="cursor: pointer;width:100%;" />
 						</div>
 						<?php endif; ?>
 					</div>
@@ -63,11 +63,11 @@ if ($images)
 			<?php endif; ?>
 			<span class="floatR">
 				<span style="display: block; float: left;">Share:</span>
-				<a class="crp" onclick="fbshare('<?php echo BASE_PATH; ?>tbnewsimages/<?php echo $images; ?>','<?php echo $this->item['news']; ?>','<?php echo BASE_PATH; ?>info/news/nwid/<?php echo $this->item['id']; ?>')">
-					<img src="<?php echo BASE_PATH; ?>www/images/facebook.png" style="width: 25px; height: 25px;" />
+				<a class="crp" onclick="fbshare('<?php echo $this->baseUrl("tbnewsimages/" . $images); ?>','<?php echo $this->item['news']; ?>','<?php echo $this->baseUrl("info/news/nwid/" . $this->item['id']); ?>')">
+					<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" style="width: 25px; height: 25px;" />
 				</a>
 				<a href="#" class="crp email-share">
-					<img src="<?php echo BASE_PATH; ?>www/images/email.png" style="width: 25px; height: 25px;" />
+					<img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" style="width: 25px; height: 25px;" />
 				</a>
 			</span>
 			<?php if ($auth_user_id == $this->user->id): ?>

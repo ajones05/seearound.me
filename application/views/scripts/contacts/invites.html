@@ -1,4 +1,4 @@
-<h3 class="topHdGrayB12"><img src="<?=BASE_PATH?>www/images/icn-myconn-w.gif" width="21" height="17" class="tIcn" alt="My Connections" /> Invite friends</h3>
+<h3 class="topHdGrayB12"><img src="<?php echo $this->baseUrl("www/images/icn-myconn-w.gif"); ?>" width="21" height="17" class="tIcn" alt="My Connections" /> Invite friends</h3>
 <div id="inviteMain1">
     <div class="importMessage">
         Send invitation to friends <br>
@@ -8,7 +8,7 @@
         <div style="background-color: #F1F5F8;border-radius: 8px 8px 8px 8px;padding: 80px;padding: 37px 130px 74px 24px;width: 245px;">
             <?if(isset($this->success) && $this->success > 0):?>
             <div style="font-size:12px;font-weight:bold;margin-left:-8px;padding:10px;">
-                <img src="<?=BASE_PATH?>www/images/correct.gif" /> <?//=$this->success?> Invitation sent successfully.   
+                <img src="<?php echo $this->baseUrl("www/images/correct.gif"); ?>" /> Invitation sent successfully.   
             </div>
             <?endif;?>
             <div class="fbFrndsMain" style="text-align:left;">
@@ -29,4 +29,4 @@
         </div>
     </div>
 </div>
-<script type="text/javascript" src="<?=BASE_PATH?>www/scripts/invites.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl("www/scripts/invites.js"); ?>"></script>

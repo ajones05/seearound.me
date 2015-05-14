@@ -1,7 +1,7 @@
 <?php
 
-class HomeController extends My_Controller_Action_Herespy {
-
+class HomeController extends Zend_Controller_Action
+{
     public function init() {
           /* Initialize action controller here */
          $this->view->changeLocation = false;
@@ -31,7 +31,16 @@ class HomeController extends My_Controller_Action_Herespy {
 		$this->view->user = Application_Model_User::findById(Zend_Auth::getInstance()->getIdentity()['user_id']);
 	}
 
-    public function editProfileAction() {
+    public function editProfileAction()
+	{
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
+        $this->view->user = $user;
         $this->view->myeditprofileExist = true;
         $this->view->changeLocation = true;
         $this->view->viewAllPost = true;
@@ -40,11 +49,11 @@ class HomeController extends My_Controller_Action_Herespy {
         $profileTable = new Application_Model_Profile;
         $addressTable = new Application_Model_Address;
         $returnUrl = $this->_request->getParam("url", '');
-        $this->view->user_data = $user_data = $newsFactory->getUser(array("user_data.id" => $this->auth['user_id']));
+        $this->view->user_data = $user_data = $newsFactory->getUser(array("user_data.id" => $user->id));
         if ($this->_request->isPost()) {
             $errors = array();
             $data = array();
-            $userTable->validateData($this->request, $data, $errors);
+            $userTable->validateData($this->_request, $data, $errors);
             if ($user_data->Email_id == $this->_request->getPost("Email_id")) {
                 unset($errors['Email_id']);
                 unset($data['Email_id']);
@@ -79,21 +88,21 @@ class HomeController extends My_Controller_Action_Herespy {
                 $db->beginTransaction();
 
                 try {
-                  $userTable->update($udata, $userTable->getAdapter()->quoteInto("id =?", $this->auth['user_id']));
-                    if ($prow = $profileTable->fetchRow($profileTable->select()->where("user_id =?", $this->auth['user_id']))) {
-                        $profileTable->update($pdata, $profileTable->getAdapter()->quoteInto("user_id =?", $this->auth['user_id']));
+                  $userTable->update($udata, $userTable->getAdapter()->quoteInto("id =?", $user->id));
+                    if ($prow = $profileTable->fetchRow($profileTable->select()->where("user_id =?", $user->id))) {
+                        $profileTable->update($pdata, $profileTable->getAdapter()->quoteInto("user_id =?", $user->id));
                     } else {
-                        $pdata['user_id'] = $this->auth['user_id'];
+                        $pdata['user_id'] = $user->id;
                         $prow = $profileTable->createRow($pdata);
                         $prow->save();
                     }
 
-                    if ($arow = $addressTable->fetchRow($addressTable->select()->where("user_id =?", $this->auth['user_id']))) {
+                    if ($arow = $addressTable->fetchRow($addressTable->select()->where("user_id =?", $user->id))) {
 
-                        $addressTable->update($adata, $addressTable->getAdapter()->quoteInto("user_id =?", $this->auth['user_id']));
+                        $addressTable->update($adata, $addressTable->getAdapter()->quoteInto("user_id =?", $user->id));
                     } else {
 
-                        $adata['user_id'] = $this->auth['user_id'];
+                        $adata['user_id'] = $user->id;
 
                         $arow = $addressTable->createRow($adata);
 
@@ -104,7 +113,7 @@ class HomeController extends My_Controller_Action_Herespy {
 
                     $auths = Zend_Auth::getInstance();
 
-                    $returnvalue = $newsFactory->getUser(array("user_data.id" => $this->auth['user_id']));
+                    $returnvalue = $newsFactory->getUser(array("user_data.id" => $user->id));
 
                     $authData['user_id'] = $returnvalue->id;
 
@@ -135,7 +144,7 @@ class HomeController extends My_Controller_Action_Herespy {
                     $this->_redirect($returnUrl);
                 } else {
 
-                    $this->_redirect(BASE_PATH . "home/profile");
+                    $this->_redirect($this->view->baseUrl("home/profile"));
                 }
             } else {
 
@@ -149,13 +158,20 @@ class HomeController extends My_Controller_Action_Herespy {
     }
 
     public function imageUploadAction(){
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
+
         $response = new stdClass();
         $newsFactory = new Application_Model_NewsFactory();
         if (isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST") {
-            $url = urldecode($newsFactory->imageUpload($_FILES['ImageFile']['name'], $_FILES['ImageFile']['size'], $_FILES['ImageFile']['tmp_name'], $this->auth['user_id']));
-            $response->url = BASE_PATH . $url;
+            $url = urldecode($newsFactory->imageUpload($_FILES['ImageFile']['name'], $_FILES['ImageFile']['size'], $_FILES['ImageFile']['tmp_name'], $user->id));
+            $response->url = $this->view->baseUrl($url);
             $auth = Zend_Auth::getInstance();
-            $returnvalue = $newsFactory->getUser(array("user_data.id" => $this->auth['user_id']));
+            $returnvalue = $newsFactory->getUser(array("user_data.id" => $user->id));
             $authData['user_id'] = $returnvalue->id;
             $authData['user_name'] = $returnvalue->Name;
             $authData['latitude'] = $returnvalue->latitude;
@@ -196,7 +212,7 @@ class HomeController extends My_Controller_Action_Herespy {
 		$this->view->currentPage = 'Profile';
 		$this->view->myprofileExist = true;
 		$this->view->reciever = $user_id;
-		$this->view->returnUrl = BASE_PATH . 'home/profile/user/' . $user_id;
+		$this->view->returnUrl = $this->view->baseUrl('home/profile/user/' . $user_id);
 		$this->view->profile = $user->public_profile;
 
 		if ($user_id != $auth_id)
@@ -204,7 +220,7 @@ class HomeController extends My_Controller_Action_Herespy {
 			$this->view->headScript()->appendScript('	var user_profile = ' . json_encode(array(
 				'id' => $user->id,
 				'name' => ucwords($user->Name),
-				'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 				'address' => $user->address(),
 				'lat' => $user->lat(),
 				'lng' => $user->lng(),
@@ -228,15 +244,16 @@ class HomeController extends My_Controller_Action_Herespy {
 	{
 		try
 		{
-			$data = $this->_request->getParams();
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
-			if (!Application_Model_User::checkId($this->auth['user_id'], $user))
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
 			$form = new Application_Form_News;
 
+			$data = $this->_request->getParams();
 			$data['user_id'] = $user->id;
 
 			if (!$form->isValid($data))
@@ -265,7 +282,7 @@ class HomeController extends My_Controller_Action_Herespy {
 					'user' => array(
 						'id' => $user->id,
 						'name' => $user->Name,
-						'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+						'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					),
 					'html' => My_ViewHelper::render(
 						'news/item.html',
@@ -274,7 +291,7 @@ class HomeController extends My_Controller_Action_Herespy {
 							'user' => $user,
 							'auth' => array(
 								'id' => $user->id,
-								'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+								'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 							),
 						)
 					)
@@ -385,14 +402,6 @@ class HomeController extends My_Controller_Action_Herespy {
 
 			if (count($result))
 			{
-				$auth_image = BASE_PATH . 'www/images/img-prof40x40.jpg';
-
-				if (!empty($this->auth['user_id']))
-				{
-					$auth = Application_Model_User::findById($this->auth['user_id']);
-					$auth_image = $auth->getProfileImage($auth_image);
-				}
-
 				$commentTable = new Application_Model_Comments;
 				$votingTable = new Application_Model_Voting;
 
@@ -408,7 +417,7 @@ class HomeController extends My_Controller_Action_Herespy {
 						'user' => array(
 							'id' => $user->id,
 							'name' => $user->Name,
-							'image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+							'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 						),
 						'html' => My_ViewHelper::render(
 							'news/item.html',
@@ -416,8 +425,8 @@ class HomeController extends My_Controller_Action_Herespy {
 								'item' => $row,
 								'user' => $user,
 								'auth' => array(
-									'id' => My_ArrayHelper::getProp($this->auth, 'user_id'),
-									'image' => $auth_image,
+									'id' => $user->id,
+									'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 								),
 								'votings_count' => $votingTable->findCountByNewsId($row->id),
 								'comments_count' => $commentTable->getCountByNewsId($row->id),

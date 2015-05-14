@@ -10,8 +10,8 @@
 
            <div class="fbImageMw">
                 <span>Register Here or</span>
-				<a id="facebookLogin" href="<?php echo BASE_PATH; ?>index/fb-login">
-					<img style="cursor: pointer;" src="<?=BASE_PATH?>www/images/signupFacebookButton.png" alt="Sign Up" />
+				<a id="facebookLogin" href="<?php echo $this->baseUrl("index/fb-login"); ?>">
+					<img style="cursor: pointer;" src="<?php echo $this->baseUrl("www/images/signupFacebookButton.png"); ?>" alt="Sign Up" />
 					<div class="clr"></div>
 				</a>
            </div>
@@ -26,7 +26,7 @@
 
                         <li>
 
-                            <input id="Name" name="Name" type="text" placeholder="Name" value="<?=$this->request->getParam('Name')?>" />
+                            <input id="Name" name="Name" type="text" placeholder="Name" value="<?=$this->_request->getParam('Name')?>" />
 
                         </li>
 
@@ -42,7 +42,7 @@
 
                         <li>
 
-                            <input id="Email_id" name="Email_id" type="text" placeholder="Email address" value="<?=($this->regEmail)?($this->regEmail):($this->request->getParam('Email_id'))?>" />
+                            <input id="Email_id" name="Email_id" type="text" placeholder="Email address" value="<?=($this->regEmail)?($this->regEmail):($this->_request->getParam('Email_id'))?>" />
 
                         </li>
 
@@ -97,8 +97,8 @@
                         <? endif;?>
 
 						<li>
-							<input id="Location" name="Location" readonly="true" type="text" placeholder="User Location" value="<?=$this->request->getParam('Location')?>" />
-							<img class="myLoc" src="<?=BASE_PATH?>www/images/icn-location.gif" alt="My Location" />
+							<input id="Location" name="Location" readonly="true" type="text" placeholder="User Location" value="<?=$this->_request->getParam('Location')?>" />
+							<img class="myLoc" src="<?php echo $this->baseUrl("www/images/icn-location.gif"); ?>" alt="My Location" />
 							<input type="hidden" name="RLatitude" id="RLatitude" value="<?php echo $this->RLatitude; ?>" />
 							<input type="hidden" name="RLongitude" id="RLongitude" value="<?php echo $this->RLongitude; ?>" />
 						</li>

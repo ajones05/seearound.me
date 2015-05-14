@@ -743,7 +743,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 .loginCopyArea .rightBoxArea{width:100%; text-align: center;}
 
-.users-popup{background: url('/www/images/users-popup.png') no-repeat center top; width: 732px; height: 296px; float: left; margin-left: -200px; margin-top: 75px; background-size: 85%;}
+.users-popup{background: url('../images/users-popup.png') no-repeat center top; width: 732px; height: 296px; float: left; margin-left: -200px; margin-top: 75px; background-size: 85%;}
 
 .loginCopyArea .rightBoxArea h2 { font: 700 46px 'Lato'; color: #fff; margin-top: 22px; }
 

@@ -493,7 +493,7 @@ class MobileController extends Zend_Controller_Action
 					'reciever_read' => $message->reciever_read,
 					'Name' => $user->Name,
 					'Email_id' => $user->Email_id,
-					'Profile_image' => $user->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg')
+					'Profile_image' => $user->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg'))
 				);
 			}
 
@@ -842,7 +842,7 @@ class MobileController extends Zend_Controller_Action
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
 						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
-						'Profile_image' => $owner->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg')
+						'Profile_image' => $owner->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
 				}
 			}
@@ -964,7 +964,7 @@ class MobileController extends Zend_Controller_Action
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
 						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
-						'Profile_image' => $owner->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg')
+						'Profile_image' => $owner->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
 				}
 			}

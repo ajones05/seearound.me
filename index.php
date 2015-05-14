@@ -11,11 +11,6 @@ defined('APPLICATION_PATH')
 defined('APPLICATION_ENV')
     || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'production'));
 
-// Define www directory path
-$proto = (empty($_SERVER['HTTPS'])) ? 'http' : 'https';$host  = $_SERVER['HTTP_HOST'];$folder = basename(dirname(__FILE__));
-defined('BASE_PATH')
-	|| define('BASE_PATH',  $proto.'://'.$host.'/');
-
 // Ensure library/ is on include_path
 set_include_path(implode(PATH_SEPARATOR, array(
     realpath(APPLICATION_PATH . '/../library'),

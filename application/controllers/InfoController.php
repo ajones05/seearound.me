@@ -2,18 +2,19 @@
 
 class InfoController extends My_Controller_Action_Abstract
 {
+	/**
+	 * @var	Application_Model_UserRow
+	 */
+	protected $user;
 
     public function init()
     {
-        $this->view->request = $this->request = $this->getRequest();
         $auth = Zend_Auth::getInstance();
-        $this->view->auth = $authData  = $auth->getIdentity();
+        $authData  = $auth->getIdentity();
         if(isset($authData['user_id'])) {
             $this->view->hideRight = true;
-            $this->view->isLogin = true;
         } else {
             $this->view->layout()->setLayout('login');
-            $this->view->publicProfile = true;
         }
         /* Initialize action controller here */
     }
@@ -25,6 +26,18 @@ class InfoController extends My_Controller_Action_Abstract
 	 */
     public function newsAction()
 	{
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!empty($auth['user_id']))
+		{
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('Incorrect user ID', -1);
+			}
+
+			$this->view->user = $user;
+		}
+
         $this->view->layout()->setLayout('layout');
         $this->view->hideRight = false;
         $this->view->newsDetailExist = true;
@@ -33,12 +46,12 @@ class InfoController extends My_Controller_Action_Abstract
 
 		if (!Application_Model_News::checkId($news_id, $news, 0))
         {
-			$this->_redirect(BASE_PATH);
+			$this->_redirect($this->view->baseUrl('/'));
         }
 
 		$this->view->news = $news;
 		$this->view->news_owner = $news->findDependentRowset('Application_Model_User')->current();
-		$this->view->returnUrl = BASE_PATH . 'info/news/nwid/' . $news->id;
+		$this->view->returnUrl = $this->view->baseUrl('info/news/nwid/' . $news->id);
 
 		$this->view->comentsModel = new Application_Model_Comments;
 
@@ -62,7 +75,7 @@ class InfoController extends My_Controller_Action_Abstract
 			"	var newsOwner = " . json_encode(array(
 				'address' => $this->view->news_owner->address(),
 				'name' => $this->view->news_owner->Name,
-				'image' => $this->view->news_owner->getProfileImage(BASE_PATH . 'www/images/img-prof40x40.jpg'),
+				'image' => $this->view->news_owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 			)) . ";\n")
 			->appendFile('/bower_components/jquery-loadmask/src/jquery.loadmask.js')
 			->appendFile('/bower_components/textarea-autosize/src/jquery.textarea_autosize.js')

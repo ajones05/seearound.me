@@ -89,17 +89,17 @@ text-decoration:none;
         <div id="regForm">
             <ul class="frm">
                 <li>
-                    <input id="Name" name="Email_id" type="text" placeholder="Email" value="<?=$this->request->getParam('Email_id')?>" />
+                    <input id="Name" name="Email_id" type="text" placeholder="Email" value="<?=$this->_request->getParam('Email_id')?>" />
                 </li>                  
             </ul>  
             <table cellpadding="0" width="100%">
                 <tr>
                     <td style="height: 40px; width:100%; text-align: left;">
                         <span class="errors" style="float:left;" id="err"></span>
-                        <img style="display:none;" id="loader" src="<?=BASE_PATH?>www/images/wait.gif" width="25" height="25" />
+                        <img style="display:none;" id="loader" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>" width="25" height="25" />
                     </td>
                 </tr>
-                <tr><td style="text-align: center;"><img class="crp" src="<?=BASE_PATH?>www/images/send-invite.png" id="selfInvite" style="position: relative;"/></td></tr>
+                <tr><td style="text-align: center;"><img class="crp" src="<?php echo $this->baseUrl("www/images/send-invite.png"); ?>" id="selfInvite" style="position: relative;"/></td></tr>
             </table>     
           <!--   </form> -->
         </div>
@@ -118,7 +118,7 @@ text-decoration:none;
 <!-- code for displaying popup on success -->
 <div id="popup_box">	<!-- OUR PopupBox DIV-->
     <h1 style="position:relative; top:20px; color:green;">Thank you for requesting an invite to seearound.me, we'll be sending out more soon!</h1>
-    <a id="popupBoxClose"><img src="<?=BASE_PATH?>www/images/delete-icon.png" /></a>	        
+    <a id="popupBoxClose"><img src="<?php echo $this->baseUrl("www/images/delete-icon.png"); ?>" /></a>
 </div>
 <!-- displaying popup on success code ends here -->
 <script type="text/javascript">
