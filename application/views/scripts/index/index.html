@@ -26,7 +26,7 @@
 
                         <li>
 
-                            <input id="Name" name="Name" type="text" placeholder="Name" value="<?=$this->_request->getParam('Name')?>" />
+                            <input id="Name" name="Name" type="text" placeholder="Name" value="<?php echo $this->name; ?>" />
 
                         </li>
 
@@ -42,7 +42,7 @@
 
                         <li>
 
-                            <input id="Email_id" name="Email_id" type="text" placeholder="Email address" value="<?=($this->regEmail)?($this->regEmail):($this->_request->getParam('Email_id'))?>" />
+                            <input id="Email_id" name="Email_id" type="text" placeholder="Email address" value="<?php echo $this->email; ?>" />
 
                         </li>
 
@@ -97,7 +97,7 @@
                         <? endif;?>
 
 						<li>
-							<input id="Location" name="Location" readonly="true" type="text" placeholder="User Location" value="<?=$this->_request->getParam('Location')?>" />
+							<input id="Location" name="Location" readonly="true" type="text" placeholder="User Location" value="<?php echo $this->location; ?>" />
 							<img class="myLoc" src="<?php echo $this->baseUrl("www/images/icn-location.gif"); ?>" alt="My Location" />
 							<input type="hidden" name="RLatitude" id="RLatitude" value="<?php echo $this->RLatitude; ?>" />
 							<input type="hidden" name="RLongitude" id="RLongitude" value="<?php echo $this->RLongitude; ?>" />

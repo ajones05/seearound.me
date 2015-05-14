@@ -101,6 +101,10 @@ class IndexController extends My_Controller_Action_Abstract {
 		$this->view->RLatitude = $this->_request->getPost('RLatitude', $geolocation[0]);
 		$this->view->RLongitude = $this->_request->getPost('RLongitude', $geolocation[1]);
 
+		$this->view->location = $this->_request->getParam('Location');
+		$this->view->name = $this->_request->getParam('Name');
+		$this->view->email = $this->_request->getParam('Email_id');
+
         if ($this->_request->isXmlHttpRequest()) {
 
             die(Zend_Json_Encoder::encode($response));
@@ -673,6 +677,7 @@ class IndexController extends My_Controller_Action_Abstract {
 
         }
 
+		$this->view->email = $this->_request->getPost('email');
     }
 
     
@@ -860,7 +865,6 @@ class IndexController extends My_Controller_Action_Abstract {
 
         }
 
-        
-
+		$this->view->email = $this->_request->getParam('Email_id');
     }
 }

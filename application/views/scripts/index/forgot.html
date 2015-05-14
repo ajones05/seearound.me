@@ -13,7 +13,7 @@
 				<span class="formTitle">Forgot your password? Enter your email address and hit submit to be sent a link to create a new one</span>
                 <ul class="forFormUl">
                     <li class="forFormLi">
-                        <input type="text" name="email" id="email" value="<?=$this->_request->getPost('email')?>" class="forFormInput" placeholder="Email Address" />
+                        <input type="text" name="email" id="email" value="<?php echo $this->email; ?>" class="forFormInput" placeholder="Email Address" />
 						<span style="font-size: 30px;position: absolute;right: 7px;top: 7px;">*</span>
                     </li>
                 </ul>

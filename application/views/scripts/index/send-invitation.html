@@ -89,7 +89,7 @@ text-decoration:none;
         <div id="regForm">
             <ul class="frm">
                 <li>
-                    <input id="Name" name="Email_id" type="text" placeholder="Email" value="<?=$this->_request->getParam('Email_id')?>" />
+                    <input id="Name" name="Email_id" type="text" placeholder="Email" value="<?php echo $this->email; ?>" />
                 </li>                  
             </ul>  
             <table cellpadding="0" width="100%">

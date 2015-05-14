@@ -152,6 +152,8 @@ class HomeController extends Zend_Controller_Action
             }
         }
 
+		$this->view->url = $this->_request->getParam('url');
+
 		$this->view->headScript()
 			->appendFile('/bower_components/jquery-form/jquery.form.js')
 			->appendFile('/www/scripts/customDatepicker.js');
