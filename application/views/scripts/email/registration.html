@@ -1,0 +1,6 @@
+<?php
+$url = $this->serverUrl() . $this->baseUrl("index/reg-confirm/id/" . $this->user->id . "/q/" . $this->user->Conf_code);
+?>
+<p>Welcome to SeeAround.me! I started this site as a place to see and share local news. This is a personal project and a work in progress. I hope you find this a helpful resource, but please let me know if you have any questions or run into any problems: a@seearound.me.</p>
+<p>Please use this link to verify your account: <a href="<?php echo $url; ?>"><?php echo $url; ?></a></p>
+<p>Thanks,<br />Andrew</p>

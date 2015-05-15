@@ -1,0 +1,7 @@
+<?php
+$url = $this->serverUrl() . $this->baseUrl("home/profile/user/" . $this->user->id);
+?>
+<p>
+	<?php echo $this->email; ?> is already register with seearound.me. Please visit the link below to view <?php echo $this->user->Name; ?> public profile.<br>
+	<a href="<?php echo $url; ?>"><?php echo $url; ?></a>
+</p>

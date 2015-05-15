@@ -1,6 +1,6 @@
 <?php
 
-class InfoController extends My_Controller_Action_Abstract
+class InfoController extends Zend_Controller_Action
 {
 	/**
 	 * @var	Application_Model_UserRow

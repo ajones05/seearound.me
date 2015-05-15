@@ -2,11 +2,6 @@
 
 class AdminsController extends Zend_Controller_Action
 {
-    
-    public function init() {
-        
-    }
-    
     public function indexAction()
     {
 		$auth = Zend_Auth::getInstance()->getIdentity();
@@ -19,49 +14,47 @@ class AdminsController extends Zend_Controller_Action
             $this->_redirect($this->view->baseUrl('/'));
         }
 
-		$config = Zend_Registry::get('config_global');
-        $this->view->hideRight = true;
         $response = new stdClass();
         $emailInvites  = new Application_Model_Emailinvites();
-        if($this->getRequest()->isPost()) {
-           $email = $this->getRequest()->getPost('email');
-           $status = $this->getRequest()->getPost('status');
-           $select = $emailInvites->select()->where('self_email =?', $email);
-           if($row = $emailInvites->fetchRow($select)) {
-               if($status == 'approve') {
-                    $url = $this->view->serverUrl() . $this->view->baseUrl("index/send-invitation/regType/email/q/" . $row->code);
-                    $this->to = $row->self_email;
-                    $this->subject = "seearound.me Invitation";
-                    $this->from = $config->email->from_email . ':' . $config->email->from_name;
-                    $this->view->name = $row->self_email;
 
-                    $message = "To join seearound.me, please click the link below!<br />".$url;
+        if ($this->_request->isPost()) {
+           $email = $this->_request->getPost('email');
+           $status = $this->_request->getPost('status');
 
-                    $this->view->message = "<p align='justify'>$message</p>";
-                    $this->view->adminName = "Admin";
-                    $this->view->response = "seearound.me";
-                    $this->message = $this->view->action("index","general",array());
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-                    $row->status = '1';
-                    $row->save();
-                    $response->approve = 'approved';
-               } else if($status == 'remove') {
-                   $row->delete();
-                   $response->remove = 'deleted';
-               }
-               $response->totalRows = count($emailInvites->returnEmailInvites());
-           } else {
-               $response->error = 'No record found';
-           }
-        }
-        $page = $this->getRequest()->getParam('page',1);
-        $paginator = Zend_Paginator::factory($emailInvites->returnEmailInvites());
-        $paginator->setCurrentPageNumber($page);
-        $paginator->setItemCountPerPage(10);
-        $this->view->users = $this->view->paginator = $paginator;
-        if($this->getRequest()->isXmlHttpRequest()) {
-            die(Zend_Json_Encoder::encode($response));
-        }
-    }
-    
+			$select = $emailInvites->select()->where('self_email =?', $email);
+
+			if ($row = $emailInvites->fetchRow($select)) {
+				if ($status == 'approve') {
+					My_Email::send(
+						$row->self_email,
+						'seearound.me Invitation',
+						array(
+							'template' => 'admin-invitation',
+							'assign' => array('invite' => $row)
+						)
+					);
+
+					$row->status = '1';
+					$row->save();
+					$response->approve = 'approved';
+				} else if ($status == 'remove') {
+					$row->delete();
+					$response->remove = 'deleted';
+				}
+
+			   $response->totalRows = count($emailInvites->returnEmailInvites());
+			} else {
+				$response->error = 'No record found';
+			}
+
+			$this->_helper->json($response);
+		}
+
+		$paginator = Zend_Paginator::factory($emailInvites->returnEmailInvites());
+		$paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
+		$paginator->setItemCountPerPage(10);
+
+		$this->view->users = $this->view->paginator = $paginator;
+		$this->view->hideRight = true;
+	}
 }

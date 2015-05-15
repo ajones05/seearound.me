@@ -49,65 +49,64 @@ class ContactsController extends Zend_Controller_Action
             $emailMessage = $this->_request->getPost("messageText", null);
             $emails = explode(",", $emails);
             $total = (($inviteStatusData->invite_count) >= count($emails))?(count($emails)):($inviteStatusData->invite_count); 
-            $name = $user->Name;
+
             $alreadyUser = 0;
             for ($i=1; $i <= $total; $i++) {
                 if($userRow = $userTable->getUsers(array('Email_id' => trim($emails[$i-1])))) {
                     /*
                      * Email to invited user 
                      */
-                    $url = $this->view->serverUrl() . $this->view->baseUrl("home/profile/user/".$user->id);
-                    $this->to = $emails[$i-1];
-                    $this->from = $user->Email_id.':'.$user->Name;
-                    $this->subject = "seearound.me connect request";
-                    $message = $user->Name." wants to connect with you on seearound.me. Please visit the link below to view ".$user->Name." public profile.<br><a href='$url'>$url</a>";
-                    $this->view->name = $userRow->Name;
-                    $this->view->message = "<p align='justify'>$message</p>";
-                    $this->view->adminPart = "no";
-                    $this->view->adminName = "Admin";
-                    $this->view->response = "seearound.me";
-                    $this->message = $this->view->action("index","general",array());
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
+					My_Email::send(
+						$emails[$i-1],
+						'seearound.me connect request',
+						array(
+							'template' => 'invite-1',
+							'assign' => array('user' => $user)
+						)
+					);
+
                     /*
                      * Email to login user 
                      */
-                    $url = $this->view->serverUrl() . $this->view->baseUrl("home/profile/user/".$userRow->id);
-                    $this->to = $user->Email_id;
-					$this->from = $config->email->from_email . ':' . $config->email->from_name;
-                    $this->subject = "User already registered";
-                    $message = $emails[$i-1]." is already register with seearound.me  Please visit the link below to view ".$userRow->Name." public profile.<br><a href='$url'>$url</a>";
-                    $this->view->name = $user->Name;
-                    $this->view->message = "<p align='justify'>$message</p>";
-                    $this->view->adminPart = "no";
-                    $this->view->adminName = "Admin";
-                    $this->view->response = "seearound.me";
-                    $this->message = $this->view->action("index","general",array());
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
+					My_Email::send(
+						$user->Email_id,
+						'User already registered',
+						array(
+							'template' => 'invite-2',
+							'assign' => array(
+								'user' => $userRow,
+								'email' => $emails[$i-1]
+							)
+						)
+					);
+
                     $alreadyUser++;
-                } else { 
+                } else {
                     $data = array(
                         "sender_id" => $user->id,
                         "receiver_email" => trim($emails[$i-1]),
                         "code" => $newsFactory->generateCode(),
                         "created" => date('y-m-d H:i:s')
-                    ); 
-                    $url = $this->view->serverUrl() . $this->view->baseUrl("index/send-invitation/regType/email/q/".$data['code']);
+                    );
+
                     $row[] = $emailInvites->createRow($data)->save();
-                    $this->to = $emails[$i-1];
-                    $this->from = $user->Email_id.':'.$user->Name;
-                    $this->subject = "seearound.me join request";
-                    $message = $emailMessage."<br><br>Please visit the link below to join $name.<br><a href='$url'>$url</a>"; //echo $message; exit;
-                    $this->view->name = $emails[$i-1];
-                    $this->view->message = "<p align='justify'>$message</p>";
-                    $this->view->adminPart = "no";
-                    $this->view->adminName = "Admin";
-                    $this->view->response = "seearound.me";
-                    $this->message = $this->view->action("index","general",array());
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
+
+					My_Email::send(
+						$emails[$i-1],
+						'seearound.me join request',
+						array(
+							'template' => 'invite-3',
+							'assign' => array(
+								'user' => $user,
+								'code' => $data['code'],
+								'message' => $emailMessage
+							)
+						)
+					);
+
                     $inviteStatusData->invite_count = $inviteStatusData->invite_count-1;
                     $inviteStatusData->save();  
-                }               
-                
+                }
             }
             $this->view->inviteStatus = $inviteStatus->getData(array("user_id"=>$user->id));
             $this->view->success = count($row);
@@ -242,31 +241,29 @@ class ContactsController extends Zend_Controller_Action
             $nwId = $this->_request->getPost("network_id", null);
             $reciewerRow = $tableUser->getUsers(array("Network_id"=>$nwId));
             $mailValues = $tableUser->recordForEmail($user->id, $reciewerRow->id);
-            $url = $this->view->serverUrl() . $this->view->baseUrl("home/profile/user/".$user->id);
-            $this->to = $mailValues->recieverEmail;
-            $this->from = $user->Email_id.':'.$user->Name;
-            $this->view->name = $mailValues->recieverName;
-            $this->subject = "seearound.me connect request";
-            $data = array(
+
+			My_Email::send(
+				$mailValues->recieverEmail,
+				'seearound.me connect request',
+				array(
+					'template' => 'follow',
+					'assign' => array('user' => $user)
+				)
+			);
+
+            $resultData = $tableFriends->invite(array(
                 "reciever_id" => $reciewerRow->id,
                 "sender_id" => $user->id,
                 "source" => "connect",
                 "cdate" => date("Y-m-d H:i:s"),
                 "udate" => date("Y-m-d H:i:s")
-            );
-            $resultData = $tableFriends->invite($data);
+			));
+
             if(count($resultData) > 0) {
                 $resultData['reciever_nw_id'] = $nwId;
             }
+
             $response->data = $resultData;
-            $message = $user->Name." wants to connect with you on seearound.me. Please visit the link below to view ".$user->Name." public profile.<br><a href='$url'>$url</a>";
-            
-            $this->view->message = "<p align='justify'>$message</p>";
-            $this->view->adminPart = "no";
-            $this->view->adminName = "Admin";
-            $this->view->response = "seearound.me";
-            $this->message = $this->view->action("index","general",array());
-            $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
         }
         if($this->_request->isXmlHttpRequest()) {
             die(Zend_Json_Encoder::encode($response));

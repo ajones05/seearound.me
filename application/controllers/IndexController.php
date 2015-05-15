@@ -2,7 +2,7 @@
 
 require_once ROOT_PATH . '/vendor/autoload.php';
 
-class IndexController extends My_Controller_Action_Abstract {
+class IndexController extends Zend_Controller_Action {
 
 	public function init()
 	{
@@ -63,28 +63,44 @@ class IndexController extends My_Controller_Action_Abstract {
                 $data['Conf_code'] = $newsFactory->generateCode();
                 $data['regType'] = 'herespy';
 
+                if ($row = $newsFactory->registration($data))
+				{
+					My_Email::send(
+						$row->Email_id,
+						'SeeAround.me Registration',
+						array(
+							'template' => 'registration',
+							'assign' => array('user' => $row)
+						)
+					);
 
-                if ($row = $newsFactory->registration($data)) {
+					$newsFactory = new Application_Model_NewsFactory();
+					$returnvalue = $newsFactory->loginDetail(array('email' => $data['Email_id'], 'pass' => $data['Password']));
 
-                    $this->view->activate_url = $this->view->serverUrl() . $this->view->baseUrl("index/reg-confirm/id/" . $row->id . "/q/" .
-						$row->Conf_code);
+					if ((count($returnvalue) > 0))
+					{
+						$loginStatus = new Application_Model_Loginstatus();
 
-                    // Code to sending mail to reciever
+						$loginRow = $loginStatus->setData(array(
+							"user_id" => $returnvalue->id,
+							"login_time" => date('Y-m-d H:i:s'),
+							"ip_address" => $_SERVER['REMOTE_ADDR'])
+						);
 
-                    $this->to = $row->Email_id;
+						$auth = Zend_Auth::getInstance();
 
-                    $this->subject = "SeeAround.me Registration";
-
-                    $this->from = $config->email->from_email . ':' . $config->email->from_name;
-
-                    $firstLoginResponseData = $this->firstLoginAction($data);
-
-                    $this->message = $this->view->action("confirmation", "general", array());
-
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-
-                    //@mail($to, $subject, $message, $headers);
-
+						$auth->getStorage()->write(array(
+							"user_id" => $returnvalue->id,
+							"login_id" => $loginRow->id,
+							"is_fb_login" => false,
+							"user_name" => $returnvalue->Name,
+							"user_email" => $returnvalue->Email_id,
+							"latitude" => $returnvalue->latitude,
+							"longitude" => $returnvalue->longitude,
+							"pro_image" => $returnvalue->Profile_image,
+							"address" => $returnvalue->address
+						));
+					}
 
                     $this->_redirect($this->view->baseUrl("home/index"));
                 } else {
@@ -111,61 +127,7 @@ class IndexController extends My_Controller_Action_Abstract {
             die(Zend_Json_Encoder::encode($response));
         }
     }
-    
-   
-   
-    public function firstLoginAction($data) {
 
-        $data = array('email' => $data['Email_id'], 'pass' => $data['Password']);
-
-        $newsFactory = new Application_Model_NewsFactory();
-
-        $loginStatus = new Application_Model_Loginstatus();
-
-        $inviteStatus = new Application_Model_Invitestatus();
-
-        $returnvalue = $newsFactory->loginDetail($data);
-
-        if ((count($returnvalue) > 0)) {
-
-            $response = new stdClass();
-            $auth = Zend_Auth::getInstance();
-
-            $loginRow = $loginStatus->setData(array(user_id => $returnvalue->id, login_time => date('Y-m-d H:i:s'), ip_address => $_SERVER['REMOTE_ADDR']));
-
-            $authData['user_id'] = $returnvalue->id;
-
-            $authData['login_id'] = $loginRow->id;
-
-            $authData['is_fb_login'] = false;
-
-            $authData['user_name'] = $returnvalue->Name;
-
-            $authData['user_email'] = $returnvalue->Email_id;
-
-            $authData['latitude'] = $returnvalue->latitude;
-
-            $authData['longitude'] = $returnvalue->longitude;
-
-            $authData['pro_image'] = $returnvalue->Profile_image;
-
-            $authData['address'] = $returnvalue->address;
-
-            $auth->getStorage()->write($authData);
-
-            $response->error = 0;
-            $response->redirect = $this->view->baseUrl("home");
-            return $response;
-        }
-    } 
-
-   public function profileAction(){ 
-   
-        // action body
-
-   }
-    
-    
   public function wsRegistrationAction() {
 	  $config = Zend_Registry::get('config_global');
         $response = new stdClass();
@@ -200,12 +162,12 @@ class IndexController extends My_Controller_Action_Abstract {
          }
 
           if($row = $newsFactory->mobileRegistration($data)){
-               $this->to      = $row->Email_id;
-               $this->subject = "seearound.me new Registration";
-               $this->from = $config->email->from_email . ':' . $config->email->from_name;
-               $this->message = 'Thank you for registring with us.';
-               $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-          
+				My_Email::send(
+					$row->Email_id,
+					'seearound.me new Registration',
+					array('template' => 'ws-registration')
+				);
+
                $successMessage = array('Registration Successfull');
                $successMessage = json_encode($successMessage);
                if(isset($successMessage)){
@@ -370,6 +332,32 @@ class IndexController extends My_Controller_Action_Abstract {
 		}
 
 		die(Zend_Json_Encoder::encode($response));
+	}
+
+	/**
+	 * Logout action.
+	 *
+	 * @return void
+	 */
+	public function logoutAction()
+	{
+		$auth = Zend_Auth::getInstance();
+		$data = $auth->getIdentity();
+
+		if ($data)
+		{
+			$status = Application_Model_Loginstatus::getInstance()->find($data['login_id'])->current();
+
+			if ($status)
+			{
+				$status->logout_time = date('Y-m-d H:i:s');
+				$status->save();
+			}
+
+			$auth->clearIdentity();
+		}
+
+		$this->_redirect($this->view->baseUrl('/'));
 	}
 
 	/**
@@ -635,32 +623,18 @@ class IndexController extends My_Controller_Action_Abstract {
 
                 if($row = $tableUser->getUsers(array("Email_id" => $email))) {
 
-                    $row->Status    = "inactive";
-
+                    $row->Status = "inactive";
                     $row->Conf_code = $newsFactory->generateCode();
-
                     $row->save();
 
-                    $this->to   = $row->Email_id;
-
-                    $this->from = $config->email->from_email . ':' . $config->email->from_name;
-
-                    $this->view->forgot_url  = $this->view->serverUrl() . $this->view->baseUrl("index/change-password/pc/yes/em/" .
-						urlencode($row->Email_id) . "/cd/" . urlencode($row->Conf_code));
-
-                    $this->subject = "Forgot Password";
-
-                    $this->view->name      = $row->Name;
-
-                    $this->view->adminName = "Admin";
-
-                    $this->view->response  = "seearound.me";
-
-                    $this->message         = $this->view->action("forgot-password", "general", array());
-
-                    $this->sendEmail($this->to, $this->from, $this->subject, $this->message);
-
-                    //@mail($to, $subject, $message, $headers); 
+					My_Email::send(
+						$row->Email_id,
+						'Forgot Password',
+						array(
+							'template' => 'forgot-password',
+							'assign' => array('user' => $row)
+						)
+					);
 
                     $this->view->forgotsuccess = "done";
 
