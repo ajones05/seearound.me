@@ -47,7 +47,7 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 				return $this->Profile_image;
 			}
 
-			return $this->baseUrl('uploads/' . $this->Profile_image);
+			return Zend_Controller_Front::getInstance()->getBaseUrl() . '/uploads/' . $this->Profile_image;
 		}
 
 		return $default;
@@ -603,18 +603,6 @@ class Application_Model_User extends My_Db_Table_Abstract
 
     }
 
-
-    public function isUserEmailExist($email){
-        $userTable = new Application_Model_User();
-        $select = $userTable->select()->where('Email_id =?', $email);
-        if($row = $userTable->fetchRow($select)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-      
     public function getUserProfile($userID){
         if($userID) {
             $select = $this->select()->setIntegrityCheck(false)
