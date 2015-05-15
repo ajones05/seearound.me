@@ -31,6 +31,32 @@ class HomeController extends Zend_Controller_Action
 		$this->view->user = Application_Model_User::findById(Zend_Auth::getInstance()->getIdentity()['user_id']);
 	}
 
+	/**
+	 * Logout action.
+	 *
+	 * @return void
+	 */
+	public function logoutAction()
+	{
+		$auth = Zend_Auth::getInstance();
+		$data = $auth->getIdentity();
+
+		if ($data)
+		{
+			$status = Application_Model_Loginstatus::getInstance()->find($data['login_id'])->current();
+
+			if ($status)
+			{
+				$status->logout_time = date('Y-m-d H:i:s');
+				$status->save();
+			}
+
+			$auth->clearIdentity();
+		}
+
+		$this->_redirect($this->view->baseUrl('/'));
+	}
+
     public function editProfileAction()
 	{
 		$auth = Zend_Auth::getInstance()->getIdentity();

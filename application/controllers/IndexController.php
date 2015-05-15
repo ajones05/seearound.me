@@ -8,7 +8,6 @@ class IndexController extends Zend_Controller_Action {
 	{
 		if (count(Zend_Auth::getInstance()->getIdentity()) > 0)
 		{
-			// var_dump($this->view->baseUrl("home"));exit;
 			$this->_redirect($this->view->baseUrl("home"));
 		}
 
@@ -332,32 +331,6 @@ class IndexController extends Zend_Controller_Action {
 		}
 
 		die(Zend_Json_Encoder::encode($response));
-	}
-
-	/**
-	 * Logout action.
-	 *
-	 * @return void
-	 */
-	public function logoutAction()
-	{
-		$auth = Zend_Auth::getInstance();
-		$data = $auth->getIdentity();
-
-		if ($data)
-		{
-			$status = Application_Model_Loginstatus::getInstance()->find($data['login_id'])->current();
-
-			if ($status)
-			{
-				$status->logout_time = date('Y-m-d H:i:s');
-				$status->save();
-			}
-
-			$auth->clearIdentity();
-		}
-
-		$this->_redirect($this->view->baseUrl('/'));
 	}
 
 	/**
