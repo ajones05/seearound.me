@@ -77,6 +77,8 @@ class InfoController extends Zend_Controller_Action
 				'name' => $this->view->news_owner->Name,
 				'image' => $this->view->news_owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 			)) . ";\n")
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
+			->appendFile($this->view->baseUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js'))
 			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
 			->appendFile($this->view->baseUrl('bower_components/textarea-autosize/src/jquery.textarea_autosize.js'))
 			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion));

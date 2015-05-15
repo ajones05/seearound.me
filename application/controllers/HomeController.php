@@ -14,8 +14,16 @@ class HomeController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			$this->_redirect($this->view->baseUrl('/'));
+		}
+
         $this->view->homePageExist = true;
         $this->view->changeLocation = true;
+		$this->view->user = $user;
 
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
@@ -23,12 +31,12 @@ class HomeController extends Zend_Controller_Action
 			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$this->view->headScript()
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
+			->appendFile($this->view->baseUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js'))
 			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
 			->appendFile($this->view->baseUrl('bower_components/textarea-autosize/src/jquery.textarea_autosize.js'))
 			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion))
 			->appendFile($this->view->baseUrl('www/scripts/homeindex.js?' . $mediaversion));
-
-		$this->view->user = Application_Model_User::findById(Zend_Auth::getInstance()->getIdentity()['user_id']);
 	}
 
 	/**
@@ -181,6 +189,7 @@ class HomeController extends Zend_Controller_Action
 		$this->view->url = $this->_request->getParam('url');
 
 		$this->view->headScript()
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 			->appendFile('/bower_components/jquery-form/jquery.form.js')
 			->appendFile('/www/scripts/customDatepicker.js');
     }
@@ -260,6 +269,8 @@ class HomeController extends Zend_Controller_Action
 			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$this->view->headScript()
+			->appendScript("	var	reciever_userid = " . json_encode($user_id) . ";\n")
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'));
 	}
 

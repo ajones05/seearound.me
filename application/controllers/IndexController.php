@@ -125,6 +125,9 @@ class IndexController extends Zend_Controller_Action {
 
             die(Zend_Json_Encoder::encode($response));
         }
+
+		$this->view->headScript()
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');
     }
 
   public function wsRegistrationAction() {

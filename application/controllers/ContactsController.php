@@ -331,6 +331,8 @@ class ContactsController extends Zend_Controller_Action
 			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$this->view->headScript()
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
+			->appendFile($this->view->baseUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js'))
 			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
 			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion))
 			->appendFile($this->view->baseUrl('www/scripts/friendlist.js?' . $mediaversion));
@@ -590,6 +592,9 @@ class ContactsController extends Zend_Controller_Action
         $tableFriends = new Application_Model_Friends;
         $this->view->data = $friendRows = $tableFriends->frendsList($user->id, true);
         $this->view->total = count($friendRows);
+
+		$this->view->headScript()
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');
     }
 
     public function searchAction() {

@@ -20,14 +20,11 @@ $this->headScript()
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
 		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
 		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
-		"	var	reciever_userid = " . json_encode($this->reciever) . ";\n" .
 		"	var	user_id = " . json_encode($auth ? $user->id : '') . ";\n"
 	)
-	->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 	->prependFile($this->baseUrl('bower_components/jquery/dist/jquery.min.js'))
 	->appendFile($this->baseUrl('bower_components/jquery-ui/jquery-ui.min.js'))
 	->appendFile($this->baseUrl('bower_components/jquery-validation/dist/jquery.validate.min.js'))
-	->appendFile($this->baseUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js'))
 	->appendFile($this->baseUrl('www/scripts/common.js'));
 
 $image = $this->baseUrl('www/images/img-prof40x40.jpg');
