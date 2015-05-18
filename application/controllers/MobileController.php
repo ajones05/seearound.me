@@ -69,15 +69,14 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('User is not active', -1);
 			}
 
-			$newsFactory->updateToken(md5(uniqid($user->Email_id, true)), $user->id);
+			$user->updateToken();
 
 			$loginStatus = new Application_Model_Loginstatus;
-
-			$loginRow = $loginStatus->setData(array(
+			$login_id = $loginStatus->insert(array(
 				'user_id' => $user->id,
-				'login_time' => date('Y-m-d H:i:s'),
-				'ip_address' => $_SERVER['REMOTE_ADDR']
-			));
+				'login_time' => new Zend_Db_Expr('NOW()'),
+				'ip_address' => $_SERVER['REMOTE_ADDR'])
+			);
 
 			// TODO: check
 			// Calculation for the invites counts for the login user
@@ -91,7 +90,7 @@ class MobileController extends Zend_Controller_Action
 				{
 					$loginRows = $loginStatus->sevenDaysOldData($user->id);
 					$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + floor(count($loginRows) / 5);
-					$inviteStatusRow->updated = date('Y-m-d H:i:s');
+					$inviteStatusRow->updated = new Zend_Db_Expr('NOW()');
 					$inviteStatusRow->save();
 				}
 			}
@@ -119,7 +118,7 @@ class MobileController extends Zend_Controller_Action
 					'longitude' => $user->longitude,
 					'Activities' => $user->Activities,
 					'Gender' => $user->Gender,
-					'login_id' => $loginRow->id,
+					'login_id' => $login_id,
 				)
 			);
 		}
@@ -251,18 +250,18 @@ class MobileController extends Zend_Controller_Action
 				}
 			}
 
-			$status_model = new Application_Model_Loginstatus;
+			$loginStatus = new Application_Model_Loginstatus;
 
-			$loginRow = $status_model->setData(array(
+			$login_id = $loginStatus->insert(array(
 				'user_id' => $user->id,
 				'login_time' => new Zend_Db_Expr('NOW()'),
-				'ip_address' => $_SERVER['REMOTE_ADDR']
-			));
+				'ip_address' => $_SERVER['REMOTE_ADDR'])
+			);
 
 			// TODO: ???
 			if (date('D') == 'Mon')
 			{
-				$loginRows = $status_model->sevenDaysOldData($user->id);
+				$loginRows = $loginStatus->sevenDaysOldData($user->id);
 				$inviteCount = floor(count($loginRows) / $this->credit);
 				$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $user->id));
 
@@ -277,7 +276,7 @@ class MobileController extends Zend_Controller_Action
 			$response = array(
 				'status' => 'SUCCESS',
 				'result' => array(
-					// TODO: add user data
+					'login_id' => $login_id
 				)
 			);
 		}
@@ -295,6 +294,64 @@ class MobileController extends Zend_Controller_Action
 			$response = array(
 				'status' => 'FAILED',
 				'message' => $message
+			);
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Register a user action.
+	 *
+	 * @return void
+	 */
+	public function registrationAction()
+	{
+		try
+		{
+			$form = new Application_Form_Registration;
+			$data = $this->_request->getPost();
+
+			if (!$form->isValid($data))
+			{
+				throw new RuntimeException('Validate error', -1);
+			}
+
+			$user = (new Application_Model_User)->register(
+				array_merge(
+					$form->getValues(),
+					array(
+						'Status' => 'active'
+					)
+				)
+			);
+
+			$user->updateToken();
+
+			My_Email::send(
+				$user->Email_id,
+				'seearound.me new Registration',
+				array('template' => 'ws-registration')
+			);
+
+			$login_id = (new Application_Model_Loginstatus)->insert(array(
+				'user_id' => $user->id,
+				'login_time' => new Zend_Db_Expr('NOW()'),
+				'ip_address' => $_SERVER['REMOTE_ADDR'])
+			);
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'login_id' => $login_id
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
 			);
 		}
 
@@ -425,8 +482,8 @@ class MobileController extends Zend_Controller_Action
               
               	$data['user']['sender_id']   = $senderId;
                 $data['user']['receiver_id'] = $recieverId;
-                $data['user']['created']     = date('Y-m-d H:i:s');
-                $data['user']['updated']     = date('Y-m-d H:i:s');
+                $data['user']['created']     = new Zend_Db_Expr('NOW()');
+                $data['user']['updated']     = new Zend_Db_Expr('NOW()');
                 $data['user']['is_deleted']  = 'false';
                 $data['user']['is_valid']    = 'true';
                 $data['user']['subject']     = $subject;

@@ -110,6 +110,21 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 
 		return '';
 	}
+
+	/**
+	 * Updates user token.
+	 *
+	 * @return	string
+	 */
+	public function updateToken()
+	{
+		$token = md5(uniqid($this->Email_id, true));
+
+		$this->Token = $token;
+		$this->save();
+
+		return $token;
+	}
 }
 
 /**
@@ -717,5 +732,45 @@ class Application_Model_User extends My_Db_Table_Abstract
 		);
 
 		return $result;
+	}
+
+	/**
+	 * Register a new user.
+	 *
+	 * @param	array	$data
+	 *
+	 * @return	Application_Model_UserRow
+	 */
+	public function register($data)
+	{
+		$user = $this->createRow(array(
+			'Name' => $data['name'],
+			'Email_id' => $data['email'],
+			'Password' => hash('sha256', $data['password']),
+			'Creation_date' => date('Y-m-d H:i'),
+			'Update_date' => date('Y-m-d H:i'),
+			'Conf_code' => My_ArrayHelper::getProp($data, 'Conf_code', ''),
+			'Status' => $data['Status']
+		));
+
+		$user->id = $user->save();
+
+		$inviteStausModel = new Application_Model_Invitestatus;
+		$inviteStausModel->insert(array(
+			'user_id' => $user->id,
+			'invite_count' => 10,
+			'created' => new Zend_Db_Expr('NOW()'),
+			'updated' => new Zend_Db_Expr('NOW()')
+		));
+
+		$addressModel = new Application_Model_Address;
+		$addressModel->insert(array(
+			'user_id' => $user->id,
+			'address' => $data["address"],
+			'latitude' => $data["latitude"],
+			'longitude' => $data["longitude"]
+		));
+
+		return $user;
 	}
 }

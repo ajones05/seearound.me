@@ -18,110 +18,40 @@
            <p class="fbtext">
                 *We´ll never post to facebook without your permission
            </p>
-           <div  id="regForm">
-
-                <form id="reg_form" class="form" method="post" name="reg_form">
-
-                    <ul class="frm">
-
-                        <li>
-
-                            <input id="Name" name="Name" type="text" placeholder="Name" value="<?php echo $this->name; ?>" />
-
-                        </li>
-
-                        <? if($this->errors['Name']):?>
-
-                        <span class="errors floatL" id="Name_Errors">
-
-                            <?=$this->errors['Name']?>
-
-                        </span>
-
-                        <? endif;?>
-
-                        <li>
-
-                            <input id="Email_id" name="Email_id" type="text" placeholder="Email address" value="<?php echo $this->email; ?>" />
-
-                        </li>
-
-                        <? if($this->errors['Email_id']):?>
-
-                        <span class="errors floatL" id="Name_Errors">
-
-                            <? if($emailError = explode(',' ,$this->errors['Email_id'])) :?>
-
-                                <?=$emailError[0]?>
-
-                            <?else :?>
-
-                                <?=$this->errors['Email_id']?>
-
-                            <?endif;?>
-
-                        </span>
-
-                        <? endif;?>
-
-                        <li>
-
-                            <input id="Password" name="Password" type="password" placeholder="Password" value="" />
-
-                        </li>
-
-                        <? if($this->errors['Password']):?>
-
-                        <span class="errors floatL" id="Name_Errors">
-
-                            <?=$this->errors['Password']?>
-
-                        </span>
-
-                        <? endif;?>
-
-                        <li>
-
-                            <input id="Re-password" name="Re-password" type="password" placeholder="Re-password" value="" />
-
-                        </li>
-
-                        <? if($this->errors['Re-password']):?>
-
-                        <span class="errors floatL" id="Name_Errors">
-
-                            <?=$this->errors['Re-password']?>
-
-                        </span>
-
-                        <? endif;?>
-
+			<div id="regForm">
+				<form id="reg_form" class="form" method="post" name="reg_form">
+					<ul class="frm">
 						<li>
-							<input id="Location" name="Location" readonly="true" type="text" placeholder="User Location" value="<?php echo $this->location; ?>" />
-							<img class="myLoc" src="<?php echo $this->baseUrl("www/images/icn-location.gif"); ?>" alt="My Location" />
-							<input type="hidden" name="RLatitude" id="RLatitude" value="<?php echo $this->RLatitude; ?>" />
-							<input type="hidden" name="RLongitude" id="RLongitude" value="<?php echo $this->RLongitude; ?>" />
+							<input id="Name" name="name" type="text" placeholder="Name" value="<?php echo $this->form->name->getValue(); ?>" />
+							<?php echo $this->form->name->renderErrors(); ?>
 						</li>
-
-                        <? if(isset($this->errors['Location'])):?>
-
-                        <span class="errors floatL" id="Name_Errors">
-
-                            <?=$this->errors['Location']?>
-
-                        </span>
-
-                        <? endif;?>
-                        <li class="clr"></li>
-
-                    </ul>
-                    <div class="terms">By clicking Register, you agree to the <a class="tems-of-service-popup" href="<?php echo $this->url(array(), 'terms'); ?>">Terms of Service</a><span> and </span><a class="privacy-policy-popup" href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>.</div>
- 
-                    <input type="submit" class="btnBlueRpt regSub" value="Register" style="width: 100%; padding:6px 0px 7px; background-color: #3366cc;color: #FFFFFF;" />
-
-                </form>
-
-           </div>
+						<li>
+							<input id="Email_id" name="email" type="text" placeholder="Email address" value="<?php echo $this->form->email->getValue(); ?>" />
+							<?php echo $this->form->email->renderErrors(); ?>
+						</li>
+						<li>
+							<input id="Password" name="password" type="password" placeholder="Password" value="" />
+							<?php echo $this->form->password->renderErrors(); ?>
+						</li>
+						<li>
+							<input id="Re-password" name="repassword" type="password" placeholder="Re-password" value="" />
+							<?php echo $this->form->repassword->renderErrors(); ?>
+						</li>
+						<li>
+							<input id="Location" name="address" readonly="true" type="text" placeholder="User Location" value="<?php echo $this->form->address->getValue(); ?>" />
+							<?php echo $this->form->address->renderErrors(); ?>
+							<img class="myLoc" src="<?php echo $this->baseUrl("www/images/icn-location.gif"); ?>" alt="My Location" />
+							<input type="hidden" name="latitude" id="RLatitude" value="<?php echo $this->form->latitude->getValue(); ?>" />
+							<?php echo $this->form->latitude->renderErrors(); ?>
+							<input type="hidden" name="longitude" id="RLongitude" value="<?php echo $this->form->longitude->getValue(); ?>" />
+							<?php echo $this->form->longitude->renderErrors(); ?>
+						</li>
+						<li class="clr"></li>
+					</ul>
+					<div class="terms">By clicking Register, you agree to the <a class="tems-of-service-popup" href="<?php echo $this->url(array(), 'terms'); ?>">Terms of Service</a><span> and </span><a class="privacy-policy-popup" href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>.</div>
+					<input type="submit" class="btnBlueRpt regSub" value="Register" style="width: 100%; padding:6px 0px 7px; background-color: #3366cc;color: #FFFFFF;" />
+				</form>
+			</div>
 
     </div>
 	<div class="clr"></div>
@@ -159,9 +89,9 @@ $(function(){
 				},
 				open: function(event, ui){
 					var $editForm = $('#reg_form'),
-						$addressField = $('[name=Location]', $editForm),
-						$latitudeField = $('[name=RLatitude]', $editForm),
-						$longitudeField = $('[name=RLongitude]', $editForm),
+						$addressField = $('[name=address]', $editForm),
+						$latitudeField = $('[name=latitude]', $editForm),
+						$longitudeField = $('[name=longitude]', $editForm),
 						newsAddress = $.trim($addressField.val()) !== '' ? $addressField.val() : geoipaddress,
 						$editAddress = $('[name=address]', event.target)
 							.val(newsAddress)

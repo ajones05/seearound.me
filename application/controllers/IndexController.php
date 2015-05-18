@@ -14,10 +14,14 @@ class IndexController extends Zend_Controller_Action {
 		$this->credit = 5;
 	}
 
-    public function indexAction() {
-		$config = Zend_Registry::get('config_global');
-		$bootstrap = $this->getInvokeArg('bootstrap');
-		$userAgent = $bootstrap->getResource('useragent');
+	/**
+	 * Index action.
+	 *
+	 * @return void
+	 */
+	public function indexAction()
+	{
+		$userAgent = $this->getInvokeArg('bootstrap')->getResource('useragent');
 		$userAgent->getDevice();
 
 		if ($userAgent->getBrowserType() === 'mobile')
@@ -28,201 +32,91 @@ class IndexController extends Zend_Controller_Action {
 			return true;
 		}
 
-        $this->view->layout()->setLayout('login');
+		$form = new Application_Form_Registration;
 
-        $response = new stdClass();
+        $form->addElement(
+			'password',
+			'repassword',
+			array(
+				'required' => true,
+				'filters' => array('StringTrim'),
+				'validators' => array(
+					array('stringLength', false, array(1, 50)),
+					array('Identical', false, array('token' => 'password'))
+				)
+			)
+		);
 
-        $request = $this->getRequest();
+		if ($this->_request->isPost())
+		{
+			$data = $this->_request->getPost();
 
-        $userTable = new Application_Model_User();
+			if ($form->isValid($data))
+			{
+				$newsFactory = new Application_Model_NewsFactory;
 
-        $emailInvites = new Application_Model_Emailinvites();
-
-        $newsFactory = new Application_Model_NewsFactory();
-
-        $errors = array();
-
-        $data = array();
-
-        if ($this->_request->isPost()) {
-          
-            $userTable->validateData($request, $data, $errors);
-
-            if (empty($errors)) {
-
-
-                $data['Password'] = hash('sha256', $data['Password']);
-
-                $data['address']  = $data['Location'];
-
-                $data['latitude']  = $request->getParam('RLatitude');
-
-                $data['longitude'] = $request->getParam('RLongitude');
-
-                $data['Conf_code'] = $newsFactory->generateCode();
-                $data['regType'] = 'herespy';
-
-                if ($row = $newsFactory->registration($data))
-				{
-					My_Email::send(
-						$row->Email_id,
-						'SeeAround.me Registration',
+				$user = (new Application_Model_User)->register(
+					array_merge(
+						$form->getValues(),
 						array(
-							'template' => 'registration',
-							'assign' => array('user' => $row)
+							'Conf_code' => $newsFactory->generateCode(),
+							'Status' => 'inactive'
 						)
-					);
+					)
+				);
 
-					$newsFactory = new Application_Model_NewsFactory();
-					$returnvalue = $newsFactory->loginDetail(array('email' => $data['Email_id'], 'pass' => $data['Password']));
+				My_Email::send(
+					$row->Email_id,
+					'SeeAround.me Registration',
+					array(
+						'template' => 'registration',
+						'assign' => array('user' => $user)
+					)
+				);
 
-					if ((count($returnvalue) > 0))
-					{
-						$loginStatus = new Application_Model_Loginstatus();
+				$loginStatus = new Application_Model_Loginstatus();
 
-						$loginRow = $loginStatus->setData(array(
-							"user_id" => $returnvalue->id,
-							"login_time" => date('Y-m-d H:i:s'),
-							"ip_address" => $_SERVER['REMOTE_ADDR'])
-						);
+				$loginRow = $loginStatus->setData(array(
+					"user_id" => $user->id,
+					"login_time" => new Zend_Db_Expr('NOW()'),
+					"ip_address" => $_SERVER['REMOTE_ADDR'])
+				);
 
-						$auth = Zend_Auth::getInstance();
+				$auth = Zend_Auth::getInstance();
 
-						$auth->getStorage()->write(array(
-							"user_id" => $returnvalue->id,
-							"login_id" => $loginRow->id,
-							"is_fb_login" => false,
-							"user_name" => $returnvalue->Name,
-							"user_email" => $returnvalue->Email_id,
-							"latitude" => $returnvalue->latitude,
-							"longitude" => $returnvalue->longitude,
-							"pro_image" => $returnvalue->Profile_image,
-							"address" => $returnvalue->address
-						));
-					}
+				$auth->getStorage()->write(array(
+					"user_id" => $user->id,
+					"login_id" => $loginRow->id,
+					"is_fb_login" => false,
+					"user_name" => $user->Name,
+					"user_email" => $user->Email_id,
+					"latitude" => $user->lat(),
+					"longitude" => $user->lng(),
+					"address" => $user->address()
+				));
 
-                    $this->_redirect($this->view->baseUrl("home/index"));
-                } else {
-
-                    $this->view->errors = "errors";
-                }
-            } else {
-
-                $this->view->errors = $errors;
-            }
-        }
+				$this->_redirect($this->view->baseUrl("home/index"));
+			}
+		}
 
 		$geolocation = My_Ip::geolocation();
 
-		$this->view->RLatitude = $this->_request->getPost('RLatitude', $geolocation[0]);
-		$this->view->RLongitude = $this->_request->getPost('RLongitude', $geolocation[1]);
+		if ($form->latitude->getValue() == '')
+		{
+			$form->latitude->setValue($geolocation[0]);
+		}
 
-		$this->view->location = $this->_request->getParam('Location');
-		$this->view->name = $this->_request->getParam('Name');
-		$this->view->email = $this->_request->getParam('Email_id');
+		if ($form->longitude->getValue() == '')
+		{
+			$form->longitude->setValue($geolocation[1]);
+		}
 
-        if ($this->_request->isXmlHttpRequest()) {
-
-            die(Zend_Json_Encoder::encode($response));
-        }
+		$this->view->layout()->setLayout('login');
+		$this->view->form = $form;
 
 		$this->view->headScript()
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');
-    }
-
-  public function wsRegistrationAction() {
-	  $config = Zend_Registry::get('config_global');
-        $response = new stdClass();
-        $request  = $this->getRequest();
-        $userTable    = new Application_Model_User();
-        $emailInvites = new Application_Model_Emailinvites();
-        $newsFactory  = new Application_Model_NewsFactory();
-        $loginStatus = new Application_Model_Loginstatus();
-        $inviteStatus = new Application_Model_Invitestatus();
-        
-
-          $data = array();
-         
-           $data['Name'] = $_REQUEST['Name'];
-           $data['Email_id'] = $_REQUEST['Email_id'];
-           $data['Password'] = md5($_REQUEST['Password']);
-           $data['Location'] = $_REQUEST['Location'];
-           $data['address'] = $_REQUEST['address'];
-           $data['latitude'] = $_REQUEST['latitude'];
-           $data['longitude'] = $_REQUEST['longitude'];
-           $data['Conf_code'] = '';
-           $data['regType'] = 'herespy';
-           $data['Status'] = 'active'; 
-
-         
-         if($userTable->isUserEmailExist(trim($data['Email_id']))){
-                 $emailAlreadyExist = new stdClass();
-                 $emailAlreadyExist->status = "SUCCESS";
-                 $emailAlreadyExist->message= "User with this Email already exists";
-                 $emailAlreadyExist->result = "No Result";
-                 echo(json_encode($emailAlreadyExist)); exit;
-         }
-
-          if($row = $newsFactory->mobileRegistration($data)){
-				My_Email::send(
-					$row->Email_id,
-					'seearound.me new Registration',
-					array('template' => 'ws-registration')
-				);
-
-               $successMessage = array('Registration Successfull');
-               $successMessage = json_encode($successMessage);
-               if(isset($successMessage)){
-                     $data1   = array();
-                     $data1['email'] =  $data['Email_id'];
-                     $data1['pass']  =  $data['Password'];
-                     $getUserId = $newsFactory->getUserId($data1);
-                      
-                     /*If login succesful then create a token */
-                      $token = md5(uniqid($username,true));
-                       try{ 
-                         $tokenUpdation = $newsFactory->updateToken($token,$getUserId['id']);
-                       } catch(Exception $e) {
-                         print_r($e);
-                       }
-                        
-                     /*End Token creation */
-                      $returnvalue = array();
-                      $returnvalue = $newsFactory->loginDetail($data1);
-                      if((count($returnvalue) > 0) && ($returnvalue->Status == "active")) {
-                      $loginRow = $loginStatus->setData(array(user_id=>$returnvalue->id, login_time=>date('Y-m-d H:i:s'), ip_address=>$_SERVER['REMOTE_ADDR'])); 
-                      $returnvalue  = $returnvalue->toArray();
-                      $returnvalue['login_id'] =  $loginRow->id;
-                     // die(Zend_Json_Encoder::encode($returnvalue));
-                      $response = new stdClass();
-                      $response->status  = "SUCCESS";
-                      $response->message = "Registration Successfull";
-                      $response->result  = $returnvalue; 
-                      echo(json_encode($response)); exit;
-                    
-                    } else {
-                       /* $failureMessage = array('Not Authenticated');
-                          $failureMessage = json_encode($failureMessage);
-                          print_r($failureMessage); exit; */
-                        $failureMessage = new stdClass();
-                        $failureMessage->status = "FAILED";
-                        $failureMessage->message= "User Not Authenticated";
-                        $failureMessage->result = $returnvalue;
-                        echo(json_encode($failureMessage)); exit;
-                    }
-
-                }
-           } else {
-              /* $failureMessage = array('Registration Not Successfull');
-                 $failureMessage = json_encode($failureMessage);
-                 print_r($failureMessage); exit; */
-                 $failureMessage = new stdClass();
-                 $failureMessage->status = "FAILED";
-                 $failureMessage->message= "Registration Not Successfull";
-                 $failureMessage->result = "No Result";
-                 echo(json_encode($failureMessage)); exit;
-           }
-     }
+	}
 
 	/**
 	 * Login action.
@@ -283,7 +177,6 @@ class IndexController extends Zend_Controller_Action {
 					'user_email' => $returnvalue->Email_id,
 					'latitude' => $returnvalue->latitude,
 					'longitude' => $returnvalue->longitude,
-					'pro_image' => $returnvalue->Profile_image,
 					'address' => $returnvalue->address
 				));
 
@@ -469,7 +362,6 @@ class IndexController extends Zend_Controller_Action {
 			'user_email' => $user->Email_id,
 			'latitude' => $user->lat(),
 			'longitude' => $user->lng(),
-			'pro_image' => $user->Profile_image,
 			'address' => $user->address(),
 			'network_id' => $user->Network_id
 		));
@@ -751,7 +643,7 @@ class IndexController extends Zend_Controller_Action {
 
                     'self_email'    => $email,
 
-                    'created'       => date('Y-m-d H:i:s')
+                    'created'       => new Zend_Db_Expr('NOW()')
 
                 );	
 

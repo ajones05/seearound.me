@@ -161,8 +161,6 @@ class HomeController extends Zend_Controller_Action
 
                     $authData['longitude'] = $returnvalue->longitude;
 
-                    $authData['pro_image'] = $returnvalue->Profile_image;
-
                     $authData['address'] = $returnvalue->address;
 
                     $auths->getStorage()->write($authData);
@@ -213,7 +211,6 @@ class HomeController extends Zend_Controller_Action
             $authData['user_name'] = $returnvalue->Name;
             $authData['latitude'] = $returnvalue->latitude;
             $authData['longitude'] = $returnvalue->longitude;
-            $authData['pro_image'] = $returnvalue->Profile_image;
             $authData['address'] = $returnvalue->address;
             $auth->getStorage()->write($authData);
         }
@@ -732,8 +729,6 @@ class HomeController extends Zend_Controller_Action
             $authData['user_name'] = $auth['user_name'];
 
             $authData['user_id'] = $auth['user_id'];
-
-            $authData['pro_image'] = $auth['pro_image'];
 
             $authData['address'] = $addressRow->address;
 
