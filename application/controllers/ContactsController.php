@@ -272,58 +272,16 @@ class ContactsController extends Zend_Controller_Action
         }
     }
     
-    public function friendsListAction()
-    {
-        $this->view->friendListExist =true;
-
-        $response = new stdClass();
-        $tableUser = new Application_Model_User();
-        $tableFriends = new Application_Model_Friends();
-        $inviteStatus = new Application_Model_Invitestatus();
-        $limit = 5;
-        $page = $this->_request->getParam("page", 0);
-        $offset = $page*$limit;
-
+	public function friendsListAction()
+	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
-        if($auth) {
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
-			}
 
-            $frlist = $tableFriends->getTotalFriends($user->id, $limit, $offset);
+		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		{
+			throw new RuntimeException('You are not authorized to access this action', -1);
+		}
 
-			if (count($frlist))
-			{
-				foreach ($frlist as $row)
-				{
-					// TODO: change $row->findDependentRowset('Application_Model_User', 'Receiver')->current()...
-					$_user = $tableUser->findById($row->id);
-
-					$response->frlist[] = array(
-						'Profile_image' => $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-						'id' => $_user->id,
-						'Name' => $_user->Name,
-						'address' => $_user->address(),
-						'latitude' => $_user->lat(),
-						'longitude' => $_user->lng()
-					);
-				}
-			}
-			
-            $more = $tableFriends->getTotalFriends($user->id, $limit, $offset+$limit);
-            $this->view->inviteStatus = $inviteStatus->getData(array('user_id'=>$user->id));
-        } 
-        if($this->_request->isXmlHttpRequest()) {
-            $response->more = count($more);
-            $response->page = $page+1;
-
-			$this->_helper->json($response);
-        } else {
-			$this->view->more = count($more);
-            $this->view->frlist = $frlist->toArray();
-            $this->view->page = $page+1;
-        }
+		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id);
 
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
@@ -332,10 +290,63 @@ class ContactsController extends Zend_Controller_Action
 
 		$this->view->headScript()
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
-			->appendFile($this->view->baseUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js'))
 			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
-			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion))
+			->appendScript("	var friends_count = " . $friends_count . ";\n")
 			->appendFile($this->view->baseUrl('www/scripts/friendlist.js?' . $mediaversion));
+
+		$this->view->friendListExist = true;
+		$this->view->friends_count = $friends_count;
+	}
+
+	public function friendsListLoadAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$response = array('status' => 1);
+
+			$tableFriends = new Application_Model_Friends;
+
+			$offset = $this->_request->getPost("offset", 0);
+
+			$friends = $tableFriends->findAllByUserId($user->id, 5, $offset);
+
+			if (count($friends))
+			{
+				$tableUser = new Application_Model_User();
+
+				foreach ($friends as $friend)
+				{
+					$_user = $friend->reciever_id == $user->id ?
+						$friend->findDependentRowset('Application_Model_User', 'FriendSender')->current() :
+						$friend->findDependentRowset('Application_Model_User', 'FriendReceiver')->current();
+
+					$response['friends'][] = array(
+						'id' => $_user->id,
+						'image' => $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						'name' => $_user->Name,
+						'address' => $_user->address(),
+						'latitude' => $_user->lat(),
+						'longitude' => $_user->lng()
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_helper->json($response);
 	}
 
 	/**
@@ -552,7 +563,7 @@ class ContactsController extends Zend_Controller_Action
             $response->total = count($friendRow);
             $response->msg = $msgRow;
             $response->msgTotal = count($msgRow);
-            $response->totalFriends = count( $tableFriends->getTotalFriends($user->id));
+            $response->totalFriends = $tableFriends->getCountByUserId($user->id);
         }
         die(Zend_Json_Encoder::encode($response));
     }
@@ -597,35 +608,65 @@ class ContactsController extends Zend_Controller_Action
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');
     }
 
-    public function searchAction() {
-        $response = new stdClass();
-        $newsFactory = new Application_Model_NewsFactory;
-        $data = array();
-        $resultRows = array();
-        if($this->_request->isPost() || $this->_request->isGet()) {
-            $searchKey = $this->_request->getParam('search', null);
-            if($searchKey != null) {
-                if(strpos($searchKey, "@")){
-                    $data['Email_id'] = $searchKey;
-                }else {
-                    $data['Name'] = $searchKey;
-                }
-                $resultRows = $newsFactory->searchUsers($data, true);
-                if($this->_request->isXmlHttpRequest()) {
-                    $response->success = $resultRows->toArray();
-                    die(Zend_Json_Encoder::encode($response));
-                }else {
-                    $this->view->suceess = $resultRows->toArray();
-                }
-            }else {
-                if($this->_request->isXmlHttpRequest()) {
-                    $response->error = $resultRows;
-                    die(Zend_Json_Encoder::encode($response));
-                }else {
-                    $this->view->error = $resultRows;
-                }
-            }
-        }
-    }   
-    
+	public function searchAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$search = $this->_request->getParam('search', null);
+			
+			if (!strlen($search))
+			{
+				throw new RuntimeException('Incorrect search keyword', -1);
+			}
+
+			$response = array('status' => 1);
+
+			$userModel = new Application_Model_User;
+			$query = $userModel->select();
+
+			if (strpos($search, '@') !== false)
+			{
+				$query->where("Email_id LIKE ?", '%' . $search . '%');
+			}
+			else
+			{
+				$query->where("Name LIKE ?", '%' . $search . '%');
+			}
+
+			$result = $userModel->fetchAll(
+				$query
+					->where('id !=?', $user->id)
+					->order("Name")
+			);
+
+			if (count($result))
+			{
+				foreach ($result as $_user)
+				{
+					$response['result'][] = array(
+						'id' => $_user->id,
+						'name' => $_user->Name,
+						'image' => $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						'address' => $_user->address()
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_helper->json($response);
+	}
 }

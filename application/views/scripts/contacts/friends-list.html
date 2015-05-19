@@ -1,97 +1,33 @@
 <div class="listHight" id="frindsListMain" style="width:100%;">
-    <ul class="connListSecTopNav">
-
-        <li class="txtBold">
-             
-            <div class="txtbold-top"><span class="hdB15">  Invite your friends by </span></div>
-            <div class="txtBold-bottom">
-                <a class="hypDecNone" href="<?php echo $this->baseUrl("contacts/invites"); ?>">
-
-                    <img style="margin-right: 25px;" src="<?php echo $this->baseUrl("www/images/email_big.png"); ?>"  alt="Facebook" />
-
-                </a>
-
-                <span>Or</span>  
-
-                <a class="hypDecNone" href="<?php echo $this->baseUrl("contacts"); ?>">
-
-                    <img style="margin-left: 25px;" src="<?php echo $this->baseUrl("www/images/btn-fblogo.gif"); ?>"  alt="Facebook" />
-
-                </a>
-
-            </div>
-
-            <?php if(isset($this->inviteStatus->invite_count)) { ?>
-
-            <!--<span style="color: red;font-size: 12px;">*You have <label id="invitationTotal" style="font-size: 13px;font-weight: bold;"><?=$this->inviteStatus->invite_count?></label> invitations remaining</span>-->
-
-           <?php } ?>
-
-        </li>
-
-        <li class="searchBar">
-
-            <div class="hdB15" style="display: inline-block; float: left; margin-top: 7px; font-size: 14px;"> Or find people already on SeeAround.me</div>
-
-            <div style="float:left; position:relative;">
-            
-                <input name="search" id="search" placeholder="Search People..." type="text" value="" />
-
-                <img class="search-btn" src="<?php echo $this->baseUrl("www/images/icn-search.png"); ?>" alt="Search" />
-
-                <img id="sacrchWait" class="searchWait" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>"/>
-
-            </div>
-            <div class="clr"></div>
-        </li>
-
-    </ul>
-	<div class="clr"></div>
-
-    <?if(count($this->frlist) > 0) :?>
-
-    <div id="friendList" class="invtFrndList">
-        <p class="invtFrndList-title">My friends</p>
-    </div>
-
-    <?else:?>
-
-    <div class="connListSec">
-
-        <div class="connList">
-
-            <ul class="connRow">
-
-                <li></li>
-
-                <li class="name">No connection found.</li>
-
-                <li class="adrs"></li>
-
-            </ul>
+	<ul class="connListSecTopNav">
+		<li class="txtBold">
+			<div class="txtbold-top"><span class="hdB15">Invite your friends by</span></div>
+			<div class="txtBold-bottom">
+				<a class="hypDecNone" href="<?php echo $this->baseUrl("contacts/invites"); ?>">
+					<img style="margin-right: 25px;" src="<?php echo $this->baseUrl("www/images/email_big.png"); ?>" alt="Facebook" />
+				</a>
+				<span>Or</span>  
+				<a class="hypDecNone" href="<?php echo $this->baseUrl("contacts"); ?>">
+					<img style="margin-left: 25px;" src="<?php echo $this->baseUrl("www/images/btn-fblogo.gif"); ?>" alt="Facebook" />
+				</a>
+			</div>
+		</li>
+		<li class="searchBar">
+			<div class="hdB15" style="display: inline-block; float: left; margin-top: 7px; font-size: 14px;">Or find people already on SeeAround.me</div>
+			<div style="float:left; position:relative;">
+				<input name="search" id="search" placeholder="Search People..." type="text" value="" />
+				<img class="search-btn" src="<?php echo $this->baseUrl("www/images/icn-search.png"); ?>" alt="Search" />
+				<img id="sacrchWait" class="searchWait" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>"/>
+			</div>
 			<div class="clr"></div>
-        </div>
-
-    </div>
-
-    <?endif;?> 
-
+		</li>
+	</ul>
+	<div class="clr"></div>
+	<?php if ($this->friends_count > 0): ?>
+	<div id="friendList" class="invtFrndList">
+		<p class="invtFrndList-title">My friends</p>
+	</div>
+	<?php else: ?>
+	<div class="connListSec">No connection found</div>
+	<?php endif; ?> 
 </div>
-
-<?if($this->more > 0) :?>
-
-<div id="pagingDiv">	
-
-    <div class="row show-grid">
-
-        <div align="center" onclick="moreFriends(<?=$this->page?>)" class="postClass_after">
-
-            <label id="moreText" style="margin-left:-254px;">More</label><img id="sacrchWait2" class="searchWait" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>"/>
-
-        </div>
-
-    </div>
-
-</div>
-
-<?endif;?>

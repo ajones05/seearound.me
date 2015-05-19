@@ -145,7 +145,8 @@ class Application_Model_User extends My_Db_Table_Abstract
 		'Application_Model_News',
 		'Application_Model_Comments',
 		'Application_Model_Address',
-		'Application_Model_Message'
+		'Application_Model_Message',
+		'Application_Model_Friends'
 	);
 
 	protected $_referenceMap = array(
@@ -167,6 +168,16 @@ class Application_Model_User extends My_Db_Table_Abstract
 		'Sender' => array(
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Message',
+			'refColumns' => 'sender_id'
+		),
+		'FriendReceiver' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_Friends',
+			'refColumns' => 'reciever_id'
+		),
+		'FriendSender' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_Friends',
 			'refColumns' => 'sender_id'
 		)
 	); 

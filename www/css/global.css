@@ -323,17 +323,10 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .viewProfDtl li.title{float:left;font:bold 12px tahoma;color:#6c6c6c; margin-top:10px;}
 
-.connListSec{}
-
-.connList{border-bottom:1px solid #e7ebed;}
-
-.connRow{margin-left:20px;}
-
-.connRow li{float:left; margin:10px 15px 0 0; padding-bottom:10px;}
-
-.connRow li.name{float:left;font:normal 15px tahoma; margin:12px 10px 0 0;width:240px;}
-
-.connRow li.adrs{float:right;font-size:11px; margin:10px 10px 0 0; width:100px; text-align:right;color:#7ca9d2;}
+.connListSec {
+	font: normal 15px tahoma;
+	text-align: center;
+}
 
 .connListSecTopNav { margin-bottom: 15px;}
 
@@ -889,20 +882,19 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 }
 
-.postClass_after{
-
-    background: none repeat scroll 0 0 #F1F5F8;
-
-    border: 1px solid #F1F5F8;
-
+.postClass_after {
+    background-color: #F1F5F8;
     cursor: pointer;
-
-    margin-left: -40%;
-
-    padding: 8px;
-
-    width: 155%;
-
+    padding: 9px;
+	text-align: center;
+	position: relative;
+}
+.postClass_after > img {
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	right: 6px;
+	top: 6px;
 }
 
 .textAreaClass{
@@ -1096,30 +1088,14 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 }
 
-.searchWait{
-
-    
-    width: 20px;
-
-    height: 20px;
-
-    display: none;
-    
-    position: absolute;
-
-    top: 7px;
-
-    right: -25px;
-
+.searchWait {
+	width: 20px;
+	height: 20px;
+	display: none;
+	position: absolute;
+	top: 7px;
+	right: -25px;
 }
-
-
-
-/* .scrpBox:hover{
-
-    box-shadow: 1px 1px 2px 2px #888888;
-
-} */
 
 .sliderBackground {
 	background: none repeat scroll 0 0 #fff;

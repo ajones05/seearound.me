@@ -1,4 +1,4 @@
-var map, infowindow;
+var map, infowindow, markers = {};
 
 $(function(){
 	map = new google.maps.Map($('#map_canvas')[0], {
@@ -15,152 +15,174 @@ $(function(){
 		mapTypeId: google.maps.MapTypeId.ROADMAP
 	});
 
-	var marker = new google.maps.Marker({
-		position: map.getCenter(),
-		map: map,
-		icon: baseUrl + 'www/images/icons/icon_1.png'
+	google.maps.event.addListenerOnce(map, 'idle', function(){
+		var marker = new google.maps.Marker({
+			position: map.getCenter(),
+			map: map,
+			icon: baseUrl + 'www/images/icons/icon_1.png'
+		});
+
+		infowindow = new google.maps.InfoWindow({
+			content: userAddressTooltip(userAddress, imagePath)
+		});
+
+		infowindow.open(map, marker);
 	});
 
-	infowindow = new google.maps.InfoWindow({
-		content: userAddressTooltip(userAddress, imagePath)
-	});
-
-	infowindow.open(map, marker);
-
-	moreFriends(0,'OTHER');
 	setHeight('.eqlCH');
 
-        $("#search")
-			.val('')
-			.autocomplete({
-            minLength: 1,
-            source: function (request, response) {
-            $("#sacrchWait").show();
-            $.ajax({
-                url: baseUrl+"contacts/search",
-                dataType: "json",
-                data: {            
-                    search: request.term
-                },
-                success: function (data) {
-                    $("#sacrchWait").hide();
-                    response(data.success);
-                }
-                });
-            },
-            focus: function (event, ui) {
-            if (ui.item.id < 0)
-                return false;
-            $("#search").val(ui.item.Name);
-                return false;
-            },
-            select: function (event, ui) {
-               //alert(11);
-                if (ui.item.id < 0)
-                    return false;        
-                window.location.href = baseUrl+"home/profile/user/"+ui.item.id;    
-                //return false;
-            }
-        })
-        .data("ui-autocomplete")._renderItem = function (ul, item) {
-            var imgsrc ="";
-            var address = "";
-            if(item.Profile_image) {
-                if(item.Profile_image.indexOf("://") > 0) {
-                    imgsrc = item.Profile_image;
-                }else {
-                    imgsrc = baseUrl+"uploads/"+item.Profile_image;
-                }
-            } else {
-                imgsrc = baseUrl+"www/images/img-prof40x40.jpg";
-            } 
-            if(item.address != null) {
-                address = item.address;
-            }
-            return $("<li></li>")
-            .data("item.autocomplete", item)
-            .append("<a><div class='ui_image'><img height='50' width='50' src='"+imgsrc+"' /></div><div class='ui_main_text'><span class='ui_name'>"+ item.Name +"</span><br><span class='ui_address'>"+ address +"</span></div></a>")
-            .appendTo(ul);
-        };
+	$("#search")
+		.val('')
+		.autocomplete({
+			minLength: 1,
+			source: function (request, callback){
+				$("#sacrchWait").show();
+				
+				$.ajax({
+					url: baseUrl + 'contacts/search',
+					data: {search: request.term},
+					type: 'POST',
+					dataType: 'json'
+				}).done(function(response){
+					if (response && response.status){
+						callback(response.result);
+					} else if (response){
+						alert(response.error.message);
+					} else {
+						alert(ERROR_MESSAGE);
+					}
+
+					$("#sacrchWait").hide();
+				}).fail(function(jqXHR, textStatus){
+					alert(textStatus);
+					$("#sacrchWait").hide();
+				});
+			},
+			focus: function (event, ui){
+				$("#search").val(ui.item.name);
+				return false;
+			},
+			select: function (event, ui){
+				window.location.href = baseUrl + "home/profile/user/" + ui.item.id;
+			}
+		})
+		.data("ui-autocomplete")._renderItem = function (ul, item){
+			return $("<li/>")
+				.data("item.autocomplete", item)
+				.append(
+					$('<a/>').append(
+						$('<div/>', {'class': 'ui_image'}).append($('<img/>', {height: 50, width: 50, src: item.image})),
+						$('<div/>', {'class': 'ui_main_text'}).append(
+							$('<span/>', {'class': 'ui_name'}).text(item.name),
+							$('<br/>'),
+							$('<span/>', {'class': 'ui_address'}).text(item.address)
+						)
+					)
+				)
+				.appendTo(ul);
+		};
+
+	if ($('#friendList').size()){
+		moreFriends();
+	}
 });
 
-    function moreFriends(page,type){
-        $("#sacrchWait2").toggle();
-        $("#moreText").toggle();
-        $.ajax({
-            url : baseUrl+'contacts/friends-list',
-            type : "post",
-            data : {page:page},
-            success : function(data) {
-                data = $.parseJSON(data);
-                if(data.more > 0) {
-                    var pageHtml = '<div class="row show-grid">'+
-                        '<div align="center" onclick=moreFriends('+data.page+',"OTHER") class="postClass_after">'+
-                            '<lable id="moreText">More</lable><img id="sacrchWait2" class="searchWait" src="'+baseUrl+'www/images/wait.gif"/>'+
-                        '</div>'+
-                    '</div>';
-                    $("#pagingDiv").html(pageHtml);
-                } else {
-                    $("#pagingDiv").toggle();
-                }
+function moreFriends(){
+	var offset = $('#friendList > .invtFrndList').size();
 
-                if (data && data.frlist){
-                    for (var x in data.frlist){
-						$("#friendList").append(
-							$('<div/>', {'class': 'invtFrndList', 'id': 'user-' + data.frlist[x].id}).append(
-								$('<ul/>', {'class': 'invtFrndRow'}).append(
-									$('<li/>', {'class': 'img'}).append(
-										$('<a/>', {href: baseUrl + 'home/profile/user/' + data.frlist[x].id}).append(
-											$('<img/>', {src: data.frlist[x].Profile_image})
-										)
-									),
-									$('<li/>', {'class': 'name'}).append(
-										data.frlist[x].Name,
-										$('<span/>', {'class': 'loc'}).text(data.frlist[x].address)
-									),
-									$('<li/>', {'class': 'message btnCol'}).append(
-										$('<img/>', {src: baseUrl + 'www/images/envelope-icon.gif'}).click(function(){
-											userMessageDialog($(this).closest('.invtFrndList').attr('id').replace('user-', ''));
-										})
-									),
-									$('<li/>', {'class': 'delete btnCol'}).append(
-										$('<img/>', {src: baseUrl + 'www/images/delete-icon.png'}).click(function(){
-											var $target = $(this).closest('.invtFrndList');
-											deleteFriend($target.attr('id').replace('user-', ''), $target);
-										})
-									),
-									$('<div/>', {'class': 'clr'})
-								),
-								$('<div/>', {'class': 'clr'})
+	$.ajax({
+		url: baseUrl + 'contacts/friends-list-load',
+		data: {offset: offset},
+		type: 'POST',
+		dataType: 'json'
+	}).done(function(response){
+		if (response && response.status){
+			$('.postClass_after').remove();
+
+			if (!response.friends){
+				return false;
+			}
+
+			for (var x in response.friends){
+				$("#friendList").append(
+					$('<div/>', {'class': 'invtFrndList', 'id': 'user-' + response.friends[x].id}).append(
+						$('<ul/>', {'class': 'invtFrndRow'}).append(
+							$('<li/>', {'class': 'img'}).append(
+								$('<a/>', {href: baseUrl + 'home/profile/user/' + response.friends[x].id}).append(
+									$('<img/>', {src: response.friends[x].image})
+								)
+							),
+							$('<li/>', {'class': 'name'}).append(
+								response.friends[x].name,
+								$('<span/>', {'class': 'loc'}).text(response.friends[x].address)
+							),
+							$('<li/>', {'class': 'message btnCol'}).append(
+								$('<img/>', {src: baseUrl + 'www/images/envelope-icon.gif'}).click(function(){
+									userMessageDialog($(this).closest('.invtFrndList').attr('id').replace('user-', ''));
+								})
+							),
+							$('<li/>', {'class': 'delete btnCol'}).append(
+								$('<img/>', {src: baseUrl + 'www/images/delete-icon.png'}).click(function(){
+									var $target = $(this).closest('.invtFrndList'),
+										id = $target.attr('id').replace('user-', '');
+
+									deleteFriend(id, $target, function(){
+										friends_count--;
+										markers[id].setMap(null);
+									});
+								})
 							),
 							$('<div/>', {'class': 'clr'})
-						);
+						),
+						$('<div/>', {'class': 'clr'})
+					),
+					$('<div/>', {'class': 'clr'})
+				);
 
-						var marker = new google.maps.Marker({
-							map: map,
-							position: new google.maps.LatLng(data.frlist[x].latitude, data.frlist[x].longitude),
-							icon: baseUrl + 'www/images/icons/icon_2.png',
-							data: {
-								address: data.frlist[x].address,
-								image: data.frlist[x].Profile_image,
-							}
-						});
+				var marker = new google.maps.Marker({
+					map: map,
+					position: new google.maps.LatLng(response.friends[x].latitude, response.friends[x].longitude),
+					icon: baseUrl + 'www/images/icons/icon_2.png',
+					data: {
+						address: response.friends[x].address,
+						image: response.friends[x].image,
+					}
+				});
 
-						google.maps.event.addListener(marker, 'click', function(){
-							if (infowindow){
-								infowindow.close();
-							}
+				google.maps.event.addListener(marker, 'click', function(){
+					if (infowindow){
+						infowindow.close();
+					}
 
-							infowindow.setContent(userAddressTooltip(this.data.address, this.data.image));
-							infowindow.open(map, this);
-						});
+					infowindow.setContent(userAddressTooltip(this.data.address, this.data.image));
+					infowindow.open(map, this);
+				});
+				
+				markers[response.friends[x].id] = marker;
 
-                        if ($("#midColLayout").height()>714)
-                            setThisHeight(Number($("#midColLayout").height()));
-                        }
-                }
-            
-               
-            }
-        });
-    }
+				if ($("#midColLayout").height() > 714){
+					setThisHeight(Number($("#midColLayout").height()));
+				}
+				
+				offset++;
+			}
+
+			if (offset < friends_count){
+				$('.listHight').after(
+					$('<div/>', {'class': 'postClass_after'})
+						.click(function(){
+							$(this).append($('<img/>', {src: baseUrl + 'www/images/wait.gif'}));
+							moreFriends();
+						})
+						.append($('<lable/>').text('More'))
+				);
+			}
+		} else if (response){
+			alert(response.error.message);
+		} else {
+			alert(ERROR_MESSAGE);
+		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
+	});
+}

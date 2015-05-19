@@ -158,24 +158,6 @@ class Application_Model_NewsFactory {
         return $fetch;
     }
 
-    function searchUsers($data = array(), $like = false){
-        $userTable = new Application_Model_User;
-        $select = $userTable->select()->setIntegrityCheck(false)
-                ->from('user_data')
-                ->joinLeft('address', 'user_data.id = address.user_id');
-        if(count($data) > 0) {
-            foreach ($data as $index => $value) {
-                if($like) {
-                    $select->where($index." LIKE ?", '%'.$value.'%');
-                }else {
-                    $select->where($index." =?", $value);
-                }
-            }
-        } 
-        $select->order("Name");
-        return $userTable->fetchAll($select);
-    }
-
     function imageUpload($name,$size,$tmp,$user_id){ 
         $path = realpath('.')."/www/upload/";
         $valid_formats = array("jpg", "png", "gif", "bmp","JPG");

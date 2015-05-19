@@ -23,9 +23,21 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
 
     protected $_dependentTables = array();
 
-    protected $_referenceMap    = array();
-
-
+	/**
+	 * @var	array
+	 */
+	protected $_referenceMap = array(
+		'FriendReceiver' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_User',
+			'refColumns' => 'reciever_id'
+        ),
+		'FriendSender' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_User',
+			'refColumns' => 'sender_id'
+        )
+    );
 
     public static function getInstance() {
 
@@ -311,65 +323,6 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
 
     }
 
-    
-
-    public function getTotalFriends($user = 0, $limit = null, $offset = null) 
-
-    {
-        
-        if($user) {
-
-            $select1 = $this->select()->setIntegrityCheck(false)
-
-                ->from($this, array('fid'=>'id', 'sender_id','reciever_id', 'status'))
-
-                ->joinLeft('user_data', 'friends.sender_id = user_data.id', array('id', 'Name', 'Email_id', 'Profile_image', 'Network_id'))
-
-                ->joinLeft('address', 'user_data.id = address.user_id', array('address', 'latitude', 'longitude'))
-
-                ->where('friends.reciever_id =?', $user);
-
-        
-
-            $select2 = $this->select()->setIntegrityCheck(false)       
-
-                ->from($this, array('fid'=>'id', 'sender_id','reciever_id', 'status'))
-
-                ->joinLeft('user_data', 'friends.reciever_id = user_data.id', array('id', 'Name', 'Email_id', 'Profile_image', 'Network_id'))
-
-                ->joinLeft('address', 'user_data.id = address.user_id', array('address', 'latitude', 'longitude'))
-
-                ->where('friends.sender_id =?', $user);
-
-            if($limit && $offset) {
-
-                $select = $this->select()->union(array("SELECT * FROM (".$select2, $select1.") as A WHERE A.status ='1' GROUP BY A.id LIMIT ".$limit." OFFSET ".$offset));
-
-            } else if($limit) {
-
-                $select = $this->select()->union(array("SELECT * FROM (".$select2, $select1.") as A WHERE A.status ='1' GROUP BY A.id LIMIT ".$limit));
-
-            } else if($offset) {
-
-                $select = $this->select()->union(array("SELECT * FROM (".$select2, $select1.") as A WHERE A.status ='1' GROUP BY A.id OFFSET ".$offset));
-
-            } else {
-
-                $select = $this->select()->union(array("SELECT * FROM (".$select2, $select1.") as A WHERE A.status ='1' GROUP BY A.id"));
-
-            }
-
-            if($row = $this->fetchAll($select)) {
-
-                return $row;
-
-            }
-
-        }   
-
-    }
-    
-    
     /*Added on 19/8/2013 for API */
     public function getIndividualFriendsWs($user = 0, $targetFriendId , $limit = null, $offset = null){
         if($user) {
@@ -498,6 +451,46 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
 
     }
 
-        
+	/**
+	 * Find records by user ID.
+	 *
+	 * @param	integer	$user_id
+	 *
+	 * @return	array
+	 */
+	public function findAllByUserId($user_id, $limit, $offset)
+	{
+		$result = $this->fetchAll(
+			$this->select()
+				->where('reciever_id=' . $user_id . ' OR sender_id=' . $user_id)
+				->where('status=?', 1)
+				->limit($limit, $offset)
+		);
 
+		return $result;
+	}
+
+	/**
+	 * Returns friends count by user ID.
+	 *
+	 * @param	integer	$user_id
+	 *
+	 * @return	integer
+	 */
+	public function getCountByUserId($user_id)
+	{
+		$result = $this->fetchRow(
+			$this->select()
+				->from($this, array('count(*) as friends_count'))
+				->where('reciever_id=' . $user_id . ' OR sender_id=' . $user_id)
+				->where('status=?', 1)
+		);
+
+		if ($result)
+		{
+			return $result->friends_count;
+		}
+
+		return 0;
+	}
 }

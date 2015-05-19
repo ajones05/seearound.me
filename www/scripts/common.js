@@ -1,3 +1,4 @@
+var ERROR_MESSAGE = 'Internal server error';
 var currentRequests = 0;
 
 $(function(){
@@ -245,7 +246,7 @@ function friendRequest(thisone, id, action){
 
 // TODO: merge with friendRequest
 
-function deleteFriend(userId, target){
+function deleteFriend(userId, target, callback){
 	if (!confirm("Are you sure to delete this friend?")){
 		return false;
 	}
@@ -261,6 +262,10 @@ function deleteFriend(userId, target){
 	}).done(function(response){
 		if (response && response.status){
 			$(target).remove();
+
+			if (typeof callback === 'function'){
+				callback.call();
+			}
 		} else {
 			alert(ERROR_MESSAGE);
 		}
