@@ -1,12 +1,13 @@
 <?php
 $config = Zend_Registry::get('config_global');
-$this->headLink()->appendStylesheet($this->baseUrl('/www/css/mobile.css'));
+$this->headLink()->appendStylesheet($this->baseUrl('www/css/mobile.css'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
 	<title>seearound.me</title>
+	<?php echo $this->headLink() . "\n"; ?>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 </head>
 <body>
