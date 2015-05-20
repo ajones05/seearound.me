@@ -120,8 +120,7 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	{
 		$token = md5(uniqid($this->Email_id, true));
 
-		$this->Token = $token;
-		$this->save();
+		(new Application_Model_User)->update(array('Token' => $token), 'id = ' . $this->id);
 
 		return $token;
 	}
@@ -146,7 +145,8 @@ class Application_Model_User extends My_Db_Table_Abstract
 		'Application_Model_Comments',
 		'Application_Model_Address',
 		'Application_Model_Message',
-		'Application_Model_Friends'
+		'Application_Model_Friends',
+		'Application_Model_UserProfile'
 	);
 
 	protected $_referenceMap = array(
@@ -179,6 +179,11 @@ class Application_Model_User extends My_Db_Table_Abstract
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Friends',
 			'refColumns' => 'sender_id'
+		),
+		'Profile' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_UserProfile',
+			'refColumns' => 'user_id'
 		)
 	); 
 
@@ -739,7 +744,29 @@ class Application_Model_User extends My_Db_Table_Abstract
 		$db = self::getInstance();
 
 		$result = $db->fetchRow(
-			$db->select()->where('Email_id =?', $email)
+			$db->select()
+				->setIntegrityCheck(false)
+				->from($db, '*')
+				->joinLeft(
+					'user_profile',
+					'user_data.id = user_profile.user_id',
+					array(
+						'user_profile.public_profile',
+						'user_profile.Activities',
+						'user_profile.Looking_for',
+						'user_profile.Gender'
+					)
+				)
+				->joinLeft(
+					'address',
+					'user_data.id = address.user_id',
+					array(
+						'address.address',
+						'address.latitude',
+						'address.longitude'
+					)
+				)
+				->where('Email_id =?', $email)
 		);
 
 		return $result;

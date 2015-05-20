@@ -1,40 +1,10 @@
 <?php
 
 class Application_Model_NewsFactory {
-    
-    public function getUser($data = array()){
-        $userTable = new Application_Model_User;
-        if(count($data) > 0) {
-            $select = $userTable->select()->setIntegrityCheck(false)
-                    ->from("user_data")
-                    ->joinLeft("user_profile", "user_profile.user_id = user_data.id", array("public_profile", "Activities", "Looking_for", "Gender"))
-                    ->joinLeft("address", "address.user_id = user_data.id" ,array("address", "latitude", "longitude"));
-            foreach($data as $index => $value) {
-                $select->where($index." =?", $value);
-            }
-        } 
-        return $userTable->fetchRow($select);
-
-    }
-
     public function generateCode(){
         mt_srand();
         $hash = md5(mt_rand(0, time()));
         return substr($hash, mt_rand(0, 20), 10);
-    }
-
-    function stateList(){
-        $states = new Application_Model_States();
-        $sel = $states->select();
-        $stateList = $states->fetchAll($sel);
-        return $stateList;
-    }
-
-    function countriesList(){
-        $country = new Application_Model_Countries();
-        $sel = $country->select()->where('id =?', 1)->orWhere('id =?', 2);
-        $counList = $country->fetchAll($sel);
-        return $counList;
     }
 
     function confirmEmail($id, $code){
@@ -47,36 +17,6 @@ class Application_Model_NewsFactory {
                 $row->save();
                 return $row;
         }
-    }
-
-    public function resend($id){
-        $userTable = new Application_Model_User();
-        $select = $userTable->select()
-                ->where('id =?', $id);
-        if($row = $userTable->fetchRow($select)) {
-            $code = $this->generateCode();
-            $row->setFromArray(array('Conf_code'=> $code));
-            $row->save();
-            return $row;
-        }		
-    }
-
-	// TODO: move to Application_Model_User model
-
-	public function loginDetail($data)
-	{
-		$user = new Application_Model_User;
-
-		$select = $user->select()->setIntegrityCheck(false)
-			->from('user_data')
-			->joinLeft('address','address.user_id = user_data.id',array('address', 'latitude','longitude'))
-			->joinLeft('user_profile','user_profile.user_id = user_data.id',array('Activities', 'Gender'))
-			->where('user_data.Email_id =?', $data['email'])
-			->where('user_data.Password =?', $data['pass']);
-
-		$data = $user->fetchRow($select);
- 
-		return $data;
     }
 
     function addComments($comments, $newsId, $userId){
@@ -137,27 +77,6 @@ class Application_Model_NewsFactory {
         return $commArray;
     }
 
-    function getUserData($user_id){
-        $userTable = new Application_Model_User();
-        $select = $userTable->select()->where('id =?', $user_id); 
-        $fetch = $userTable->fetchRow($select);
-        return $fetch;
-    }
-
-    function getUserAddress($user_id){
-        $addressTable = new Application_Model_Address();
-        $select = $addressTable->select()->where('user_id = ?', $user_id);
-        $fetch = $addressTable->fetchRow($select);
-        return $fetch;
-    }
-
-    function getUserProfileData($user_id){
-        $profile = new Application_Model_Profile();
-        $select = $profile->select()->where('user_id = ?', $user_id);
-        $fetch = $profile->fetchRow($select);
-        return $fetch;
-    }
-
     function imageUpload($name,$size,$tmp,$user_id){ 
         $path = realpath('.')."/www/upload/";
         $valid_formats = array("jpg", "png", "gif", "bmp","JPG");
@@ -196,9 +115,9 @@ class Application_Model_NewsFactory {
         }
         return $response;
     }
-    
-    
-    function wsimageUpload($name,$size,$tmp,$user_id){ 
+
+	// TODO: fix
+    function wsimageUpload($name,$tmp,$user_id){ 
         $path = realpath('.')."/www/upload/";
         $valid_formats = array("jpg", "png", "gif", "bmp","JPG","jpeg","JPEG");
         $response = '';
@@ -229,10 +148,8 @@ class Application_Model_NewsFactory {
                     $response = "uploads/".$actual_image_name."?parm=".time();
                 } 
             } else {
-                $response = "www/images/img-prof40x40.jpg?param=Invalid file format..";	
             }
         } else {
-            $response = "www/images/img-prof40x40.jpg?param=Please select image..!";
         }
         return $response;
     }

@@ -45,21 +45,16 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect email address: ' . var_export($email, true), -1);
 			}
 
-			$pass = $this->_request->getPost('password');
+			$password = $this->_request->getPost('password');
 
-			if (My_Validate::emptyString($pass))
+			if (My_Validate::emptyString($password))
 			{
 				throw new RuntimeException('Password cannot be blank', -1);
 			}
 
-			$newsFactory = new Application_Model_NewsFactory;
+			$user = (new Application_Model_User)->findByEmail($email);
 
-			$user = $newsFactory->loginDetail(array(
-				'email' => $email,
-				'pass' => hash('sha256', $pass),
-			));
-
-			if (!$user)
+			if (!$user || $user->Password !== hash('sha256', $password))
 			{
 				throw new RuntimeException('Incorrect user email or password', -1);
 			}
@@ -102,20 +97,14 @@ class MobileController extends Zend_Controller_Action
 					'id' => $user->id,
 					'Name' => $user->Name,
 					'Email_id' => $user->Email_id,
-					'Old_email' => $user->Old_email,
 					'Password' => $user->Password,
 					'Birth_date' => $user->Birth_date,
-					'Creation_date' => $user->Creation_date,
-					'Update_date' => $user->Update_date,
-					'Profile_image' => $user->Profile_image,
+					'Profile_image' => $user->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					'Status' => $user->Status,
-					'Network_id' => $user->Network_id,
-					'Conf_code' => $user->Conf_code,
-					'is_admin' => $user->is_admin,
 					'Token' => $user->Token,
-					'address' => $user->address,
-					'latitude' => $user->latitude,
-					'longitude' => $user->longitude,
+					'address' => $user->address(),
+					'latitude' => $user->lat(),
+					'longitude' => $user->lng(),
 					'Activities' => $user->Activities,
 					'Gender' => $user->Gender,
 					'login_id' => $login_id,
@@ -126,8 +115,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => 'NOT AUTHENTICATED',
-				'result' => ''
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
 			);
 		}
 
@@ -502,9 +490,7 @@ class MobileController extends Zend_Controller_Action
                 $data['user']['is_valid']    = 'true';
                 $data['user']['subject']     = $subject;
                 $data['user']['message']     = $message;
-               
-                $user_data = $newsFactory->getUserData($data['user']['receiver_id']);
-                  
+
                $result = $messageTable->saveData($data['user']);
                $response = new stdClass();
                if(isset($result)){
@@ -753,6 +739,7 @@ class MobileController extends Zend_Controller_Action
 	}
 
     /**
+	 * TODO: test...
       * Function to update user profile
       * 
       * @return returns success or failed json encoded message.
@@ -763,77 +750,99 @@ class MobileController extends Zend_Controller_Action
         $userTable    = new Application_Model_User;
         $profileTable = new Application_Model_Profile;
         $addressTable = new Application_Model_Address;
-        $userId = trim($_REQUEST['user_id']);
-        $successFlag;
-        $udatedUserdata = array();              
-        $getUserDataRowSet = $newsFactory->getUser(array("user_data.id" =>$userId));
-     
-        if($_REQUEST){
-          /*$dobDate         = mysql_real_escape_string($_REQUEST['DOB']);
-          $timestamp       = strtotime($dobDate);
-          $dobDateFormated = date('Y-m-d', $timestamp); */
-          $dobDateFormated = $_REQUEST['DOB'];
-         
-          $udata = array(
-                'Name' => $_REQUEST['Name'],
-                'Birth_date' => $dobDateFormated,
-                'Email_id'   => $_REQUEST['Email_id']
-          );
-           
-          $pdata = array(
-              'public_profile' => ($_REQUEST['allow']) ? 1 : 0,
-              'Activities' => $_REQUEST['Activityes'],
-              'Gender' => $_REQUEST['Gender']
-          );
-        }
-        
-        /* Start Image Uploading */
-         if ($_FILES['encodedImage']['name']) {
-                 $url = urldecode($newsFactory->wsimageUpload($_FILES['encodedImage']['name'], $_FILES['encodedImage']['size'], $_FILES['encodedImage']['tmp_name'], $userId));
-         }
-        /* End image Uploading */
-        
-        $db = $userTable->getDefaultAdapter();
-        $db->beginTransaction();
-        try {
-            $userTable->update($udata, $userTable->getAdapter()->quoteInto("id =?", $userId));
-            if ($prow = $profileTable->fetchRow($profileTable->select()->where("user_id =?", $userId))) {
-                        $profileTable->update($pdata, $profileTable->getAdapter()->quoteInto("user_id =?", $userId));
-            } else {
-                $pdata['user_id'] = $userId;
-                $prow = $profileTable->createRow($pdata);
-                $prow->save();
-            }
 
-            $db->commit();
-            $returnvalue = $newsFactory->getUser(array("user_data.id" => $userId));
-            $udatedUserdata['user_id'] = $returnvalue->id;
-            $udatedUserdata['is_fb_login'] = false;
-            $udatedUserdata['Name'] = $returnvalue->Name;
-            $udatedUserdata['Email_id'] = $returnvalue->Email_id;
-            $udatedUserdata['latitude'] = $returnvalue->latitude;
-            $udatedUserdata['longitude'] = $returnvalue->longitude;
-            $udatedUserdata['Profile_image'] = $returnvalue->Profile_image;
-            $udatedUserdata['address'] = $returnvalue->address;
-            $udatedUserdata['Gender'] = $returnvalue->Gender;
-            $udatedUserdata['Activities'] = $returnvalue->Activities;
-            $udatedUserdata['Birth_date'] = $returnvalue->Birth_date;
-            $successFlag = 1;
-        } catch (Exception $e) {
-           $db->rollBack();
-           $udatedUserdata = "No Data";
-           echo "User Profile Updating Failed"; exit; 
-        }
-    
-        if(isset($successFlag)) {
-            $response->status = "SUCCESS";
-            $response->message = "User profile has been updated successfully";
-            $response->result = $udatedUserdata; 
-        } else {
-           $response->status = "FAILED";
-           $response->message = "Sorry,user profile did not updated";
-           $response->result = $udatedUserdata; 
-        }
+		try
+		{
+			// TODO: check auth
+
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			{
+				throw new RuntimeException('Incorrect user id', -1);
+			}
+
+			$successFlag;
+			$udatedUserdata = array();              
+		 
+			if($_REQUEST){
+			  /*$dobDate         = mysql_real_escape_string($_REQUEST['DOB']);
+			  $timestamp       = strtotime($dobDate);
+			  $dobDateFormated = date('Y-m-d', $timestamp); */
+			  $dobDateFormated = $_REQUEST['DOB'];
+			 
+			  $udata = array(
+					'Name' => $_REQUEST['Name'],
+					'Birth_date' => $dobDateFormated,
+					'Email_id'   => $_REQUEST['Email_id']
+			  );
+			   
+			  $pdata = array(
+				  'public_profile' => ($_REQUEST['allow']) ? 1 : 0,
+				  'Activities' => $_REQUEST['Activityes'],
+				  'Gender' => $_REQUEST['Gender']
+			  );
+			}
+			
+			/* Start Image Uploading */
+			 if ($_FILES['encodedImage']['name'] && strlen($_FILES['encodedImage']['name']))
+			 {
+ 					 $image_url = $newsFactory->wsimageUpload(
+						$_FILES['encodedImage']['name'],
+						$_FILES['encodedImage']['tmp_name'],
+						$user->id
+					);
+			 }
+			/* End image Uploading */
+			
+			$db = $userTable->getDefaultAdapter();
+			$db->beginTransaction();
+			try {
+				$userTable->update($udata, $userTable->getAdapter()->quoteInto("id =?", $user->id));
+				if ($prow = $profileTable->fetchRow($profileTable->select()->where("user_id =?", $user->id))) {
+							$profileTable->update($pdata, $profileTable->getAdapter()->quoteInto("user_id =?", $user->id));
+				} else {
+					$pdata['user_id'] = $user->id;
+					$prow = $profileTable->createRow($pdata);
+					$prow->save();
+				}
+
+				$db->commit();
+
+				$udatedUserdata['user_id'] = $user->id;
+				$udatedUserdata['Name'] = $this->_request->getPost('Name', $user->Name);
+				$udatedUserdata['Email_id'] = $this->_request->getPost('Email_id', $user->Email_id);
+				$udatedUserdata['latitude'] = $user->latitude;
+				$udatedUserdata['longitude'] = $user->longitude;
+				$udatedUserdata['Profile_image'] = isset($image_url) ? $this->view->serverUrl() . $image_url :
+					$user->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg'));
+				$udatedUserdata['address'] = $user->address;
+				$udatedUserdata['Gender'] = $user->Gender;
+				$udatedUserdata['Activities'] = $user->Activities;
+				$udatedUserdata['Birth_date'] = $user->Birth_date;
+
+				$successFlag = 1;
+			} catch (Exception $e) {
+			   $db->rollBack();
+			   $udatedUserdata = "No Data";
+			   echo "User Profile Updating Failed"; exit; 
+			}
+		
+			if(isset($successFlag)) {
+				$response->status = "SUCCESS";
+				$response->message = "User profile has been updated successfully";
+				$response->result = $udatedUserdata; 
+			} else {
+			   $response->status = "FAILED";
+			   $response->message = "Sorry,user profile did not updated";
+			   $response->result = $udatedUserdata; 
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
 
 		$this->_logRequest($response);
 

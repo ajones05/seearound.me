@@ -5,9 +5,9 @@
 
     var selectedMonth = '';
 
-    <?if($this->user_data->Birth_date):?>
+    <?if($this->user->Birth_date):?>
 
-       <?$birthdate = explode('-', $this->user_data->Birth_date)?>
+       <?$birthdate = explode('-', $this->user->Birth_date)?>
 
         selectedDate = Number('<?=sprintf("%02d", $birthdate[2])?>');
 
@@ -331,7 +331,7 @@
 
                 <span style="margin-top: 5px;">
 
-                    <input type="checkbox" class="wAuto" name="allow" <?if($this->user_data->public_profile):?>checked="true"<?endif;?>/>
+                    <input type="checkbox" class="wAuto" name="allow" <?if($this->user->public_profile):?>checked="true"<?endif;?>/>
 
                     Allow other users to see your Email address?
 
@@ -367,9 +367,9 @@
 
             <select name="Gender" id="">
 
-                <option value="Male" <?if(ucfirst($this->user_data->Gender) == "Male"):?> selected="true" <?endif;?>> Male</option>
+                <option value="Male" <?if(ucfirst($this->user->Gender) == "Male"):?> selected="true" <?endif;?>> Male</option>
 
-                <option value="Female" <?if(ucfirst($this->user_data->Gender) == "Female"):?> selected="true" <?endif;?>> Female</option>
+                <option value="Female" <?if(ucfirst($this->user->Gender) == "Female"):?> selected="true" <?endif;?>> Female</option>
 
             </select>
             
@@ -389,7 +389,7 @@
 
             </label>
 
-            <input name="Activityes" type="text" value="<?=$this->user_data->Activities?>" />
+            <input name="Activityes" type="text" value="<?=$this->user->Activities?>" />
             <div class="clr"></div>
 
         </li>

@@ -74,25 +74,15 @@ class IndexController extends Zend_Controller_Action {
 					)
 				);
 
-				$loginStatus = new Application_Model_Loginstatus();
-
-				$loginRow = $loginStatus->setData(array(
-					"user_id" => $user->id,
-					"login_time" => new Zend_Db_Expr('NOW()'),
-					"ip_address" => $_SERVER['REMOTE_ADDR'])
+				$login_id = (new Application_Model_Loginstatus)->insert(array(
+					'user_id' => $user->id,
+					'login_time' => new Zend_Db_Expr('NOW()'),
+					'ip_address' => $_SERVER['REMOTE_ADDR'])
 				);
 
-				$auth = Zend_Auth::getInstance();
-
-				$auth->getStorage()->write(array(
+				Zend_Auth::getInstance()->getStorage()->write(array(
 					"user_id" => $user->id,
-					"login_id" => $loginRow->id,
-					"is_fb_login" => false,
-					"user_name" => $user->Name,
-					"user_email" => $user->Email_id,
-					"latitude" => $user->lat(),
-					"longitude" => $user->lng(),
-					"address" => $user->address()
+					"login_id" => $login_id
 				));
 
 				$this->_redirect($this->view->baseUrl("home/index"));
@@ -146,46 +136,35 @@ class IndexController extends Zend_Controller_Action {
 				throw new RuntimeException('Password cannot be blank', -1);
 			}
 
-			$newsFactory = new Application_Model_NewsFactory;
-			$returnvalue = $newsFactory->loginDetail(array(
-				'email' => $email,
-				'pass' => hash('sha256', $password)
-			));
+			$user = (new Application_Model_User)->findByEmail($email);
 
-			if (!$returnvalue)
+			if (!$user || $user->Password !== hash('sha256', $password))
 			{
-				throw new RuntimeException('Invalid email or password', -1);
+				throw new RuntimeException('Incorrect user email or password', -1);
 			}
 
-			$response = array();
+			$response = array('status' => 1);
 
-			if ($returnvalue->Status == 'active')
+			if ($user->Status == 'active')
 			{
 				$loginStatus = new Application_Model_Loginstatus;
-
-				$loginRow = $loginStatus->setData(array(
-					'user_id' => $returnvalue->id,
+				$login_id = $loginStatus->insert(array(
+					'user_id' => $user->id,
 					'login_time' => new Zend_Db_Expr('NOW()'),
-					'ip_address' => $_SERVER['REMOTE_ADDR']
-				));
+					'ip_address' => $_SERVER['REMOTE_ADDR'])
+				);
 
 				Zend_Auth::getInstance()->getStorage()->write(array(
-					'user_id' => $returnvalue->id,
-					'login_id' => $loginRow->id,
-					'is_fb_login' => false,
-					'user_name' => $returnvalue->Name,
-					'user_email' => $returnvalue->Email_id,
-					'latitude' => $returnvalue->latitude,
-					'longitude' => $returnvalue->longitude,
-					'address' => $returnvalue->address
+					'user_id' => $user->id,
+					'login_id' => $login_id
 				));
 
 				// TODO: ???
 				if (date('D') == 'Mon')
 				{
-					$loginRows = $loginStatus->sevenDaysOldData($returnvalue->id);
+					$loginRows = $loginStatus->sevenDaysOldData($user->id);
 					$inviteCount = floor(count($loginRows) / $this->credit);
-					$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $returnvalue->id));
+					$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $user->id));
 
 					if ($inviteStatusRow && floor((time() - strtotime($inviteStatusRow->updated)) / (24 * 60 * 60)) >= 7)
 					{
@@ -206,27 +185,18 @@ class IndexController extends Zend_Controller_Action {
 			else
 			{
 				$response['active'] = 0;
-				$response['redirect'] = $this->view->baseUrl('index/reg-success/id/' . $returnvalue->id);
+				$response['redirect'] = $this->view->baseUrl('index/reg-success/id/' . $user->id);
 			}
-
-			$response['status'] = 1;
-		}
-		catch (RuntimeException $e)
-		{
-			$response = array(
-				'status' => 0,
-				'error' => array('message' => $e->getMessage())
-			);
 		}
 		catch (Exception $e)
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
+				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
 	/**
@@ -339,37 +309,22 @@ class IndexController extends Zend_Controller_Action {
 			}
 		}
 
-		$status_model = new Application_Model_Loginstatus;
-
-		$loginRow = $status_model->setData(array(
+		$loginStatus = new Application_Model_Loginstatus;
+		$login_id = $loginStatus->insert(array(
 			'user_id' => $user->id,
 			'login_time' => new Zend_Db_Expr('NOW()'),
-			'ip_address' => $_SERVER['REMOTE_ADDR']
-		));
+			'ip_address' => $_SERVER['REMOTE_ADDR'])
+		);
 
-		$auth = Zend_Auth::getInstance();
-
-		if ($auth->hasIdentity())
-		{
-			$auth->clearIdentity();
-		}
-
-		$auth->getStorage()->write(array(
+		Zend_Auth::getInstance()->getStorage()->write(array(
 			'user_id' => $user->id,
-			'login_id' => $loginRow->id,
-			'is_fb_login' => true,
-			'user_name' => $user->Name,
-			'user_email' => $user->Email_id,
-			'latitude' => $user->lat(),
-			'longitude' => $user->lng(),
-			'address' => $user->address(),
-			'network_id' => $user->Network_id
+			'login_id' => $login_id
 		));
 
 		// TODO: ???
 		if (date('D') == 'Mon')
 		{
-			$loginRows = $status_model->sevenDaysOldData($user->id);
+			$loginRows = $loginStatus->sevenDaysOldData($user->id);
 			$inviteCount = floor(count($loginRows) / $this->credit);
 			$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $user->id));
 
@@ -617,11 +572,6 @@ class IndexController extends Zend_Controller_Action {
 
         $data = array();
 
-        $this->view->country = $newsFactory->countriesList();
-
-        $this->view->states = $newsFactory->stateList();    
-
-        
 
         if($this->_request->isPost()) {
 

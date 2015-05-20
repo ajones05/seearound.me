@@ -83,12 +83,12 @@ class HomeController extends Zend_Controller_Action
         $profileTable = new Application_Model_Profile;
         $addressTable = new Application_Model_Address;
         $returnUrl = $this->_request->getParam("url", '');
-        $this->view->user_data = $user_data = $newsFactory->getUser(array("user_data.id" => $user->id));
+
         if ($this->_request->isPost()) {
             $errors = array();
             $data = array();
             $userTable->validateData($this->_request, $data, $errors);
-            if ($user_data->Email_id == $this->_request->getPost("Email_id")) {
+            if ($user->Email_id == $this->_request->getPost("Email_id")) {
                 unset($errors['Email_id']);
                 unset($data['Email_id']);
             }
@@ -144,26 +144,6 @@ class HomeController extends Zend_Controller_Action
                     }
 
                     $db->commit();
-
-                    $auths = Zend_Auth::getInstance();
-
-                    $returnvalue = $newsFactory->getUser(array("user_data.id" => $user->id));
-
-                    $authData['user_id'] = $returnvalue->id;
-
-                    $authData['is_fb_login'] = false;
-
-                    $authData['user_name'] = $returnvalue->Name;
-
-                    $authData['user_email'] = $returnvalue->Email_id;
-
-                    $authData['latitude'] = $returnvalue->latitude;
-
-                    $authData['longitude'] = $returnvalue->longitude;
-
-                    $authData['address'] = $returnvalue->address;
-
-                    $auths->getStorage()->write($authData);
                 } catch (Exception $e) {
 
                     $db->rollBack();
@@ -205,14 +185,6 @@ class HomeController extends Zend_Controller_Action
         if (isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST") {
             $url = urldecode($newsFactory->imageUpload($_FILES['ImageFile']['name'], $_FILES['ImageFile']['size'], $_FILES['ImageFile']['tmp_name'], $user->id));
             $response->url = $this->view->baseUrl($url);
-            $auth = Zend_Auth::getInstance();
-            $returnvalue = $newsFactory->getUser(array("user_data.id" => $user->id));
-            $authData['user_id'] = $returnvalue->id;
-            $authData['user_name'] = $returnvalue->Name;
-            $authData['latitude'] = $returnvalue->latitude;
-            $authData['longitude'] = $returnvalue->longitude;
-            $authData['address'] = $returnvalue->address;
-            $auth->getStorage()->write($authData);
         }
 
         die(Zend_Json_Encoder::encode($response));
@@ -221,43 +193,59 @@ class HomeController extends Zend_Controller_Action
 	public function profileAction()
 	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
-		$auth_id = $auth ? $auth['user_id'] : null;
-		$user_id = $this->_request->getParam('user', $auth_id);
 
-		if (!Application_Model_User::checkId($user_id, $user))
+		if ($auth && !Application_Model_User::checkId($auth['user_id'], $user))
 		{
-			throw new RuntimeException('Incorrect user ID', -1);
+			$auth->clearIdentity();
+			throw new RuntimeException('Incorrect user session', -1);
+		}
+
+		$user_id = $this->_request->getParam('user');
+
+		if ($user_id)
+		{
+			if (!Application_Model_User::checkId($user_id, $profile))
+			{
+				throw new RuntimeException('Incorrect user ID', -1);
+			}
+		}
+		else
+		{
+			if (!$auth)
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$profile = $user;
 		}
 
 		$newsModel = new Application_Model_News;
 
 		$latest_post = $newsModel->fetchRow(
 			$newsModel->publicSelect()
-				->where('user_id =?', $user_id)
+				->where('user_id =?', $profile->id)
 				->order('id DESC')
 		);
 
-		if ($auth && $auth_id != $user_id)
-		{
-			$this->view->friendStatus = Application_Model_Friends::getInstance()->getStatus($auth_id, $user_id);
-		}
-
-		$this->view->user_data = $user;
 		$this->view->currentPage = 'Profile';
 		$this->view->myprofileExist = true;
-		$this->view->reciever = $user_id;
-		$this->view->returnUrl = $this->view->baseUrl('home/profile/user/' . $user_id);
-		$this->view->profile = $user->public_profile;
+		$this->view->auth_id = $auth ? $user->id : null;
+		$this->view->profile = $profile;
 
-		if ($user_id != $auth_id)
+		if ($auth && $user->id != $profile->id)
+		{
+			$this->view->friendStatus = (new Application_Model_Friends)->getStatus($user->id, $profile->id);
+		}
+
+		if (!$auth || $profile->id != $user->id)
 		{
 			$this->view->headScript()->appendScript('	var user_profile = ' . json_encode(array(
-				'id' => $user->id,
-				'name' => ucwords($user->Name),
-				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-				'address' => $user->address(),
-				'lat' => $user->lat(),
-				'lng' => $user->lng(),
+				'id' => $profile->id,
+				'name' => ucwords($profile->Name),
+				'image' => $profile->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+				'address' => $profile->address(),
+				'lat' => $profile->lat(),
+				'lng' => $profile->lng(),
 				'latestPost' => $latest_post ? $latest_post->news : 'N/A'
 			)) . ';');
 		}
@@ -266,7 +254,7 @@ class HomeController extends Zend_Controller_Action
 			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$this->view->headScript()
-			->appendScript("	var	reciever_userid = " . json_encode($user_id) . ";\n")
+			->appendScript("	var	reciever_userid = " . json_encode($profile->id) . ";\n")
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'));
 	}
@@ -490,16 +478,6 @@ class HomeController extends Zend_Controller_Action
 		die(Zend_Json_Encoder::encode($response));
 	}
 
-	// TODO: remove
-    public function pagingAction() {
-        $this->_helper->layout()->disableLayout();
-    }
-
-	// TODO: remove
-    public function newNewsAction() {
-        $this->_helper->layout()->disableLayout();
-    }
-
     public function addNewCommentsAction()
 	{
 		try
@@ -684,11 +662,6 @@ class HomeController extends Zend_Controller_Action
 			$user_address->longitude = $longitude;
 			$user_address->save();
 
-			$auth['address'] = $address;
-			$auth['latitude'] = $latitude;
-			$auth['longitude'] = $longitude;
-			Zend_Auth::getInstance()->getStorage()->write($auth);
-
 			$response = array('status' => 1);
 		}
 		catch (Exception $e)
@@ -701,66 +674,6 @@ class HomeController extends Zend_Controller_Action
 
         $this->_helper->json($response);
 	}
-    
- 
- /*************************************************************
-      Currntly not in use but prevent to future perspective 
- **************************************************************/                                               
-  
- public function changePostingLocationAction() {
-        $response = new stdClass();
-        $auth = Zend_Auth::getInstance()->getStorage()->read();
-        $addressArray = array(
-            'address' => $this->_getParam('address'),
-            'latitude' => $this->_getParam('latitude'),
-            'longitude' => $this->_getParam('longitude')
-        );
-
-        $addressRow = null;
-
-        if ($auth['user_id']) {
-
-            $addressRow = Application_Model_Address::searchRow('user_id', $auth['user_id']);
-
-            $authObj = Zend_Auth::getInstance();
-
-            $authData = array();
-
-            $authData['user_name'] = $auth['user_name'];
-
-            $authData['user_id'] = $auth['user_id'];
-
-            $authData['address'] = $addressRow->address;
-
-            $authObj->getStorage()->write($authData);
-
-            $this->view->latitude = $this->_getParam('latitude');
-
-            $this->view->longitude = $this->_getParam('longitude');
-        }
-
-       //$response->result = $returnRow = Application_Model_Address::saveAddress($addressArray, $addressRow);
-
-      $response->result =1;
-       // if ($returnRow) {
-         if (1) {
-            $auth1 = Zend_Auth::getInstance();
-
-            $authData['latitude'] = $this->_getParam('latitude');
-
-            $authData['longitude'] = $this->_getParam('longitude');
-
-            $authData['address'] = $this->_getParam('address');
-
-            $auth1->getStorage()->write($authData);
-        } 
-
-        $auth = Zend_Auth::getInstance()->getStorage()->read();
-
-        //echo "<pre>"; print_r($auth);
-        //echo "<pre>"; print_r($response); exit;
-        die(Zend_Json_Encoder::encode($response));
-    }   
 
     public function deleteAction()
 	{
