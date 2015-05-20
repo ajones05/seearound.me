@@ -316,7 +316,21 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$form->isValid($data))
 			{
-				throw new RuntimeException('Validate error', -1);
+				$errors = array();
+
+				foreach ($form->getMessages() as $field => $field_errors)
+				{
+					$_errors = array();
+
+					foreach ($field_errors as $validator => $error)
+					{
+						$_errors[] = $error;
+					}
+
+					$errors[] = '"' . $field . '" - ' . implode(', ', $_errors);
+				}
+
+				throw new RuntimeException('Validate error: ' . implode(', ', $errors), -1);
 			}
 
 			$user = (new Application_Model_User)->register(
