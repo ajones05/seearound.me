@@ -43,7 +43,10 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 
 ****Global classes******/
 
-.clr{clear:both; font-size:1px;}
+.clr, .clear {
+	clear: both;
+	font-size: 1px;
+}
 
 .floatR{float:right;}
 
@@ -142,8 +145,6 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 .uprBarInr li.rightCol ul.primNav li{margin-right:25px;position:relative;}
 
 .uprBarInr li.rightCol ul.primNav li span { font-family: Lato-Light; font-size: 17px; }
-
-.uprBarInr li.rightCol ul.primNav li:hover { border-bottom: 3px solid #4276cd;}
 
 .uprBarInr li.rightCol ul.primNav li.last{margin-right: 2px;}
 
@@ -387,9 +388,6 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 /*****************/		
 
-/* .primNav .off{background:url(../images/icn-myconn.gif) no-repeat left top;border:1px solid #8cbefe;-moz-border-radius:5px 5px 0 0;-webkit-border-radius:5px 5px 0 0;border-radius:5px 5px 0 0;-khtml-border-radius:5px 5px 0 0; border-bottom:0;margin-top:-5px;}*/
-/* .primNav .on{background:url(../images/icn-myconn-o.gif) no-repeat left top;border:1px solid #198dfe;-moz-border-radius:5px 5px 0 0;-webkit-border-radius:5px 5px 0 0;border-radius:5px 5px 0 0;-khtml-border-radius:5px 5px 0 0; border-bottom:0;margin-top:-5px;}*/
-
 .primNav .off{border:1px solid white;-moz-border-radius:5px 5px 0 0;-webkit-border-radius:5px 5px 0 0;border-radius:5px 5px 0 0;-khtml-border-radius:5px 5px 0 0; border-bottom:0;margin-top:-5px;background-color:white;}
 
 .primNav .on{border:1px solid white;-moz-border-radius:5px 5px 0 0;-webkit-border-radius:5px 5px 0 0;border-radius:5px 5px 0 0;-khtml-border-radius:5px 5px 0 0; border-bottom:0;margin-top:-5px;background-color: white;}
@@ -400,19 +398,45 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .primNav .ddMyConnList{background:#4276cd; position:absolute; display:none; margin:5px 0 0 0px;width:220px;z-index:998; text-align: center;-webkit-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);-moz-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);box-shadow: 0px 5px 18px -3px rgba(121,149,196,1); }
 
-.primNav .ddMyConnList ul.connList{ padding:5px !important; border:0; height:62px; border-bottom:1px solid #ccc;} /* changes - 08/05/2012 height*/
+.primNav .ddMyConnList ul.connList {
+	padding: 5px !important;
+	border: 0;
+	min-height: 62px;
+	border-bottom: 1px solid #ccc;
+	display: inline-block;
+	width: 210px;
+}
 
 .primNav .ddMyConnList ul.connList li{float:left;margin:0 !important;padding:0 !important;}
 
 .primNav .ddMyConnList ul.connList .thumb{margin-right:10px !important;}
 
-.primNav .ddMyConnList ul.connList .name{color:#afafaf;}
-
-.primNav .ddMyConnList ul.connList .adrs{color:#6e9cc3; height:25px;}
+.primNav .ddMyConnList ul.connList .name {
+	color: #afafaf;
+	text-align: left;
+}
+.primNav .ddMyConnList ul.connList .adrs {
+	color: #6e9cc3;
+	min-height: 25px;
+}
+.primNav .ddMyConnList ul.connList .name,
+.primNav .ddMyConnList ul.connList .adrs {
+	width: 150px;
+	word-wrap: break-word;
+	float: right;
+}
 
 .primNav .ddMyConnList ul.connList .btnSet input{border:1px solid #3d77bc !important; background:#4993ef; overflow:visible;font:bold 10px tahoma;color:#fff;padding:1px 7px; margin:5px 0;}
 
-.primNav .ddMyConnList p.pendReq{ padding: 9px;font: normal 17px Lato-LightItalic;color: white;border-bottom: 2px solid #fff;}
+.primNav .ddMyConnList .pendReq {
+	padding: 9px;
+	border-bottom: 2px solid #fff;
+}
+.uprBarInr li.rightCol ul.primNav .ddMyConnList .pendReq a {
+	color: #fff;
+	font: normal 17px Lato-LightItalic;
+	float: none;
+}
 
 #ddMyConnList a.friend {color: #fff;display: block;width: 100%;padding: 9px 0;font-size: 17px;font-family: Lato-Bold;}
 
@@ -541,7 +565,13 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .invtFrndRow li.img img { width: 50px; height: 50px; -moz-border-radius:50px;-webkit-border-radius:50px;border-radius: 50px;-khtml-border-radius: 50px; margin-top: 2px;}
 
-.invtFrndRow li.name{float:left; color: #4276cd; font-size: 16px; width:280px;}
+.invtFrndRow li.name {
+	float: left;
+	color: #4276cd;
+	font-size: 16px;
+	width: 280px;
+	word-wrap: break-word;
+}
 
 .invtFrndRow li span.loc{font-size: 14px; color:#8d8d8d; display:block;}
 

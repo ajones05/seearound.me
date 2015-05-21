@@ -187,9 +187,9 @@ function showFriendRequest(thisone){
                             '</ul><div class="clear"></div>';
                         }
 					if (obj.total >= 5){
-						html += '<p class="pendReq">'+
+						html += '<div class="pendReq">'+
 							'<a href="'+baseUrl+'contacts/all-requests">View all pending requests</a>'+
-							'</p>';
+							'</div>';
 					} else {
 						html+='<p class="pendReq2"></p>';
 					}
