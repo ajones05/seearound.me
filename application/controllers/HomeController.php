@@ -74,102 +74,58 @@ class HomeController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-        $this->view->user = $user;
-        $this->view->myeditprofileExist = true;
-        $this->view->changeLocation = true;
-        $this->view->viewAllPost = true;
-        $newsFactory = new Application_Model_NewsFactory();
-        $userTable = new Application_Model_User;
-        $profileTable = new Application_Model_Profile;
-        $addressTable = new Application_Model_Address;
-        $returnUrl = $this->_request->getParam("url", '');
+		$form = new Application_Form_Profile;
 
-        if ($this->_request->isPost()) {
-            $errors = array();
-            $data = array();
-            $userTable->validateData($this->_request, $data, $errors);
-            if ($user->Email_id == $this->_request->getPost("Email_id")) {
-                unset($errors['Email_id']);
-                unset($data['Email_id']);
-            }
-            if (empty($errors)) {
-                $dob = $this->_request->getPost("yeardropdown") . "-" . $this->_request->getPost("monthdropdown") . "-" . $this->_request->getPost("daydropdown");
-                if ((strstr($dob, "Year")) || (strstr($dob, "Month")) || (strstr($dob, "Day"))) {
-                    $udata = array(
-                        'Name' => $this->_request->getPost("Name")
-                    );
-                } else {
+		if ($this->_request->isPost())
+		{
+			$data = $this->_request->getPost();
 
-                    $udata = array(
-                        'Name' => $this->_request->getPost("Name"),
-                        'Birth_date' => $dob
-                    );
-                }
-
-                $pdata = array(
-                    'public_profile' => ($this->_request->getPost("allow")) ? 1 : 0,
-                    'Activities' => $this->_request->getPost("Activityes"),
-                    'Gender' => $this->_request->getPost("Gender")
-                );
-
-                $adata = array(
-                    'address' => $this->_request->getPost("Location"),
-                    'latitude' => $this->_request->getPost("RLatitude"),
-                    'longitude' => $this->_request->getPost("RLongitude")
-                );
-
-                $db = $userTable->getDefaultAdapter();
-                $db->beginTransaction();
-
-                try {
-                  $userTable->update($udata, $userTable->getAdapter()->quoteInto("id =?", $user->id));
-                    if ($prow = $profileTable->fetchRow($profileTable->select()->where("user_id =?", $user->id))) {
-                        $profileTable->update($pdata, $profileTable->getAdapter()->quoteInto("user_id =?", $user->id));
-                    } else {
-                        $pdata['user_id'] = $user->id;
-                        $prow = $profileTable->createRow($pdata);
-                        $prow->save();
-                    }
-
-                    if ($arow = $addressTable->fetchRow($addressTable->select()->where("user_id =?", $user->id))) {
-
-                        $addressTable->update($adata, $addressTable->getAdapter()->quoteInto("user_id =?", $user->id));
-                    } else {
-
-                        $adata['user_id'] = $user->id;
-
-                        $arow = $addressTable->createRow($adata);
-
-                        $arow->save();
-                    }
-
-                    $db->commit();
-                } catch (Exception $e) {
-
-                    $db->rollBack();
-
-                    $this->view->errors = $e;
-                }
-
-                if ($returnUrl != "") {
-
-                    $this->_redirect($returnUrl);
-                } else {
-
-                    $this->_redirect($this->view->baseUrl("home/profile"));
-                }
-            } else {
-
-                $this->view->errors = $errors;
-            }
+			if ($form->isValid($data))
+			{
+				(new Application_Model_User)->updateProfile($user, $form->getValues());
+				$this->_redirect($this->view->baseUrl("home/profile"));
+			}
         }
+		else
+		{
+			$form->populate(array(
+				'email' => $user->Email_id,
+				'public_profile' => $user->public_profile,
+				'name' => $user->Name,
+				'gender' => $user->Gender,
+				'activities' => $user->Activities,
+				'address' => $user->address,
+				'latitude' => $user->latitude,
+				'longitude' => $user->longitude,
+			));
 
-		$this->view->url = $this->_request->getParam('url');
+			if ($user->Birth_date != null)
+			{
+				$birth_time = strtotime($user->Birth_date);
+
+				$form->populate(array(
+					'birth_day' => date('d', $birth_time),
+					'birth_month' => date('m', $birth_time),
+					'birth_year' => date('Y', $birth_time),
+				));
+			}
+		}
+
+		if ($form->latitude->getValue() == '' || $form->longitude->getValue() == '')
+		{
+			$geolocation = My_Ip::geolocation();
+			$form->latitude->setValue($geolocation[0]);
+			$form->longitude->setValue($geolocation[1]);
+		}
 
 		$this->view->headScript()
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
-			->appendFile('/bower_components/jquery-form/jquery.form.js')
-			->appendFile('/www/scripts/customDatepicker.js');
+			->appendFile('/bower_components/jquery-form/jquery.form.js');
+
+		$this->view->form = $form;
+        $this->view->user = $user;
+        $this->view->myeditprofileExist = true;
+        $this->view->changeLocation = true;
     }
 
     public function imageUploadAction(){

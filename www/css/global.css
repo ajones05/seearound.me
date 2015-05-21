@@ -434,29 +434,70 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .editProfInfoForm{background: #f8f7f7; font-size: 14px; padding-top: 5px;}
 
-.editProfInfoForm li{display:block; padding:15px 20px 13px; border-bottom: 1px solid #d7d7d7;}
-
-.editProfInfoForm li label{width: 100px;color:#4276cd; padding:5px 0; float: left;}
-
-.editProfInfoForm li input{border:1px solid #d7d7d7; width:282px; background:#fbfbfb; padding:6px 8px; color:#8d8d8d; float: right;  font: normal 14px lato-Regular}
+.editProfInfoForm > li {
+	padding: 15px 20px 13px;
+	border-bottom: 1px solid #d7d7d7;
+	width: 430px;
+	display: inline-block;
+}
+.editProfInfoForm li dt {
+	float: left;
+	padding: 5px 0;
+}
+.editProfInfoForm li label {
+	width: 100px;
+	color: #4276cd;
+}
+.editProfInfoForm li dt#public_profile-label {
+	float: right;
+	display: block;
+	width: 275px;
+}
+.editProfInfoForm li dt#public_profile-label label {
+	color: #eecd30;
+	line-height: 18px;
+	font-size: 12px;
+	cursor: pointer;
+}
+.editProfInfoForm li dd {
+	float: right;
+	width: 300px;
+	word-wrap: break-word;
+}
+.editProfInfoForm li dd#public_profile-element {
+	margin: 5px;
+    width: 21px;
+}
+.editProfInfoForm li dd#public_profile-element input {
+	width: auto;
+}
+.editProfInfoForm li input {
+	border: 1px solid #d7d7d7;
+	width: 282px;
+	background: #fbfbfb;
+	padding: 6px 8px;
+	color: #8d8d8d;
+	font: normal 14px lato-Regular;
+}
 
 .editProfInfoForm li select{border:1px solid #cccccc; width:300px; float: right; background:#fbfbfb;  padding:4.5px 8px; color:#8d8d8d; font: normal 14px lato-Regular}
+.editProfInfoForm li select.error {
+	border-color: red;
+}
 
 .editProfInfoForm li.bgEven{background:#faf9f9;}
 
 .editProfInfoForm li.bgOdd{background:#f8f7f7;}
 
-.editProfInfoForm li span{display:block; color:#eecd30; line-height:18px; font-size: 12px;}
-
-.editProfInfoForm li span.dob { width: 300px; float: right;}
-
 .editProfInfoForm li span input{ float:left; margin-right: 8px;}
 
-.editProfInfoForm li span.dob select{width:25%; float:left; margin-right:8%;}
-
-
-
-
+.editProfInfoForm li .dob select {
+	width: 80px;
+	float: left;
+}
+.editProfInfoForm li .dob select:not(:last-child) {
+	margin-right: 20px;
+}
 
 /*******Facebook friend *********/
 

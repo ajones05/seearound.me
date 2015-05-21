@@ -89,15 +89,10 @@ class IndexController extends Zend_Controller_Action {
 			}
 		}
 
-		$geolocation = My_Ip::geolocation();
-
-		if ($form->latitude->getValue() == '')
+		if ($form->latitude->getValue() == '' || $form->longitude->getValue() == '')
 		{
+			$geolocation = My_Ip::geolocation();
 			$form->latitude->setValue($geolocation[0]);
-		}
-
-		if ($form->longitude->getValue() == '')
-		{
 			$form->longitude->setValue($geolocation[1]);
 		}
 

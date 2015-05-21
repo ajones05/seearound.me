@@ -779,7 +779,7 @@ class Application_Model_User extends My_Db_Table_Abstract
 	 *
 	 * @return	Application_Model_UserRow
 	 */
-	public function register($data)
+	public function register(array $data)
 	{
 		$user = $this->createRow(array(
 			'Name' => $data['name'],
@@ -810,5 +810,71 @@ class Application_Model_User extends My_Db_Table_Abstract
 		));
 
 		return $user;
+	}
+
+	/**
+	 * Update the user data.
+	 *
+	 * @param	Application_Model_UserRow	$user
+	 * @param	array	$data
+	 *
+	 * @return	mixed	True on success, Exception on failure.
+	 */
+	public function updateProfile(Application_Model_UserRow $user, array $data)
+	{
+		$this->_db->beginTransaction();
+
+		try
+		{
+			$user_data = array(
+				'Name' => $data['name'],
+				// 'Email_id' => $data['email']
+			);
+
+			if (!empty($data['birth_day']) && !empty($data['birth_month']) && !empty($data['birth_year']))
+			{
+				$user_data['Birth_date'] = $data['birth_year'] . '-' . $data['birth_month'] . '-' . $data['birth_day'];
+			}
+			else
+			{
+				$user_data['Birth_date'] = null;
+			}
+
+			$this->update($user_data, $this->_db->quoteInto('id =?', $user->id));
+
+			$address = $user->findDependentRowset('Application_Model_Address')->current();
+
+			if (!$address)
+			{
+				$address = (new Application_Model_Address)->createRow(array('user_id' => $user->id));
+			}
+
+			$address->address = $data['address'];
+			$address->latitude = $data['latitude'];
+			$address->longitude = $data['longitude'];
+			$address->save();
+
+			$profile = $user->findDependentRowset('Application_Model_UserProfile')->current();
+			
+			if (!$profile)
+			{
+				$profile = (new Application_Model_UserProfile)->createRow(array('user_id' => $user->id));
+			}
+
+			$profile->public_profile = $data['public_profile'];
+			$profile->Activities = $data['activities'];
+			$profile->Gender = $data['gender'];
+			$profile->save();
+		
+			$this->_db->commit();
+		}
+		catch (Exception $e)
+		{
+			$this->_db->rollBack();
+
+			throw $e;
+		}
+
+		return true;
 	}
 }

@@ -1,20 +1,23 @@
 <script type="text/javascript">
-	var selectedDate = '';
-	var selectedYear = '';
-	var selectedMonth = '';
-
-	<?if($this->user->Birth_date):?>
-		<?$birthdate = explode('-', $this->user->Birth_date)?>
-		selectedDate = Number('<?=sprintf("%02d", $birthdate[2])?>');
-		selectedYear = Number('<?=$birthdate[0]?>');
-		selectedMonth = Number('<?=$birthdate[1]?>');
-	<?endif?>
-
-	window.onload=function(){
-		populatedropdown("daydropdown", "monthdropdown", "yeardropdown")
-	}
-
 	$(function(){
+		$('#birth_month, #birth_year').change(function(){
+			if ($('#birth_month').val() && $('#birth_year').val()){
+				var count = new Date($('#birth_year').val(), $('#birth_month').val(), 0).getDate();
+
+				if (($('#birth_day option').size() - 1) != count){
+					var selected = $('#birth_day').val();
+
+					$('#birth_day option:not(:first-child)').remove();
+
+					for (var day = 1; day <= count; day++){
+						$('#birth_day').append($('<option/>', {selected: day == selected}).val(day).text(day))
+					}
+				}
+			}
+		});
+
+		$('#birth_month').change();
+
 		$("#locationButton, #Location").click(function(){
 			$('body').css({overflow: 'hidden'});
 
@@ -43,9 +46,9 @@
 					},
 					open: function(event, ui){
 						var $editForm = $('#editProfileForm'),
-							$addressField = $('[name=Location]', $editForm),
-							$latitudeField = $('[name=RLatitude]', $editForm),
-							$longitudeField = $('[name=RLongitude]', $editForm),
+							$addressField = $('[name=location]', $editForm),
+							$latitudeField = $('[name=latitude]', $editForm),
+							$longitudeField = $('[name=longitude]', $editForm),
 							newsAddress = $addressField.val(),
 							$editAddress = $('[name=address]', event.target)
 								.val(newsAddress)
@@ -220,23 +223,21 @@
 </script>
 <h3 class="topHdGrayB12">Edit Profile Info</h3>
 <div id="userDiv" class="leftCol" >
-		<div class="profDtl"> 
-				<div class="profile-img">
-					<a style="z-index:9999;" href="<?php echo $this->baseUrl("home/profile"); ?>">
-						<span id="image_upload_field">
-							<img src="<?php echo $this->user->getprofileImage($this->baseUrl("www/images/img-prof40x40.jpg")); ?>" class="imgProf" />
-						</span>
-					</a> 
-				</div>
-				<div class="profile-describe">   
-					<a class="hypDecNone" href="<?php echo $this->baseUrl("home/profile"); ?>">
-						<h3 class="name"><?php echo ucfirst($this->user->Name);?></h3>
-					</a>
-					<p class="loc">
-						<?php echo ucfirst(My_StringHelper::stringLimit($this->user->address(), 50, '...')); ?>
-					</p>
-				</div>
-				<div class="clr"></div>
+	<div class="profDtl"> 
+		<div class="profile-img">
+			<a style="z-index:9999;" href="<?php echo $this->baseUrl("home/profile"); ?>">
+				<span id="image_upload_field">
+					<img src="<?php echo $this->user->getprofileImage($this->baseUrl("www/images/img-prof40x40.jpg")); ?>" class="imgProf" />
+				</span>
+			</a> 
+		</div>
+		<div class="profile-describe">   
+			<a class="hypDecNone" href="<?php echo $this->baseUrl("home/profile"); ?>">
+				<h3 class="name"><?php echo ucfirst($this->user->Name);?></h3>
+			</a>
+			<p class="loc"><?php echo ucfirst(My_StringHelper::stringLimit($this->user->address(), 50, '...')); ?></p>
+		</div>
+		<div class="clr"></div>
 	</div>
 </div>
 <ul class="editProfInfoTopNav">
@@ -260,73 +261,52 @@
 <form method="post" id="editProfileForm">
 	<ul class="editProfInfoForm">
 		<li>
-			<label>Email Address</label>
-			<div style="float: right; display: inline-block; width: 300px;">
-				<input type="text" name="Email_id" value="<?=$this->user->Email_id?>" style="float: none;"/>
-				<?if($this->errors['Email_id']):?>
-				<span class="errors">
-					<?=$this->errors['Email_id']?>
-				</span>
-				<?endif;?>
-				<span style="margin-top: 5px;">
-					<input type="checkbox" class="wAuto" name="allow" <?if($this->user->public_profile):?>checked="true"<?endif;?>/>
-					Allow other users to see your Email address?
-				</span>
-				<div class="clr"></div> 
-			</div>
-			<div class="clr"></div>
+			<?php echo $this->form->email; ?>
+			<?php echo $this->form->public_profile; ?>
+		</li>
+		<li><?php echo $this->form->name; ?></li>
+		<li><?php echo $this->form->gender; ?></li>
+		<li><?php echo $this->form->activities; ?></li>
+		<li>
+			<?php echo $this->form->address; ?>
+			<dd>
+			<input id="latitude" type="hidden" value="<?php echo $this->form->latitude->getValue(); ?>" name="latitude" />
+			<?php echo $this->form->latitude->renderErrors(); ?>
+			<input id="longitude" type="hidden" value="<?php echo $this->form->longitude->getValue(); ?>" name="longitude" />
+			<?php echo $this->form->longitude->renderErrors(); ?>
+			</dd>
 		</li>
 		<li>
-			<label>Name</label>
-			<input type="text" value="<?=$this->user->Name?>" name="Name" />
-			<?if($this->errors['Name']):?>
-			<span class="errors">
-				<?=$this->errors['Name']?>
-			</span>
-			<?endif;?>
-			<div class="clr"></div>
-		</li>
-		<li>
-			<label>Gender</label>
-			<select name="Gender" id="">
-				<option value="Male" <?if(ucfirst($this->user->Gender) == "Male"):?> selected="true" <?endif;?>> Male</option>
-				<option value="Female" <?if(ucfirst($this->user->Gender) == "Female"):?> selected="true" <?endif;?>> Female</option>
-			</select>
-			<div class="clr"></div>
-		</li>
-		<li>
-			<label>
-				<blockquote>
-					<p>Interest</p>
-				</blockquote>
-			</label>
-			<input name="Activityes" type="text" value="<?=$this->user->Activities?>" />
-			<div class="clr"></div>
-		</li>
-		<li>
-			<label>Location</label>
-			<input type="text" value="<?php echo htmlspecialchars($this->user->address()); ?>" name="Location" />
-			<?php if ($this->errors['Location']): ?>
-			<span class="errors"><?php echo $this->errors['Location']; ?></span>
-			<?php endif; ?>
-			<input type="hidden" name="RLatitude" value="<?php echo $this->user->lat(); ?>" />
-			<input type="hidden" name="RLongitude" value="<?php echo $this->user->lng(); ?>" />
-			<div class="clr"></div>
-		</li>
-		<li>
-			<label>Date of Birth</label>
-			<span class="dob">
-				<select id="monthdropdown" name="monthdropdown" class="selectClass" onchange="updateDate(this.value,'month')"></select> 
-				<select id="daydropdown" name="daydropdown" class="selectClass" onchange="updateDate(this.value,'day')"></select> 
-				<select id="yeardropdown" name="yeardropdown"  class="selectClass" onchange="updateDate(this.value,'year')"></select> 
-				<div class="clr"></div>
-			</span>
-			<input type="hidden" name="url" value="<?php echo $this->url; ?>" />
-			<div class="clr"></div>
+			<dt>
+				<label>Date of Birth</label>
+			</dt>
+			<dd class="dob">
+				<?php
+				echo $this->formSelect(
+					'birth_month',
+					$this->form->birth_month->getValue(),
+					$this->form->getErrors('birth_month') ? array('class' => 'error') : null,
+					$this->form->birth_month->getMultiOptions()
+				);
+				echo $this->formSelect(
+					'birth_day',
+					$this->form->birth_day->getValue(),
+					$this->form->getErrors('birth_day') ? array('class' => 'error') : null,
+					$this->form->birth_day->getMultiOptions()
+				);
+				echo $this->formSelect(
+					'birth_year',
+					$this->form->birth_year->getValue(),
+					$this->form->getErrors('birth_year') ? array('class' => 'error') : null,
+					$this->form->birth_year->getMultiOptions()
+				);
+				?>
+			</dd>
 		</li>
 	</ul>
 	<div class="clr"></div>
 	<div class="btnBarM20">
-		<input type="submit" value="Apply"  class="btnBlueRptType2" style="margin-right:8%"/><input type="button" onclick="window.location.href = '<?php echo $this->baseUrl("home/profile"); ?>'" value="Cancel" class="btnBlueRptType2" />
+		<input type="submit" value="Apply" class="btnBlueRptType2" style="margin-right:8%" />
+		<input type="button" onclick="window.location.href = '<?php echo $this->baseUrl("home/profile"); ?>'" value="Cancel" class="btnBlueRptType2" />
 	</div>
 </form>
