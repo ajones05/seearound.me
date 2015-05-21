@@ -431,6 +431,8 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 .primNav .ddMyConnList .pendReq {
 	padding: 9px;
 	border-bottom: 2px solid #fff;
+	color: #fff;
+	font: normal 17px Lato-LightItalic;
 }
 .uprBarInr li.rightCol ul.primNav .ddMyConnList .pendReq a {
 	color: #fff;
