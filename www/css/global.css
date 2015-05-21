@@ -128,13 +128,42 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 
 .uprBarInr li.leftCol .logo img {float:left;width: 200px; height: auto;}
 
-.uprBarInr li.midCol{text-align:center; margin: 15px 0 0 77px;}
-
-.uprBarInr li.midCol span.sIcn{background:#fff; display:inline-block; float:right; position: relative;}
-
-.uprBarInr li.midCol span.sIcn img { position: absolute; top: 10px; right: 9px; width: 17px; height: auto; cursor:pointer;}
-
-.uprBarInr li.midCol span.sIcn input{border: 2px solid #d7d7d7; height:28px; padding-left: 8px; width:175px; font-family: Lato-LightItalic; font-size: 16px; color: #5d5d5d;}
+.uprBarInr li.midCol {
+	text-align: center;
+	margin: 15px 0 0 77px;
+}
+.uprBarInr li.midCol span.sIcn {
+	background: #fff;
+	display: inline-block;
+	float: right;
+	position: relative;
+}
+.uprBarInr li.midCol span.sIcn img {
+	position: absolute;
+	top: 10px;
+	right: 9px;
+	height: auto;
+	cursor:pointer;
+}
+.uprBarInr li.midCol span.sIcn img.search {
+	top: 10px;
+	right: 9px;
+	width: 17px;
+}
+.uprBarInr li.midCol span.sIcn img.clear {
+	top: 12px;
+	right: 30px;
+	width: 12px;
+}
+.uprBarInr li.midCol span.sIcn input {
+	border: 2px solid #d7d7d7;
+	height: 28px;
+	padding-left: 8px;
+	width: 175px;
+	font-family: Lato-LightItalic;
+	font-size: 16px;
+	color: #5d5d5d;
+}
 
 .uprBarInr li.rightCol{float:right;}
 

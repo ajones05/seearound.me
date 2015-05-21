@@ -799,7 +799,7 @@ function loadNews(start){
 			latitude: newsMap.getCenter().lat(),
 			longitude: newsMap.getCenter().lng(),
 			radius: getRadius(),
-			search: $('#searchText').val(),
+			search: $('#searchNews [name=sv]').val(),
 			filter: $('#filter_type').val(),
 			fromPage: start
 		},

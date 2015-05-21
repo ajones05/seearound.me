@@ -63,10 +63,12 @@ $(function(){
 			});
 		});
 
-		$('#searchText').keydown(function(e){
-			if (e.keyCode == 13){
-				getKeycodes();
-			} 
+		$('#searchNews .clear').click(function(){
+			$('#searchNews [name=sv]').val('');
+		});
+
+		$('#searchNews .search').click(function(){
+			$('#searchNews').submit();
 		});
 	} else {
 		$('#facebookLogin').click(function(e){
@@ -381,16 +383,6 @@ function userAddressTooltip(address, image){
 		'</div>' +
 		'<div class="user-address">' + address + '</div>' +
 	'</div>';
-}
-
-// TODO: test
-
-function getKeycodes(){
-	if (controller == 'home' && action == 'index'){
-		loadNews(0);
-	} else {
-		window.location = baseUrl+'home/index/sv/'+$('#searchText').val();
-	}
 }
 
 function notification(){

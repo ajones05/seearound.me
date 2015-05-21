@@ -528,6 +528,16 @@ $(function(){
 			setThisHeight(Number($("#midColLayout").height()));
 		}
 	});
+
+	$('#searchNews .clear').click(function(){
+		$('#searchNews [name=sv]').val('');
+		loadNews(0);
+	});
+
+	$('#searchNews').submit(function(e){
+		e.preventDefault();
+		loadNews(0);
+	});
 });
 
 function clearUpload(){

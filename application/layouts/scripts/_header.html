@@ -1,5 +1,6 @@
 <?php
 $auth = Zend_Auth::getInstance()->getIdentity();
+$request = Zend_Controller_Front::getInstance()->getRequest();
 ?>
 <div class="uprBar">
 	<?php if (Application_Model_User::checkId($auth['user_id'], $user)): ?>
@@ -11,10 +12,13 @@ $auth = Zend_Auth::getInstance()->getIdentity();
 				</a>
 			</li>
 			<li class="midCol">
-				<span class="sIcn">
-					<input type="text" id="searchText" value="<?php $request->getParam('sv', null); ?>" placeholder="Search posts..." />
-					<img src="<?php echo $this->baseUrl("www/images/icn-search.png"); ?>" alt="Search" onclick="getKeycodes();" />
-				</span>
+				<form id="searchNews" action="<?php echo $this->baseUrl("home"); ?>" method="GET">
+					<span class="sIcn">
+						<input type="text" name="sv" value="<?php echo $request->getParam('sv', null); ?>" placeholder="Search posts..." />
+						<img class="search" src="<?php echo $this->baseUrl("www/images/icn-search.png"); ?>" />
+						<img class="clear" src="<?php echo $this->baseUrl("www/images/close_12x12.png"); ?>" />
+					</span>
+				</form>
 			</li>
 			<li class="rightCol">
 				<ul class="primNav">

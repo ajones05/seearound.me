@@ -8,7 +8,6 @@ if ($auth)
 
 $config = Zend_Registry::get('config_global');
 $geoip = My_Ip::geolocation();
-$request = Zend_Controller_Front::getInstance()->getRequest();
 
 $this->headLink()
 	->appendStylesheet($this->baseUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
@@ -50,8 +49,6 @@ $image = $this->baseUrl('www/images/img-prof40x40.jpg');
 	var userAddress = <?php echo json_encode($auth ? $user->address() : ''); ?>;
 	var userName = <?php echo json_encode($auth ? $user->Name : ''); ?>;
 	var imagePath = "<?php echo $auth ? $user->getProfileImage($image) : $image; ?>";
-	var controller = "<?=$request->getParam('controller')?>";
-	var action = "<?=$request->getParam('action')?>";
 
 	$(function(){
 		$(window).resize(function(){
