@@ -3,9 +3,7 @@
        <a class="user-img" href="<?php echo $this->baseUrl("home/profile"); ?>">
 			<img src="<?php echo $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="smallImage" />
        </a>
-		<a class="user-name" title="<?php echo $this->user->Name; ?>" href="<?php echo $this->baseUrl("home/profile"); ?>">
-			<?php echo My_StringHelper::stringLimit($this->user->Name, 7, '...'); ?>
-		</a>
+		<a class="user-name" title="<?php echo $this->user->Name; ?>" href="<?php echo $this->baseUrl("home/profile"); ?>"><?php echo My_StringHelper::stringLimit($this->user->Name, 7, '...'); ?></a>
 	</li>
 	<li class="bgTxtArea">
 		<form id="addNewsForm" action="<?php echo $this->baseUrl("home/add-news"); ?>" method="post" enctype="multipart/form-data">

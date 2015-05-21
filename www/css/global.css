@@ -224,7 +224,12 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 /*.scrpRow{border-bottom: 1px solid #D3DDE6;margin-left: -76px;padding: 10px 53px;width: 100%;}*/
 .scrpRow{border-bottom: 1px solid #d7d7d7; margin-left: 0px; padding: 8px 0px 6px; width: 100%; background: #f1f1f1;}
 
-.scrpRow li.imgPro { float: left; text-align: center; margin-left: 14px;}
+.scrpRow li.imgPro {
+	float: left;
+	text-align: center;
+	margin-left: 14px;
+	width: 70px;
+}
 
 .scrpRow li.imgPro .user-img {z-index: 9999; display: block; margin:2px 0 0px;}
  
