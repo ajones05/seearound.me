@@ -60,8 +60,6 @@ $(function(){
 		.tooltip('open');
 	});
 
-	loadNews(0);
-
 	$('#zoomIn').click(function(){
 		var zoom = newsMap.getZoom();
         newsMap.setZoom(++zoom);
@@ -541,6 +539,7 @@ $(function(){
 			return false;
 		}
 
+		$('.clear', $form).remove();
 		$searchIcon.hide();
 		$searchInput.attr('disabled', true);
 
@@ -559,6 +558,12 @@ $(function(){
 			);
 		});
 	});
+
+	if ($.trim($('#searchNews [name=sv]')) !== ''){
+		$('#searchNews').submit();
+	} else {
+		loadNews(0);
+	}
 });
 
 function clearUpload(){
