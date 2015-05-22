@@ -39,8 +39,6 @@
                             _this.find(".message-third img.checking").css("display", "none");
                         }
 
-                        msg = $.parseJSON(msg);
-
                         if(msg && msg.errors) {
 
                             $("#loading_"+number).hide();
@@ -88,7 +86,7 @@
 
                                 '</li>' +
 
-                                '<li class="reply-wrapper">' + '<img src="' +baseUrl + 'uploads/' +msg.user_image + '">' + 
+                                '<li class="reply-wrapper">' + '<img src="' + msg.user_image + '">' + 
 
                                     '<input type="hidden" id="reply_user_'+(msg.inboxData).id+'" name="reply_user_'+(msg.inboxData).id+'" value="';
 
