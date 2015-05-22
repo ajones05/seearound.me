@@ -364,13 +364,7 @@ function renderNews($news){
 											resetMarkersCluster();
 											updateMarkersCluster();
 										} else {
-											var redirectUrl = baseUrl;
-
-											if (isLogin){
-												redirectUrl += 'home';
-											}
-
-											window.location = redirectUrl;
+											window.location = baseUrl + 'home';
 										}
 									} else {
 										alert('Sorry! we are unable to performe delete action');
