@@ -63,10 +63,6 @@ $(function(){
 			});
 		});
 
-		$('#searchNews .clear').click(function(){
-			$('#searchNews [name=sv]').val('');
-		});
-
 		$('#searchNews .search').click(function(){
 			$('#searchNews').submit();
 		});

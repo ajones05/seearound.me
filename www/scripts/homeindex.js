@@ -529,14 +529,35 @@ $(function(){
 		}
 	});
 
-	$('#searchNews .clear').click(function(){
-		$('#searchNews [name=sv]').val('');
-		loadNews(0);
-	});
-
 	$('#searchNews').submit(function(e){
+		var $form = $(this),
+			$searchInput = $('[name=sv]', $form),
+			$searchIcon = $('.search', $form);
+
 		e.preventDefault();
-		loadNews(0);
+
+		if ($.trim($searchInput.val()) === ''){
+			$searchInput.focus();
+			return false;
+		}
+
+		$searchIcon.hide();
+		$searchInput.attr('disabled', true);
+
+		loadNews(0, function(){
+			$searchInput.attr('disabled', false);
+
+			$('.sIcn', $form).append(
+				$('<img/>', {'class': 'clear', src: baseUrl + 'www/images/close_12x12.png'}).click(function(){
+					$(this).remove();
+					$searchInput.val('');
+
+					loadNews(0, function(){
+						$searchIcon.show();
+					});
+				})
+			);
+		});
 	});
 });
 

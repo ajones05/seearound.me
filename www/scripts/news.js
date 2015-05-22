@@ -776,7 +776,7 @@ function higlightNews(newsId){
 	$target.addClass('higlight-news').find('.moreButton').click();
 }
 
-function loadNews(start){
+function loadNews(start, callback){
 	if (start == 0){
 		if (!$.isEmptyObject(newsMarkers)){
 			for (var id in newsMarkers){
@@ -855,6 +855,10 @@ function loadNews(start){
 
 			if ($("#newsData").height() > 714){
 				setThisHeight(Number($("#newsData").height())+100);
+			}
+
+			if (typeof callback == 'function'){
+				callback();
 			}
 		} else if (response){
 			alert(response.error.message);
