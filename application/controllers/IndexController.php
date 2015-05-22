@@ -66,7 +66,7 @@ class IndexController extends Zend_Controller_Action {
 				);
 
 				My_Email::send(
-					$row->Email_id,
+					$user->Email_id,
 					'SeeAround.me Registration',
 					array(
 						'template' => 'registration',
