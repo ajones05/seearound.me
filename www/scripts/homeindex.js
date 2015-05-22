@@ -559,7 +559,7 @@ $(function(){
 		});
 	});
 
-	if ($.trim($('#searchNews [name=sv]')) !== ''){
+	if ($.trim($('#searchNews [name=sv]').val()) !== ''){
 		$('#searchNews').submit();
 	} else {
 		loadNews(0);
