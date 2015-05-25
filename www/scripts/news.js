@@ -55,7 +55,7 @@ function renderNews($news){
 				return false;
 			}
 
-			if (e.keyCode === 13){
+			if (keyCode(e) === 13){
 				$commentField.attr('disabled', true);
 
 				$('.commentLoading').show();
@@ -163,7 +163,7 @@ function renderNews($news){
 												$submitField = $('[type=submit]', event.target)
 													.attr('disabled', false),
 												$map = $('#map-canvas', event.target),
-												autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]),
+												autocomplete = new google.maps.places.Autocomplete($editAddress[0]),
 												centerLocation = new google.maps.LatLng($latitudeField.val(), $longitudeField.val()),
 												geocoder = new google.maps.Geocoder(),
 												renderLocation = true;
@@ -174,36 +174,20 @@ function renderNews($news){
 											});
 
 											var marker = new google.maps.Marker({
-												map: map,
 												draggable: true,
 												position: map.getCenter(),
 												icon: baseUrl + 'www/images/icons/icon_1.png'
 											});
-
-											function updateMarker(event){
-												geocoder.geocode({
-													latLng: event.latLng
-												}, function(results, status){
-													if (status == google.maps.GeocoderStatus.OK){
-														infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
-														$editAddress.val(results[0].formatted_address);
-													} else {
-														infowindow.setContent(userAddressTooltip('', imagePath));
-														$editAddress.val('');
-													}
-
-													autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-													renderLocation = true;
-													infowindow.open(map, marker);
-												});
-											}
 
 											var infowindow = new google.maps.InfoWindow({
 												maxWidth: 220,
 												content: userAddressTooltip(newsAddress, imagePath)
 											});
 
-											infowindow.open(map, marker);
+											google.maps.event.addListenerOnce(map, 'idle', function(){
+												marker.setMap(map);
+												infowindow.open(map, marker);
+											});
 
 											google.maps.event.addListener(map, 'click', function(mapEvent){
 												infowindow.close();
@@ -216,13 +200,13 @@ function renderNews($news){
 											});
 
 											google.maps.event.addListener(autocomplete, 'place_changed', function(){
-												$('.search', event.target).click();
-											});
+												var place = autocomplete.getPlace();
 
-											$editAddress.keydown(function(e){
-												if (e.keyCode == 13){
-													e.preventDefault();
+												if (!place || typeof place.geometry === 'undefined'){
+													return false;
 												}
+
+												renderLocationAddress(place.formatted_address, place.geometry.location);
 											});
 
 											$('.search', event.target).click(function(){
@@ -230,7 +214,12 @@ function renderNews($news){
 
 												if (value === ''){
 													$editAddress.focus();
-													return;
+													return false;
+												}
+
+												if ($('.pac-container .pac-item:not(.hidden)').size()){
+													$editAddress.focus();
+													return false;
 												}
 
 												$submitField.attr('disabled', true);
@@ -239,12 +228,7 @@ function renderNews($news){
 													address: value
 												}, function(results, status){
 													if (status == google.maps.GeocoderStatus.OK){
-														infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
-														map.setCenter(results[0].geometry.location);
-														marker.setPosition(results[0].geometry.location);
-														$editAddress.val(results[0].formatted_address);
-														autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-														renderLocation = true;
+														renderLocationAddress(results[0].formatted_address, results[0].geometry.location);
 													} else {
 														alert('Sorry! We are unable to find this location.');
 														renderLocation = false;
@@ -254,87 +238,121 @@ function renderNews($news){
 												});
 											});
 
-											$('form', event.target).submit(function(e){
-												e.preventDefault();
-
-												if (!renderLocation){
-													$editAddress.focus();
-													return false;
-												}
-
-												$map.mask('Waiting...');
-												$submitField.attr('disabled', true);
-
-												$addressField.val($editAddress.val());
-												$latitudeField.val(marker.getPosition().lat());
-												$longitudeField.val(marker.getPosition().lng());
-
-												$.ajax({
-													url: baseUrl + 'home/save-news-location',
-													data: $(':not([name=news])', $editForm).serialize(),
-													type: 'POST',
-													dataType: 'json',
-													beforeSend: function(jqXHR, settings){
-														$editAddress.attr('disabled', true);
+											$('form', event.target)
+												.on('keyup keypress', function(e){
+													if (keyCode(e) === 13){
+														e.preventDefault();
+														return false;
 													}
-												}).done(function(response){
-													if (response && response.status){
-														if (newsMap.get('isListing') && latlngDistance(newsMap.getCenter(), marker.getPosition(), 'M') > getRadius()){
-															newsMap.setCenter(marker.getPosition());
-															newsMapCircle.changeCenter(newsMap.getCenter(), 0.8);
-															loadNews(0);
-														} else {
-															if (!newsMap.get('isListing')){
+												})
+												.submit(function(e){
+													e.preventDefault();
+
+													if (!renderLocation){
+														$editAddress.focus();
+														return false;
+													}
+
+													$map.mask('Waiting...');
+													$submitField.attr('disabled', true);
+
+													$addressField.val($editAddress.val());
+													$latitudeField.val(marker.getPosition().lat());
+													$longitudeField.val(marker.getPosition().lng());
+
+													$.ajax({
+														url: baseUrl + 'home/save-news-location',
+														data: $(':not([name=news])', $editForm).serialize(),
+														type: 'POST',
+														dataType: 'json',
+														beforeSend: function(jqXHR, settings){
+															$editAddress.attr('disabled', true);
+														}
+													}).done(function(response){
+														if (response && response.status){
+															if (newsMap.get('isListing') &&
+																latlngDistance(newsMap.getCenter(), marker.getPosition(), 'M') > getRadius()){
 																newsMap.setCenter(marker.getPosition());
-															}
-
-															newsMarkers[news_id].opts.data.latitude = marker.getPosition().lat();
-															newsMarkers[news_id].opts.data.longitude = marker.getPosition().lng();
-															newsMarkers[news_id].setPosition(marker.getPosition());
-
-															if (newsMap.get('isListing')){
-																resetMarkersCluster();
-
-																if (isRootMarker(news_id)){
-																	newsMarkers[news_id].setIcon({
-																		url: baseUrl + 'www/images/icons/icon_1.png',
-																		width: 25,
-																		height: 36
-																	});
-																} else {
-																	newsMarkers[news_id].setIcon({
-																		url: baseUrl + 'www/images/icons/icon_2.png',
-																		width: 20,
-																		height: 29
-																	});
+																newsMapCircle.changeCenter(newsMap.getCenter(), 0.8);
+																loadNews(0);
+															} else {
+																if (!newsMap.get('isListing')){
+																	newsMap.setCenter(marker.getPosition());
 																}
 
-																updateMarkersCluster();
+																newsMarkers[news_id].opts.data.latitude = marker.getPosition().lat();
+																newsMarkers[news_id].opts.data.longitude = marker.getPosition().lng();
+																newsMarkers[news_id].setPosition(marker.getPosition());
+
+																if (newsMap.get('isListing')){
+																	resetMarkersCluster();
+
+																	if (isRootMarker(news_id)){
+																		newsMarkers[news_id].setIcon({
+																			url: baseUrl + 'www/images/icons/icon_1.png',
+																			width: 25,
+																			height: 36
+																		});
+																	} else {
+																		newsMarkers[news_id].setIcon({
+																			url: baseUrl + 'www/images/icons/icon_2.png',
+																			width: 20,
+																			height: 29
+																		});
+																	}
+
+																	updateMarkersCluster();
+																}
+
+																var $markerElement = $('#' + newsMarkers[news_id].id);
+
+																if ($markerElement.data('ui-tooltip')){
+																	$markerElement.tooltip('destroy');
+																}
 															}
 
-															var $markerElement = $('#' + newsMarkers[news_id].id);
-
-															if ($markerElement.data('ui-tooltip')){
-																$markerElement.tooltip('destroy');
-															}
+															$(event.target).dialog('close');
+														} else if (response){
+															alert(response.error.message);
+															$map.unmask();
+															$('[name=address],[type=submit]', event.target).attr('disabled', false);
+														} else {
+															alert(ERROR_MESSAGE);
+															$map.unmask();
+															$('[name=address],[type=submit]', event.target).attr('disabled', false);
 														}
-
-														$(event.target).dialog('close');
-													} else if (response){
-														alert(response.error.message);
+													}).fail(function(jqXHR, textStatus){
+														alert(textStatus);
 														$map.unmask();
 														$('[name=address],[type=submit]', event.target).attr('disabled', false);
-													} else {
-														alert(ERROR_MESSAGE);
-														$map.unmask();
-														$('[name=address],[type=submit]', event.target).attr('disabled', false);
-													}
-												}).fail(function(jqXHR, textStatus){
-													alert(textStatus);
-													$map.unmask();
-													$('[name=address],[type=submit]', event.target).attr('disabled', false);
+													});
 												});
-											});
+
+											function updateMarker(event){
+												geocoder.geocode({
+													latLng: event.latLng
+												}, function(results, status){
+													var address = '';
+
+													if (status == google.maps.GeocoderStatus.OK){
+														address = results[0].formatted_address;
+													}
+
+													infowindow.setContent(userAddressTooltip(address, imagePath));
+													infowindow.open(map, marker);
+													setGoogleMapsAutocompleteValue($editAddress, address);
+													renderLocation = true;
+												});
+											}
+
+											function renderLocationAddress(address, location){
+												infowindow.setContent(userAddressTooltip(address, imagePath));
+												map.setCenter(location);
+												marker.setPosition(location);
+												$editAddress.val(address);
+												setGoogleMapsAutocompleteValue($editAddress, address);
+												renderLocation = true;
+											}
 										}
 									});
 								}),

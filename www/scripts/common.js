@@ -272,10 +272,19 @@ function deleteFriend(userId, target, callback){
 	});
 }
 
+// TODO: remove
 function googleMapsPlacesAutocompleteReset(input){
 	google.maps.event.clearInstanceListeners(input);
 	$('.pac-container').remove();
 	return new google.maps.places.Autocomplete(input);
+}
+
+function setGoogleMapsAutocompleteValue(input, value){
+	input.blur();
+	$('.pac-container .pac-item').addClass('hidden');
+	setTimeout(function(){
+		input.val(value).change();
+	}, 10);
 }
 
 function userMessageDialog(userId){
@@ -451,4 +460,8 @@ function setHeight(col){
     });
 
 	$(col).css('min-height', maxHeight);
+}
+
+function keyCode(event){
+	return event.keyCode || event.which;
 }
