@@ -244,7 +244,7 @@ class HomeController extends Zend_Controller_Action
 			$model = new Application_Model_News;
 
 			$data = $form->getValues();
-			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], empty($data['images']));
+			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], empty($data['image']));
 			$data['id'] = $model->insert($data);
 
 			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $data['id'], $user->id))
@@ -282,7 +282,7 @@ class HomeController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
+				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
 			);
 		}
 
@@ -861,7 +861,7 @@ class HomeController extends Zend_Controller_Action
 			}
 
 			$news->news = $body;
-			$news->news_html = $data['news_html'] = My_CommonUtils::renderHtml($body, $news->images == null);
+			$news->news_html = $data['news_html'] = My_CommonUtils::renderHtml($body, $news->image == null);
 			$news->save();
 
 			$response = array(

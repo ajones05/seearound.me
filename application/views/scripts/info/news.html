@@ -4,7 +4,7 @@ $auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
 $user = $this->news->findDependentRowset('Application_Model_User')->current();
 $user_image = $user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
 
-$image = $this->news->images && file_exists(ROOT_PATH . '/newsimages/' . $this->news->images) ? $this->news->images : null;
+$image = $this->news->image && file_exists(ROOT_PATH . '/newsimages/' . $this->news->image) ? $this->news->image : null;
 
 if ($image)
 {

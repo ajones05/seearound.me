@@ -7,11 +7,11 @@ $votings_count = My_ArrayHelper::getProp($this, 'votings_count', 0);
 $created_date = isset($this->item['created_date']) ? $this->item['created_date'] : date('Y-m-d H:i:s');
 $hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => $this->item['id']), $comments->toArray(), 1);
 
-$images = isset($this->item['images']) && file_exists(ROOT_PATH . '/newsimages/' . $this->item['images']) ? $this->item['images'] : null;
+$image = isset($this->item['image']) && file_exists(ROOT_PATH . '/newsimages/' . $this->item['image']) ? $this->item['image'] : null;
 
-if ($images)
+if ($image)
 {
-	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $images);
+	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $image);
 }
 ?>
 <div id="scrpBox_<?php echo $this->item['id']; ?>" class="scrpBox">
@@ -41,9 +41,9 @@ if ($images)
 					</div>
 					<div class="post-bottom">
 						<div class="post-content"><?php echo Application_Model_News::limitNews($this->item); ?></div>
-						<?php if ($images != null): ?>
+						<?php if ($image != null): ?>
 						<div class="post-image" style="margin-top: 10px;">
-							<img onclick="openImage('<?php echo $images; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $images); ?>" style="cursor: pointer;width:100%;" />
+							<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" style="cursor: pointer;width:100%;" />
 						</div>
 						<?php endif; ?>
 					</div>
@@ -63,7 +63,7 @@ if ($images)
 			<?php endif; ?>
 			<span class="floatR">
 				<span style="display: block; float: left;">Share:</span>
-				<a class="crp" onclick="fbshare('<?php echo $this->baseUrl("tbnewsimages/" . $images); ?>','<?php echo $this->item['news']; ?>','<?php echo $this->baseUrl("info/news/nwid/" . $this->item['id']); ?>')">
+				<a class="crp" onclick="fbshare('<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>','<?php echo $this->item['news']; ?>','<?php echo $this->baseUrl("info/news/nwid/" . $this->item['id']); ?>')">
 					<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" style="width: 25px; height: 25px;" />
 				</a>
 				<a href="#" class="crp email-share">

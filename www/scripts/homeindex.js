@@ -599,7 +599,7 @@ function preparePost(location, address){
 
 function addPost(location, address){
 	var $form = $('#addNewsForm'), 
-		$images = $('[name=images]', $form),
+		$images = $('[name=image]', $form),
 		data = new FormData();
 
 	data.append('news', $('[name=news]', $form).val());
@@ -611,7 +611,7 @@ function addPost(location, address){
 	}
 
 	if ($.trim($images.val()) !== ''){
-		data.append('images', $images[0].files[0]);
+		data.append('image', $images[0].files[0]);
 	}
 
 	$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', true);

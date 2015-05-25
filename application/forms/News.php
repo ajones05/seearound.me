@@ -91,12 +91,12 @@ class Application_Form_News extends Zend_Form
 				array('Count', false, 1)
 			));
 
-			if (!$upload->isValid('images'))
+			if (!$upload->isValid('image'))
 			{
 				return false;
 			}
 
-			$ext = My_File::$mimetype_extension[$upload->getMimeType('images')];
+			$ext = My_File::$mimetype_extension[$upload->getMimeType('image')];
 
 			do
 			{
@@ -116,7 +116,7 @@ class Application_Form_News extends Zend_Form
 			$thumb->resize(320, 320);
 			$thumb->save(ROOT_PATH . '/tbnewsimages/' . $name, 60);
 
-			$this->addElement('text', 'images', array('value' => $name));
+			$this->addElement('text', 'image', array('value' => $name));
 		}
 
 		return true;

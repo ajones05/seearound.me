@@ -61,6 +61,7 @@ ALTER TABLE `news` CHANGE `created_date` `created_date` TIMESTAMP NOT NULL DEFAU
 ALTER TABLE `news` ADD `news_html` LONGTEXT NULL DEFAULT NULL AFTER `news`;
 ALTER TABLE `news` CHANGE `news` `news` VARCHAR(500) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 ALTER TABLE `news` CHANGE `news_html` `news_html` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE `news` CHANGE `images` `image` TEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL; 
 
 --
 -- Table structure for table `votings`

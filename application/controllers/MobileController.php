@@ -304,21 +304,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$form->isValid($data))
 			{
-				$errors = array();
-
-				foreach ($form->getMessages() as $field => $field_errors)
-				{
-					$_errors = array();
-
-					foreach ($field_errors as $validator => $error)
-					{
-						$_errors[] = $error;
-					}
-
-					$errors[] = '"' . $field . '" - ' . implode(', ', $_errors);
-				}
-
-				throw new RuntimeException('Validate error: ' . implode(', ', $errors), -1);
+				$this->_formValidateException($form);
 			}
 
 			$user = (new Application_Model_User)->register(
@@ -692,6 +678,8 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
+			$_POST['user_id'] = 276;
+
 			$data = $this->_request->getPost();
 
 			// TODO: validate mobile app user authentication
@@ -705,13 +693,13 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$form->isValid($data))
 			{
-				throw new RuntimeException('Validate error', -1);
+				$this->_formValidateException($form);
 			}
 
 			$model = new Application_Model_News;
 
 			$data = $form->getValues();
-			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], empty($data['images']));
+			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], empty($data['image']));
 			$data['id'] = $model->insert($data);
 
 			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $data['id'], $user->id))
@@ -908,7 +896,7 @@ class MobileController extends Zend_Controller_Action
 						'id' => $row->id,
 						'user_id' => $owner->id,
 						'news' => $row->news,
-						'images' => $row->images,
+						'images' => $row->image,
 						'created_date' => My_Time::time_ago($row->created_date),
 						'updated_date' => $row->updated_date,
 						'isdeleted' => $row->isdeleted,
@@ -1030,7 +1018,7 @@ class MobileController extends Zend_Controller_Action
 						'id' => $row->id,
 						'user_id' => $owner->id,
 						'news' => $row->news,
-						'images' => $row->images,
+						'images' => $row->image,
 						'created_date' => My_Time::time_ago($row->created_date),
 						'updated_date' => $row->updated_date,
 						'isdeleted' => $row->isdeleted,
@@ -1190,5 +1178,31 @@ class MobileController extends Zend_Controller_Action
 	protected function _logRequest($response)
 	{
 		$this->_logger->info($_SERVER['REQUEST_URI'] . "\n>> " . var_export($_REQUEST, true) . "\n<< " . var_export($response, true));
+	}
+
+	/**
+	 * Returns form validate error exception
+	 *
+	 * @param	Zend_Form	$form
+	 *
+	 * @return	void
+	 */
+	protected function _formValidateException(Zend_Form $form)
+	{
+		$errors = array();
+
+		foreach ($form->getMessages() as $field => $field_errors)
+		{
+			$_errors = array();
+
+			foreach ($field_errors as $validator => $error)
+			{
+				$_errors[] = $error;
+			}
+
+			$errors[] = '"' . $field . '" - ' . implode(', ', $_errors);
+		}
+
+		throw new RuntimeException('Validate error: ' . implode(', ', $errors), -1);
 	}
 }
