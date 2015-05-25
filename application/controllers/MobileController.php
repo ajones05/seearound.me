@@ -678,8 +678,6 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$_POST['user_id'] = 276;
-
 			$data = $this->_request->getPost();
 
 			// TODO: validate mobile app user authentication
