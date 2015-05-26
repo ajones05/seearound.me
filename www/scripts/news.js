@@ -641,21 +641,83 @@ function createNewsMarker(options, contentCallback){
 }
 
 function openImage(image, width, height){
-	$('body').css({overflow: 'hidden'});
+	var dialogWidth = parseFloat(width),
+		dialogHeight = parseFloat(height),
+		scrollTop = $(window).scrollTop(),
+		offsetTop = $('#midColLayout').offset().top,
+		windowHeight = $(window).height(),
+		mainContainerMinHeight = $('.mainContainer').css('min-height'),
+		minWidth = minHeight = 150,
+		maxWidth = 980, maxHeight = Math.max(windowHeight - 150, 540);
+
+	if (dialogWidth < minWidth && dialogHeight < minHeight){
+		var scaleUp = Math.max(
+			(minWidth || dialogWidth) / dialogWidth,
+			(minHeight || dialogHeight) / dialogHeight
+		);
+
+		if (scaleUp > 1){
+			dialogWidth = dialogWidth * scaleUp;
+			dialogHeight = dialogHeight * scaleUp;
+		}
+	} else if (dialogWidth > maxWidth || dialogHeight > maxHeight){
+		var scaleDown = Math.min(
+			(maxWidth || dialogWidth) / dialogWidth,
+			(maxHeight || dialogHeight) / dialogHeight
+		);
+
+		if (scaleDown < 1){
+			dialogWidth = dialogWidth * scaleDown;
+			dialogHeight = dialogHeight * scaleDown;
+		}
+	}
+
+	$('#midColLayout').css({
+		top: -(scrollTop - offsetTop),
+		position: 'fixed',
+		maxHeight: Math.max(windowHeight - offsetTop, 540),
+		width: $('#midColLayout').width()
+	});
+
+	$('.mainContainer').css('min-height', 'auto');
+
+	$('body').css('overflowY', 'scroll');
 
 	$('<div/>', {'class': 'news-image-dialog'})
-		.append($('<img/>', {src: baseUrl + 'newsimages/' + image}))
+		.append(
+			$('<img/>', {
+				src: baseUrl + 'newsimages/' + image,
+				width: dialogWidth,
+				height: dialogHeight
+			})
+		)
 		.appendTo($('body'))
 		.dialog({
 			modal: true,
 			resizable: false,
 			drag: false,
-			width: width,
-			height: height,
+			width: dialogWidth + 10,
+			height: dialogHeight + 15,
 			dialogClass: 'colorbox',
+			open: function(event, ui){
+				$(window).bind('resize.dialog', function(){
+					$(event.target).dialog('close');
+					openImage(image, width, height);
+				});
+			},
 			beforeClose: function(event, ui){
-				$('body').css({overflow: 'visible'});
+				$('#midColLayout').css({
+					top: 0,
+					position: 'static',
+					maxHeight: 'auto',
+					width: 'auto'
+				});
+
+				$('.mainContainer').css('min-height', mainContainerMinHeight);
+				$('body').css('overflowY', 'auto');
+				$(window).scrollTo(scrollTop);
 				$(event.target).dialog('destroy').remove();
+				$(window).unbind('resize.dialog');
 			}
 		});
 }

@@ -43,7 +43,7 @@ if ($image)
 						<div class="post-content"><?php echo Application_Model_News::limitNews($this->item); ?></div>
 						<?php if ($image != null): ?>
 						<div class="post-image" style="margin-top: 10px;">
-							<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" style="cursor: pointer;width:100%;" />
+							<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" />
 						</div>
 						<?php endif; ?>
 					</div>
