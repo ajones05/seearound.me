@@ -284,7 +284,7 @@ function setGoogleMapsAutocompleteValue(input, value){
 	$('.pac-container .pac-item').addClass('hidden');
 	setTimeout(function(){
 		input.val(value).change();
-	}, 10);
+	}, .1);
 }
 
 function userMessageDialog(userId){
