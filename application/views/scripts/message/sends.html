@@ -1,31 +1,39 @@
-<script type="text/javascript" src="<?php echo $this->baseUrl("www/scripts/messageindex.js"); ?>"></script>
-<h3 class="topHdGrayB12"><img src="<?php echo $this->baseUrl("www/images/icn-inbox.gif"); ?>" width="26" height="20" class="tIcn" alt="My Connections" /> Inbox</h3>
-<? if(count($this->inbox) > 0):?>
+<h3 class="topHdGrayB12_updated">
+	<img src="<?php echo $this->baseUrl("www/images/icn-inbox.gif"); ?>" width="26" height="20" class="tIcn" alt="My Connections" /> Inbox
+</h3>
+<?php if (count($this->paginator) > 0): ?>
 <div class="inboxSec">
-    <? foreach($this->inbox as $inboxData):?>
-    <ul>
-        <li onclick="showData(this, '<?=$inboxData->id?>');" id="row_<?=$inboxData->id?>" class="
-                <?if($inboxData->sender_id == $this->user->id && $inboxData->sender_read == "false"):?>
-                highLight
-                <?elseif($inboxData->receiver_id == $this->user->id && $inboxData->reciever_read == "false"):?>
-                highLight
-                <?endif;?>
-                ">
+	<?php
+	foreach($this->paginator as $inboxData):
+		$receiver = $inboxData->findDependentRowset('Application_Model_User', 'Receiver')->current();
+
+		$higlight = '';
+
+		if ($inboxData->sender_id == $this->user->id && $inboxData->sender_read == "false" ||
+			$inboxData->receiver_id == $this->user->id && $inboxData->reciever_read == "false")
+		{
+			$higlight .= 'highLight';
+		}
+	?>
+	<ul>
+        <li onclick="showData(this, '<?=$inboxData->id?>');" id="row_<?=$inboxData->id?>" class="<?php echo $higlight; ?>">
             <a href="javascript:void(0);"><? if($inboxData->subject != ""):?><?=$inboxData->subject?><? else:?>--<? endif;?></a> 
-            <span class="name">(<?=$inboxData->Name;?>)</span><span id="showAlll_<?=$inboxData->id?>" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;} showAllReply(this, '<?=$inboxData->id?>'); " style="margin-left: 50px;display: none;" class="name">Show all</span>
-            <span class="name"><img id="loading_<?=$inboxData->id?>" style="display:none;padding-left: 14px;" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>" /></span>
+            <span class="name">(<?php echo $receiver->Name; ?>)</span>
+			<span id="showAlll_<?=$inboxData->id?>" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;} showAllReply(this, '<?=$inboxData->id?>'); " style="margin-left: 50px;display: none;" class="name">Show all</span>
+            <span class="name">
+				<img id="loading_<?=$inboxData->id?>" style="display:none;padding-left: 14px;" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>" />
+			</span>
             <span class="dateTime"><?=date('Y-m-d H:i', strtotime($inboxData->created))?></span>
 			<div class="clr"></div>
             <ul id="show_data_<?=$inboxData->id?>" class="replyFrm" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;}"></ul>
         </li>
         <div class="clr"></div>        
-    </ul>
+	</ul>
 	<div class="clr"></div>
-    <?endforeach;?>
-    <?= $this->paginationControl($this->paginator, 'Sliding', 'message/message-paging.html'); ?>            
-    <div class="clr"></div>
+    <?php endforeach;?>
+	<?php echo $this->paginationControl($this->paginator, 'Sliding', 'message/message-paging.html'); ?>
+	<div class="clr"></div>
 </div>
-<?else:?>
-<br /><br /><br /><br />
-    <div class="errorMessage1 msgErrDiv"> No message found.</div>
-<?endif;?>
+<?php else: ?>
+<div class="errorMessage1">No message found.</div>
+<?php endif; ?>

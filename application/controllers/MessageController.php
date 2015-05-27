@@ -1,20 +1,11 @@
 <?php
 
-
-
 class MessageController extends Zend_Controller_Action
-
 {
-
-
-
-    public function init()
-
-    {
-
-        $this->view->hideRight = true;
-
-    }
+	public function init()
+	{
+		$this->view->hideRight = true;
+	}
 
 	public function indexAction()
 	{
@@ -25,20 +16,19 @@ class MessageController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-		$this->view->user = $user;
-
         $messageTable = new Application_Model_Message;
 
         $paginator = Zend_Paginator::factory($messageTable->getUserData(array('receiver_id' => $user->id),true));
         $paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
         $paginator->setItemCountPerPage(14);
 
-        $this->view->inbox = $this->view->paginator = $paginator;
-
+		$this->view->user = $user;
+        $this->view->paginator = $paginator;
 		$this->view->currentPage = 'Message';
-	}
 
-    
+		$this->view->headScript()->appendFile($this->view->baseUrl('www/scripts/messageindex.js?' .
+			Zend_Registry::get('config_global')->mediaversion));
+	}
 
 	public function sendsAction()
 	{
@@ -57,10 +47,12 @@ class MessageController extends Zend_Controller_Action
         $paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
         $paginator->setItemCountPerPage(14);
 
-        $this->view->inbox = $this->view->paginator = $paginator;
-	}
+        $this->view->paginator = $paginator;
+		$this->view->currentPage = 'Message';
 
-    
+		$this->view->headScript()->appendFile($this->view->baseUrl('www/scripts/messageindex.js?' .
+			Zend_Registry::get('config_global')->mediaversion));
+	}
 
 	public function viewedAction()
 	{
@@ -110,10 +102,7 @@ class MessageController extends Zend_Controller_Action
         $this->_helper->json($response);
     }
 
-    
-
     public function replyViewedAction()
-
     {
 		$auth = Zend_Auth::getInstance()->getIdentity();
 
@@ -219,7 +208,6 @@ class MessageController extends Zend_Controller_Action
 	}
 
     public function replyAction()
-
     {
 		$auth = Zend_Auth::getInstance()->getIdentity();
 
@@ -284,27 +272,15 @@ class MessageController extends Zend_Controller_Action
 
         }
 
-        
-
-        /*
-
-         * Identify request type 
-
-         */
-
         if($this->_request->isXmlHttpRequest()) {
 
             die(Zend_Json_Encoder::encode($response));
 
         }
-
     }
 
-    
-
-    public function showAllReplyAction()
-
-    {
+	public function showAllReplyAction()
+	{
 
         $messageReplyTable = new Application_Model_MessageReply();
 
@@ -316,25 +292,10 @@ class MessageController extends Zend_Controller_Action
 
         }
 
-        
-
-        /*
-
-         * Identify request type 
-
-         */
-
         if($this->_request->isXmlHttpRequest()) {
 
             die(Zend_Json_Encoder::encode($response));
 
         }
-
-    }
-
-
-
+	}
 }
-
-
-

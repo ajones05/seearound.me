@@ -46,8 +46,6 @@
                             alert("Error...");
 
                         }else if(msg && msg.success) {
-
-                            //var html = '<li class="desc">'+(msg.inboxData).message+'</li>';
                             var html = '';
 								if(msg.replyData) {
 
@@ -68,7 +66,7 @@
 
 										}
 
-										html +='><div class="desc-frist"><img src="' +baseUrl + 'uploads/' + msg.replyData[x].sender_image + '"></div><div class="desc-second"><b style="color: #4276cd;font-size:16px;">'+(msg.replyData[x]).name+'</b><span>'+(msg.replyData[x]).reply_text+'</div><div class="desc-third"><span class="dateTime">'+(msg.replyData[x]).created+'</span></div><div class="clr"></div></li>';
+										html +='><div class="desc-frist"><img src="' + msg.replyData[x].sender_image + '"></div><div class="desc-second"><b style="color: #4276cd;font-size:16px;">'+(msg.replyData[x]).name+'</b><span>'+(msg.replyData[x]).reply_text+'</div><div class="desc-third"><span class="dateTime">'+(msg.replyData[x]).created+'</span></div><div class="clr"></div></li>';
 
 									}
 

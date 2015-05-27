@@ -109,7 +109,22 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 .topHdGrayB12{padding:15px 0px 8px;font:bold 20px Lato-bold; color:#6f7070; background: #f8f7f7; text-align: center; border-bottom: 1px solid #d7d7d7;}
 
 .topHdGrayB13{padding:0 20px;font:bold 12px tahoma; color:#6f7070; background:url(../images/bg-top-title.gif) repeat-x bottom left; height:43px; line-height:43px;float:right;width:94%;}
-.topHdGrayB12_updated{font:normal 23px Lato-Bold; color:#4276cd; border-bottom: 2px solid #d7d7d7 ;background: #fff; line-height:50px;width:100%; text-align: center;}
+.topHdGrayB12_updated {
+	font: normal 23px Lato-Bold;
+	color: #4276cd;
+	border-bottom: 2px solid #d7d7d7;
+	background: #fff;
+	line-height: 50px;
+	width: 100%;
+	text-align: center;
+}
+.topHdGrayB12_updated > img{
+	margin-right: 20px;
+	width: 27px;
+	height: auto;
+	position: relative;
+	top: 3px;
+}
 .topHdGrayB12 img.tIcn{ float:left; margin:15px 10px 0 0;}
 .topHdGrayB13_updated{padding:0 106px;font:bold 12px tahoma; color:#6f7070; background:url(../images/bg-top-title.gif) repeat-x bottom left; height:43px; line-height:43px;float:right;width:94%;margin-bottom:11px;}
 
@@ -672,9 +687,19 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 .inboxSec li a{color:#4276cd; font-weight:bold; text-decoration:none; margin:0 20px; float:left;}
 
 .inboxSec li span.name{font-size: 18px;color:#4276cd;}
-
-.inboxSec li span.message {font:normal 15px Lato-LightItalic; color:#8d8d8d; display: block;}
-
+.inboxSec li span.message {
+	font: normal 15px Lato-LightItalic;
+	color: #8d8d8d;
+	display: block;
+}
+.inboxSec li span.messageSubject {
+	font: bold 15px Lato-LightItalic;
+	color: #8d8d8d;
+}
+.inboxSec li span.messageBody {
+	font: normal 15px Lato-LightItalic;
+	color: #8d8d8d;
+}
 
 .inboxSec li span.dateTime{font:normal 12px Lato-LightItalic; color: #4276cd;}
 
@@ -1279,12 +1304,6 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 }
 
-.msgErrDiv{
-
-    width:400px;margin-left:250px;
-
-}
-
 .frndReqImg{
 
     height: 20px;
@@ -1774,6 +1793,8 @@ input[type=submit], input[type=button] {
     font-weight: bold;
     padding: 10px;
     text-align: center;
+	width: 400px;
+	margin: 30px 270px;
 }
 .loginFooter {
 	float: right; 
