@@ -55,8 +55,7 @@ class My_Email
 		$view->setScriptPath(APPLICATION_PATH . '/views/scripts/email');
 		$view->assign($assign);
 
-		$layout_helper = new Zend_View_Helper_Layout;
-		$layout = $layout_helper->layout();
+		$layout = clone (new Zend_View_Helper_Layout)->layout();
 		$layout->setLayout('email');
 		$layout->content = $view->render($template . '.html');
 

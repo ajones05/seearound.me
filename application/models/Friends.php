@@ -245,36 +245,6 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
 
     }
 
-    
-
-    public function getFriends($data = array(), $all = false) 
-
-    {
-
-        $select = $this->select();
-
-        if(count($data) > 0) {
-
-            foreach($data as $index => $value) {
-
-                $select->where($index." =?", $value);
-
-            }
-
-        } 
-
-        if($all) {
-
-            return $this->fetchAll($select);
-
-        }else {
-
-            return $this->fetchRow($select);
-
-        }
-
-    }
-
     /*Added on 19/8/2013 for API */
     public function getIndividualFriendsWs($user = 0, $targetFriendId , $limit = null, $offset = null){
         if($user) {

@@ -2,8 +2,13 @@
 
 class ContactsController extends Zend_Controller_Action
 {
-    public function indexAction()
-    {
+	/**
+	 * Facebook friends invite action.
+	 *
+	 * @return void
+	 */
+	public function indexAction()
+	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
 
 		if (!Application_Model_User::checkId($auth['user_id'], $user))
@@ -11,19 +16,28 @@ class ContactsController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-        $inviteStatus = new Application_Model_Invitestatus();
-        if($inviteStatus = $inviteStatus->getData(array('user_id' => $user->id))) {
-            if($inviteStatus->invite_count <= 0) {
-                $this->_redirect($this->view->baseUrl('contacts/friends-list'));
-            } else {
-                $this->view->inviteStatus = $inviteStatus;
-            }
-        }
-        $this->view->hideRight = true;
-    }
-    
-    public function invitesAction() 
-    {
+		$user_invites = (new Application_Model_Invitestatus)->getData(array("user_id" => $user->id));
+
+		if (!$user_invites || $user_invites->invite_count <= 0)
+		{
+			$this->_redirect($this->view->baseUrl('contacts/friends-list'));
+		}
+
+		$this->view->invite_count = $user_invites->invite_count;
+		$this->view->hideRight = true;
+		$this->view->currentPage = 'Message';
+
+		$this->view->headScript()
+			->appendFile($this->view->baseUrl('www/scripts/contactsindex.js?' . Zend_Registry::get('config_global')->mediaversion));
+	}
+
+	/**
+	 * Invite by email action.
+	 *
+	 * @return void
+	 */
+	public function invitesAction() 
+	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
 
 		if (!Application_Model_User::checkId($auth['user_id'], $user))
@@ -31,33 +45,48 @@ class ContactsController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-		$config = Zend_Registry::get('config_global');
-        $this->view->hideRight = true;
-        $inviteStatus = new Application_Model_Invitestatus();
-        $newsFactory = new Application_Model_NewsFactory();
-        $emailInvites = new Application_Model_Emailinvites();
-        $userTable = new Application_Model_User();
-        if($inviteStatusData = $inviteStatus->getData(array("user_id" => $user->id))) {
-            if($inviteStatusData->invite_count <= 0) {
-                $this->_redirect($this->view->baseUrl('contacts/friends-list'));
-            } else {
-                $this->view->inviteStatus = $inviteStatusData;
-            }
-        }
-        if($this->_request->isPost()) {
-            $emails = $this->_request->getPost("emails", null);
-            $emailMessage = $this->_request->getPost("messageText", null);
-            $emails = explode(",", $emails);
-            $total = (($inviteStatusData->invite_count) >= count($emails))?(count($emails)):($inviteStatusData->invite_count); 
+		$user_invites = (new Application_Model_Invitestatus)->getData(array("user_id" => $user->id));
 
-            $alreadyUser = 0;
-            for ($i=1; $i <= $total; $i++) {
-                if($userRow = $userTable->getUsers(array('Email_id' => trim($emails[$i-1])))) {
-                    /*
-                     * Email to invited user 
-                     */
+		if (!$user_invites || $user_invites->invite_count <= 0)
+		{
+			$this->_redirect($this->view->baseUrl('contacts/friends-list'));
+		}
+
+		$invite_success = 0;
+
+		if ($this->_request->isPost())
+		{
+			$emails = explode(",", $this->_request->getPost("emails"));
+
+			if (!count($emails))
+			{
+				throw new RuntimeException('Emails cannot be blank', -1);
+			}
+
+			foreach ($emails as &$email)
+			{
+				$email = trim(strtolower($email));
+
+				if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+				{
+					throw new RuntimeException('Incorrect email value: ' . var_export($email, true), -1);
+				}
+			}
+
+			$emails = array_unique($emails);
+
+			$newsFactory = new Application_Model_NewsFactory;
+			$userTable = new Application_Model_User;
+			$emailInvites = new Application_Model_Emailinvites;
+
+			foreach (array_slice($emails, 0, $user_invites->invite_count) as $email)
+			{
+				$email_user = $userTable->findByEmail($email);
+
+				if ($email_user)
+				{
 					My_Email::send(
-						$emails[$i-1],
+						$email,
 						'seearound.me connect request',
 						array(
 							'template' => 'invite-1',
@@ -65,185 +94,205 @@ class ContactsController extends Zend_Controller_Action
 						)
 					);
 
-                    /*
-                     * Email to login user 
-                     */
 					My_Email::send(
 						$user->Email_id,
 						'User already registered',
 						array(
 							'template' => 'invite-2',
-							'assign' => array(
-								'user' => $userRow,
-								'email' => $emails[$i-1]
-							)
+							'assign' => array('user' => $email_user)
 						)
 					);
+				}
+				else
+				{
+					$code = $newsFactory->generateCode();
 
-                    $alreadyUser++;
-                } else {
-                    $data = array(
-                        "sender_id" => $user->id,
-                        "receiver_email" => trim($emails[$i-1]),
-                        "code" => $newsFactory->generateCode(),
-                        "created" => date('y-m-d H:i:s')
-                    );
-
-                    $row[] = $emailInvites->createRow($data)->save();
+					$emailInvites->insert(array(
+						"sender_id" => $user->id,
+						"receiver_email" => $email,
+						"code" => $code,
+						"created" => date('y-m-d H:i:s')
+					));
 
 					My_Email::send(
-						$emails[$i-1],
+						$email,
 						'seearound.me join request',
 						array(
 							'template' => 'invite-3',
 							'assign' => array(
 								'user' => $user,
-								'code' => $data['code'],
-								'message' => $emailMessage
+								'code' => $code
 							)
 						)
 					);
 
-                    $inviteStatusData->invite_count = $inviteStatusData->invite_count-1;
-                    $inviteStatusData->save();  
-                }
-            }
-            $this->view->inviteStatus = $inviteStatus->getData(array("user_id"=>$user->id));
-            $this->view->success = count($row);
-            $this->view->already = $alreadyUser;
-        }
-        
-    }
-
-    public function checkfbstatusAction() 
-    {
-		$auth = Zend_Auth::getInstance()->getIdentity();
-
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
-		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+					$user_invites->invite_count--;
+					$user_invites->save();
+					$invite_success++;
+				}
+			}
 		}
 
-        $response = new stdClass();
-        $tableUser = new Application_Model_User;
-        $tableFriends = new Application_Model_Friends;
-        $tableFbFriends = new Application_Model_Fbtempusers;
-        $tableAddress = new Application_Model_Address;
-        if($this->_request->isPost()) {
-            $nwId = $this->_request->getPost("network_id", null);
-            $data = array(
-                "Network_id" => $nwId
-            );
-            $resultRow = $tableUser->getUsers($data);
-            if(count($resultRow) > 0) {
-                $select = $tableFbFriends->select()
-                    ->where("reciever_nw_id =?", $resultRow->Network_id)
-                    ->where("sender_id =?", $user->id);
-                if($fbFriebds = $tableFbFriends->fetchRow($select)) {
-                    $response->data = $fbFriebds->toArray();
-                    $response->count = count($fbFriebds);
-                    $response->type = "facebook";
-                } else {
-                    $select = $tableAddress->select()
-                            ->where("user_id =?", $resultRow->id);
-                    if($addressRow = $tableAddress->fetchRow($select)) {
-                        $response->address = $addressRow->toArray();
-                    }
-                    $select = $tableFriends->select()
-                        ->where("friends.sender_id = ".$user->id." AND friends.reciever_id = ".$resultRow->id)
-                        ->orWhere("friends.sender_id = ".$resultRow->id." AND friends.reciever_id = ".$user->id);
-                    if($friends = $tableFriends->fetchRow($select)) {                        
-                        $response->data = $friends->toArray();
-                        $response->count = count($fbFriebds);
-                        $response->type = "herespy";
-                    } else {
-                        $response->data = $resultRow->toArray();
-                        $response->count = 0;
-                        $response->type = "follow";
-                    }
-                }
-            }else {
-                $select = $tableFbFriends->select()
-                    ->where("reciever_nw_id =?", $nwId)
-                    ->where("sender_id =?", $user->id);
-                if($fbFriebds = $tableFbFriends->fetchRow($select)) {
-                    $response->data = $fbFriebds->toArray();
-                    $response->count = count($fbFriebds);
-                    $response->type = "facebook";
-                } else {
-                    $response->count = 0;
-                    $response->type = "blank";
-                }
-                
-            }
-        }
-        if($this->_request->isXmlHttpRequest()) {
-            die(Zend_Json_Encoder::encode($response));
-        }else {
-            $this->view->response = $response;
-        }
-    }
-    
-    public function inviteAction() 
-    {
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$this->view->invite_success = $invite_success;
+		$this->view->invite_count = $user_invites->invite_count;
+		$this->view->hideRight = true;
+		$this->view->currentPage = 'Message';
+	}
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+	/**
+	 * Ajax check facebook user status action.
+	 *
+	 * @return void
+	 */
+	public function checkfbstatusAction() 
+	{
+		try
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$network_id = trim($this->_request->getPost("network_id"));
+
+			if ($network_id === '')
+			{
+				throw new RuntimeException('Network ID cannot be blank.', -1);
+			}
+
+			$response = array('status' => 1);
+
+			$facebook_friends = Application_Model_Fbtempusers::findAllByNetworkId($network_id, $user->id);
+
+			if ($facebook_friends)
+			{
+				$response['type'] = "facebook";
+			}
+			else
+			{
+				$facebook_user = Application_Model_User::findByNetworkId($network_id);
+
+				if (count($facebook_user) > 0)
+				{
+					$response['address'] = $facebook_user->address();
+
+					$friends = (new Application_Model_Friends)->getStatus($user->id, $facebook_user->id);
+
+					if ($friends)
+					{
+						$response['data'] = array('status' => $friends->status);
+						$response['type'] = "herespy";
+					}
+					else
+					{
+						$response['type'] = "follow";
+					}
+				}
+				else
+				{
+					$response['type'] = "blank";
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
 		}
 
-        $response = new stdClass();
-        $tableUser = new Application_Model_User(); 
-        $tableFbFriends = new Application_Model_Fbtempusers(); 
-        $inviteStatus = new Application_Model_Invitestatus();
-        if($this->_request->isPost()) {
-            if($inviteRow = $inviteStatus->getData(array("user_id" => $user->id))) {
-                if($inviteRow->invite_count > 0) {
-                    $data = array(
-                        "sender_id" => $user->id,
-                        "reciever_nw_id" => $this->_request->getPost("network_id", null),
-                        "full_name" => $this->_request->getPost("name", null)
-                    );
-                    $resultData = $tableFbFriends->invite($data);
-                    if(count($resultData) > 0) {
-                        $response->data = $resultData;
-                    }
-                    $inviteRow->invite_count = $inviteRow->invite_count-1;
-                    $inviteRow->save();
-                } else {
-                    $response->errors = "Sorry! you can not send this invitation";
-                }
-            } else {
-                $response->errors = "Sorry! you can not send this invitation";
-            }
-        }
-        if($this->_request->isXmlHttpRequest()) {
-            die(Zend_Json_Encoder::encode($response));
-        }else {
-            $this->view->data = $resultRows;
-        }
-    }
-    
-    public function followAction() 
-    {
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$this->_helper->json($response);
+	}
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+	/**
+	 * Ajax invite facebook user action.
+	 *
+	 * @return void
+	 */
+	public function inviteAction() 
+	{
+		try
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$user_invites = (new Application_Model_Invitestatus)->getData(array("user_id" => $user->id));
+
+			if (!$user_invites || $user_invites->invite_count <= 0)
+			{
+				throw new RuntimeException('Sorry! you can not send this invitation', -1);
+			}
+			
+			$network_id = trim($this->_request->getPost("network_id"));
+
+			if ($network_id === '')
+			{
+				throw new RuntimeException('Network ID cannot be blank.', -1);
+			}
+
+			(new Application_Model_Fbtempusers)->invite(array(
+				"sender_id" => $user->id,
+				"reciever_nw_id" => $network_id,
+			));
+
+			$user_invites->invite_count--;
+			$user_invites->save();
+
+			$response = array('status' => 1);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
 		}
 
-        $response = new stdClass();
-        $tableUser = new Application_Model_User;
-        $tableFriends = new Application_Model_Friends;
-        if($this->_request->isPost()) {
-            $nwId = $this->_request->getPost("network_id", null);
-            $reciewerRow = $tableUser->getUsers(array("Network_id"=>$nwId));
-            $mailValues = $tableUser->recordForEmail($user->id, $reciewerRow->id);
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Ajax follow facebook user action.
+	 *
+	 * @return void
+	 */
+	public function followAction() 
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$network_id = trim($this->_request->getPost("network_id"));
+
+			if ($network_id === '')
+			{
+				throw new RuntimeException('Network ID cannot be blank.', -1);
+			}
+
+			$tableUser = new Application_Model_User;
+			$facebook_user = $tableUser->findByNetworkId($network_id);
+
+			if (!$facebook_user)
+			{
+				throw new RuntimeException('Incorrect network ID.', -1);
+			}
+
+			$reciever_email = $tableUser->recordForEmail($user->id, $facebook_user->id);
 
 			My_Email::send(
-				$mailValues->recieverEmail,
+				$reciever_email->recieverEmail,
 				'seearound.me connect request',
 				array(
 					'template' => 'follow',
@@ -251,27 +300,32 @@ class ContactsController extends Zend_Controller_Action
 				)
 			);
 
-            $resultData = $tableFriends->invite(array(
-                "reciever_id" => $reciewerRow->id,
-                "sender_id" => $user->id,
-                "source" => "connect",
-                "cdate" => date("Y-m-d H:i:s"),
-                "udate" => date("Y-m-d H:i:s")
+			(new Application_Model_Friends)->invite(array(
+				"reciever_id" => $facebook_user->id,
+				"sender_id" => $user->id,
+				"source" => "connect",
+				"cdate" => date("Y-m-d H:i:s"),
+				"udate" => date("Y-m-d H:i:s")
 			));
 
-            if(count($resultData) > 0) {
-                $resultData['reciever_nw_id'] = $nwId;
-            }
+			$response = array('status' => 1);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
 
-            $response->data = $resultData;
-        }
-        if($this->_request->isXmlHttpRequest()) {
-            die(Zend_Json_Encoder::encode($response));
-        }else {
-            $this->view->data = $resultRows;
-        }
-    }
-    
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Friends list action.
+	 *
+	 * @return void
+	 */
 	public function friendsListAction()
 	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
@@ -298,6 +352,11 @@ class ContactsController extends Zend_Controller_Action
 		$this->view->friends_count = $friends_count;
 	}
 
+	/**
+	 * Ajax load friends list action.
+	 *
+	 * @return void
+	 */
 	public function friendsListLoadAction()
 	{
 		try
@@ -449,143 +508,85 @@ class ContactsController extends Zend_Controller_Action
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
-    public function makeFriendFbAction() 
-    {
-        $response = new stdClass();
-        $tableUser = new Application_Model_User;
-        $tableFriends = new Application_Model_Friends;
-        $tableFbFriends = new Application_Model_Fbtempusers;
-        if($this->_request->isPost()) {
-            $sender = $this->_request->getPost("sender", 0);
-            $reciever = $this->_request->getPost("reciever", 0);
-            $action = $this->_request->getPost("action", null);
-            $select = $tableFbFriends->select()
-                ->where("sender_id =?", $sender)
-                ->where("reciever_nw_id =?", $reciever);
-            if($row = $tableFbFriends->fetchRow($select)) { 
-                $select = $tableUser->select()
-                    ->where("Network_id =?", $row->reciever_nw_id);
-                if($userRow = $tableUser->fetchRow($select)) {
-                    if($action == "friend"){
-                        $db = $tableUser->getAdapter();
-                        $db->beginTransaction();
-                        try{
-                            $select = $tableFriends->select()
-                                ->where("sender_id = ".$row->sender_id." AND reciever_id = ".$userRow->id)
-                                ->orWhere("sender_id = ".$userRow->id." AND reciever_id = ".$row->sender_id);
-                            $friendRows = $tableFriends->fetchAll($select);
-                            if(count($friendRows) > 0) { 
-                                foreach($friendRows as $friendRow) {
-                                    $friendRow->status = 1;
-                                    $friendRow->udate = date("Y-m-d H:i:s");
-                                    $friendRow->save();
-                                }
-                                $row->delete();
-                            }else { 
-                                $data = array(
-                                    "sender_id" => $row->sender_id,
-                                    "reciever_id" => $userRow->id,
-                                    "status" => 1,
-                                    "source" => "facebook",
-                                    "cdate" => date("Y-m-d H:i:s"),
-                                    "udate" => date("Y-m-d H:i:s")
-                                );
-                                $friendRows = $tableFriends->createRow($data);
-                                $friendRows->save();
-                                $row->delete();
-                            }
-                            $response->done = "yes";
-                            $response->type = "friend";
-                            $response->data = $friendRows->toArray();
-                            $db->commit();
-                            $db->closeConnection();
-                        } catch (Exception $e) {
-                            die($e);
-                        }
-                    }else if($action == "unfriend") {
-                        $userRow->status = 2;
-                        $userRow->save();
-                        $response->done = "yes";
-                        $response->type = "unfriend";
-                        $response->data = $row->toArray();
-                    }else if($action == "delete") {
-                        if(count($userRow) > 0) {
-                            $userRow->delete();
-                        }
-                        if(count($row) > 0) {
-                            $row->delete();
-                        }
-                        $response->done = "yes";
-                        $response->type = "delete";
-                    }
-                }
-            }
-        }
-        if($this->_request->isXmlHttpRequest()) {
-            die(Zend_Json_Encoder::encode($response));
-        }else {
-            $this->view->response = $response;
-        }   
-    }
-    
-    public function friendsNotificationAction()
-    {
-		$auth = Zend_Auth::getInstance()->getIdentity();
-
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
-		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
-		}
-
-        /*
-         * Making instance of models class 
-         */
-        $response = new stdClass();
-        $tableFriends = new Application_Model_Friends();
-        $messageTable = new Application_Model_Message();
-        if($this->_request->isPost()) {  
-            $data = array(
-                'reciever_id' => $user->id,
-                'status' => '0'
-            );
-            $friendRow = $tableFriends->getFriends($data, true);
-            $msgRow    = $messageTable->getNoteMessage($user->id);
-            if($friendRow) {
-                $friendRow = $friendRow->toArray();
-            }
-            if($msgRow) {
-                $msgRow = $msgRow->toArray();
-            }
-            $response->data = $friendRow;
-            $response->total = count($friendRow);
-            $response->msg = $msgRow;
-            $response->msgTotal = count($msgRow);
-            $response->totalFriends = $tableFriends->getCountByUserId($user->id, 1);
-        }
-        die(Zend_Json_Encoder::encode($response));
-    }
-    
-    public function requestsAction() 
-    {
-		$auth = Zend_Auth::getInstance()->getIdentity();
-
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
-		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
-		}
-
+	/**
+	 * Ajax user notifications action.
+	 *
+	 * @return void
+	 */
+	public function friendsNotificationAction()
+	{
 		try
 		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$response = array('status' => 1);
+
+			$friends = (new Application_Model_Friends)->getCountByReceiverId($user->id, 0);
+
+			if ($friends > 0)
+			{
+				$response['friends'] = $friends;
+			}
+
+			$messageModel = new Application_Model_Message;
+
+			$result = $messageModel->fetchRow(
+				$messageModel->publicSelect()
+					->from($messageModel, array('count(*) as result_count'))
+					->where('receiver_id =?', $user->id)
+					->where('reciever_read =?', 'false')
+					->orWhere('(reply_to =?', $user->id)
+					->where('sender_read =?)', 'false')
+			);
+
+			$messages = $result ? $result->result_count : 0;
+
+			if ($messages > 0)
+			{
+				$response['messages'] = $messages;
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => 'Internal Server Error')
+			);
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Ajax load friend request list action.
+	 *
+	 * @return void
+	 */
+	public function requestsAction() 
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
 			$response = array('status' => 1);
 
 			$model = new Application_Model_Friends;
 			$friends = $model->findAllByReceiverId($user->id, 0, 5);
-			$friends_count = count($friends);
 
-			if ($friends_count)
+			if ($count = count($friends))
 			{
 				$data = array();
 
@@ -600,7 +601,7 @@ class ContactsController extends Zend_Controller_Action
 				}
 
 				$response['data'] = $data;
-				$response['total'] = $friends_count < 5 ? $friends_count : $model->getCountByReceiverId($user->id, 0);
+				$response['total'] = $count < 5 ? $count : $model->getCountByReceiverId($user->id, 0);
 			}
 		}
 		catch (Exception $e)
@@ -612,10 +613,15 @@ class ContactsController extends Zend_Controller_Action
 		}
 
 		$this->_helper->json($response);
-    }
-    
-    public function allRequestsAction() 
-    {
+	}
+
+	/**
+	 * Friend requests listing action.
+	 *
+	 * @return void
+	 */
+	public function allRequestsAction() 
+	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
 
 		if (!Application_Model_User::checkId($auth['user_id'], $user))
@@ -623,13 +629,18 @@ class ContactsController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-        $this->view->data = (new Application_Model_Friends)->findAllByReceiverId($user->id, 0);
+		$this->view->data = (new Application_Model_Friends)->findAllByReceiverId($user->id, 0);
 		$this->view->friendListExist = true;
 
 		$this->view->headScript()
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');
-    }
+	}
 
+	/**
+	 * Ajax search user action.
+	 *
+	 * @return void
+	 */
 	public function searchAction()
 	{
 		try

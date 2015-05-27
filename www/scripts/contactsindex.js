@@ -33,8 +33,8 @@ var posturl ="/picture?type=square";
                                 type: "POST",
                                 url : baseUrl+"contacts/checkfbstatus",
                                 data : {network_id : friend.id},
+								dataType: 'json',
                                 success : function(data) { 
-                                    data = $.parseJSON(data); 
                                     if(data.type == "blank") {
                                         var html = '<div id="'+friend.id+'" class="invtFrndList">'+
                                             '<ul class="invtFrndRow">'+
@@ -105,46 +105,53 @@ var posturl ="/picture?type=square";
         });
     }
     
-function inviteFbFriend(friend, name) {
-    $.ajax({
-        url : baseUrl+"contacts/invite",
-        type : "POST",
-        data : {network_id : friend, name : name},
-        success : sendFbMessage
-    });
-}
-    
-function sendFbMessage(obj) {
-    obj = $.parseJSON(obj); 
-    if(obj && obj.data) {
-        FB.init({appId: facebook_appId, status: true, cookie: true, xfbml: true});
-        FB.ui({
-                method: "send",
-                name: "Herespy",
-                link: baseUrl+"index/send-invitation/regType/facebook/q",
-                to: obj.data.reciever_nw_id
-            },function(response) { 
-                if(response != null) {
-                    $("#invite_"+obj.data.reciever_nw_id).html('<a href="javascript:void(0);" id="stauts_'+obj.data.reciever_nw_id+'">Pending</a>');
-                    $("#invite_"+obj.data.reciever_nw_id).removeAttr('onclick');
-                    alert("Message has been sent successful.");
-                }else {
-                    alert("Sorry! message can not be send");
-                }
-            }
-        );
-    } else if(obj && obj.errors) {
-		alert(obj.errors);
-	}
+function inviteFbFriend(friend, name){
+	$.ajax({
+		url: baseUrl + 'contacts/invite',
+		data: {network_id: friend},
+		type: 'POST',
+		dataType: 'json',
+	}).done(function(response){
+		if (response && response.status){
+			sendFbMessage(friend);
+		} else {
+			alert(response ? response.error.message : ERROR_MESSAGE);
+		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
+	});
 }
 
-    
-function followFbFriends(friend) {
-    $.ajax({
-        url : baseUrl+"contacts/follow",
-        type : "POST",
-        data : {network_id : friend},
-        success : sendFbMessage
-    });
+function sendFbMessage(networkId){
+	FB.ui({
+		method: "send",
+		name: "Herespy",
+		link: baseUrl + "index/send-invitation/regType/facebook/q",
+		to: networkId
+	}, function(response){
+		if (response != null){
+			$("#invite_" + networkId).html('<a href="javascript:void(0);" id="stauts_' + networkId + '">Pending</a>');
+			$("#invite_" + networkId).removeAttr('onclick');
+			alert("Message has been sent successful.");
+		} else {
+			alert("Sorry! message can not be send");
+		}
+	});
 }
-              
+
+function followFbFriends(friend){
+	$.ajax({
+		url: baseUrl + 'contacts/follow',
+		data: {network_id: friend},
+		type: 'POST',
+		dataType: 'json',
+	}).done(function(response){
+		if (response && response.status){
+			sendFbMessage(friend);
+		} else {
+			alert(response ? response.error.message : ERROR_MESSAGE);
+		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
+	});
+}

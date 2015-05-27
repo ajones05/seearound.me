@@ -1,45 +1,47 @@
-<script type="text/javascript" src="<?php echo $this->baseUrl("www/scripts/contactsindex.js"); ?>"></script>
-<h3 class="topHdGrayB12"><img src="<?php echo $this->baseUrl("www/images/icn-myconn-w.gif"); ?>" width="21" height="17" class="tIcn" alt="My Connections" /> My FB Connections</h3>
+<h3 class="topHdGrayB12_updated">
+	<img src="<?php echo $this->baseUrl("www/images/icn-myconn-w.gif"); ?>" width="21" height="17" class="tIcn" alt="My Connections" /> My FB Connections
+</h3>
 <div id="inviteMain1">
-    <div class="importMessage">
-        Import contacts from facebook <br>
-        <span style="color: red;font-size: 12px;font-weight: 100;">*You have <b><label id="invitationTotal" style="font-size: 13px;font-weight: bold;"><?=$this->inviteStatus->invite_count?></label></b> invitations remaining</span>
-    </div>
-    <div class="fbMainInvite">
-        <div class="crp fbFrndsMain" onclick="getFbFriends();" style="text-align: center;">
-                <img style="border-color: #1A356E;" height="30" width="100" src="<?php echo $this->baseUrl("www/images/facebook-button4.jpg"); ?>"><br><br>  
-                Please click the button to import your contacts from facebook
-
-        </div>
-    </div>
+	<div class="importMessage">
+		Import contacts from facebook<br>
+		<span style="color: red;font-size: 12px;font-weight: 100;">*You have <b><label id="invitationTotal" style="font-size: 13px;font-weight: bold;"><?=$this->inviteStatus->invite_count?></label></b> invitations remaining</span>
+	</div>
+	<div class="fbMainInvite">
+		<div class="crp fbFrndsMain" onclick="getFbFriends();" style="text-align: center;">
+			<img style="border-color: #1A356E;" height="30" width="100" src="<?php echo $this->baseUrl("www/images/facebook-button4.jpg"); ?>" /><br><br>
+			Please click the button to import your contacts from facebook
+		</div>
+	</div>
 </div>
 <div id="inviteMain2" class="hide">
-    <div class="fbFrndsLeftCol">
-        <div class="fbFrndsBar">
-            <ul>
-                <li class="txtBold floatL">Facebook Friends</li>
-                <li class="floatR"><a class="btnBlue" href="javascript:void(0);">Invite Friends</a></li>
-            </ul>
+	<div class="fbFrndsLeftCol">
+		<div class="fbFrndsBar">
+			<ul>
+				<li class="txtBold floatL">Facebook Friends</li>
+				<li class="floatR">
+					<a class="btnBlue" href="javascript:void(0);">Invite Friends</a>
+				</li>
+			</ul>
 			<div class="clr"></div>
-        </div>    
-        <div id="invite_div" class="invtFrndSec">
-            <div class="invtFrndList"></div>        
-        </div>
-    </div>
-    <div class="fbFrndsRightCol">
-        <div class="fbFrndsBar">
-            <ul>
-                <li class="txtBold floatL">Friends on seearound.me</li>
-                <li class="floatR"><a class="btnBlue" href="javascript:void(0);">Connect all</a></li>
-            </ul>
+		</div>
+		<div id="invite_div" class="invtFrndSec">
+			<div class="invtFrndList"></div>
+		</div>
+	</div>
+	<div class="fbFrndsRightCol">
+		<div class="fbFrndsBar">
+			<ul>
+				<li class="txtBold floatL">Friends on seearound.me</li>
+				<li class="floatR"><a class="btnBlue" href="javascript:void(0);">Connect all</a></li>
+			</ul>
 			<div class="clr"></div>
-        </div>
-        <div id="connect_div" class="invtFrndSec">
-            <div class="invtFrndList"></div>
-        </div>
-        <div class="invtFrndList" style="display: none;">
-            <p class="flwngFrndsBar">Already following <label id="alrConn">0</label> friends</p>
-        </div>
-    </div>
+		</div>
+		<div id="connect_div" class="invtFrndSec">
+			<div class="invtFrndList"></div>
+		</div>
+		<div class="invtFrndList" style="display: none;">
+			<p class="flwngFrndsBar">Already following <label id="alrConn">0</label> friends</p>
+		</div>
+	</div>
 	<div class="clr"></div>
 </div>

@@ -2,7 +2,7 @@
 $url = $this->serverUrl() . $this->baseUrl("index/send-invitation/regType/email/q/" . $this->code);
 ?>
 <p>
-	<?php echo $this->message; ?><br/><br/>
-	Please visit the link below to join <?php echo $$this->user->Name; ?>.<br/>
+	<?php echo Zend_Registry::get('config_global')->email->email_invite_message; ?><br/><br/>
+	Please visit the link below to join <?php echo $this->user->Name; ?>.<br/>
 	<a href="<?php echo $url; ?>"><?php echo $url; ?></a>
 </p>

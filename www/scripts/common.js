@@ -376,39 +376,27 @@ function userAddressTooltip(address, image){
 
 function notification(){
 	$.ajax({
-		url : baseUrl + 'contacts/friends-notification',
-		type: 'post',
-		success: function(obj){
-
-			obj = $.parseJSON(obj);
-
-			if (obj && obj.total > 0){
-				if ($("#noteTotal")){
-					$("#noteTotal").html(obj.total);
-					$("#noteTotal").show();
-				}
+		url: baseUrl + 'contacts/friends-notification',
+		type: 'POST',
+		dataType: 'json'
+	}).done(function(response){
+		if (response && response.status){
+			if (response.friends > 0){
+				$("#noteTotal").html(response.friends).show();
+			} else {
+				$("#noteTotal").hide();
 			}
 
-			if (obj && obj.totalFriends){
-				if ($("#totalFriend")){
-					$("#totalFriend").html(obj.totalFriends);
-				}
+			if (response.messages > 0){
+				$("#msgTotal").html(response.messages).show();
 			} else {
-				if ($("#totalFriend")){
-					$("#totalFriend").html(0);
-				}
-			}
-
-			if (obj && obj.msgTotal > 0){
-				if ($("#msgTotal")){
-					$("#msgTotal").html(obj.msgTotal);
-					$("#msgTotal").show();
-				}
-			} else {
-				$("#msgTotal").html(obj.msgTotal);
 				$("#msgTotal").hide();
 			}
+		} else {
+			alert(response ? response.error.message : ERROR_MESSAGE);
 		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
 	});
 }
 

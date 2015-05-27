@@ -597,9 +597,16 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .singleColFbFrnds{float:left; width:985px; border-right:1px solid #e7ebed}
 
-.fbFrndsLeftCol{float:left; width:490px;}
-
-.fbFrndsRightCol{ float:right; width:495px;}
+.fbFrndsLeftCol,
+.fbFrndsRightCol {
+	width: 480px;
+}
+.fbFrndsLeftCol {
+	float: left;
+}
+.fbFrndsRightCol {
+	float: right;
+}
 
 .fbFrndsBar{background:#fefeda; padding:10px 20px; border-width:0 1px 1px 0; border-style:solid; border-color:#e7ebed;}
 
@@ -1854,6 +1861,7 @@ input[type=submit], input[type=button] {
 	font-size: 11px;
 	line-height: 1.28;
 	text-align: left;
+	word-wrap: break-word;
 }
 .hidden {
 	display: none;
@@ -1877,4 +1885,8 @@ input[type=submit], input[type=button] {
 }
 .post-image img {
 	cursor: pointer;
+}
+label.error {
+	color: #FF5959;
+	display: block;
 }

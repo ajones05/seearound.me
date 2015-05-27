@@ -281,35 +281,4 @@ class Application_Model_Message extends My_Db_Table_Abstract
         }
         return $row; 
     }
-
-    
-
-    function getNoteMessage($id, $all=null) 
-
-    {
-
-        $select = $this->select();
-
-        if($id) {
-
-            $select->where('receiver_id =?', $id)
-
-                ->where('is_deleted =?', 'false')
-
-                ->where('is_valid =?', 'true')
-
-                ->where('reciever_read =?', 'false')
-
-                
-
-                ->orWhere('(reply_to =?',$id)
-
-                ->where('sender_read =?)', 'false');
-
-        }
-
-        return $this->fetchAll($select);
-
-    }
-
 }

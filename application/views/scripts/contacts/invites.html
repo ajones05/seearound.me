@@ -1,32 +1,70 @@
-<h3 class="topHdGrayB12"><img src="<?php echo $this->baseUrl("www/images/icn-myconn-w.gif"); ?>" width="21" height="17" class="tIcn" alt="My Connections" /> Invite friends</h3>
+<h3 class="topHdGrayB12_updated">
+	<img src="<?php echo $this->baseUrl("www/images/icn-myconn-w.gif"); ?>" width="21" height="17" class="tIcn" alt="My Connections" />Invite friends
+</h3>
 <div id="inviteMain1">
-    <div class="importMessage">
-        Send invitation to friends <br>
-        <span style="color: red;font-size: 12px;font-weight: 100;">*You have <label id="invitationTotal" style="font-size: 13px;font-weight: bold;"><?=$this->inviteStatus->invite_count?></label> invitations remaining</span>
-    </div>
-    <div class="fbMainInvite" style="padding: 140px 282px;width:350px;">
-        <div style="background-color: #F1F5F8;border-radius: 8px 8px 8px 8px;padding: 80px;padding: 37px 130px 74px 24px;width: 245px;">
-            <?if(isset($this->success) && $this->success > 0):?>
-            <div style="font-size:12px;font-weight:bold;margin-left:-8px;padding:10px;">
-                <img src="<?php echo $this->baseUrl("www/images/correct.gif"); ?>" /> Invitation sent successfully.   
-            </div>
-            <?endif;?>
-            <div class="fbFrndsMain" style="text-align:left;">
-                <div style="padding:10px;">
-                    <form method="post" onsubmit="return inviteStatus();">
-                        <span style="margin-left: -9px;color: #4993EF;">My Message</span><br>
-                        <textarea style="margin-left: -1px;border: 1px solid black;margin-top: 5px;" id="messageText" name="messageText" cols="36" rows="3" onfocus="$('.errors').html('');">Hi, I wanted to invite you to join seearound.me - you can use it to see whats going on around you and talk to other people locally.</textarea><br><br>
-                        <span style="margin-left: -9px;color: #4993EF;">My friends' emails( Separated by comma ) </span><br>
-                        <textarea style="margin-left: -1px;border: 1px solid black;margin-top: 5px;" id="emails" name="emails" cols="36" rows="2" placeholder="Enter emails address" onfocus="$('.errors').html('');"></textarea><br>
-                        
-                        <span style="margin-left:-1px;" class="errors"></span>
-                        <span>
-                            <input style="margin-top: 10px;margin-left: -1px;float: left;" class="btnBlueRpt" type="submit" value="Send">
-                        </span>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="importMessage">
+		Send invitation to friends<br>
+		<span style="color: red;font-size: 12px;font-weight: 100;">*You have <label id="invitationTotal" style="font-size: 13px;font-weight: bold;"><?php echo $this->invite_count; ?></label> invitations remaining</span>
+	</div>
+	<div class="fbMainInvite" style="padding: 140px 282px;width:350px;">
+		<div style="background-color: #F1F5F8;border-radius: 8px 8px 8px 8px;padding: 80px;padding: 37px 130px 74px 24px;width: 245px;">
+			<?php if ($this->invite_success > 0): ?>
+			<div style="font-size:12px;font-weight:bold;margin-left:-8px;padding:10px;">
+				<img src="<?php echo $this->baseUrl("www/images/correct.gif"); ?>" /> Invitation sent successfully.
+			</div>
+			<?php endif; ?>
+			<div class="fbFrndsMain" style="text-align:left;padding:10px;">
+				<form id="inviteForm" method="post">
+					<span style="margin-left: -9px;color: #4993EF;">My Message</span><br>
+					<textarea style="margin-left: -1px;border: 1px solid black;margin-top: 5px;" id="messageText" cols="36" rows="3"><?php echo Zend_Registry::get('config_global')->email->email_invite_message; ?></textarea><br><br>
+					<span style="margin-left: -9px;color: #4993EF;">My friends' emails ( Separated by comma )</span><br>
+					<textarea style="margin-left: -1px;border: 1px solid black;margin-top: 5px;" id="emails" name="emails" cols="36" rows="2" placeholder="Enter emails address"></textarea><br>
+					<input style="margin-top: 10px;margin-left: -1px;float: left;" class="btnBlueRpt" type="submit" value="Send">
+				</form>
+			</div>
+		</div>
+	</div>
 </div>
-<script type="text/javascript" src="<?php echo $this->baseUrl("www/scripts/invites.js"); ?>"></script>
+<script type="text/javascript">
+$(function(){
+	$.validator.addMethod(
+		"multiemails",
+		function (value, element){
+			if (this.optional(element)){
+				return true;
+			}
+
+			var emails = value.split(/[,]+/);
+
+			for (var i in emails){
+				var match = emails[i].match(/\<.+\>/);
+
+				if (match){
+					emails[i] = match[0].replace('<','').replace('>','');
+				}
+
+				if (!$.validator.methods.email.call(this, $.trim(emails[i]), element)){
+					return false;
+				}
+			}
+
+			return true;
+		},
+		$.validator.messages.multiemails
+	);
+
+	$('form#inviteForm').validate({
+		rules: {
+			emails: {
+				required: true,
+				multiemails: true
+			}
+		},
+		messages: {
+			emails: {
+				multiemails: 'Please enter valid comma separated emails.'
+			}
+		}
+	});
+});
+</script>
