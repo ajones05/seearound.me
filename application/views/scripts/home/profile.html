@@ -56,19 +56,19 @@
 				<?if($this->friendStatus->sender_id == $this->auth_id):?>
 					<input class="wAuto btnBlueRpt" type="button" value="Pending" />
 				<?else:?>
-					<input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend('confirm');" />
+					<input class="wAuto btnBlueRpt" type="button" value="Follow" onclick="makeFriend('confirm');" />
 				<?endif;?>
 			<?elseif($this->friendStatus->status == '1'):?>
-				<input class="wAuto btnBlueRpt" type="button" value="Unfriend" onclick="makeFriend('reject');" />
+				<input class="wAuto btnBlueRpt" type="button" value="Unfollow" onclick="makeFriend('reject');" />
 			<?elseif($this->friendStatus->status == '2'):?>
 				<?if($this->friendStatus->reciever_id == $this->auth_id):?>
-					<input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend('confirm');" />
+					<input class="wAuto btnBlueRpt" type="button" value="Follow" onclick="makeFriend('confirm');" />
 				<?else:?>
 					<input class="wAuto btnBlueRpt" type="button" value="Blocked" />
 				<?endif;?>
 			<?endif;?>
 		<?else :?>
-			<input class="wAuto btnBlueRpt" type="button" value="Friend" onclick="makeFriend('add', true);" />
+			<input class="wAuto btnBlueRpt" type="button" value="Follow" onclick="makeFriend('add', true);" />
 		<?endif;?>
     <img class="frndReqImg" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>" />
     <input class="message wAuto btnBlueRpt" type="button" value="Message" />
@@ -148,9 +148,9 @@ function makeFriend(action, isnew){
 				$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Pending" />');
 			} else {
 				if (action == 'confirm'){
-					$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Unfriend" onclick="makeFriend(\'reject\');" />');
+					$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Unfollow" onclick="makeFriend(\'reject\');" />');
 				} else if (action == 'reject'){
-					$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Add Friend" onclick="makeFriend(\'confirm\');" />');
+					$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Follow" onclick="makeFriend(\'confirm\');" />');
 				}
 			}
 

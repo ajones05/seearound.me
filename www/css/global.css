@@ -466,7 +466,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 .primNav .ddMyConnList ul.connList .thumb{margin-right:10px !important;}
 
 .primNav .ddMyConnList ul.connList .name {
-	color: #afafaf;
+	color: #fff;
 	text-align: left;
 }
 .primNav .ddMyConnList ul.connList .adrs {
@@ -498,7 +498,9 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 #ddMyConnList a.friend:hover { color: #ccc;}
 
-
+#ddMyConnList img.loading {
+	margin: 7px 102px;
+}
 
 /**Profile Edit Detail Page**/
 
@@ -1134,6 +1136,7 @@ table tr td input { border: 1px solid #d7d7d7;}
     color: #8d8d8d;
     float:right;
     width:136px;
+	word-wrap: break-word;
 }
 
 .myScrp li .post { background: #fff;padding: 15px 0 18px; display: inline-block; width: 100%;}

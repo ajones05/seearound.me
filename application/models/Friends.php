@@ -275,54 +275,6 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
 
     }
 
-    
-
-    public function frendsList($userId = null, $status = false, $blocked=false, $limit=false) 
-
-    {
-
-        $select = $this->select()->setIntegrityCheck(false)
-
-                ->from($this, array('fid'=>'id', 'sender_id','reciever_id', 'status'))
-
-                ->joinLeft('user_data', 'friends.sender_id = user_data.id')
-
-                ->joinLeft('address', 'user_data.id = address.user_id')
-
-                ->where('friends.reciever_id =?', $userId);
-
-                //->orWhere('friends.sender_id =?', $userId);
-
-        if($status) {
-
-            $select->where('friends.status =?', '0'); 
-
-        }else {
-
-            $select->where('friends.status !=?', '0'); 
-
-        }
-
-        if($blocked) {
-
-            $select->where('friends.status !=?', '2');
-
-        }
-
-        
-
-        if($limit) {
-
-           $select->limit($limit); 
-
-        }
-
-                
-
-        return $this->fetchAll($select);
-
-    }
-
     /*Added on 19/8/2013 for API */
     public function getIndividualFriendsWs($user = 0, $targetFriendId , $limit = null, $offset = null){
         if($user) {
@@ -481,14 +433,61 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
 	{
 		$result = $this->fetchRow(
 			$this->select()
-				->from($this, array('count(*) as friends_count'))
+				->from($this, array('count(*) as result_count'))
 				->where('reciever_id=' . $user_id . ' OR sender_id=' . $user_id)
 				->where('status=?', 1)
 		);
 
 		if ($result)
 		{
-			return $result->friends_count;
+			return $result->result_count;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Find records by receiver ID.
+	 *
+	 * @param	integer	$receiver_id
+	 * @param	integer	$status
+	 * @param	integer	$limit
+	 * @param	integer	$offset
+	 *
+	 * @return	array
+	 */
+	public function findAllByReceiverId($receiver_id, $status, $limit = null, $offset = null)
+	{
+		$result = $this->fetchAll(
+			$this->select()
+				->where('reciever_id=?', $receiver_id)
+				->where('status=?', $status)
+				->limit($limit, $offset)
+		);
+
+		return $result;
+	}
+
+	/**
+	 * Returns friends count by receiver ID.
+	 *
+	 * @param	integer	$receiver_id
+	 * @param	integer	$status
+	 *
+	 * @return	integer
+	 */
+	public function getCountByReceiverId($receiver_id, $status)
+	{
+		$result = $this->fetchRow(
+			$this->select()
+				->from($this, array('count(*) as result_count'))
+				->where('reciever_id=?', $receiver_id)
+				->where('status=?', $status)
+		);
+
+		if ($result)
+		{
+			return $result->result_count;
 		}
 
 		return 0;

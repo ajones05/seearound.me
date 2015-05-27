@@ -281,7 +281,7 @@ class ContactsController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id);
+		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id, 1);
 
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
@@ -563,7 +563,7 @@ class ContactsController extends Zend_Controller_Action
             $response->total = count($friendRow);
             $response->msg = $msgRow;
             $response->msgTotal = count($msgRow);
-            $response->totalFriends = $tableFriends->getCountByUserId($user->id);
+            $response->totalFriends = $tableFriends->getCountByUserId($user->id, 1);
         }
         die(Zend_Json_Encoder::encode($response));
     }
@@ -577,18 +577,41 @@ class ContactsController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-        $response = new stdClass();
-        $tableFriends = new Application_Model_Friends;
-        if($this->_request->isPost()) {
-            $friendRows = $tableFriends->frendsList($user->id, true);
-            $friendRow = $tableFriends->frendsList($user->id, true, false, 5);
-            if($friendRow) {
-                $friendRow = $friendRow->toArray();
-            }
-            $response->data = $friendRow;
-            $response->total = count($friendRows);
-        }
-        die(Zend_Json_Encoder::encode($response));
+		try
+		{
+			$response = array('status' => 1);
+
+			$model = new Application_Model_Friends;
+			$friends = $model->findAllByReceiverId($user->id, 0, 5);
+			$friends_count = count($friends);
+
+			if ($friends_count)
+			{
+				$data = array();
+
+				foreach ($friends as $friend)
+				{
+					$sender = $friend->findDependentRowset('Application_Model_User', 'FriendSender')->current();
+
+					$data[] = array(
+						'image' => $sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						'name' => $sender->Name,
+					);
+				}
+
+				$response['data'] = $data;
+				$response['total'] = $friends_count < 5 ? $friends_count : $model->getCountByReceiverId($user->id, 0);
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_helper->json($response);
     }
     
     public function allRequestsAction() 
@@ -600,9 +623,8 @@ class ContactsController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-        $tableFriends = new Application_Model_Friends;
-        $this->view->data = $friendRows = $tableFriends->frendsList($user->id, true);
-        $this->view->total = count($friendRows);
+        $this->view->data = (new Application_Model_Friends)->findAllByReceiverId($user->id, 0);
+		$this->view->friendListExist = true;
 
 		$this->view->headScript()
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');

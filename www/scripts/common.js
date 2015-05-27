@@ -132,79 +132,63 @@ $(function(){
 });
 
 function showFriendRequest(thisone){
-	var html = '<p class="bgTop"></p>'+
-		'<img style=" margin: 7px 0 7px 112px;" src="'+baseUrl+'www/images/wait.gif" /><br>'+
-        '<p class="pendReq2"></p>';
+	$("#ddMyConnList")
+		.html('')
+		.append(
+			$('<p/>').addClass('bgTop'),
+			$('<img/>', {src: baseUrl + 'www/images/wait.gif'}).addClass('loading'),
+			$('<p/>').addClass('pendReq2')
+		);
 
-	$("#ddMyConnList").html(html);
-
-    $.ajax({
+	$.ajax({
 		url: baseUrl + 'contacts/requests',
-		type: "POST",
-		success: function(obj){
-                if(obj) {
-                    obj = $.parseJSON(obj); 
-                    if(obj.total > 0) { 
-                        html = '';
-                        html += '<p class="bgTop"></p>';
-                        currentRequests = 0;
-                        for(var x in obj.data) { 
-                            currentRequests++;
-                            var imgsrc = baseUrl+'www/images/img-prof40x40.jpg';
-                            if((obj.data[x]).Profile_image) {
-                                if((obj.data[x]).Profile_image != 'null' || (obj.data[x]).Profile_image != '') { 
-                                    if(((obj.data[x]).Profile_image).indexOf('://') > 0) {
-                                        imgsrc = (obj.data[x]).Profile_image;
-                                    }else {
-                                        imgsrc = baseUrl+'uploads/'+(obj.data[x]).Profile_image;
-                                    }
-                                }
-                            }
+		type: 'POST',
+		dataType: 'json'
+	}).done(function(response){
+		if (response && response.status){
+			$("#ddMyConnList").html('');
 
-                            html += '<ul class="connList">'+
-                            '<li class="thumb">'+
-                            '<img src="'+imgsrc+'" width="40" height="40" />'+
-                            '</li>'+
-                            '<li class="name">'+
-                            (obj.data[x]).Name +
-                            '</li>'+
-                            '<li class="adrs">';
+			if (response.data){
+				currentRequests = 0;
+				$("#ddMyConnList").append($('<p/>').addClass('bgTop'));
 
-                            if((obj.data[x]).address) {
-                                html += obj.data[x].address;
-                            } else {
-                                html += '<br><br>';
-                            }
+				for (var x in response.data){ 
+					$("#ddMyConnList").append(
+						$('<ul/>').addClass('connList').append(
+							$('<li/>').addClass('thumb').append(
+								$('<img/>', {src: response.data[x].image, width: 40, height: 40})
+							),
+							$('<li/>').addClass('name').html(response.data[x].name + ' is<br/>following you')
+						),
+						$('<div/>').addClass('clear')
+					);
 
-                            html +='</li>'+
-                            '<li class="btnSet">'+
-                            '<input class="curPnt" type="button" value="Accept" onclick="friendRequest(this,'+(obj.data[x]).sender_id+',\'confirm\');" />&nbsp;&nbsp;'+
-                            '<input class="curPnt" type="button" value="Deny" onclick="friendRequest(this,'+(obj.data[x]).sender_id+',\'reject\');" />&nbsp;&nbsp;'+
-                            '<img class="imgAlowDeny" height="20" width="50" src="'+baseUrl+'www/images/loader.gif" />'+
-                            '</li>'+
-                            '</ul><div class="clear"></div>';
-                        }
-					if (obj.total >= 5){
-						html += '<div class="pendReq">'+
-							'<a href="'+baseUrl+'contacts/all-requests">View all pending requests</a>'+
-							'</div>';
-					} else {
-						html+='<p class="pendReq2"></p>';
-					}
-					$("#noteTotal").html(obj.total); 
-					$("#ddMyConnList").html(html);
-				} else {
-					html = '<p class="pendReq">No new friend request found.</p>';								
-					$("#ddMyConnList").html(html);
+					currentRequests++;
 				}
-				$("#ddMyConnList").append('<a class="friend" href="'+baseUrl+'contacts/friends-list">Go to my friends </a>');
+
+				if (response.total >= 5){
+					$("#ddMyConnList").append(
+						$('<div/>').addClass('pendReq').append(
+							$('<a/>', {href: baseUrl + 'contacts/all-requests'}).text('View all pending requests')
+						)
+					);
+				} else {
+					$("#ddMyConnList").append($('<p/>').addClass('pendReq2'));
+				}
+
+				$("#noteTotal").html(response.total);
 			} else {
-				$(thisone).parent().siblings('div').html("");
+				$("#ddMyConnList").append($('<p/>').addClass('pendReq').text('No new friend request found'));
 			}
-		},
-		error : function(){
-			$(thisone).parent().siblings('div').html();
+
+			$("#ddMyConnList").append('<a class="friend" href="'+baseUrl+'contacts/friends-list">Go to my friends </a>');
+		} else {
+			alert(response ? response.error.message : ERROR_MESSAGE);
+			$("#ddMyConnList").hide();
 		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
+		$("#ddMyConnList").hide();
 	});
 }
 
@@ -235,7 +219,7 @@ function friendRequest(thisone, id, action){
 				showFriendRequest();
 			}
 		} else {
-			alert(ERROR_MESSAGE);
+			alert(response ? response.error.message : ERROR_MESSAGE);
 		}
 	}).fail(function(jqXHR, textStatus){
 		alert(textStatus);
@@ -265,7 +249,7 @@ function deleteFriend(userId, target, callback){
 				callback.call();
 			}
 		} else {
-			alert(ERROR_MESSAGE);
+			alert(response ? response.error.message : ERROR_MESSAGE);
 		}
 	}).fail(function(jqXHR, textStatus){
 		alert(textStatus);
