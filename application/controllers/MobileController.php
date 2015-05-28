@@ -99,7 +99,7 @@ class MobileController extends Zend_Controller_Action
 					'Email_id' => $user->Email_id,
 					'Password' => $user->Password,
 					'Birth_date' => $user->Birth_date,
-					'Profile_image' => $user->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					'Status' => $user->Status,
 					'Token' => $user->Token,
 					'address' => $user->address(),
@@ -405,20 +405,29 @@ class MobileController extends Zend_Controller_Action
     {
 		try
 		{
+			$_POST['other_user_id'] = 276;
+			
 			$other_user_id = $this->_request->getPost('other_user_id');
 
 			if (!Application_Model_User::checkId($other_user_id, $other_user))
 			{
 				throw new RuntimeException('Incorrect other user ID', -1);
 			}
-
-			$user_id = $this->_request->getPost('user_id');
-
+			
 			$response = array(
 				'status' => 'SUCCESS',
-				// TODO: check response fields
-				'result' => $other_user->toArray()
+				'result' => array(
+					'id' => $other_user->id,
+					'Name' => $other_user->Name,
+					'Profile_image' => $this->view->serverUrl() . $other_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					'Email_id' => $other_user->Email_id,
+					'Gender' => $other_user->Gender,
+					'Activities' => $other_user->Activities,
+					'Birth_date' => $other_user->Birth_date
+				)
 			);
+
+			$user_id = $this->_request->getPost('user_id');
 
 			if ($user_id != null)
 			{
@@ -543,7 +552,7 @@ class MobileController extends Zend_Controller_Action
 					'reciever_read' => $message->reciever_read,
 					'Name' => $user->Name,
 					'Email_id' => $user->Email_id,
-					'Profile_image' => $user->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg'))
+					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 				);
 			}
 
@@ -806,7 +815,7 @@ class MobileController extends Zend_Controller_Action
 				$udatedUserdata['latitude'] = $user->latitude;
 				$udatedUserdata['longitude'] = $user->longitude;
 				$udatedUserdata['Profile_image'] = isset($image_url) ? $this->view->serverUrl() . $image_url :
-					$user->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg'));
+					$this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'));
 				$udatedUserdata['address'] = $user->address;
 				$udatedUserdata['Gender'] = $user->Gender;
 				$udatedUserdata['Activities'] = $user->Activities;
@@ -915,7 +924,7 @@ class MobileController extends Zend_Controller_Action
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
 						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
-						'Profile_image' => $owner->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg'))
+						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
 				}
 			}
@@ -1037,7 +1046,7 @@ class MobileController extends Zend_Controller_Action
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
 						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
-						'Profile_image' => $owner->getProfileImage($this->view->serverUrl() . $this->view->baseUrl('www/images/img-prof40x40.jpg'))
+						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
 				}
 			}
