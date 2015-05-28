@@ -403,39 +403,46 @@ class MobileController extends Zend_Controller_Action
     
     public function getotheruserprofileAction()
     {
-		$response = array(
-			'message' => 'Profile Detail',
-		);
-
 		try
 		{
-			$other_user_id = $this->_request->getParam('other_user_id');
+			$other_user_id = $this->_request->getPost('other_user_id');
 
 			if (!Application_Model_User::checkId($other_user_id, $other_user))
 			{
-				throw new RuntimeException('Incorrect other_user_id id: ' . var_export($other_user_id, true), -1);
+				throw new RuntimeException('Incorrect other user ID', -1);
 			}
 
-			$user_id = $this->_request->getParam('user_id');
+			$user_id = $this->_request->getPost('user_id');
+
+			$response = array(
+				'status' => 'SUCCESS',
+				// TODO: check response fields
+				'result' => $other_user->toArray()
+			);
 
 			if ($user_id != null)
 			{
-				if (!Application_Model_User::checkId($user_id, $user))
+				if ($user_id == $other_user_id)
 				{
-					throw new RuntimeException('Incorrect user_id id: ' . var_export($user_id, true), -1);
+					throw new RuntimeException('Other user ID cannot be the same as your ID', -1);
 				}
 
-				$result = Application_Model_Friends::getInstance()->getStatus($user_id, $other_user_id);
+				if (!Application_Model_User::checkId($user_id, $user))
+				{
+					throw new RuntimeException('Incorrect user ID', -1);
+				}
+
+				$result = (new Application_Model_Friends)->getStatus($user_id, $other_user_id);
 
 				$response['friends'] = count($result) && $result->status == 1 ? 1 : 0;
 			}
-
-			$response['status'] = 'SUCCESS';
-			$response['result'] = $other_user->toArray();
 		}
 		catch (Exception $e)
 		{
-			$response['status'] = 'FAILED';
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
 		}
 
 		$this->_logRequest($response);
