@@ -524,7 +524,7 @@ class ContactsController extends Zend_Controller_Action
 
 			if (!Application_Model_User::checkId($auth['user_id'], $user))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action', 401);
 			}
 
 			$response = array('status' => 1);
@@ -558,7 +558,9 @@ class ContactsController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
+				'error' => $e instanceof RuntimeException ?
+					array('code' => $e->getCode(), 'message' => $e->getMessage()) :
+					array('message' => 'Internal Server Error')
 			);
 		}
 

@@ -386,10 +386,13 @@ function notification(){
 				$("#msgTotal").hide();
 			}
 		} else {
+			if (response && response.error.code == 401){
+				window.location.href = baseUrl;
+				return false;
+			}
+
 			alert(response ? response.error.message : ERROR_MESSAGE);
 		}
-	}).fail(function(jqXHR, textStatus){
-		alert(textStatus);
 	});
 }
 
