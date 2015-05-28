@@ -62,170 +62,36 @@
 <script>
 $(function(){
 	$('#Location, .myLoc').click(function(){
-		$('body').css({overflow: 'hidden'});
+		var $address = $('#reg_form [name=address]'),
+			locationAddress = $.trim($address.val()),
+			$latitude = $('#reg_form [name=latitude]'),
+			$longitude = $('#reg_form [name=longitude]');
 
-		$('<div/>', {'class': 'location-dialog'})
-			.append(
-				$('<div/>', {id: 'map-canvas'}),
-				$('<div/>', {'class': 'panel'}).append(
-					$('<form/>').append(
-						$('<input/>', {type: 'text', name: 'address', placeholder: 'Enter your Address'}),
-						$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
-						$('<input/>', {type: 'submit', value: 'Use This Address'})
-					)
-				)
-			)
-			.appendTo($('body'))
-			.dialog({
-				modal: true,
-				resizable: false,
-				drag: false,
-				width: 980,
-				height: 500,
-				dialogClass: 'colorbox',
-				beforeClose: function(event, ui){
-					$('body').css({overflow: 'visible'});
-					$(event.target).dialog('destroy').remove();
-				},
-				open: function(event, ui){
-					var $editForm = $('#reg_form'),
-						$addressField = $('[name=address]', $editForm),
-						$latitudeField = $('[name=latitude]', $editForm),
-						$longitudeField = $('[name=longitude]', $editForm),
-						newsAddress = $.trim($addressField.val()) !== '' ? $addressField.val() : geoipaddress,
-						$editAddress = $('[name=address]', event.target)
-							.val(newsAddress)
-							.attr('disabled', false),
-						$submitField = $('[type=submit]', event.target)
-							.attr('disabled', false),
-						$map = $('#map-canvas', event.target),
-						autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]),
-						centerLocation = new google.maps.LatLng($latitudeField.val(), $longitudeField.val()),
-						geocoder = new google.maps.Geocoder(),
-						renderLocation = true;
+		if (locationAddress === ''){
+			locationAddress = geoipaddress;
+		}
 
-					var map = new google.maps.Map($map[0], {
-						zoom: 10,
-						center: centerLocation,
-						disableDefaultUI: true,
-						panControl: false,
-						zoomControl: true,
-						scaleControl: false,
-						streetViewControl: false,
-						overviewMapControl: false,
-						draggable: true,
-						mapTypeId: google.maps.MapTypeId.ROADMAP
-					});
-
-					var marker = new google.maps.Marker({
-						map: map,
-						draggable: true,
-						position: map.getCenter(),
-						icon: baseUrl + 'www/images/man.png'
-					});
-
-					function infowindowUpdateContent(address){
-						if (!address){
-							address = '<i>undefined</i>';
-						}
-
-						return '<div class="userLocation"><div>Address:</div><div>' + address + '</div></div>';
-					}
-
-					function updateMarker(event){
-						geocoder.geocode({
-							latLng: event.latLng
-						}, function(results, status){
-							if (status == google.maps.GeocoderStatus.OK){
-								infowindow.setContent(infowindowUpdateContent(results[0].formatted_address));
-								$editAddress.val(results[0].formatted_address);
-							} else {
-								infowindow.setContent(infowindowUpdateContent());
-								$editAddress.val('');
-							}
-
-							autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-							renderLocation = true;
-							infowindow.open(map, marker);
-						});
-					}
-
-					var infowindow = new google.maps.InfoWindow({
-						maxWidth: 220,
-						content: infowindowUpdateContent(newsAddress)
-					});
-
-					infowindow.open(map, marker);
-
-					google.maps.event.addListener(map, 'click', function(mapEvent){
-						infowindow.close();
-						marker.setPosition(mapEvent.latLng);
-						updateMarker(mapEvent);
-					});
-
-					google.maps.event.addListener(marker, 'dragstart', function(){
-						infowindow.close();
-					});
-
-					google.maps.event.addListener(marker, 'dragend', function(markerEvent){
-						updateMarker(markerEvent);
-					});
-
-					google.maps.event.addListener(autocomplete, 'place_changed', function(){
-						$('.search', event.target).click();
-					});
-
-					$editAddress.keydown(function(e){
-						if (e.keyCode == 13){
-							e.preventDefault();
-						}
-					});
-
-					$('.search', event.target).click(function(){
-						var value = $.trim($editAddress.val());
-
-						if (value === ''){
-							$editAddress.focus();
-							return;
-						}
-
-						$submitField.attr('disabled', true);
-
-						geocoder.geocode({
-							address: value
-						}, function(results, status){
-							if (status == google.maps.GeocoderStatus.OK){
-								infowindow.setContent(infowindowUpdateContent(results[0].formatted_address));
-								map.setCenter(results[0].geometry.location);
-								marker.setPosition(results[0].geometry.location);
-								$editAddress.val(results[0].formatted_address);
-								autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-								renderLocation = true;
-							} else {
-								alert('Sorry! We are unable to find this location.');
-								renderLocation = false;
-							}
-
-							$submitField.attr('disabled', false);
-						});
-					});
-
-					$('form', event.target).submit(function(e){
-						e.preventDefault();
-
-						if (!renderLocation){
-							$editAddress.focus();
-							return false;
-						}
-
-						$addressField.val($editAddress.val());
-						$latitudeField.val(marker.getPosition().lat());
-						$longitudeField.val(marker.getPosition().lng());
-
-						$(event.target).dialog('close');
-					});
+		editLocationDialog({
+			mapZoom: 10,
+			markerIcon: baseUrl + 'www/images/man.png',
+			inputPlaceholder: 'Enter your Address',
+			submitText: 'Use This Address',
+			defaultAddress: locationAddress,
+			center: new google.maps.LatLng($latitude.val(), $longitude.val()),
+			infoWindowContent: function(address){
+				if ($.trim(address) === ''){
+					address = '<i>undefined</i>';
 				}
-			});
+
+				return '<div class="userLocation"><div>Address:</div><div>' + address + '</div></div>';
+			},
+			submit: function(dialogEvent, position, address){
+				$address.val(address);
+				$latitude.val(position.lat());
+				$longitude.val(position.lng());
+				$(dialogEvent.target).dialog('close');
+			}
+		});
 	});
 });
 </script>

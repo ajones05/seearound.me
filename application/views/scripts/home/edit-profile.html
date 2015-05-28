@@ -18,151 +18,31 @@
 
 		$('#birth_month').change();
 
+		var $address = $('#editProfileForm [name=address]'),
+			$latitude = $('#editProfileForm [name=latitude]'),
+			$longitude = $('#editProfileForm [name=longitude]');
+
 		$("#locationButton, #Location").click(function(){
-			$('body').css({overflow: 'hidden'});
-
-			$('<div/>', {'class': 'location-dialog'})
-				.append(
-					$('<div/>', {id: 'map-canvas'}),
-					$('<div/>', {'class': 'panel'}).append(
-						$('<form/>').append(
-							$('<input/>', {type: 'text', name: 'address', placeholder: 'Enter your Address'}),
-							$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
-							$('<input/>', {type: 'submit', value: 'Use This Address'})
-						)
-					)
-				)
-				.appendTo($('body'))
-				.dialog({
-					modal: true,
-					resizable: false,
-					drag: false,
-					width: 980,
-					height: 500,
-					dialogClass: 'colorbox',
-					beforeClose: function(event, ui){
-						$('body').css({overflow: 'visible'});
-						$(event.target).dialog('destroy').remove();
-					},
-					open: function(event, ui){
-						var $editForm = $('#editProfileForm'),
-							$addressField = $('[name=location]', $editForm),
-							$latitudeField = $('[name=latitude]', $editForm),
-							$longitudeField = $('[name=longitude]', $editForm),
-							newsAddress = $addressField.val(),
-							$editAddress = $('[name=address]', event.target)
-								.val(newsAddress)
-								.attr('disabled', false),
-							$submitField = $('[type=submit]', event.target)
-								.attr('disabled', false),
-							$map = $('#map-canvas', event.target),
-							autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]),
-							centerLocation = new google.maps.LatLng($latitudeField.val(), $longitudeField.val()),
-							geocoder = new google.maps.Geocoder(),
-							renderLocation = true;
-
-						var map = new google.maps.Map($map[0], {
-							zoom: 14,
-							center: centerLocation
-						});
-
-						var marker = new google.maps.Marker({
-							map: map,
-							draggable: true,
-							position: map.getCenter(),
-							icon: baseUrl + 'www/images/icons/icon_1.png'
-						});
-
-						function updateMarker(event){
-							geocoder.geocode({
-								latLng: event.latLng
-							}, function(results, status){
-								if (status == google.maps.GeocoderStatus.OK){
-									infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
-									$editAddress.val(results[0].formatted_address);
-								} else {
-									infowindow.setContent(userAddressTooltip('', imagePath));
-									$editAddress.val('');
-								}
-
-								autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-								renderLocation = true;
-								infowindow.open(map, marker);
-							});
-						}
-
-						var infowindow = new google.maps.InfoWindow({
-							maxWidth: 220,
-							content: userAddressTooltip(newsAddress, imagePath)
-						});
-
-						infowindow.open(map, marker);
-
-						google.maps.event.addListener(map, 'click', function(mapEvent){
-							infowindow.close();
-							marker.setPosition(mapEvent.latLng);
-							updateMarker(mapEvent);
-						});
-
-						google.maps.event.addListener(marker, 'dragend', function(markerEvent){
-							updateMarker(markerEvent);
-						});
-
-						google.maps.event.addListener(autocomplete, 'place_changed', function(){
-							$('.search', event.target).click();
-						});
-
-						$editAddress.keydown(function(e){
-							if (e.keyCode == 13){
-								e.preventDefault();
-							}
-						});
-
-						$('.search', event.target).click(function(){
-							var value = $.trim($editAddress.val());
-
-							if (value === ''){
-								$editAddress.focus();
-								return;
-							}
-
-							$submitField.attr('disabled', true);
-
-							geocoder.geocode({
-								address: value
-							}, function(results, status){
-								if (status == google.maps.GeocoderStatus.OK){
-									infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
-									map.setCenter(results[0].geometry.location);
-									marker.setPosition(results[0].geometry.location);
-									$editAddress.val(results[0].formatted_address);
-									autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-									renderLocation = true;
-								} else {
-									alert('Sorry! We are unable to find this location.');
-									renderLocation = false;
-								}
-
-								$submitField.attr('disabled', false);
-							});
-						});
-
-						$('form', event.target).submit(function(e){
-							e.preventDefault();
-
-							if (!renderLocation){
-								$editAddress.focus();
-								return false;
-							}
-
-							$addressField.val($editAddress.val());
-							$latitudeField.val(marker.getPosition().lat());
-							$longitudeField.val(marker.getPosition().lng());
-
-							$(event.target).dialog('close');
-						});
-					}
-				});
+			editLocationDialog({
+				mapZoom: 14,
+				markerIcon: baseUrl + 'www/images/icons/icon_1.png',
+				inputPlaceholder: 'Enter your Address',
+				submitText: 'Use This Address',
+				defaultAddress: $address.val(),
+				center: new google.maps.LatLng($latitude.val(), $longitude.val()),
+				infoWindowContent: function(address){
+					return userAddressTooltip(address, imagePath);
+				},
+				submit: function(dialogEvent, position, address){
+					$address.val(address);
+					$latitude.val(position.lat());
+					$longitude.val(position.lng());
+					map.setCenter(position);
+					marker.setPosition(position);
+					infowindow.setContent(userAddressTooltip(address, imagePath));
+					$(dialogEvent.target).dialog('close');
+				}
+			});
 		});
 
 		var map = new google.maps.Map($('#map_canvas')[0], {
@@ -178,18 +58,18 @@
 			overviewMapControl: false,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		});
+		
+		var marker = new google.maps.Marker({
+			position: map.getCenter(),
+			icon: baseUrl + 'www/images/icons/icon_1.png'
+		});
+
+		var infowindow = new google.maps.InfoWindow({
+			content: userAddressTooltip(userAddress, imagePath)
+		});
 
 		google.maps.event.addListenerOnce(map, 'idle', function(){
-			var marker = new google.maps.Marker({
-				position: map.getCenter(),
-				map: map,
-				icon: baseUrl + 'www/images/icons/icon_1.png'
-			});
-			
-			var infowindow = new google.maps.InfoWindow({
-				content: userAddressTooltip(userAddress, imagePath)
-			});
-
+			marker.setMap(map);
 			infowindow.open(map, marker);
 		});
 

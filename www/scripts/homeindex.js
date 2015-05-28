@@ -103,188 +103,62 @@ $(function(){
 	});
 
 	$("#locationButton").click(function(){
-		$('body').css({overflow: 'hidden'});
+		editLocationDialog({
+			mapZoom: 14,
+			markerIcon: baseUrl + 'www/images/icons/icon_1.png',
+			inputPlaceholder: 'Enter address',
+			submitText: 'Use This Address',
+			defaultAddress: userAddress,
+			center: newsMapCircle.center,
+			infoWindowContent: function(address){
+				return userAddressTooltip(address, imagePath);
+			},
+			submit: function(dialogEvent, position, address){
+				$('#map-canvas', dialogEvent.target).mask('Waiting...');
 
-		$('<div/>', {'class': 'location-dialog'})
-			.append(
-				$('<div/>', {id: 'map-canvas'}),
-				$('<div/>', {'class': 'panel'}).append(
-					$('<form/>').append(
-						$('<input/>', {type: 'text', name: 'address', placeholder: 'Enter address'}),
-						$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
-						$('<input/>', {type: 'submit', value: 'Use This Address'})
-					)
-				)
-			)
-			.appendTo($('body'))
-			.dialog({
-				modal: true,
-				resizable: false,
-				drag: false,
-				width: 980,
-				height: 500,
-				dialogClass: 'colorbox',
-				beforeClose: function(event, ui){
-					$('body').css({overflow: 'visible'});
-					$(event.target).dialog('destroy').remove();
-				},
-				open: function(event, ui){
-					var $editAddress = $('[name=address]', event.target)
-							.val(userAddress)
-							.attr('disabled', false),
-						$submitField = $('[type=submit]', event.target)
-							.attr('disabled', false),
-						$map = $('#map-canvas', event.target),
-						autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]),
-						centerLocation = newsMapCircle.center,
-						geocoder = new google.maps.Geocoder(),
-						renderLocation = true;
-
-					var map = new google.maps.Map($map[0], {
-						zoom: 14,
-						center: centerLocation
-					});
-
-					var marker = new google.maps.Marker({
-						map: map,
-						draggable: true,
-						position: map.getCenter(),
-						icon: baseUrl + 'www/images/icons/icon_1.png'
-					});
-
-					function updateMarker(event){
-						geocoder.geocode({
-							latLng: event.latLng
-						}, function(results, status){
-							if (status == google.maps.GeocoderStatus.OK){
-								infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
-								$editAddress.val(results[0].formatted_address);
-							} else {
-								infowindow.setContent(userAddressTooltip('', imagePath));
-								$editAddress.val('');
-							}
-
-							autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-							renderLocation = true;
-							infowindow.open(map, marker);
-						});
+				$.ajax({
+					url: baseUrl + 'home/change-address',
+					data: {
+						address: address,
+						latitude: position.lat(),
+						longitude: position.lng()
+					},
+					type: 'POST',
+					dataType: 'json',
+					beforeSend: function(jqXHR, settings){
+						$('[name=address]', dialogEvent.target);
 					}
+				}).done(function(response){
+					if (response && response.status){
+						userAddress = address;
+						userLatitude = position.lat();
+						userLongitude = position.lng();
 
-					var infowindow = new google.maps.InfoWindow({
-						maxWidth: 220,
-						content: userAddressTooltip(userAddress, imagePath)
-					});
+						newsMap.setCenter(position);
+						newsMapCircle.changeCenter(position, 0.8);
+						currentLocationMarker.setPosition(position);
 
-					infowindow.open(map, marker);
+						var $markerElement = $('#' + currentLocationMarker.id);
 
-					google.maps.event.addListener(map, 'click', function(mapEvent){
-						infowindow.close();
-						marker.setPosition(mapEvent.latLng);
-						updateMarker(mapEvent);
-					});
-
-					google.maps.event.addListener(marker, 'dragend', function(markerEvent){
-						updateMarker(markerEvent);
-					});
-
-					google.maps.event.addListener(autocomplete, 'place_changed', function(){
-						$('.search', event.target).click();
-					});
-
-					$editAddress.keydown(function(e){
-						if (e.keyCode == 13){
-							e.preventDefault();
-						}
-					});
-
-					$('.search', event.target).click(function(){
-						var value = $.trim($editAddress.val());
-
-						if (value === ''){
-							$editAddress.focus();
-							return;
+						if ($markerElement.data('ui-tooltip')){
+							$markerElement.tooltip('destroy');
 						}
 
-						$submitField.attr('disabled', true);
+						loadNews(0);
 
-						geocoder.geocode({
-							address: value
-						}, function(results, status){
-							if (status == google.maps.GeocoderStatus.OK){
-								infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
-								map.setCenter(results[0].geometry.location);
-								marker.setPosition(results[0].geometry.location);
-								$editAddress.val(results[0].formatted_address);
-								autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-								renderLocation = true;
-							} else {
-								alert('Sorry! We are unable to find this location.');
-								renderLocation = false;
-							}
-
-							$submitField.attr('disabled', false);
-						});
-					});
-
-					$('form', event.target).submit(function(e){
-						e.preventDefault();
-
-						if (!renderLocation){
-							$editAddress.focus();
-							return false;
-						}
-
-						$map.mask('Waiting...');
-						$submitField.attr('disabled', true);
-
-						$.ajax({
-							url: baseUrl + 'home/change-address',
-							data: {
-								address: $editAddress.val(),
-								latitude: marker.getPosition().lat(),
-								longitude: marker.getPosition().lng()
-							},
-							type: 'POST',
-							dataType: 'json',
-							beforeSend: function(jqXHR, settings){
-								$editAddress.attr('disabled', true);
-							}
-						}).done(function(response){
-							if (response && response.status){
-								userAddress = $editAddress.val();
-								userLatitude = marker.getPosition().lat();
-								userLongitude = marker.getPosition().lng();
-
-								newsMap.setCenter(marker.getPosition());
-								newsMapCircle.changeCenter(marker.getPosition(), 0.8);
-								currentLocationMarker.setPosition(marker.getPosition());
-
-								var $markerElement = $('#' + currentLocationMarker.id);
-
-								if ($markerElement.data('ui-tooltip')){
-									$markerElement.tooltip('destroy');
-								}								
-
-								loadNews(0);
-
-								$(event.target).dialog('close');
-							} else if (response){
-								alert(response.error.message);
-								$map.unmask();
-								$('[name=address],[type=submit]', event.target).attr('disabled', false);
-							} else {
-								alert(ERROR_MESSAGE);
-								$map.unmask();
-								$('[name=address],[type=submit]', event.target).attr('disabled', false);
-							}
-						}).fail(function(jqXHR, textStatus){
-							alert(textStatus);
-							$map.unmask();
-							$('[name=address],[type=submit]', event.target).attr('disabled', false);
-						});
-					});
-				}
-			});
+						$(dialogEvent.target).dialog('close');
+					} else {
+						alert(response ? response.error.message : ERROR_MESSAGE);
+						$('#map-canvas', dialogEvent.target).unmask();
+						$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
+					}
+				}).fail(function(jqXHR, textStatus){
+					alert(textStatus);
+					$('#map-canvas', dialogEvent.target).unmask();
+					$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
+				});
+			}
+		});
 	});
 
 	$('#newsPost')
@@ -321,158 +195,28 @@ $(function(){
 			return false;
 		}
 
-		$('body').css({overflow: 'hidden'});
+		editLocationDialog({
+			mapZoom: 14,
+			markerIcon: baseUrl + 'www/images/icons/icon_1.png',
+			inputPlaceholder: 'Enter address',
+			submitText: 'Use This Address',
+			defaultAddress: userAddress,
+			center: new google.maps.LatLng(userLatitude, userLongitude),
+			infoWindowContent: function(address){
+				return userAddressTooltip(address, imagePath);
+			},
+			submit: function(dialogEvent, position, address){
+				preparePost(position, address);
 
-		$('<div/>', {'class': 'location-dialog'})
-			.append(
-				$('<div/>', {id: 'map-canvas'}),
-				$('<div/>', {'class': 'panel'}).append(
-					$('<form/>').append(
-						$('<input/>', {type: 'text', name: 'address', placeholder: 'Enter Address'}),
-						$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
-						$('<input/>', {type: 'submit', value: 'Use This Address'})
-					)
-				)
-			)
-			.appendTo($('body'))
-			.dialog({
-				modal: true,
-				resizable: false,
-				drag: false,
-				width: 980,
-				height: 500,
-				dialogClass: 'colorbox',
-				beforeClose: function(event, ui){
-					$('body').css({overflow: 'visible'});
-					$(event.target).dialog('destroy').remove();
-				},
-				open: function(event, ui){
-					var $editForm = $('#reg_form'),
-						$addressField = $('[name=Location]', $editForm),
-						$latitudeField = $('[name=RLatitude]', $editForm),
-						$longitudeField = $('[name=RLongitude]', $editForm),
-						$editAddress = $('[name=address]', event.target)
-							.val(userAddress)
-							.attr('disabled', false),
-						$submitField = $('[type=submit]', event.target)
-							.attr('disabled', false),
-						$map = $('#map-canvas', event.target),
-						autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]),
-						centerLocation = new google.maps.LatLng(userLatitude, userLongitude),
-						geocoder = new google.maps.Geocoder(),
-						renderLocation = true;
-
-					var map = new google.maps.Map($map[0], {
-						zoom: 14,
-						center: centerLocation
-					});
-
-					var marker = new google.maps.Marker({
-						map: map,
-						draggable: true,
-						position: map.getCenter(),
-						icon: baseUrl + 'www/images/icons/icon_1.png'
-					});
-
-					function updateMarker(marker, event){
-						geocoder.geocode({
-							latLng: event.latLng
-						}, function(results, status){
-							if (status == google.maps.GeocoderStatus.OK){
-								infowindow.setContent(userAddressTooltip(results[0].formatted_address, imagePath));
-								$editAddress.val(results[0].formatted_address);
-							} else {
-								infowindow.setContent(userAddressTooltip('<i>undefined</i>', imagePath));
-								$editAddress.val('');
-							}
-
-							autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-							renderLocation = true;
-							infowindow.open(map, marker);
-						});
-					}
-
-					var infowindow = new google.maps.InfoWindow({
-						maxWidth: 220,
-						content: userAddressTooltip(userAddress, imagePath)
-					});
-
-					infowindow.open(map, marker);
-
-					google.maps.event.addListener(map, 'click', function(mapEvent){
-						infowindow.close();
-						marker.setPosition(mapEvent.latLng);
-						updateMarker(marker, mapEvent);
-					});
-
-					google.maps.event.addListener(marker, 'dragstart', function(){
-						infowindow.close();
-					});
-
-					google.maps.event.addListener(marker, 'dragend', function(markerEvent){
-						updateMarker(this, markerEvent);
-					});
-
-					google.maps.event.addListener(autocomplete, 'place_changed', function(){
-						$('.search', event.target).click();
-					});
-
-					$editAddress.keydown(function(e){
-						if (e.keyCode == 13){
-							e.preventDefault();
-						}
-					});
-
-					$('.search', event.target).click(function(){
-						var value = $.trim($editAddress.val());
-
-						if (value === ''){
-							$editAddress.focus();
-							return;
-						}
-
-						$submitField.attr('disabled', true);
-
-						geocoder.geocode({
-							address: value
-						}, function(results, status){
-							if (status == google.maps.GeocoderStatus.OK){
-								$('.profile-map-info .user-address', event.target).text(results[0].formatted_address);
-								map.setCenter(results[0].geometry.location);
-								marker.setPosition(results[0].geometry.location);
-								$editAddress.val(results[0].formatted_address);
-								autocomplete = googleMapsPlacesAutocompleteReset($editAddress[0]);
-								renderLocation = true;
-							} else {
-								alert('Sorry! We are unable to find this location.');
-								renderLocation = false;
-							}
-
-							$submitField.attr('disabled', false);
-						});
-					});
-
-					$('form', event.target).submit(function(e){
-						e.preventDefault();
-
-						if (!renderLocation){
-							$editAddress.focus();
-							return false;
-						}
-
-						preparePost(marker.getPosition(), $editAddress.val());
-
-						if (latlngDistance(newsMap.getCenter(), marker.getPosition(), 'M') > getRadius()){
-							newsMap.setCenter(marker.getPosition());
-							newsMapCircle.changeCenter(newsMap.getCenter(), 0.8);
-
-							loadNews(0);
-						}
-
-						$(event.target).dialog('close');
-					});
+				if (latlngDistance(newsMap.getCenter(), position, 'M') > getRadius()){
+					newsMap.setCenter(position);
+					newsMapCircle.changeCenter(position, 0.8);
+					loadNews(0);
 				}
-			});
+
+				$(dialogEvent.target).dialog('close');
+			}
+		});
 	});
 
 	$('#newsFile').change(function(){
