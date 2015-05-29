@@ -578,16 +578,6 @@ function openImage(image, width, height){
 		});
 }
 
-function fbshare(imageUrl,messageId,reurlPost) { 
-	FB.ui({ 
-		method: 'feed',
-		name: 'SeeAround.me',
-		link: reurlPost,
-		description: '<b>' + messageId + '</b><br>',
-		picture: imageUrl
-	});
-}
-
 function voting(thisone, action, elid,userid) {
     if(action && elid && userid){
         $.ajax({
@@ -951,6 +941,15 @@ function updateNews($news){
 			}
 		}).fail(function(jqXHR, textStatus){
 			alert(textStatus);
+		});
+	});
+
+	$('.share', $news).click(function(e){
+		e.preventDefault();
+
+		FB.ui({
+			method: 'share',
+			href: $(this).attr('href')
 		});
 	});
 }

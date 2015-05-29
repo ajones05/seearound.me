@@ -63,7 +63,7 @@ if ($image)
 			<?php endif; ?>
 			<span class="floatR">
 				<span style="display: block; float: left;">Share:</span>
-				<a class="crp" onclick="fbshare('<?php echo $this->serverUrl() . $this->baseUrl("tbnewsimages/" . $image); ?>','<?php echo $this->item['news']; ?>','<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->item['id']); ?>')">
+				<a class="share crp" href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->item['id']); ?>">
 					<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" style="width: 25px; height: 25px;" />
 				</a>
 				<a href="#" class="crp email-share">

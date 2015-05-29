@@ -82,6 +82,19 @@ class InfoController extends Zend_Controller_Action
 			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
 			->appendFile($this->view->baseUrl('bower_components/textarea-autosize/src/jquery.textarea_autosize.js'))
 			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion));
+
+		$this->view->doctype('XHTML1_RDFA');
+		$this->view->headMeta()
+			->setProperty('og:url', $this->view->serverUrl() . $this->view->baseUrl("info/news/nwid/" . $news->id))
+			->setProperty('og:title', 'SeeAround.me')
+			->setProperty('og:description', My_StringHelper::stringLimit($news->news, 155, '...'))
+			->setProperty(
+				'og:image',
+				$this->view->serverUrl() . ($news->image ?
+					$this->view->baseUrl("tbnewsimages/" . $news->image) :
+					$news->findDependentRowset('Application_Model_User')->current()
+						->getProfileImage($this->view->baseUrl('www/images/img-prof200x200.jpg')))
+			);
     }
 
     public function totalCommentsAction()
