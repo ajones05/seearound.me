@@ -133,30 +133,6 @@ class Application_Model_Message extends My_Db_Table_Abstract
 
     }
 
-    function saveData($data)
-
-    {
-
-        $messageTable = new Application_Model_Message();
-
-        $row = $messageTable->createRow($data);
-
-        $row->save();
-
-        return $row;
-
-    }
-
-    
-
-    function getAllData() {
-
-        
-
-    }
-
-    
-
     function getUserData($data = array(), $reply=false) {
 
         $messageTable = new Application_Model_Message();
@@ -206,66 +182,6 @@ class Application_Model_Message extends My_Db_Table_Abstract
         }
 
     }
-    
-     function getUnreadUserMessage($data = array(), $reply=false) {
-        $messageTable = new Application_Model_Message();
-        $select = $messageTable->select()->setIntegrityCheck(false)
-      	          ->from('message');
-         
-        if($data && is_array($data) && array_key_exists("receiver_id", $data)) {
-            $select->joinLeft('user_data', 'user_data.id = message.sender_id', array('Name','Email_id','Profile_image','Birth_Date'))
-                   ->joinLeft('user_profile', 'user_profile.id = message.sender_id', array('Activities','Gender'))
-                   ->where('message.receiver_id =?', $data['receiver_id'])
-                   ->where('message.is_deleted =?', 'false')
-                   ->where('message.is_valid =?', 'true')
-                   ->where('message.reciever_read =?','false');
-
-        } else if($data && is_array($data) && array_key_exists("sender_id", $data)) {
-            $select->joinLeft('user_data', 'user_data.id = message.sender_id', array('Name','Email_id','Profile_image','Birth_Date'))
-                   ->joinLeft('user_profile', 'user_profile.id = message.sender_id', array('Activities','Gender'))
-                   ->where('message.sender_id =?', $data['sender_id'])
-                   ->where('message.is_deleted =?', 'false')
-                   ->where('message.is_valid =?', 'true')
-                   ->where('message.reciever_read =?','false');
-        }
-
-       /* if($reply && isset($data['sender_id'])) {
-            $select->orWhere('reply_to =?',$data['sender_id']);
-          } else if($reply && isset($data['receiver_id'])) {
-            $select->orWhere('reply_to =?',$data['receiver_id']);
-        } */
-
-        $select->order('updated DESC'); 
-        if($row = $messageTable->fetchAll($select)) {
-
-            return $row;
-
-        }
-
-    }
-    
-    function getConversationMessage($data = array(), $reply=false) {
-        $messageTable = new Application_Model_Message();
-        $select = $messageTable->select()->setIntegrityCheck(false)->from('message');
-        if($data && is_array($data) && array_key_exists("receiver_id", $data)) {
-            $select->joinLeft('user_data', 'user_data.id = message.sender_id', array('Name','Email_id','Profile_image','Birth_Date'))
-                   ->joinLeft('user_profile', 'user_profile.id = message.sender_id', array('Activities','Gender'))
-                   ->where('message.receiver_id =?',  $data['receiver_id'])
-                   ->where('message.sender_id =?', $data['sender_id'])
-                   ->orWhere('message.receiver_id =?',  $data['sender_id'])
-                   ->where('message.sender_id =?', $data['receiver_id'])
-                   ->where('message.is_deleted =?', 'false')
-                   ->where('message.is_valid =?', 'true');
-                  // ->where('message.reciever_read =?','false');
-         }
-   
-        $select->order('updated ASC'); 
-      
-        if($row = $messageTable->fetchAll($select)) {
-           return $row;
-        }
-
-    }
 
     function viewed($id, $user_id) {
         $messageTable = new Application_Model_Message();
@@ -281,4 +197,16 @@ class Application_Model_Message extends My_Db_Table_Abstract
         }
         return $row; 
     }
+
+	/**
+	 * Finds record by ID.
+	 *
+	 * @param	integer	$id
+	 *
+	 * return	mixed	If success Application_Model_MessageRow, otherwise NULL
+	 */
+	public function findById($id)
+	{
+		return $this->fetchRow($this->publicSelect()->where('id =?', $id));
+	}
 }

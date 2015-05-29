@@ -97,7 +97,6 @@ class MobileController extends Zend_Controller_Action
 					'id' => $user->id,
 					'Name' => $user->Name,
 					'Email_id' => $user->Email_id,
-					'Password' => $user->Password,
 					'Birth_date' => $user->Birth_date,
 					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					'Status' => $user->Status,
@@ -348,65 +347,71 @@ class MobileController extends Zend_Controller_Action
 		$this->_helper->json($response);
 	}
 
-     /**
-      * Function to retreive friend list '
-      * 
-      * @return returns success or failed with result data set (json encoded message).
-      */
-      
-    public function myfriendlistAction() 
-    {
-         $newsFactory  = new Application_Model_NewsFactory();
-         $tableUser    = new Application_Model_User();
-         $tableFriends = new Application_Model_Friends();
-         $inviteStatus = new Application_Model_Invitestatus();
-         $userId    = $_REQUEST['user_id'];
-         $targetFriendId = $_REQUEST['friend_id'];
-         $type = $_REQUEST['type'];
-       
-          /* $userId = 8;
-           $targetFriendId = 3;
-           $type = 'ALL1'; */ 
+	/**
+	 * Friends list action.
+	 *
+	 * @return void
+	 */
+	public function myfriendlistAction() 
+	{
+		try
+		{
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
 
-         if(isset($userId) && $userId !=''){
-            if($type=='ALL'){
-               $result = $tableFriends->getTotalFriendsListWs(trim($userId)); 
-            } else {
-               $result = $tableFriends->getIndividualFriendsWs(trim($userId),$targetFriendId); 
-            }
-         }
-         
-         $response = new stdClass();
-        
-         if(isset($result)){
-              $response->status ="SUCCESS";
-              if($type=='ALL'){
-                $response->message = "My Friend list rendered successfully";
-              } else {
-                $response->message = "Individual Friend details rendered successfully";
-              }
-              $response->result = $result->toArray(); 
-         } else {
-              $response->status = "FAILED";
-              if($type=='ALL'){ 
-                $response->message="My Friend list could not be render";
-              } else {
-                $response->message="Individual Friend details could not be render";
-              }
-              $response->result = $result->toArray(); 
-         }
+			$response = array(
+				'status' => 'SUCCESS',
+				'message' => 'My Friend list rendered successfully'
+			);
+
+			// TODO: add limit/start
+
+			$friends = (new Application_Model_Friends)->findAllByUserId($user->id, 100, 0);
+
+			if (count($friends))
+			{
+				foreach ($friends as $friend)
+				{
+					$_user = $friend->reciever_id == $user->id ?
+						$friend->findDependentRowset('Application_Model_User', 'FriendSender')->current() :
+						$friend->findDependentRowset('Application_Model_User', 'FriendReceiver')->current();
+
+					$response['result'][] = My_ArrayHelper::filter(array(
+						'id' => $_user->id,
+						'Name' => $_user->Name,
+						'Email_id' => $_user->Email_id,
+						'Profile_image' => $this->view->serverUrl() . $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						'Birth_date' => $_user->Birth_date,
+						'Gender' => $_user->gender(),
+						'Activities' => $_user->activities()
+					));
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
 
 		$this->_logRequest($response);
 
 		$this->_helper->json($response);
-    }
-    
+	}
+
+	/**
+	 * Profile details action.
+	 *
+	 * @return void
+	 */
     public function getotheruserprofileAction()
     {
 		try
 		{
-			$_POST['other_user_id'] = 276;
-			
 			$other_user_id = $this->_request->getPost('other_user_id');
 
 			if (!Application_Model_User::checkId($other_user_id, $other_user))
@@ -416,7 +421,7 @@ class MobileController extends Zend_Controller_Action
 			
 			$response = array(
 				'status' => 'SUCCESS',
-				'result' => array(
+				'result' => My_ArrayHelper::filter(array(
 					'id' => $other_user->id,
 					'Name' => $other_user->Name,
 					'Profile_image' => $this->view->serverUrl() . $other_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
@@ -424,7 +429,7 @@ class MobileController extends Zend_Controller_Action
 					'Gender' => $other_user->Gender,
 					'Activities' => $other_user->Activities,
 					'Birth_date' => $other_user->Birth_date
-				)
+				))
 			);
 
 			$user_id = $this->_request->getPost('user_id');
@@ -457,110 +462,63 @@ class MobileController extends Zend_Controller_Action
 		$this->_logRequest($response);
 
 		$this->_helper->json($response);
-    }
-
-    
-   
-    /**
-      * Function to sending message to friend
-      * 
-      * @return returns json encode response 
-      */
-    public function sendmessageAction(){
-         $message    = $_REQUEST['message'];
-         $userId     = $_REQUEST['subject'];
-         $senderId   = $_REQUEST['sender_id'];
-         $recieverId = $_REQUEST['reciever_id']; 
-         
-       /* $message    = "Hello this is new message";
-          $subject    = "Regrading Message";
-          $senderId   = 8;
-          $recieverId = 144; */
-        
-        $response = new stdClass();
-        $data = array();
-        $errors = array();
-
-            $messageTable = new Application_Model_Message(); 
-            $newsFactory = new Application_Model_NewsFactory();
-              
-              	$data['user']['sender_id']   = $senderId;
-                $data['user']['receiver_id'] = $recieverId;
-                $data['user']['created']     = new Zend_Db_Expr('NOW()');
-                $data['user']['updated']     = new Zend_Db_Expr('NOW()');
-                $data['user']['is_deleted']  = 'false';
-                $data['user']['is_valid']    = 'true';
-                $data['user']['subject']     = $subject;
-                $data['user']['message']     = $message;
-
-               $result = $messageTable->saveData($data['user']);
-               $response = new stdClass();
-               if(isset($result)){
-                 $response->status ="SUCCESS";
-                 $response->message = "Message Send Successfully";
-                 $response->result = $result->toArray(); 
-               } else {
-                 $response->status = "FAILED";
-                 $response->message="Message did not send Successfully";
-                 $response->result = $result->toArray(); 
-             } 
-
-		$this->_logRequest($response);
-
-		$this->_helper->json($response);
-    }
+	}
 
 	/**
-	 * Fetch list of user messages action.
+	 * Send message action.
 	 *
 	 * @return void
 	 */
-	public function listmessageAction()
+	public function sendmessageAction()
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			if (!Application_Model_User::checkId($this->_request->getPost('sender_id'), $sender))
 			{
-				throw new RuntimeException('Incorrect user ID', -1);
+				throw new RuntimeException('Incorrect sender ID', -1);
 			}
 
-			// TODO: auth
-
-			$model = new Application_Model_Message;
-
-			$messages = $model->fetchAll(
-				$model->publicSelect()
-					->where('message.receiver_id =?', $user->id)
-					->order('updated DESC')
-					// TODO: limit
-					// TODO: limit start
-			);
-
-			$result = array();
-
-			foreach ($messages as $message)
+			if (!Application_Model_User::checkId($this->_request->getPost('reciever_id'), $receiver))
 			{
-				$user = $message->findDependentRowset('Application_Model_User', 'Receiver')->current();
-
-				$result[] = array(
-					'id' => $message->id,
-					'sender_id' => $message->sender_id,
-					'subject' => $message->subject,
-					'message' => $message->message,
-					'created' => $message->created,
-					'updated' => $message->updated,
-					'reciever_read' => $message->reciever_read,
-					'Name' => $user->Name,
-					'Email_id' => $user->Email_id,
-					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
-				);
+				throw new RuntimeException('Incorrect reciever ID', -1);
 			}
+
+			$subject = $this->_request->getPost('subject');
+
+			if (My_Validate::emptyString($subject))
+			{
+				throw new RuntimeException('Incorrect subject value', -1);
+			}
+
+			$body = $this->_request->getPost('message');
+
+			if (My_Validate::emptyString($body))
+			{
+				throw new RuntimeException('Incorrect message value', -1);
+			}
+
+			$message = (new Application_Model_Message)->createRow(array(
+				'sender_id' => $sender->id,
+				'receiver_id' => $receiver->id,
+				'subject' => $subject,
+				'message' => $body,
+				'created' => new Zend_Db_Expr('NOW()'),
+				'updated' => new Zend_Db_Expr('NOW()'),
+				'is_deleted' => 'false',
+				'is_valid' => 'true',
+				'sender_read' => 'true',
+				'reciever_read' => 'false',
+			));
+
+			$message->save();
 
 			$response = array(
-				'status' => 'SUCCESS',
-				// TODO: ???
-				'message' => 'Message list Send Successfully',
-				'result' => $result
+				'status' => "SUCCESS",
+				'message' => "Message Send Successfully",
+				'result' => array(
+					'id' => $message->id,
+					'created' => $message->created
+				)
 			);
 		}
 		catch (Exception $e)
@@ -576,109 +534,259 @@ class MobileController extends Zend_Controller_Action
 		$this->_helper->json($response);
 	}
 
-   /**
-     * Function to fetch list of unread message for user inbox
-     * 
-     * *@return returns json encode response 
-     */
-    public function unreadmessagesAction(){
-        $messageTable = new Application_Model_Message();
-        $newsFactory = new Application_Model_NewsFactory();
-        $user_id = $_REQUEST['user_id'];
-        //$user_id = 8;
-        $messageData = $messageTable->getUnreadUserMessage(array('receiver_id' => $user_id),true);
-        $response = new stdClass();
-        if(isset($messageData)){
-             $response->status ="SUCCESS";
-             $response->message = "Message list Send Successfully";
-             $response->result = $messageData->toArray(); 
-           } else {
-             $response->status = "FAILED";
-             $response->message="Message list could not send Successfully";
-             $response->result = $messageData->toArray(); 
-         } 
+	/**
+	 * Fetch list of user messages action.
+	 *
+	 * @return void
+	 */
+	public function listmessageAction()
+	{
+		try
+		{
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			{
+				throw new RuntimeException('Incorrect user ID', -1);
+			}
+
+			$model = new Application_Model_Message;
+
+			$messages = $model->fetchAll(
+				$model->publicSelect()
+					->where('message.receiver_id =?', $user->id)
+					->order('updated DESC')
+					// TODO: limit/start
+					->limit(100, null)
+			);
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'message' => 'Message list Send Successfully'
+			);
+
+			if (count($messages))
+			{
+				foreach ($messages as $message)
+				{
+					$user = $message->findDependentRowset('Application_Model_User', 'Receiver')->current();
+
+					$response['result'][] = array(
+						'id' => $message->id,
+						'sender_id' => $message->sender_id,
+						'subject' => $message->subject,
+						'message' => $message->message,
+						'created' => $message->created,
+						'updated' => $message->updated,
+						'reciever_read' => $message->reciever_read,
+						'Name' => $user->Name,
+						'Email_id' => $user->Email_id,
+						'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
 
 		$this->_logRequest($response);
 
 		$this->_helper->json($response);
-    }
+	}
 
-    /**
-	 * TODO: test
-     * Function to retrieve message conversation between two users
-     * 
-     * *@return returns json encode response 
-     */
-    public function messageConversationAction()
+	/**
+	 * List of user unread messages action.
+	 *
+	 * @return void
+	 */
+	public function unreadmessagesAction()
 	{
-		$firstUserId = $this->_request->getPost('user_id');
-		$scondUserId = $this->_request->getPost('other_user_id');
-
 		try
 		{
-			// TODO: validate users
-			if (!$firstUserId || !$scondUserId)
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
 			{
-				throw new RuntimeException('Incorrect user id', -1);
-			}
-
-			$messageData = (new Application_Model_Message)->getConversationMessage(array(
-				'receiver_id' => $firstUserId,
-				'sender_id' => $scondUserId
-			), true);
-
-			if(!count($messageData))
-			{
-				// TODO: ???
-				throw new RuntimeException('Seding inbox message failed', -1);
+				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
 			$response = array(
 				'status' => 'SUCCESS',
-				'message' => 'Inbox Message between two user rendered Successfully',
-				'result' => $messageData->toArray()
+				'message' => 'Message list Send Successfully'
+			);
+
+			$model = new Application_Model_Message;
+
+			$messages = $model->fetchAll(
+				$model->publicSelect()
+					->where('receiver_id =?', $user->id)
+					->where('reciever_read =?', 'false')
+					->order('updated DESC')
+					// TODO: limit/start
+					->limit(100, 0)
+			);
+
+			if (count($messages))
+			{
+				foreach ($messages as $message)
+				{
+					$sender = $message->findDependentRowset('Application_Model_User', 'Sender')->current();
+
+					$response['result'][] = array(
+						'id' => $message->id,
+						'sender_id' => $message->sender_id,
+						'subject' => $message->subject,
+						'message' => $message->message,
+						'created' => $message->created,
+						'updated' => $message->updated,
+						'reciever_read' => $message->reciever_read,
+						'Name' => $sender->Name,
+						'Email_id' => $sender->Email_id,
+						'Profile_image' => $this->view->serverUrl() .
+							$sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Retrieve message conversation action.
+	 * 
+	 * @return	void
+	 */
+	public function messageConversationAction()
+	{
+		try
+		{
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			if (!Application_Model_User::checkId($this->_request->getPost('other_user_id'), $other_user))
+			{
+				throw new RuntimeException('Incorrect other user ID', -1);
+			}
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'message' => 'Inbox Message between two user rendered Successfully'
+			);
+
+			$model = new Application_Model_Message;
+			$messages = $model->fetchAll(
+				$model->publicSelect()
+					->where('message.receiver_id =?',  $user->id)
+					->where('message.sender_id =?', $other_user->id)
+					->orWhere('message.receiver_id =?',  $other_user->id)
+					->where('message.sender_id =?', $user->id)
+					->order('updated ASC')
+					// TODO: limit/start
+					->limit(100, 0)
+			);
+
+			if (count($messages))
+			{
+				foreach ($messages as $message)
+				{
+					$sender = $message->findDependentRowset('Application_Model_User', 'Sender')->current();
+
+					$response['result'][] = array(
+						'id' => $message->id,
+						'sender_id' => $message->sender_id,
+						'subject' => $message->subject,
+						'message' => $message->message,
+						'created' => $message->created,
+						'updated' => $message->updated,
+						'reciever_read' => $message->reciever_read,
+						'Name' => $sender->Name,
+						'Email_id' => $sender->Email_id,
+						'Profile_image' => $this->view->serverUrl() .
+							$sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Set notificatations status action.
+	 * 
+	 * @return	void
+	 */
+	public function viewedAction()
+	{
+		try
+		{
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$ids = explode(",", $this->_request->getPost('post_id'));
+
+			$model = new Application_Model_Message;
+
+			foreach ($ids as $id)
+			{
+				$message = $model->findByID($id);
+
+				if (!$message)
+				{
+					throw new RuntimeException('Incorrect message ID: ' . var_export($id, true), -1);
+				}
+
+				switch ($user->id)
+				{
+					case $message->receiver_id:
+						$message->reciever_read = 'true';
+						break;
+					case $message->sender_id:
+						$message->sender_read = 'true';
+						break;
+					default:
+						throw new RuntimeException('You are not authorized to access this action', -1);
+				}
+
+				$message->save();
+            }
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'message' => 'Read Inbox Message Successfully'
 			);
 		}
 		catch (Exception $e)
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => 'seding inbox message between two user failed'
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
 			);
 		}
-
-		$this->_logRequest($response);
-
-		$this->_helper->json($response);
-    }
-
-    /**
-	 * TODO: test
-     * Function to set notificatations status
-     * 
-     * *@return returns json encode response 
-     */
-	public function viewedAction()
-	{
-        $response = new stdClass();
-        $idArray      = $_REQUEST['post_id'];
-        $user_id = $_REQUEST['user_id'];
-        $idListArray = explode(",", $idArray);
-		$messageTable = new Application_Model_Message();
-
-        for ($i = 0; $i < count($idListArray); $i++) {
-             $rowSet = $messageTable->viewed($idListArray[$i], $user_id);
-         }
-
-         if($rowSet){
-               $response->status ="SUCCESS";
-               $response->message = "Read Inbox Message Successfully";
-               $response->result = "Read"; 
-           } else {
-               $response->status = "FAILED";
-               $response->message="You did not read notifications sucessfully";
-               $response->result = "Not Read";
-          } 
 
 		$this->_logRequest($response);
 
@@ -694,18 +802,14 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$data = $this->_request->getPost();
-
-			// TODO: validate mobile app user authentication
-
-			if (!Application_Model_User::checkId(My_ArrayHelper::getProp($data, 'user_id'), $user))
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
 			$form = new Application_Form_News;
 
-			if (!$form->isValid($data))
+			if (!$form->isValid($this->_request->getPost()))
 			{
 				$this->_formValidateException($form);
 			}
@@ -740,103 +844,84 @@ class MobileController extends Zend_Controller_Action
 		$this->_helper->json($response);
 	}
 
-    /**
-	 * TODO: test...
-      * Function to update user profile
-      * 
-      * @return returns success or failed json encoded message.
-      */
+	/**
+	 * Edit profile action.
+	 * 
+	 * @return	void
+	 */
     public function editProfileAction()
 	{
-        $newsFactory  = new Application_Model_NewsFactory();
-        $userTable    = new Application_Model_User;
-        $profileTable = new Application_Model_Profile;
-        $addressTable = new Application_Model_Address;
-
 		try
 		{
-			// TODO: check auth
-
 			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
 			{
-				throw new RuntimeException('Incorrect user id', -1);
+				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$successFlag;
-			$udatedUserdata = array();              
-		 
-			if($_REQUEST){
-			  /*$dobDate         = mysql_real_escape_string($_REQUEST['DOB']);
-			  $timestamp       = strtotime($dobDate);
-			  $dobDateFormated = date('Y-m-d', $timestamp); */
-			  $dobDateFormated = $_REQUEST['DOB'];
-			 
-			  $udata = array(
-					'Name' => $_REQUEST['Name'],
-					'Birth_date' => $dobDateFormated,
-					'Email_id'   => $_REQUEST['Email_id']
-			  );
-			   
-			  $pdata = array(
-				  'public_profile' => ($_REQUEST['allow']) ? 1 : 0,
-				  'Activities' => $_REQUEST['Activityes'],
-				  'Gender' => $_REQUEST['Gender']
-			  );
+			$model = new Application_Model_User;
+			$form = new Application_Form_MobileProfile;
+
+			if (!$form->isValid($this->_request->getPost()))
+			{
+				$this->_formValidateException($form);
 			}
-			
-			/* Start Image Uploading */
-			 if ($_FILES['encodedImage']['name'] && strlen($_FILES['encodedImage']['name']))
-			 {
- 					 $image_url = $newsFactory->wsimageUpload(
-						$_FILES['encodedImage']['name'],
-						$_FILES['encodedImage']['tmp_name'],
-						$user->id
-					);
-			 }
-			/* End image Uploading */
-			
-			$db = $userTable->getDefaultAdapter();
-			$db->beginTransaction();
-			try {
-				$userTable->update($udata, $userTable->getAdapter()->quoteInto("id =?", $user->id));
-				if ($prow = $profileTable->fetchRow($profileTable->select()->where("user_id =?", $user->id))) {
-							$profileTable->update($pdata, $profileTable->getAdapter()->quoteInto("user_id =?", $user->id));
-				} else {
-					$pdata['user_id'] = $user->id;
-					$prow = $profileTable->createRow($pdata);
-					$prow->save();
+
+			$data = $form->getValues();
+
+			$model->getDefaultAdapter()->beginTransaction();
+
+			try
+			{
+				$user_data = array(
+					'Name' => $data['name'],
+					'Birth_date' => trim($data['birth_date']) !== '' ? $data['birth_date'] : null,
+					// 'Email_id' => $data['email']
+				);
+
+				if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
+				{
+					$user_data['Profile_image'] = $user->Profile_image = $data['image'];
 				}
 
-				$db->commit();
+				$model->update($user_data, $model->getDefaultAdapter()->quoteInto('id =?', $user->id));
 
-				$udatedUserdata['user_id'] = $user->id;
-				$udatedUserdata['Name'] = $this->_request->getPost('Name', $user->Name);
-				$udatedUserdata['Email_id'] = $this->_request->getPost('Email_id', $user->Email_id);
-				$udatedUserdata['latitude'] = $user->latitude;
-				$udatedUserdata['longitude'] = $user->longitude;
-				$udatedUserdata['Profile_image'] = isset($image_url) ? $this->view->serverUrl() . $image_url :
-					$this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'));
-				$udatedUserdata['address'] = $user->address;
-				$udatedUserdata['Gender'] = $user->Gender;
-				$udatedUserdata['Activities'] = $user->Activities;
-				$udatedUserdata['Birth_date'] = $user->Birth_date;
+				$profile = $user->findDependentRowset('Application_Model_UserProfile')->current();
 
-				$successFlag = 1;
-			} catch (Exception $e) {
-			   $db->rollBack();
-			   $udatedUserdata = "No Data";
-			   echo "User Profile Updating Failed"; exit; 
+				if (!$profile)
+				{
+					$profile = (new Application_Model_UserProfile)->createRow(array('user_id' => $user->id));
+				}
+
+				$profile->public_profile = $data['public_profile'];
+				$profile->Activities = $data['activities'];
+				$profile->Gender = $data['gender'];
+				$profile->save();
+
+				$model->getDefaultAdapter()->commit();
 			}
-		
-			if(isset($successFlag)) {
-				$response->status = "SUCCESS";
-				$response->message = "User profile has been updated successfully";
-				$response->result = $udatedUserdata; 
-			} else {
-			   $response->status = "FAILED";
-			   $response->message = "Sorry,user profile did not updated";
-			   $response->result = $udatedUserdata; 
+			catch (Exception $e)
+			{
+				$model->getDefaultAdapter()->rollBack();
+
+				throw $e;
 			}
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'message' => 'User profile has been updated successfully',
+				'result' => My_ArrayHelper::filter(array(
+					'user_id' => $user->id,
+					'Name' => $data['name'],
+					'Email_id' => $data['email'],
+					'address' => $user->address(),
+					'latitude' => $user->lat(),
+					'longitude' => $user->lng(),
+					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					'Gender' => $data['gender'],
+					'Activities' => $data['activities'],
+					'Birth_date' => $data['birth_date']
+				)
+			));
 		}
 		catch (Exception $e)
 		{
@@ -904,13 +989,12 @@ class MobileController extends Zend_Controller_Action
 
 				foreach ($result as $row)
 				{
-					$owner = $row->findDependentRowset('Application_Model_User')->current();				
+					$owner = $row->findDependentRowset('Application_Model_User')->current();
 
-					$response['result'][] = array(
+					$data = array(
 						'id' => $row->id,
 						'user_id' => $owner->id,
 						'news' => $row->news,
-						'images' => $row->image,
 						'created_date' => My_Time::time_ago($row->created_date),
 						'updated_date' => $row->updated_date,
 						'isdeleted' => $row->isdeleted,
@@ -922,10 +1006,18 @@ class MobileController extends Zend_Controller_Action
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
-						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
+						'news_count' => $votingTable->findCountByNewsId($row->id),
+						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id, 1) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
+
+					if ($row->image != null)
+					{
+						$data['images'] = $this->view->serverUrl() . $this->view->baseUrl('newsimages/' . $row->image);
+					}
+
+					$response['result'][] = $data;
 				}
 			}
 
@@ -1028,11 +1120,10 @@ class MobileController extends Zend_Controller_Action
 				{
 					$owner = $row->findDependentRowset('Application_Model_User')->current();
 
-					$response['result'][] = array(
+					$data = array(
 						'id' => $row->id,
 						'user_id' => $owner->id,
 						'news' => $row->news,
-						'images' => $row->image,
 						'created_date' => My_Time::time_ago($row->created_date),
 						'updated_date' => $row->updated_date,
 						'isdeleted' => $row->isdeleted,
@@ -1044,10 +1135,18 @@ class MobileController extends Zend_Controller_Action
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
-						'isLikedByUser' => $votingTable->isNewsLikedByUser($row->id, $user->id) ? 'Yes' : 'No',
+						'news_count' => $votingTable->findCountByNewsId($row->id),
+						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id, 1) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
+
+					if ($row->image != null)
+					{
+						$data['images'] = $this->view->serverUrl() . $this->view->baseUrl('newsimages/' . $row->image);
+					}
+
+					$response['result'][] = $data;
 				}
 			}
 
@@ -1067,62 +1166,122 @@ class MobileController extends Zend_Controller_Action
 		$this->_helper->json($response);
 	}
 
-    /**
-     * Function to retreive total comments posted on a news
-     * 
-     * *@return returns json encode response 
-     */
-    public function getTotalCommentsAction(){
-        $response = new stdClass();
-        $newsId =  $_REQUEST['news_id'];  
-        $offsetValue  =  $_REQUEST['offsetValue']; 
-      
-         $newsFactory = new Application_Model_NewsFactory();
-         $comments = $newsFactory->viewTotalComments($newsId,$offsetValue);
-         if(isset($comments)){
-              $response->status ="SUCCESS";
-              $response->message = "Comments rendred successfully";
-              $response->result = $comments;
-              $response->nextpage = ++$limit;
-         } else {
-               $response->status ="FAILED";  
-               $response->message = "Comments rendring failed";
-               $response->result = $comments; 
-         }
+	/**
+	 * List news comments action.
+	 *
+	 * @return	void
+	 */
+    public function getTotalCommentsAction()
+	{
+		try
+		{
+			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
+			{
+				throw new RuntimeException('Incorrect news ID', -1);
+			}
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'message' => 'Comments rendred successfully',
+			);
+
+			$page = $this->_request->getPost('offsetValue', 0);
+
+			if (!My_Validate::digit($page) || $page < 0)
+			{
+				throw new RuntimeException('Incorrect offset value', -1);
+			}
+
+			$model = new Application_Model_Comments;
+			$comments = $model->findAllByNewsId($news->id, 10, $page);
+
+			if (count($comments))
+			{
+				$total = $model->getCountByNewsId($news->id);
+
+				foreach ($comments as $comment)
+				{
+					$comment_user = $comment->findDependentRowset('Application_Model_User')->current();
+
+					$response['result'][] = array(
+                        'id' => $comment->id,
+                        'news_id' => $news->id,
+                        'comment' => $comment->comment,
+                        'user_name' => $comment_user->Name,
+                        'user_id' => $comment_user->id,
+                        'Profile_image' => $this->view->serverUrl() .
+							$comment_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+                        'commTime' => $comment->created_at,
+                        'totalComments' => $total
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
 
 		$this->_logRequest($response);
 
 		$this->_helper->json($response);
     }
-    
-    
-    /**
-     * Function to post comment on a news
-     * 
-     * *@return returns json encode response 
-     */
-    public function postCommentAction(){
-        $commentTable = new Application_Model_Comments();
-        $newsTable    = new Application_Model_News();
-        $newsFactory = new Application_Model_NewsFactory();
-        $response = new stdClass();
-        $comments = $_REQUEST['comments'];
-        $newsId   = $_REQUEST['news_id'];
-        $userId   = $_REQUEST['user_id'];  
 
-        $newsFactory = new Application_Model_NewsFactory();
-        $id = $newsFactory->addComments($comments, $newsId, $userId);
-        $commentRowSet = $newsFactory->viewTotalComments($newsId,-1,$userId);
-         if(isset($id)){
-              $response->status ="SUCCESS";
-              $response->message = "Comments Post Successfully";
-              $response->result = $commentRowSet;
-         } else {
-              $response->status  = "FAILED";  
-              $response->message = "Comments Posting failed";
-              $response->result  = $id; 
-              $response->image  =  Application_Model_User::getImage($userId);
-         }
+	/**
+	 * Post news comment action.
+	 *
+	 * @return void
+	 */
+    public function postCommentAction()
+	{
+		try
+		{
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			{
+				throw new RuntimeException('Incorrect user ID', -1);
+			}
+
+			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
+			{
+				throw new RuntimeException('Incorrect news ID', -1);
+			}
+
+			$form = new Application_Form_Comment;
+
+			if (!$form->isValid($this->_request->getPost()))
+			{
+				$this->_formValidateException($form);
+			}
+
+			$model = new Application_Model_Comments;
+			$comment = $model->createRow($form->getValues());
+			$comment->save();
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'message' => 'Comments Post Successfully',
+				'result' => array(
+					'id' => $comment->id,
+					'news_id' => $news->id,
+					'comment' => $comment->comment,
+					'user_name' => $user->Name,
+					'user_id' => $user->id,
+					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					'commTime' => $comment->created_at,
+					'totalComments' => $model->getCountByNewsId($news->id)
+				)
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
 
 		$this->_logRequest($response);
 
@@ -1160,8 +1319,14 @@ class MobileController extends Zend_Controller_Action
 			}
 			else
 			{
+				$votingTable = new Application_Model_Voting;
+
 				$response = array(
-					'news' => $news->toArray(),
+					'news' => array(
+						'id' => $row->id,
+						'news_count' => $votingTable->findCountByNewsId($row->id),
+						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id, 1) ? 'Yes' : 'No'
+					),
 					'success' => 'voted successfully',
 					'noofvotes_2' => $vote_count
 				);

@@ -85,4 +85,24 @@ class My_ArrayHelper
 
 		return $property;
 	}
+
+	/**
+	 * Filters elements of an array.
+	 *
+	 * @param	array	$array
+	 *
+	 * @return	array
+	 */
+	public static function filter(array $array)
+	{
+		foreach ($array as $key => $val)
+		{
+			if ($val === null || is_string($val) && trim($val) === '')
+			{
+				unset($array[$key]);
+			}
+		}
+
+		return $array;
+	}
 }

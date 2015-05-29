@@ -112,6 +112,40 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	}
 
 	/**
+	 * Returns user's gender.
+	 *
+	 * @return	mixed
+	 */
+	public function gender()
+	{
+		$profile = $this->findDependentRowset('Application_Model_UserProfile')->current();
+
+		if ($profile)
+		{
+			return $profile->Gender;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns user's activities.
+	 *
+	 * @return	mixed
+	 */
+	public function activities()
+	{
+		$profile = $this->findDependentRowset('Application_Model_UserProfile')->current();
+
+		if ($profile)
+		{
+			return $profile->Activities;
+		}
+
+		return null;
+	}
+
+	/**
 	 * Updates user token.
 	 *
 	 * @return	string
@@ -442,130 +476,6 @@ class Application_Model_User extends My_Db_Table_Abstract
 
     }
 
-    
-
-    public function getName($id)
-
-    {
-
-        $userTable = new Application_Model_User();
-
-        $select = $userTable->select()
-
-            -> where('id =?',$id);
-
-        $data = $userTable->fetchRow($select);
-
-        return $data->Name;
-
-    }
-
-    
-
-    public function getImage($id)
-
-    {
-
-        $userTable = new Application_Model_User();
-
-        $select = $userTable->select()
-
-            -> where('id =?',$id);
-
-        $data = $userTable->fetchRow($select);
-
-        return $data->Profile_image;
-
-    }
-
-    
-
-    public function getIntrest($id)
-
-    {
-
-        $userTable = new Application_Model_User();
-
-        $select = $userTable->select()->setIntegrityCheck(false)
-
-            ->from('user_data')
-
-            ->join('user_profile','user_profile.user_id = user_data.id',array('Activities'))
-
-            ->where('user_data.id =?',$id);
-
-        $userTableRow = $userTable->fetchRow($select);
-
-        //$userInterest = explode(",",strtoupper($userTableRow->Activities));
-
-        return $userTableRow;   
-
-    }
-
-    
-
-     public function getUserInterest($id)
-
-    {
-
-        $userTable = new Application_Model_User();
-
-        $select = $userTable->select()->setIntegrityCheck(false)
-
-            ->from('user_data')
-
-            ->join('user_profile','user_profile.user_id = user_data.id',array('Activities'))
-
-            ->where('user_data.id =?',$id);
-
-        $userTableRow = $userTable->fetchRow($select);
-
-        //$userInterest = explode(",",strtoupper($userTableRow->Activities));
-
-        return $userTableRow->Activities;   
-
-    }
-
-    
-
-    public function haveEmail($email,$userId)
-
-    {
-
-        $userTable = new Application_Model_User();
-
-        if($userId){
-
-          $select =  $userTable->select() 
-
-            ->where('Email_id =?',$email)
-
-            ->where('id != ?',$userId);
-
-        } else {
-
-          $select =  $userTable->select() 
-
-            ->where('Email_id =?',$email); 
-
-        }
-
-        $userRow = $userTable->fetchRow($select);
-
-        if($userRow) {
-
-            return true;
-
-        } else {
-
-            return false;
-
-        }
-
-    }
-
-    
-
     public function recordForEmail($sender = null, $reciever = null, $isFb = false) 
 
     {
@@ -633,26 +543,6 @@ class Application_Model_User extends My_Db_Table_Abstract
         return $result;
 
     }
-
-    public function getUserProfile($userID){
-        if($userID) {
-            $select = $this->select()->setIntegrityCheck(false)
-
-                ->from($this, array('id', 'Name','Email_id', 'Profile_image','Network_id','Birth_Date'))
-
-                ->joinLeft('address', 'user_data.id = address.user_id', array('address', 'latitude', 'longitude'))
-                
-                ->joinLeft('user_profile', 'user_data.id = user_profile.user_id', array('Activities', 'Gender'))
-
-                ->where('user_data.id =?', $userID);
-
-            if($row = $this->fetchAll($select)) {
-
-                return $row;
-
-            }
-        }   
-   }
 
 	/**
 	 * Checks if user id valid.
@@ -727,6 +617,24 @@ class Application_Model_User extends My_Db_Table_Abstract
 
 		$result = $db->fetchRow(
 			$db->select()->where('user_data.Network_id =?', $network_id)
+		);
+
+		return $result;
+	}
+
+	/**
+	 * Finds record by code.
+	 *
+	 * @param	string	$code
+	 *
+	 * return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 */
+	public static function findByCode($code)
+	{
+		$db = self::getInstance();
+
+		$result = $db->fetchRow(
+			$db->select()->where('Conf_code=?', $code)
 		);
 
 		return $result;

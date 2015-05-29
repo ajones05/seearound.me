@@ -265,18 +265,19 @@ class Application_Model_Voting extends My_Db_Table_Abstract
 	 *
 	 * @param	integer	$news_id
 	 * @param	integer	$user_id
+	 * @param	integer	$news_count
 	 *
 	 * @return	string
 	 */
-	public function isNewsLikedByUser($news_id, $user_id)
+	public function findNewsLikeByUserId($news_id, $user_id, $news_count)
 	{
         $result = $this->fetchRow(
 			$this->select()
                 ->where('user_id=?', $user_id)
                 ->where('news_id=?', $news_id)
-                ->where('news_count=?', 1)
+                ->where('news_count=?', $news_count)
 		);
 
-		return $result != null;
+		return $result;
 	}
 }

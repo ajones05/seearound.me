@@ -37,30 +37,6 @@ class Application_Model_Fbtempusers extends Zend_Db_Table_Abstract {
             return $row->toArray();
         }
     }
-    
-    public function requester($data = array(), $all = false, $join = true)
-    {
-        if($join) {
-            $select = $this->select()->setIntegrityCheck(false)
-                ->from($this, array('fid'=> 'id', 'sender_id', 'reciever_nw_id', 'status'))
-                ->joinLeft('user_data', 'user_data.id = facebook_temp_users.sender_id') ;
-        }else {
-            $select = $this->select();
-        }
-        
-        if(count($data) > 0) {
-            foreach ($data as $index => $value) {
-                $select->where($index." =?", $value);
-            }
-        }
-        
-        if($all) {
-            return $this->fetchAll($select);
-        }else {
-            return $this->fetchRow($select);
-        }
-        
-    }
 
 	/**
 	 * Finds records by receiver network ID.

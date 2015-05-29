@@ -358,34 +358,6 @@ class IndexController extends Zend_Controller_Action {
 		$this->view->headScript()->appendScript('	var user = ' . json_encode(array('id' => $user->id)) . ';');
 	}
 
-    public function regConfirmAction()
-
-    {
-
-        $this->view->layout()->setLayout('login');
-
-        if($this->getRequest()->isPost() || $this->getRequest()->isGet()) {
-
-            $newsFactory = new Application_Model_NewsFactory();
-
-            $id = $this->getRequest()->getParam('id', null);
-
-            $code = $this->getRequest()->getParam('q', null);
-
-            if($row = $newsFactory->confirmEmail($id, $code)) {
-
-                $this->view->success = 'Email confirm success';
-
-            }else {
-
-                $this->view->eroors ="Inactive link";
-
-            }
-
-        }	
-
-    }
-
 	/**
 	 * Resend user account activate email action.
 	 *

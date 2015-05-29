@@ -949,4 +949,40 @@ class HomeController extends Zend_Controller_Action
 
 		die(Zend_Json_Encoder::encode($response));
 	}
+
+	/**
+	 * Confirm user email action.
+	 *
+	 * @return void
+	 */
+	public function regConfirmAction()
+	{
+		$this->view->layout()->setLayout('login');
+
+		try
+		{
+			$id = $this->_request->getParam('id');
+			$code = $this->_request->getParam('q');
+			$user = (new Application_Model_User)->findByCode($code);
+
+			if (!$user || $user->id != $id || $user->Status != 'inactive')
+			{
+				throw new RuntimeException('Incorrect user confirm code', -1);
+			}
+
+			$user->Status = 'active';
+			$user->Conf_code = '';
+			$user->save();
+
+			$this->view->success = 'Email confirm success';
+		}
+		catch (RuntimeException $e)
+		{
+			$this->view->eroors = "Inactive link";
+		}
+		catch (Exception $e)
+		{
+			throw $e;
+		}
+	}
 }
