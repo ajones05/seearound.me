@@ -56,5 +56,6 @@ class AdminsController extends Zend_Controller_Action
 
 		$this->view->users = $this->view->paginator = $paginator;
 		$this->view->hideRight = true;
+		$this->view->currentPage = 'Message';
 	}
 }
