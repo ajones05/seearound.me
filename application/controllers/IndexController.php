@@ -519,88 +519,59 @@ class IndexController extends Zend_Controller_Action {
 
     }
 
-        
+	public function sendInvitationAction()
+	{
+        $emailInvites = new Application_Model_Emailinvites;
 
-    public function sendInvitationAction()
+		if ($this->_request->isPost())
+		{
+			try
+			{
+				$email = $this->_request->getPost('Email_id');
 
-    {
+				if (My_Validate::emptyString($email))
+				{
+					throw new RuntimeException('Email cannot be blank', -1);
+				}
 
-        $this->view->layout()->setLayout('login');
+				if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+				{
+					throw new RuntimeException('Incorrect email address format: ' . var_export($email, true), -1);
+				}
 
-        $request = $this->getRequest();
+				if (Application_Model_User::findByEmail($email))
+				{
+					throw new RuntimeException('This email is already registered with seearound.me', -1);
+				}
 
-        $userTable = new Application_Model_User();
+				$result = $emailInvites->saveInvitationInfo(
+					array('self_email' => $email),
+					array(
+						'sender_id' => new Zend_Db_Expr("NULL"),
+						'receiver_email'=>  new Zend_Db_Expr("NULL"),
+						'code' => (new Application_Model_NewsFactory)->generateCode(),
+						'self_email' => $email,
+						'created' => new Zend_Db_Expr('NOW()')
+					)
+				);
 
-        $newsFactory = new Application_Model_NewsFactory();
+				if (!$result)
+				{
+					throw new RuntimeException('An invitation has been sent already on this email', -1);
+				}
 
-        $emailInvites = new Application_Model_Emailinvites();
+				$response = array('status' => 1);
+			}
+			catch (Exception $e)
+			{
+				$response = array(
+					'status' => 0,
+					'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
+				);
+			}
 
-        $errors = array();
-
-        $data = array();
-
-
-        if($this->_request->isPost()) {
-
-            $usertable->validateData($request, $data, $errors); 
-
-            if(empty($errors)) {
-
-                $email = $data['Email_id'];
-
-                $code = $newsFactory->generateCode();
-
-                $invitationData = array(
-
-                    'sender_id'     => new Zend_Db_Expr("NULL"),
-
-                    'receiver_email'=>  new Zend_Db_Expr("NULL"),
-
-                    'code'          => $code,
-
-                    'self_email'    => $email,
-
-                    'created'       => new Zend_Db_Expr('NOW()')
-
-                );	
-
-                $is_Saved = $emailInvites->saveInvitationInfo(array('self_email'=>$email),$invitationData);
-
-                if($is_Saved){
-
-                    // Code to sending mail to reciever
-
-               
-
-                    $invitation_message = "invitation sent";
-
-                    $response->success = $invitation_message;
-
-                } else{
-
-                    $invitation_message = "An invitation has been sent already on this email."; 
-
-                    $response->errors = $invitation_message;
-
-                }
-
-            } else {
-
-                //$this->view->errors = $errors;
-
-                if(($errors['Email_id']=="This information is required.")){
-
-                    $errors['Email_id'] ="Invalid email entered.";
-
-                }
-
-                $invitation_message = $errors['Email_id'];    
-
-                $response->errors = $invitation_message;
-
-            }		
-
-        }
+			$this->_helper->json($response);
+		}
 
         
 
@@ -626,5 +597,6 @@ class IndexController extends Zend_Controller_Action {
         }
 
 		$this->view->email = $this->_request->getParam('Email_id');
-    }
+		$this->view->layout()->setLayout('login');
+	}
 }
