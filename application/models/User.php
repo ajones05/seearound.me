@@ -356,7 +356,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function findById($id)
 	{
-		$db = self::getInstance();
+		$db = new self;
 
 		$result = $db->fetchRow(
 			$db->select()
@@ -396,7 +396,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function findByNetworkId($network_id)
 	{
-		$db = self::getInstance();
+		$db = new self;
 
 		$result = $db->fetchRow(
 			$db->select()->where('user_data.Network_id =?', $network_id)
@@ -414,7 +414,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function findByCode($code)
 	{
-		$db = self::getInstance();
+		$db = new self;
 
 		$result = $db->fetchRow(
 			$db->select()->where('Conf_code=?', $code)
@@ -432,7 +432,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function findByEmail($email)
 	{
-		$db = self::getInstance();
+		$db = new self;
 
 		$result = $db->fetchRow(
 			$db->select()
