@@ -163,17 +163,26 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 /**
  * User model class.
  */
-class Application_Model_User extends My_Db_Table_Abstract
+class Application_Model_User extends Zend_Db_Table_Abstract
 {
-
-
-
+	/**
+	 * @var	string
+	 */
     protected $_name     = 'user_data';
 
+	/**
+	 * @var	string
+	 */
     protected $_primary  = array('id');
 
+	/**
+	 * @var	string
+	 */
     protected $_rowClass = 'Application_Model_UserRow';
 
+	/**
+	 * @var	array
+	 */
     protected $_dependentTables = array(
 		'Application_Model_News',
 		'Application_Model_Comments',
@@ -183,6 +192,9 @@ class Application_Model_User extends My_Db_Table_Abstract
 		'Application_Model_UserProfile'
 	);
 
+	/**
+	 * @var	array
+	 */
 	protected $_referenceMap = array(
 		'News' => array(
 			'columns' => 'id',
@@ -220,235 +232,6 @@ class Application_Model_User extends My_Db_Table_Abstract
 			'refColumns' => 'user_id'
 		)
 	); 
-
-    protected static $_instance = null;
-
-    protected $_filters = array(
-
-        'Name'=>array('StripTags', 'StringTrim'),
-
-        'Email_id' => array('StripTags', 'StringTrim'),
-
-        'Password' => array('StripTags', 'StringTrim'),
-
-        'Re-password' => array('StripTags', 'StringTrim'),
-
-        'Location' => array('StripTags', 'StringTrim')
-
-    );
-
-
-
-    protected $_validators = array(
-
-        'Name' => array(
-
-            'allowEmpty' => false,
-
-            array('StringLength', 0, 60),
-
-            array('Alnum', true, array('options' => array('allowWhiteSpace' => true))),
-
-            'messages' => array(
-
-                array(
-
-                    Zend_Validate_StringLength::TOO_LONG => 'Name is greater than 60 characters',
-
-                   
-
-                ),
-
-                array(
-
-                    Zend_Validate_Alnum::INVALID => 'Name contains alphanumeric characters.', 
-
-                    Zend_Validate_Alnum::NOT_ALNUM => 'Name contains special characters.'
-
-                )
-
-            )
-
-        ),
-
-        'Email_id' => array(
-
-            'allowEmpty' => false,
-
-            array('EmailAddress'),
-
-            'messages' => array(
-
-                array(
-
-                    Zend_Validate_EmailAddress::INVALID_FORMAT => 'Please enter a valid email address',
-
-                    Zend_Validate_EmailAddress::INVALID => 'Please enter a valid email address',
-
-                    Zend_Validate_EmailAddress::INVALID_HOSTNAME => 'Please enter a valid email address',
-
-                    Zend_Validate_EmailAddress::INVALID_LOCAL_PART => 'Please enter a valid email address',
-
-                    Zend_Validate_EmailAddress::INVALID_MX_RECORD => 'Please enter a valid email address',
-
-                    Zend_Validate_EmailAddress::INVALID_SEGMENT => 'Please enter a valid email address',
-
-                    Zend_Validate_EmailAddress::QUOTED_STRING => 'Please enter a valid email address'
-
-                )
-
-            )
-
-        ),
-
-        'Password' => array(
-
-            'allowEmpty' => false,
-
-            array('StringLength', 3, 20),
-
-            'messages' => array(
-
-                array(
-
-                    Zend_Validate_StringLength::TOO_LONG => 'Password is greater than 20 characters'
-
-                )	
-
-            )
-
-        ),	
-
-        'Re-password' => array(
-
-            'allowEmpty' => false,
-
-            array('StringLength', 3, 20),
-
-            'messages' => array(
-
-                array(
-
-                    Zend_Validate_StringLength::TOO_LONG => 'Password is greater than 20 characters'
-
-                )	
-
-            )
-
-        ),	
-
-        'Location' => array(
-
-            'allowEmpty' => false,
-
-            array('StringLength', 0, 300),
-
-            'messages' => array(
-
-                array(
-
-                    Zend_Validate_StringLength::TOO_LONG => 'Location is greater than 600 characters'
-
-                )	
-
-            )
-
-        ),
-
-    );
-
-
-
-     public function validateData($request, &$data, &$errors) 
-
-    {
-
-        $newsFactory = new Application_Model_NewsFactory();
-
-        $userTable = new Application_Model_User();
-
-        $data = array(
-
-            'Name' => $request->getParam('Name'),
-
-            'Email_id' => $request->getParam('Email_id'),
-
-            'Password' => $request->getParam('Password'),
-
-            'Re-password' => $request->getParam('Re-password'),
-
-            'State_id' => $request->getParam('State'),
-
-           // 'Location' => $request->getParam('Location')
-
-            'Location' =>'Noida'
-        );
-        
-       
-        if (($validatedErrors = $userTable->validate($data)) && ($validatedErrors !== true)) {
-
-            $errors = $validatedErrors;
-
-        }
-
-		$auth = Zend_Auth::getInstance();
-
-		if (!$auth->getIdentity()) {
-			if($errors['Email_id'] == '' && $data['Email_id'] != '') {
-
-				$select = $userTable->select()
-
-					->where('Email_id =?', $data['Email_id']);
-
-				if($row = $userTable->fetchRow($select)) {
-
-					$errors['Email_id'] = 'This email is already registered with seearound.me';
-
-				}
-
-			}
-
-			if($errors['Password'] == '' && $errors['Re-password'] == '') {
-
-				if($data['Password'] !== $data['Re-password']) {
-
-					$errors['Re-password'] = 'Password not match';
-
-				} else {
-				   
-				   $lowercase = preg_match('@[a-z]@', $data['Password']);
-				   $number    = preg_match('@[0-9]@', $data['Password']);
-					
-				   if(!$lowercase || !$number || strlen($data['Password']) < 6) {
-					 $errors['Password'] = 'Password  minimum of 6 characters, with at least one character or number.';
-				   }  
-			
-			
-			   } 
-			
-			}
-
-		}
-
-    }
-
-
-
-    public static function getInstance() 
-
-    {
-
-        if (null === self::$_instance) {
-
-            self::$_instance = new self();
-
-        }		
-
-        return self::$_instance;
-
-    }
-
-
 
     public function getUsers($data = array(), $all = false) {
 

@@ -4,7 +4,7 @@ class Application_Model_InvitestatusRow extends Zend_Db_Table_Row_Abstract
        
 }
 
-class Application_Model_Invitestatus extends My_Db_Table_Abstract
+class Application_Model_Invitestatus extends Zend_Db_Table_Abstract
 {
     protected $_name = "invite_status";
     protected $_primary = "id";

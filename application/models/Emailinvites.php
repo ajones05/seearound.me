@@ -4,7 +4,7 @@ class Application_Model_EmailinvitesRow extends Zend_Db_Table_Row_Abstract
        
 }
 
-class Application_Model_Emailinvites extends My_Db_Table_Abstract
+class Application_Model_Emailinvites extends Zend_Db_Table_Abstract
 {
     protected $_name = "email_invites";
     protected $_primary = "id";

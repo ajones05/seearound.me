@@ -10,7 +10,7 @@ class Application_Model_MessageRow extends Zend_Db_Table_Row_Abstract
 
 
 
-class Application_Model_Message extends My_Db_Table_Abstract
+class Application_Model_Message extends Zend_Db_Table_Abstract
 
 {
 
@@ -21,54 +21,6 @@ class Application_Model_Message extends My_Db_Table_Abstract
     protected $_rowClass = "Application_Model_MessageRow";
 
     protected $_instance = null;
-
-    protected $_filters = array(
-
-        'sender_email' => array('StripTags', 'StringTrim'),
-
-        'message' => array('StripTags', 'StringTrim'),
-
-    );
-
-    protected $_validators = array(
-
-        'subject' => array(
-
-			'allowEmpty' => false,
-
-			array('StringLength', 0, 60),
-
-			'messages' => array(
-
-				array(
-
-					Zend_Validate_StringLength::TOO_LONG => 'Subject is greater than 60 characters'
-
-				)	
-
-			)
-
-		),
-
-        'message' => array(
-
-			'allowEmpty' => false,
-
-			array('StringLength', 0, 400),
-
-            	'messages' => array(
-
-				array(
-
-					Zend_Validate_StringLength::TOO_LONG => 'Message is greater than 400 characters'
-
-				)	
-
-			)
-
-		),
-
-    );
 
 	/**
 	 * @var	array
@@ -109,28 +61,6 @@ class Application_Model_Message extends My_Db_Table_Abstract
     public function publicSelect($withFromPart = self::SELECT_WITHOUT_FROM_PART)
     {
 		return parent::select($withFromPart)->where('is_deleted =?', 'false')->where('is_valid =?', 'true');
-    }
-
-    public function validateData($request, &$data, &$errors) 
-
-    {
-
-        $messageTable = new Application_Model_Message();
-
-        $data['user'] = array(
-
-            'subject' => $request->getParam('subject', null),
-
-            'message' => $request->getParam('message', null)
-
-        );
-
-     	if (($validatedErrors = $messageTable->validate($data['user'])) && ($validatedErrors !== true)) {
-
-			$errors = $validatedErrors;
-
-		}   
-
     }
 
     function getUserData($data = array(), $reply=false) {

@@ -4,7 +4,7 @@ class Application_Model_MessageReplyRow extends Zend_Db_Table_Row_Abstract
        
 }
 
-class Application_Model_MessageReply extends My_Db_Table_Abstract
+class Application_Model_MessageReply extends Zend_Db_Table_Abstract
 {
     protected $_name = "message_reply";
     protected $_primary = "id";

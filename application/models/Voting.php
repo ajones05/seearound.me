@@ -4,7 +4,7 @@ class Application_Model_VotingRow extends Zend_Db_Table_Abstract {
     
 }
 
-class Application_Model_Voting extends My_Db_Table_Abstract
+class Application_Model_Voting extends Zend_Db_Table_Abstract
 {
 	/**
 	 * @var	Application_Model_Voting

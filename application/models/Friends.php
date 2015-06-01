@@ -51,16 +51,6 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
 
     }    
 
-
-
-    public function validateData($request, &$data, &$errors, $type = null){
-
-
-
-    }
-
-
-
     public function setData($data=array(), $check=array()) {
 
         $select = $this->select();

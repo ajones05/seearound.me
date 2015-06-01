@@ -4,7 +4,7 @@ class Application_Model_LoginstatusRow extends Zend_Db_Table_Row_Abstract
        
 }
 
-class Application_Model_Loginstatus extends My_Db_Table_Abstract
+class Application_Model_Loginstatus extends Zend_Db_Table_Abstract
 {
     protected $_name = "login_status";
     protected $_primary = "id";
