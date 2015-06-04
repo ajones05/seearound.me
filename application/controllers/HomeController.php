@@ -233,21 +233,14 @@ class HomeController extends Zend_Controller_Action
 
 			$form = new Application_Form_News;
 
-			$data = $this->_request->getParams();
-			$data['user_id'] = $user->id;
-
-			if (!$form->isValid($data))
+			if (!$form->isValid($this->_request->getParams()))
 			{
 				throw new RuntimeException('Validate error', -1);
 			}
 
-			$model = new Application_Model_News;
+			$news = (new Application_Model_News)->save(array_merge($form->getValues(), array('user_id' => $user->id)));
 
-			$data = $form->getValues();
-			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], empty($data['image']));
-			$data['id'] = $model->insert($data);
-
-			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $data['id'], $user->id))
+			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $news->id, $user->id))
 			{
 				throw new RuntimeException('Save voting error', -1);
 			}
@@ -255,10 +248,10 @@ class HomeController extends Zend_Controller_Action
 			$response = array(
 				'status' => 1,
 				'news' => array(
-					'id' => $data['id'],
-					'news' => $data['news'],
-					'latitude' => $data['latitude'],
-					'longitude' => $data['longitude'],
+					'id' => $news->id,
+					'news' => $news->news,
+					'latitude' => $news->latitude,
+					'longitude' => $news->longitude,
 					'user' => array(
 						'id' => $user->id,
 						'name' => $user->Name,
@@ -267,7 +260,7 @@ class HomeController extends Zend_Controller_Action
 					'html' => My_ViewHelper::render(
 						'news/item.html',
 						array(
-							'item' => $data,
+							'item' => $news,
 							'user' => $user,
 							'auth' => array(
 								'id' => $user->id,
@@ -767,7 +760,7 @@ class HomeController extends Zend_Controller_Action
 
 			$response = array(
 				'status' => 1,
-				'html' => $news->news_html
+				'html' => $news->renderContent()
 			);
 		}
 		catch (Exception $e)
@@ -847,8 +840,9 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect news ID', -1);
 			}
 
-			if (!Application_Model_User::checkId(My_ArrayHelper::getProp(Zend_Auth::getInstance()->getIdentity(), 'user_id'), $user) ||
-				$user->id != $news->user_id)
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user) || $user->id != $news->user_id)
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -860,27 +854,18 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('News cannot be blank', -1);
 			}
 
-			$news->news = $body;
-			$news->news_html = $data['news_html'] = My_CommonUtils::renderHtml($body, $news->image == null);
-			$news->save();
+			$news = $model->save(array('news' => $body), $news);
 
 			$response = array(
 				'status' => 1,
-				'html' => $news->news_html
-			);
-		}
-		catch (RuntimeException $e)
-		{
-			$response = array(
-				'status' => 0,
-				'error' => array('message' => $e->getMessage())
+				'html' => $news->renderContent()
 			);
 		}
 		catch (Exception $e)
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
+				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
 			);
 		}
 

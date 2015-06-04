@@ -1,18 +1,21 @@
-<div class="link-meta" data-url="<?php echo htmlspecialchars($this->text); ?>">
+<?php
+$link = My_CommonUtils::renderLink($this->link);
+?>
+<div class="link-meta">
 	<?php if ($this->image != null): ?>
 	<div class="image">
-		<a href="<?php echo $this->link; ?>">
-			<img src="<?php echo $this->image; ?>" />
-		</a>
+		<a href="<?php echo htmlspecialchars($link); ?>">
+			<img src="<?php echo $this->baseUrl('uploads/' . $this->image); ?>" />
+		</a>	
 	</div>
 	<?php endif; ?>
 	<div class="meta-content">
-		<a class="title" href="<?php echo $this->link; ?>"><?php echo $this->title; ?></a>
+		<a class="title" href="<?php echo htmlspecialchars($link); ?>"><?php echo $this->title; ?></a>
 		<?php if ($this->description != null): ?>
 		<div class="description"><?php echo My_StringHelper::stringLimit($this->description, 185, '...'); ?></div>
 		<?php endif; ?>
 		<div>
-			<span><?php echo strtoupper(parse_url($this->link)['host']); ?></span>
+			<span><?php echo strtoupper(parse_url($link, PHP_URL_HOST)); ?></span>
 			<?php if ($this->author != null): ?>
 			<span class="delim">|</span>
 			<span>BY <?php echo strtoupper($this->author); ?></span>

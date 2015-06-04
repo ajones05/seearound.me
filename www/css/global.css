@@ -268,9 +268,12 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 
 .scrpBox_new .cmnt {
 	font-size: 12px;
+	text-align: center;
+}
+.scrpBox_new .cmnt img {
+	cursor: pointer;
 }
 
-/*.scrpRow{border-bottom: 1px solid #D3DDE6;margin-left: -76px;padding: 10px 53px;width: 100%;}*/
 .scrpRow{border-bottom: 1px solid #d7d7d7; margin-left: 0px; padding: 8px 0px 6px; width: 100%; background: #f1f1f1;}
 
 .scrpRow li.imgPro {
@@ -1889,4 +1892,30 @@ input[type=submit], input[type=button] {
 label.error {
 	color: #FF5959;
 	display: block;
+}
+#popup_box { 
+	display:none;
+	position:fixed;  
+	height:100px;  
+	width:400px;  
+	background:#F7F8F9;  
+	left: 35%;
+	top: 200px;
+	z-index:9999;
+	margin-left: 15px;  
+	border:1px solid #CCCCCC;  	
+	padding:15px;  
+	font-size:15px;  
+	-moz-box-shadow: 0 0 5px #CCCCCC;
+	-webkit-box-shadow: 0 0 5px #CCCCCC;
+	box-shadow: 0 0 5px #CCCCCC;
+}
+#popupBoxClose {
+	font-size:20px;  
+	line-height:15px;  
+	right:5px;  
+	top:5px;  
+	position:absolute;  
+	color:#6fa5e2;  
+	font-weight:500;  	
 }

@@ -40,7 +40,7 @@ if ($image)
 						<?php endif; ?>
 					</div>
 					<div class="post-bottom">
-						<div class="post-content"><?php echo Application_Model_News::limitNews($this->item); ?></div>
+						<div class="post-content"><?php echo $this->item->renderContent(350); ?></div>
 						<?php if ($image != null): ?>
 						<div class="post-image" style="margin-top: 10px;">
 							<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" />

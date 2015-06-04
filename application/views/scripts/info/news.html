@@ -40,7 +40,7 @@ if ($image)
                     </div>
 					<?php endif; ?>
 					<div class="post-bottom">
-						<div class="post-content"><?php echo $this->news->news_html; ?></div>
+						<div class="post-content"><?php echo $this->news->renderContent(); ?></div>
 					</div>
 				</li>
 				<li class="clr"></li>
@@ -48,7 +48,7 @@ if ($image)
 		</li>
 		<?php if ($image != null): ?>
 		<li class="cmnt">
-			<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" style="width: 100%; height: auto; cursor: pointer;" />
+			<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" />
 		</li>
 		<?php endif; ?>
     </ul>

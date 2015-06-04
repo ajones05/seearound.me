@@ -2,6 +2,31 @@
 
 class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
 {
+	/**
+	 * Renders comment content.
+	 *
+	 * @return string
+	 */
+	public function renderContent()
+	{
+		$output = '';
+
+		for ($i = 0; $i < strlen($this->comment);)
+		{
+			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->comment, $i), $matches))
+			{
+				$output .= '<a href="' . htmlspecialchars(My_CommonUtils::renderLink($matches[0])) . '">' . $matches[0] . '</a>';
+				$i += strlen($matches[0]);
+			}
+			else
+			{
+				$output .= nl2br($this->comment[$i++]);
+			}
+		}
+
+		return $output;
+	}
+
     /**
      * Saves the properties to the database.
      *

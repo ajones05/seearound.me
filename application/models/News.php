@@ -2,6 +2,86 @@
 
 class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 {
+	/**
+	 * Renders news content.
+	 *
+	 * @param  mixed	$limit
+	 * @return string
+	 */
+	public function renderContent($limit = false)
+	{
+		if ($this->news)
+		{
+			$news_link = $this->findDependentRowset('Application_Model_NewsLink');
+			$render_link = count($news_link) ? $news_link->current()->link : null;
+		}
+		else
+		{
+			$render_link = false;
+		}
+
+		$output = '';
+
+		for ($length = $i = 0; $i < strlen($this->news);)
+		{
+			$link_limit = false;
+
+			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->news, $i), $matches))
+			{
+				$i += strlen($matches[0]);
+
+				if ($render_link == $matches[0])
+				{
+					$output .= My_ViewHelper::render('news/link-meta.html', $news_link->current()->toArray());
+
+					while (isset($this->news[$i]) && preg_match('/^[,. ]/', $this->news[$i]))
+					{
+						$i++;
+					}
+
+					$render_link = false;
+				}
+				else
+				{
+					$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '">';
+
+					if ($limit && $length + strlen($matches[0]) > $limit)
+					{
+						$output .= My_StringHelper::stringLimit($matches[0], $limit - $length) . '...';
+						$link_limit = true;
+					}
+					else
+					{
+						$output .= $matches[0];
+						$length += strlen($matches[0]);
+					}
+
+					$output .= '</a>';
+				}
+			}
+			else
+			{
+				$output .= nl2br($this->news[$i++]);
+				$length++;
+			}
+
+			if ($limit && ($link_limit || $length > $limit))
+			{
+				$output = trim($output);
+
+				if (!$link_limit)
+				{
+					$output .= '...';
+				}
+
+				$output .= ' <a href="#" class="moreButton">More</a>';
+
+				break;
+			}
+		}
+
+		return $output;
+	}
 }
 
 class Application_Model_News extends Zend_Db_Table_Abstract
@@ -29,7 +109,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
     protected $_dependentTables = array(
-		'Application_Model_Comments'
+		'Application_Model_Comments',
+		'Application_Model_NewsLink'
 	);
 
 	/**
@@ -45,8 +126,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Comments',
 			'refColumns' => 'news_id'
+        ),
+		'Links' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_NewsLink',
+			'refColumns' => 'news_id'
         )
-    );    
+    );
 
     public static function getInstance() 
     {
@@ -266,68 +352,137 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	}
 
 	/**
-	 * Limits news content.
+	 * Saves form.
 	 *
-	 * @param  mixed $news
-	 * @return string
+	 * @param	array	$data
+	 * @return	Application_Model_NewsRow
 	 */
-	public static function limitNews($news, $limit = 350)
+	public function save(array $data, $news = null)
 	{
-		$text = preg_replace(array('/<a[^<]+>/', '/<\/a>/', '/<div[\S\s]+\/div>/', '/\s+$/'), '', $news['news_html']);
-		$html_length = strlen($news['news_html']);
+		$this->_db->beginTransaction();
 
-		if ($html_length > $limit)
+		try
 		{
-			$link_limit = false;
-			$output = '';
-
-			for ($length = $i = 0; $i < $html_length;)
+			if ($news == null)
 			{
-				if (preg_match('/^<div[\S\s]+\/div>/', substr($news['news_html'], $i), $matches))
-				{
-					$output .= $matches[0];
-					$i += strlen($matches[0]);
-				}
-				elseif (preg_match('/^<a\s+href=\"(.+)\">(.+)<\/a>/', substr($news['news_html'], $i), $matches))
-				{
-					$i += strlen($matches[0]);
-					$length += strlen($matches[2]);
+				$news = (new Application_Model_News)->createRow();
+			}
+			else
+			{
+				$links = $news->findDependentRowset('Application_Model_NewsLink');
 
-					if ($length >= $limit)
+				if (count($links))
+				{
+					foreach ($links as $link)
 					{
-						$link_limit = true;
-						$output .= '<a href="' . $matches[1] . '">' . My_StringHelper::stringLimit($matches[2], $limit - $length) . '...</a>';
-					}
-					else
-					{
-						$output .= $matches[0];
+						@unlink(ROOT_PATH . '/uploads/' . $link->link);
+						$link->delete();
 					}
 				}
-				else
-				{
-					$output .= $news['news_html'][$i];
-					$i++;
-					$length++;
-				}
+			}
 
-				if ($length >= $limit)
-				{
-					$output = trim($output);
+			// TODO: fix field name
+			if (isset($data['address']))
+			{
+				$data['Address'] = $data['address'];
+				unset($data['address']);
+			}
 
-					if (!$link_limit)
+			$news->setFromArray($data);
+			$news->updated_date = new Zend_Db_Expr('NOW()');
+			$news->save();
+
+			if ($news->image == null && preg_match_all('/' . My_CommonUtils::$link_regex . '/', $news->news, $matches))
+			{
+				foreach ($matches[0] as $link)
+				{
+					$meta = My_CommonUtils::getLinkMeta($link);
+
+					if (!count($meta))
 					{
-						$output .= '...';
+						continue;
 					}
 
-					$output .= ' <a href="#" class="moreButton">More</a>';
+					$title = My_ArrayHelper::getProp($meta, 'property.og:title', My_ArrayHelper::getProp($meta, 'title'));
+
+					if (trim($title) === '')
+					{
+						continue;
+					}
+
+					if (My_ArrayHelper::getProp($meta, 'property.og:image') != null)
+					{
+						try
+						{
+							$ext = strtolower(My_ArrayHelper::getProp(pathinfo($meta['property']['og:image']), 'extension', 'tmp'));
+
+							do
+							{
+								$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
+								$full_path = ROOT_PATH . '/uploads/' . $name;
+							}
+							while (file_exists($full_path));
+
+							if (!@copy($meta['property']['og:image'], $full_path))
+							{
+								throw new Exception("Download image error");
+							}
+
+							$mimetype = mime_content_type($full_path);
+
+							if (!isset(My_File::$mimetype_extension[$mimetype]))
+							{
+								throw new Exception("Incorrect image mime type");
+							}
+
+							if (My_File::$mimetype_extension[$mimetype] != $ext)
+							{
+								$name = preg_replace('/' . $ext . '$/', My_File::$mimetype_extension[$mimetype], $name);
+
+								if (!rename($full_path, ROOT_PATH . '/uploads/' . $name))
+								{
+									throw new Exception("Rename image error");
+								}
+							}
+
+							$meta['property']['og:image'] = $name;
+
+							list($meta['property']['og:image:width'], $meta['property']['og:image:height']) = 
+								getimagesize(ROOT_PATH . '/uploads/' . $name);
+						}
+						catch (Exception $e)
+						{
+							$meta['property']['og:image'] = null;
+							$meta['property']['og:image:width'] = null;
+							$meta['property']['og:image:height'] = null;
+						}
+					}
+
+					(new Application_Model_NewsLink)->insert(array(
+						'news_id' => $news->id,
+						'link' => $link,
+						'title' => $title,
+						'description' => My_ArrayHelper::getProp($meta, 'property.og:description',
+							My_ArrayHelper::getProp($meta, 'name.description')),
+						'image' => My_ArrayHelper::getProp($meta, 'property.og:image'),
+						'image_width' => My_ArrayHelper::getProp($meta, 'property.og:image:width'),
+						'image_height' => My_ArrayHelper::getProp($meta, 'property.og:image:height'),
+						'author' => My_ArrayHelper::getProp($meta, 'name.author')
+					));
 
 					break;
 				}
 			}
 
-			return $output;
-		}
+			$this->_db->commit();
 
-		return $news['news_html'];
+			return $news;
+		}
+		catch (Exception $e)
+		{
+			$this->_db->rollBack();
+
+			throw $e;
+		}
 	}
 }

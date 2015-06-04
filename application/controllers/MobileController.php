@@ -814,21 +814,17 @@ class MobileController extends Zend_Controller_Action
 				$this->_formValidateException($form);
 			}
 
-			$model = new Application_Model_News;
+			$news = (new Application_Model_News)->save(array_merge($form->getValues(), array('user_id' => $user->id)));
 
-			$data = $form->getValues();
-			$data['news_html'] = My_CommonUtils::renderHtml($data['news'], empty($data['image']));
-			$data['id'] = $model->insert($data);
-
-			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $data['id'], $user->id))
+			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $news->id, $user->id))
 			{
 				throw new RuntimeException('Save voting error', -1);
 			}
 
 			$response = array(
 				'status' => 'SUCCESS',
-				'message' => $data['news'],
-				'userid' => $data['user_id']
+				'message' => $news->news,
+				'userid' => $user->id
 			);
 		}
 		catch (Exception $e)

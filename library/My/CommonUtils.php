@@ -5,87 +5,17 @@
 class My_CommonUtils
 {
 	/**
-	 * Render html.
-	 *
-	 * @param	string	$body
-	 * @param	boolean	$metadata
-	 * @return	string
+	 * @var	string
 	 */
-	public static function renderHtml($body, $metadata = false)
-	{
-		$output = '';
-
-		for ($i = 0; $i < strlen($body);)
-		{
-			if (preg_match('/^(((f|ht)tps?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=!;]*)/',
-				substr($body, $i), $matches))
-			{
-				$i += strlen($matches[0]);
-
-				$text = $matches[0];
-
-				$link = self::renderLink($matches[0]);
-
-				if ($metadata && ($link_metadata = self::renderLinkMetaData($link, $matches[0])) != '')
-				{
-					$output .= $link_metadata;
-					$metadata = false;
-				}
-				else
-				{
-					$output .= '<a href="' . htmlspecialchars($link) . '">' . $text . '</a>';
-				}
-			}
-			else
-			{
-				$output .= nl2br($body[$i]);
-
-				$i++;
-			}
-		}
-
-		return $output;
-	}
+	public static $link_regex = '(((f|ht)tps?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=!;]*)';
 
 	/**
-	 * Replaces link to href.
-	 *
-	 * @param	string	$link
-	 * @return	string
-	 */
-	public static function renderLink($link)
-	{
-		$url = parse_url(trim($link));
-		$scheme = isset($url['scheme']) ? $url['scheme'] : 'http';
-		$host = isset($url['host']) ? $url['host'] : $url['path'];
-		$link = $scheme . '://' . $host;
-
-		if (isset($url['path']) && $url['path'] != $host)
-		{
-			$link .= $url['path'];
-		}
-
-		if (isset($url['query']))
-		{
-			$link .= '?' . $url['query'];
-		}
-
-		if (isset($url['fragment']))
-		{
-			$link .= '#' . $url['fragment'];
-		}
-
-		return $link;
-	}
-
-	/**
-	 * Renders url metadata info.
+	 * Returns url metadata info.
 	 *
 	 * @param	string	$url
-	 * @param	string	$text
 	 * @return	string
 	 */
-	public static function renderLinkMetaData($url, $text)
+	public static function getLinkMeta($url)
 	{
 		libxml_use_internal_errors(true);
 
@@ -105,12 +35,12 @@ class My_CommonUtils
 
 		curl_close($ch);
 
+		$result = array();
+		
 		if (trim($html) !== '')
 		{
 			$dom = new DomDocument;
 			@$dom->loadHTML($html);
-
-			$names = $properties = array();
 
 			$meta = $dom->getElementsByTagName('meta');
 
@@ -122,7 +52,7 @@ class My_CommonUtils
 
 					if ($property != '')
 					{
-						$properties[$property] = $tag->getAttribute('content');
+						$result['property'][$property] = My_StringHelper::utf8_decode($tag->getAttribute('content'));
 						continue;
 					}
 
@@ -130,40 +60,35 @@ class My_CommonUtils
 
 					if ($name != '')
 					{
-						$names[$name] = $tag->getAttribute('content');
+						$result['name'][$name] = My_StringHelper::utf8_decode($tag->getAttribute('content'));
 					}
 				}
 			}
 
-			$title = My_ArrayHelper::getProp($properties, 'og:title');
+			$title = $dom->getElementsByTagName('title');
 
-			if ($title == '')
+			if ($title->length > 0)
 			{
-				$__title = $dom->getElementsByTagName('title');
-
-				if ($__title->length > 0)
-				{
-					$title = $__title->item(0)->textContent;
-				}
-			}
-
-			if ($title != null)
-			{
-				return My_ViewHelper::render(
-					'news/link-meta.html',
-					array(
-						'link' => $url,
-						'text' => $text,
-						'title' => My_StringHelper::utf8_decode($title),
-						'description' => My_StringHelper::utf8_decode(My_ArrayHelper::getProp($properties, 'og:description',
-							My_ArrayHelper::getProp($names, 'description'))),
-						'image' => My_ArrayHelper::getProp($properties, 'og:image'),
-						'author' => My_ArrayHelper::getProp($names, 'author'),
-					)
-				);
+				$result['title'] = My_StringHelper::utf8_decode($title->item(0)->textContent);
 			}
 		}
 
-		return '';
+		return $result;
+	}
+
+	/**
+	 * Checks and fix link fomat.
+	 *
+	 * @param	string	$url
+	 * @return	string
+	 */
+	public static function renderLink($link)
+	{
+		if (!preg_match('/^(f|ht)tps?/', $link))
+		{
+			$link = '//' . $link;
+		}
+
+		return $link;
 	}
 }

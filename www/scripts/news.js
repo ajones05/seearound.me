@@ -618,13 +618,15 @@ function voting(thisone, action, elid,userid) {
 }
 
 function newsUserTooltipContent(image, name, body){
-	return '<div class="tooltip-content">' +
-		'<img src="' + image + '" />' +
-		'<div>' +
-			'<h4>' + name + '</h4>' +
-			'<div>' + body.substring(0, 500) + '</div>' +
-		'</div>' +
-	'</div>';
+	var content = '<div class="tooltip-content"><img src="' + image + '" /><div><h4>' + name + '</h4>';
+
+	if ($.trim(body) !== ''){
+		content += '<div>' + body.substring(0, 500) + '</div>';
+	}
+
+	content += '</div></div>';
+
+	return content;
 }
 
 function renderNewsMap(options){

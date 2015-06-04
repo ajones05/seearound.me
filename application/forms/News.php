@@ -14,12 +14,6 @@ class Application_Form_News extends Zend_Form
     {
         $this->addElement(
 			'text',
-			'user_id',
-			array('required' => true)
-		);
-
-        $this->addElement(
-			'text',
 			'news',
 			array(
 				'required' => true,

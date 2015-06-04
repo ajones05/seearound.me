@@ -62,7 +62,25 @@ ALTER TABLE `news` CHANGE `created_date` `created_date` TIMESTAMP NOT NULL DEFAU
 ALTER TABLE `news` ADD `news_html` LONGTEXT NULL DEFAULT NULL AFTER `news`;
 ALTER TABLE `news` CHANGE `news` `news` VARCHAR(500) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 ALTER TABLE `news` CHANGE `news_html` `news_html` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
-ALTER TABLE `news` CHANGE `images` `image` TEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL; 
+ALTER TABLE `news` CHANGE `images` `image` TEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `news` DROP `news_html`;
+
+--
+-- Table structure for table `news_link`
+--
+CREATE TABLE `seearoun_seearoundme`.`news_link` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`news_id` INT(11) NOT NULL,
+	`link` VARCHAR(2000) NOT NULL,
+	`title` VARCHAR(255) NULL,
+	`description` VARCHAR(255) NULL,
+	`author` VARCHAR(255) NULL,
+	`image` VARCHAR(2000) NULL,
+	`image_width` INT(10) NULL,
+	`image_height` INT(10) NULL,
+	PRIMARY KEY (`id`),
+	FOREIGN KEY `news_link_fk_1`(`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 --
 -- Table structure for table `votings`
