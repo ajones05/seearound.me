@@ -20,7 +20,7 @@ class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
 			}
 			else
 			{
-				$output .= nl2br($this->comment[$i++]);
+				$output .= preg_replace('/\n/', '<br>', $this->comment[$i++]);
 			}
 		}
 

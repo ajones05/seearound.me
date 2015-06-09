@@ -55,7 +55,7 @@ function renderNews($news){
 				return false;
 			}
 
-			if (keyCode(e) === 13){
+			if (keyCode(e) === 13 && !e.shiftKey){
 				$commentField.attr('disabled', true);
 
 				$('.commentLoading').show();

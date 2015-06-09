@@ -61,7 +61,7 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 			}
 			else
 			{
-				$output .= nl2br($this->news[$i++]);
+				$output .= preg_replace('/\n/', '<br>', $this->news[$i++]);
 				$length++;
 			}
 
@@ -78,6 +78,7 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 
 				break;
 			}
+
 		}
 
 		return $output;
