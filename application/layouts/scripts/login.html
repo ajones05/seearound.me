@@ -1,6 +1,5 @@
 <?php
 $config = Zend_Registry::get('config_global');
-$geoip = My_Ip::geolocation();
 $request = Zend_Controller_Front::getInstance()->getRequest();
 $auth = Zend_Auth::getInstance()->getIdentity();
 
@@ -14,7 +13,6 @@ $this->headScript()
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
 		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
 		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
-		"	var	geoipaddress = " . json_encode($geoip[2]) . ";\n" .
 		"	var	returnUrl = " . json_encode($request->getParam('url', '')) . ";\n"
 	)
 	->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')

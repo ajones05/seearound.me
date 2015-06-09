@@ -39,12 +39,10 @@
 						</li>
 						<li>
 							<input id="Location" name="address" readonly="true" type="text" placeholder="User Location" value="<?php echo $this->form->address->getValue(); ?>" />
-							<?php echo $this->form->address->renderErrors(); ?>
 							<img class="myLoc" src="<?php echo $this->baseUrl("www/images/icn-location.gif"); ?>" alt="My Location" />
-							<input type="hidden" name="latitude" id="RLatitude" value="<?php echo $this->form->latitude->getValue(); ?>" />
-							<?php echo $this->form->latitude->renderErrors(); ?>
-							<input type="hidden" name="longitude" id="RLongitude" value="<?php echo $this->form->longitude->getValue(); ?>" />
-							<?php echo $this->form->longitude->renderErrors(); ?>
+							<input type="hidden" name="latitude" value="<?php echo $this->form->latitude->getValue(); ?>" />
+							<input type="hidden" name="longitude" value="<?php echo $this->form->longitude->getValue(); ?>" />
+							<?php echo $this->form->address->renderErrors(); ?>
 						</li>
 						<li class="clr"></li>
 					</ul>
@@ -65,10 +63,13 @@ $(function(){
 		var $address = $('#reg_form [name=address]'),
 			locationAddress = $.trim($address.val()),
 			$latitude = $('#reg_form [name=latitude]'),
-			$longitude = $('#reg_form [name=longitude]');
+			$longitude = $('#reg_form [name=longitude]'),
+			center = $.trim($latitude.val()) != '' && $.trim($longitude.val()) !== '' ?
+				new google.maps.LatLng($latitude.val(), $longitude.val()) :
+				new google.maps.LatLng(geolocation[0], geolocation[1]);
 
 		if (locationAddress === ''){
-			locationAddress = geoipaddress;
+			locationAddress = geolocation[2];
 		}
 
 		editLocationDialog({
@@ -77,7 +78,7 @@ $(function(){
 			inputPlaceholder: 'Enter your Address',
 			submitText: 'Use This Address',
 			defaultAddress: locationAddress,
-			center: new google.maps.LatLng($latitude.val(), $longitude.val()),
+			center: center,
 			infoWindowContent: function(address){
 				if ($.trim(address) === ''){
 					address = '<i>undefined</i>';

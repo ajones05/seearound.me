@@ -87,19 +87,20 @@ class IndexController extends Zend_Controller_Action {
 
 				$this->_redirect($this->view->baseUrl("home/index"));
 			}
-		}
-
-		if ($form->latitude->getValue() == '' || $form->longitude->getValue() == '')
-		{
-			$geolocation = My_Ip::geolocation();
-			$form->latitude->setValue($geolocation[0]);
-			$form->longitude->setValue($geolocation[1]);
+			else
+			{
+				if ($form->getErrors('latitude') || $form->getErrors('longitude'))
+				{
+					$form->address->addError('Incorrect user location');
+				}
+			}
 		}
 
 		$this->view->layout()->setLayout('login');
 		$this->view->form = $form;
 
 		$this->view->headScript()
+			->appendScript("	var	geolocation = " . json_encode(My_Ip::geolocation()) . ";\n")
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');
 	}
 
