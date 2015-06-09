@@ -30,6 +30,9 @@ class Application_Form_News extends Zend_Form
 			array(
 				'required' => false,
 				'filters' => array('StringTrim'),
+				'validators' => array(
+					array('stringLength', false, array(0, 255))
+				)
 			)
 		);
 
@@ -39,7 +42,15 @@ class Application_Form_News extends Zend_Form
 			array(
 				'required' => true,
 				'validators' => array(
-					array('validator' => 'Float')
+					array('Float'),
+					array(
+						'name' => 'Between',
+						false,
+						array(
+							'min' => -90,
+							'max' => 90,
+						)
+					)
 				)
 			)
 		);
@@ -50,7 +61,15 @@ class Application_Form_News extends Zend_Form
 			array(
 				'required' => true,
 				'validators' => array(
-					array('validator' => 'Float')
+					array('Float'),
+					array(
+						'name' => 'Between',
+						false,
+						array(
+							'min' => -180,
+							'max' => 180,
+						)
+					)
 				)
 			)
 		);
