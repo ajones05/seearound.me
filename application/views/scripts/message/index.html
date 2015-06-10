@@ -1,5 +1,5 @@
 <h3 class="topHdGrayB12_updated">
-	<img src="<?php echo $this->baseUrl("www/images/envelope-icon.gif"); ?>" class="tIcn" alt="My Connections" /> Inbox
+	<img src="<?php echo $this->baseUrl("www/images/envelope-icon.gif"); ?>" class="tIcn" alt="My Connections" />Inbox
 </h3>
 <?php if (count($this->paginator) > 0): ?>
 <div class="inboxSec">
@@ -14,17 +14,17 @@
 		{
 			$higlight .= ' highLight';
 		}
+
+		$icon = $inboxData->reciever_read == "true" ? "message_checked.png" : "message_check.png";
 	?>
 	<ul>
-		<li onclick="showData(this, '<?=$inboxData->id?>');" id="row_<?=$inboxData->id?>" class="message-list<?php echo $higlight; ?>">
+		<li id="row_<?php echo $inboxData->id; ?>" class="message-list<?php echo $higlight; ?>">
 			<div class="main-message-wrapper">
 				<div class="message-frist">
 					<img src="<?php echo $sender->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
 				</div>
 				<div class="message-second">
 					<span class="name"><?php echo $sender->Name; ?></span>
-					<span id="showAlll_<?=$inboxData->id?>" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;} showAllReply(this, '<?=$inboxData->id?>'); " style="margin-left: 50px;display: none;" class="name">Show all</span>
-					<img id="loading_<?=$inboxData->id?>" style="display:none;padding-left: 14px;" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>" />
 					<div>
 						<span class="messageSubject"><?php echo $inboxData->subject; ?></span>
 						<span>-</span>
@@ -33,12 +33,10 @@
 				</div>
 				<div class="message-third">
 					<span class="dateTime"><?php echo date('Y-m-d H:i', strtotime($inboxData->created)); ?></span>
-					<img class="checking" src="<?php echo $this->baseUrl("www/images/message_check.png"); ?>" <?php if($inboxData['reciever_read']=="true") echo "style='display: none;'"?> />
-					<img class="checked" src="<?php echo $this->baseUrl("www/images/message_checked.png"); ?>" <?php if($inboxData['reciever_read']=="true") echo "style='display: inline-block;'"?> />
+					<img src="<?php echo $this->baseUrl("www/images/" . $icon); ?>" />
                 </div>
 				<div class="clr"></div>
 			</div>
-			<ul id="show_data_<?=$inboxData->id?>" class="replyFrm" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;}"></ul>
 		</li>
 	</ul>
 	<div class="clr"></div>

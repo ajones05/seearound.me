@@ -188,6 +188,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'Application_Model_Comments',
 		'Application_Model_Address',
 		'Application_Model_Message',
+		'Application_Model_MessageReply',
 		'Application_Model_Friends',
 		'Application_Model_UserProfile'
 	);
@@ -214,6 +215,16 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'Sender' => array(
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Message',
+			'refColumns' => 'sender_id'
+		),
+		'ReplyReceiver' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_MessageReply',
+			'refColumns' => 'receiver_id'
+		),
+		'ReplySender' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_MessageReply',
 			'refColumns' => 'sender_id'
 		),
 		'FriendReceiver' => array(

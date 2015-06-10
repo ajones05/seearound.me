@@ -45,6 +45,10 @@ ALTER TABLE `message` ENGINE = InnoDB;
 ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_2`(`receiver_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_3`(`reply_to`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
+ALTER TABLE `message` CHANGE `sender_id` `sender_id` INT(11) NOT NULL;
+ALTER TABLE `message` CHANGE `receiver_id` `receiver_id` INT(11) NOT NULL;
+ALTER TABLE `message` CHANGE `subject` `subject` VARCHAR(250) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE `message` CHANGE `message` `message` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 
 --
 -- Table structure for table `message_reply`
@@ -53,6 +57,7 @@ ALTER TABLE `message_reply` ENGINE = InnoDB;
 ALTER TABLE `message_reply` ADD FOREIGN KEY `message_reply_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `message_reply` ADD FOREIGN KEY `message_reply_fk_2`(`receiver_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `message_reply` ADD FOREIGN KEY `message_reply_fk_3`(`message_id`) REFERENCES `message`(`id`) ON DELETE CASCADE;
+ALTER TABLE `message_reply` CHANGE `reply_text` `reply_text` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 
 --
 -- Table structure for table `news`

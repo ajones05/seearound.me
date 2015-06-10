@@ -2,11 +2,11 @@
 
 class MessageController extends Zend_Controller_Action
 {
-	public function init()
-	{
-		$this->view->hideRight = true;
-	}
-
+	/**
+	 * View messages action.
+	 *
+	 * @return void
+	 */
 	public function indexAction()
 	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
@@ -16,20 +16,29 @@ class MessageController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-        $messageTable = new Application_Model_Message;
-
-        $paginator = Zend_Paginator::factory($messageTable->getUserData(array('receiver_id' => $user->id),true));
-        $paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
-        $paginator->setItemCountPerPage(14);
+		$paginator = Zend_Paginator::factory(
+			(new Application_Model_Message)->publicSelect()
+				->where('(receiver_id =?', $user->id)
+				->orWhere('reply_to =?)', $user->id)
+				->order('updated DESC')
+		);
+		$paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
+		$paginator->setItemCountPerPage(14);
 
 		$this->view->user = $user;
         $this->view->paginator = $paginator;
 		$this->view->currentPage = 'Message';
+		$this->view->hideRight = true;
 
 		$this->view->headScript()->appendFile($this->view->baseUrl('www/scripts/messageindex.js?' .
 			Zend_Registry::get('config_global')->mediaversion));
 	}
 
+	/**
+	 * View send messages action.
+	 *
+	 * @return void
+	 */
 	public function sendsAction()
 	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
@@ -39,24 +48,31 @@ class MessageController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
+		$paginator = Zend_Paginator::factory(
+			(new Application_Model_Message)->publicSelect()
+				->where('sender_id =?', $user->id)
+				->order('updated DESC')
+		);
+		$paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
+		$paginator->setItemCountPerPage(14);
+
 		$this->view->user = $user;
-
-        $messageTable = new Application_Model_Message;
-
-        $paginator = Zend_Paginator::factory($messageTable->getUserData(array('sender_id' => $user->id)));
-        $paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
-        $paginator->setItemCountPerPage(14);
-
         $this->view->paginator = $paginator;
 		$this->view->currentPage = 'Message';
+		$this->view->hideRight = true;
 
 		$this->view->headScript()->appendFile($this->view->baseUrl('www/scripts/messageindex.js?' .
 			Zend_Registry::get('config_global')->mediaversion));
 	}
 
+	/**
+	 * View reply messages action.
+	 *
+	 * @return void
+	 */
 	public function viewedAction()
 	{
-        try
+		try
 		{
 			$auth = Zend_Auth::getInstance()->getIdentity();
 
@@ -65,69 +81,82 @@ class MessageController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-            $messageTable = new Application_Model_Message;
-            $messageReplyTable = new Application_Model_MessageReply;
-            $newsFactory = new Application_Model_NewsFactory;
-
-			// TODO: validate
-            $rowId = $this->_request->getPost('id', 131);
-            $result = $messageTable->viewed($rowId, $user->id);
-
-			if (!count($result))
+			if (!(new Application_Model_Message)->checkId($this->_request->getPost('id'), $message) ||
+				$message->receiver_id != $user->id && $message->sender_id != $user->id)
 			{
-				// TODO: error details
-				throw new RuntimeException('...', -1);
+				throw new RuntimeException('Incorrect message ID', -1);
 			}
 
+			$model = new Application_Model_MessageReply;
+
 			$response = array(
-				"inboxData" => $result->toArray(),
-				"replyData" => $messageReplyTable->replyWithUserData(array("message_reply.message_id"=>$rowId))->toArray(),
-				"replyDataTotal" => count($messageReplyTable->replyWithUserData(array("message_reply.message_id"=>$rowId), true)),
-				"user_image" => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-				"success" => "done"
+				"status" => 1,
+				"total" => $model->getCountByMessageId($message->id)
 			);
 
-			foreach ($response["replyData"] as &$row)
+			$start = $this->_request->getPost('start', 0);
+			$reply_messages = $model->findAllByMessageId($message->id, $start ? 14 : 5, $start);
+
+			if (count($reply_messages))
 			{
-				$sender = Application_Model_User::findById($row['sender_id']);
-				$row['sender_image'] = $sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'));
+				foreach ($reply_messages as $reply_message)
+				{
+					$sender = $reply_message->findDependentRowset('Application_Model_User', 'ReplySender')->current();
+
+					$response["reply"][] = array(
+						'receiver_id' => $reply_message->receiver_id,
+						'receiver_read' => $reply_message->receiver_read,
+						'reply_text' => $reply_message->reply_text,
+						'created' => $reply_message->created,
+						'sender' => array(
+							'name' => $sender->Name,
+							'image' => $sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+						)
+					);
+				}
+			}
+
+			if (!$start)
+			{
+				if ($message->receiver_id == $user->id)
+				{
+					$message->reciever_read = 'true';
+				}
+				else
+				{
+					$message->sender_read = 'true';
+				}
+
+				$message->save();
+
+				(new Application_Model_MessageReply)->update(
+					array('receiver_read' => 'true'),
+					implode(' AND ', array(
+						'message_id = ' . $message->id,
+						'receiver_id = ' . $user->id,
+						'receiver_read = "false"'
+					))
+				);
+
+				$response["message"] = array(
+					"sender_id" => $message->sender_id,
+					"receiver_id" => $message->receiver_id
+				);
 			}
         }
 		catch (Exception $e)
 		{
-			// TODO: error details
-			$response = array("errors" => "error");
+			$response = array(
+				'status' => 0,
+				'error' => array(
+					'message' => $e instanceof RuntimeException ?
+						$e->getMessage() : 'Internal Server Error'
+				)
+			);
 		}
 
-        $this->_helper->json($response);
-    }
-
-    public function replyViewedAction()
-    {
-		$auth = Zend_Auth::getInstance()->getIdentity();
-
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
-		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
-		}
-
-        $response = new stdClass();
-
-        if($this->getRequest()->isPost()) {
-
-            $messageReplyTable = new Application_Model_MessageReply();
-
-            $rowId = $this->getRequest()->getPost('id', null);
-
-            $response->result = $messageReplyTable->replyViewed($rowId, $user->id);
-
-            
-
-        }
-
-        die(Zend_Json_Encoder::encode($response));
-
-    }
+		$this->_helper->json($response);
+	}
 
 	/**
 	 * Send user message action.
@@ -149,7 +178,7 @@ class MessageController extends Zend_Controller_Action
 			{
 				throw new RuntimeException('Incorrect receiver ID', -1);
 			}
-			
+
 			$subject = $this->_request->getPost('subject');
 
 			if (My_Validate::emptyString($subject))
@@ -207,95 +236,77 @@ class MessageController extends Zend_Controller_Action
 		$this->_helper->json($response);
 	}
 
-    public function replyAction()
-    {
-		$auth = Zend_Auth::getInstance()->getIdentity();
-
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+	/**
+	 * Send reply message action.
+	 *
+	 * @return void
+	 */
+	public function replyAction()
+	{
+		try
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			if (!(new Application_Model_Message)->checkId($this->_request->getPost('id'), $message) ||
+				$message->receiver_id != $user->id && $message->sender_id != $user->id)
+			{
+				throw new RuntimeException('Incorrect message ID', -1);
+			}
+
+			$reply_message = (new Application_Model_MessageReply)->createRow(array(
+				"message_id" => $message->id,
+				"sender_id" => $user->id,
+				"receiver_id" => $user->id == $message->sender_id ? $message->receiver_id : $message->sender_id,
+				"reply_text" => $this->_request->getPost('message', null),
+				'receiver_read' => 'false',
+				"created" => date('Y-m-d H:i:s')
+			));
+
+			$reply_message->save();
+
+			if ($user->id == $message->sender_id)
+			{
+				$message->reciever_read = 'false';
+			}
+			else
+			{
+				$message->sender_read = 'false';
+			}
+
+			$message->reply_to = $message->sender_id;
+			$message->updated = date('Y-m-d H:i:s');
+			$message->save();
+
+			$response = array(
+				'status' => 1,
+				'message' => array(
+					'receiver_id' => $reply_message->receiver_id,
+					'receiver_read' => $reply_message->receiver_read,
+					'reply_text' => $reply_message->reply_text,
+					'created' => $reply_message->created,
+					'sender' => array(
+						'name' => $user->Name,
+						'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+					)
+				)
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array(
+					'message' => $e instanceof RuntimeException ?
+						$e->getMessage() : 'Internal Server Error'
+				)
+			);
 		}
 
-        /*
-
-         * Creating objects of model class 
-
-         */
-
-        $response = new stdClass();
-
-        $messageTable = new Application_Model_Message();
-
-        $messageReplyTable = new Application_Model_MessageReply();
-
-        if($this->_request->isPost()) {
-
-            $data = array(
-                "message_id" => $this->_request->getPost('id', null),
-                "sender_id" => $user->id,
-                "receiver_id" => $this->_request->getPost('user_id', null),
-                "reply_text" => $this->_request->getPost('message', null),
-                "created" => date('Y-m-d H:i:s')
-            );
-
-            if($messageRow = $messageReplyTable->createRow($data)) {
-
-                $messageRow->save();
-
-                $response->replyData = $messageReplyTable->replyWithUserData(array("message_reply.id"=>$messageRow->id))->toArray();
-
-                $response->replyDataTotal = count($messageReplyTable->replyWithUserData(array("message_reply.message_id"=>$data['message_id']), true));
-
-                $row = $messageTable->find($this->getRequest()->getPost('id', null))->current();
-
-                if($user->id == $row->sender_id) {
-
-                    $row->reciever_read = 'false';
-
-                } else {
-
-                    $row->sender_read = 'false';
-
-                }
-
-                $row->reply_to = $row->sender_id;
-
-                $row->updated = date('Y-m-d H:i:s');
-
-                $row->save();
-
-            } else {
-
-                $response->errors = "Sorry! reply can not be send.";
-
-            }
-
-        }
-
-        if($this->_request->isXmlHttpRequest()) {
-
-            die(Zend_Json_Encoder::encode($response));
-
-        }
-    }
-
-	public function showAllReplyAction()
-	{
-
-        $messageReplyTable = new Application_Model_MessageReply();
-
-        if($this->_request->isPost()) {
-
-            $response->replyData = $messageReplyTable->replyWithUserData(array("message_reply.message_id"=>$this->getRequest()->getPost('id', 0)), true)->toArray();
-
-            $response->replyDataTotal = count($response->replyData);
-
-        }
-
-        if($this->_request->isXmlHttpRequest()) {
-
-            die(Zend_Json_Encoder::encode($response));
-
-        }
+		$this->_helper->json($response);
 	}
 }

@@ -1,5 +1,5 @@
 <h3 class="topHdGrayB12_updated">
-	<img src="<?php echo $this->baseUrl("www/images/icn-inbox.gif"); ?>" width="26" height="20" class="tIcn" alt="My Connections" /> Inbox
+	<img src="<?php echo $this->baseUrl("www/images/icn-inbox.gif"); ?>" width="26" height="20" class="tIcn" alt="My Connections" />Inbox
 </h3>
 <?php if (count($this->paginator) > 0): ?>
 <div class="inboxSec">
@@ -12,22 +12,18 @@
 		if ($inboxData->sender_id == $this->user->id && $inboxData->sender_read == "false" ||
 			$inboxData->receiver_id == $this->user->id && $inboxData->reciever_read == "false")
 		{
-			$higlight .= 'highLight';
+			$higlight .= ' highLight';
 		}
 	?>
 	<ul>
-        <li onclick="showData(this, '<?=$inboxData->id?>');" id="row_<?=$inboxData->id?>" class="<?php echo $higlight; ?>">
-            <a href="javascript:void(0);"><? if($inboxData->subject != ""):?><?=$inboxData->subject?><? else:?>--<? endif;?></a> 
-            <span class="name">(<?php echo $receiver->Name; ?>)</span>
-			<span id="showAlll_<?=$inboxData->id?>" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;} showAllReply(this, '<?=$inboxData->id?>'); " style="margin-left: 50px;display: none;" class="name">Show all</span>
-            <span class="name">
-				<img id="loading_<?=$inboxData->id?>" style="display:none;padding-left: 14px;" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>" />
-			</span>
-            <span class="dateTime"><?=date('Y-m-d H:i', strtotime($inboxData->created))?></span>
-			<div class="clr"></div>
-            <ul id="show_data_<?=$inboxData->id?>" class="replyFrm" onclick="if (event.stopPropagation){event.stopPropagation();}else if (window.event){window.event.cancelBubble = true;}"></ul>
+        <li id="row_<?php echo $inboxData->id; ?>" class="message-list<?php echo $higlight; ?>">
+			<div>
+				<span class="subject"><?php echo $inboxData->subject; ?></span>
+				<span class="name">(<?php echo $receiver->Name; ?>)</span>
+				<span class="dateTime"><?php echo date('Y-m-d H:i', strtotime($inboxData->created)); ?></span>
+				<div class="clr"></div>
+			</div>
         </li>
-        <div class="clr"></div>        
 	</ul>
 	<div class="clr"></div>
     <?php endforeach;?>

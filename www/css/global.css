@@ -678,7 +678,14 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .inboxSec{ margin:0 0 5px;width:100%;}
 
-.inboxSec li{border-bottom:1.5px solid #d7d7d7; padding:10px 0; background:#f1f1f1; cursor:pointer; display: inline-block; width: 100%;}
+.inboxSec li {
+	border-bottom: 1.5px solid #d7d7d7;
+	padding: 10px 0;
+	background: #f1f1f1;
+	display: inline-block;
+	width: 100%;
+	position: relative;
+}
 
 .inboxSec li.message-list .main-message-wrapper {display: inline-block; width: 100%;}
 
@@ -696,9 +703,25 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .inboxSec li.message-list .message-third img.checked {display: none;}
 
-.inboxSec li a{color:#4276cd; font-weight:bold; text-decoration:none; margin:0 20px; float:left;}
-
-.inboxSec li span.name{font-size: 18px;color:#4276cd;}
+.inboxSec .subject {
+	color: #4276cd;
+	font-weight: bold;
+	text-decoration: none;
+	margin: 0 20px;
+	float: left;
+}
+.inboxSec li span.name,
+.inboxSec li .all {
+	font-size: 18px;
+	color: #4276cd;
+}
+.inboxSec li .all {
+	text-align: center;
+}
+.inboxSec li .all a {
+	text-decoration: none;
+	color: #4276cd;
+}
 .inboxSec li span.message {
 	font: normal 15px Lato-LightItalic;
 	color: #8d8d8d;
@@ -717,11 +740,24 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .inboxSec li.highLight{border-bottom:1px solid #e9eaeb;background:#fefeda;cursor:pointer;}
 
-.inboxSec .replyFrm{display:none; cursor:crosshair; padding-left: 15%; width: 85%; margin-top: 8px;}
+.inboxSec .replyFrm {
+	padding-left: 15%;
+	width: 85%;
+	margin-top: 8px;
+}
 
 .inboxSec .replyFrm li{border-bottom:0; padding:5px 0px;}
 
-.inboxSec .replyFrm li.desc{border-top:1px solid #ccc;padding:8px 0px}
+.inboxSec .replyFrm li.desc {
+	padding: 8px 0px;
+}
+.inboxSec .replyFrm li.desc.unread {
+	background-color: #FFFFFF;
+}
+.inboxSec .replyFrm li.desc .desc-second b {
+	color: #4276cd;
+	font-size: 16px;
+}
 
 .inboxSec .replyFrm li.desc > div {float: left; margin-right: 15px;}
 
@@ -732,7 +768,16 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 .inboxSec .replyFrm li.desc .desc-second span {display: block;font-size: 14px; color: #8d8d8d;}
 
 
-.inboxSec .replyFrm li.replyTxt{ color:#0069d6;}
+.inboxSec .replyFrm li.replyTxt {
+	color: #0069d6;
+}
+.inboxSec .replyFrm li.replyTxt .errors {
+	margin-left: 2px;
+}
+.inboxSec .replyFrm li.replyTxt .rpl-loading {
+	display: none;
+	margin-bottom: -6px;
+}
 
 .inboxSec .replyFrm li.reply-wrapper img {width: 50px; -moz-border-radius:50px;-webkit-border-radius:50px;border-radius: 50px;-khtml-border-radius: 50px; height: 50px; display: inline-block; float: left; margin:3px 15px 0px 0px;}
 
@@ -1918,4 +1963,14 @@ label.error {
 	position:absolute;  
 	color:#6fa5e2;  
 	font-weight:500;  	
+}
+.message-list .loading {
+    left: 50%;
+    margin-top: -8px;
+    padding-left: 14px;
+    position: absolute;
+    top: 50%;
+}
+.message-list > div {
+	cursor: pointer;
 }
