@@ -79,18 +79,19 @@
 			$('#ImageFile').trigger('click');
 		});
 
-		$('#ImageFile').bind('change', function() { 
+		$('#ImageFile').change(function(){
 			$(".proImgChange").toggle();
-
 			$("#imageform").ajaxForm({
-				success : function(data){
+				success: function(response){
 					$(".proImgChange").toggle();
-					data = $.parseJSON(data);
-					var html ='<img src="'+data.url+'" class="imgProf"/>';
-					$("#image_upload_field").html(html);
+					if (!response || !response.status){
+						alert(response ? response.error.message : ERROR_MESSAGE);
+						return false;
+					}
+					$("#image_upload_field").html('<img src="' + response.url + '" class="imgProf"/>');
 				}
 			}).submit();
-		});	
+		});
 
 		$("#imageSection").mouseover(function(){
 			$("#imageButton").show();

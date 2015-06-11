@@ -53,13 +53,11 @@ class IndexController extends Zend_Controller_Action {
 
 			if ($form->isValid($data))
 			{
-				$newsFactory = new Application_Model_NewsFactory;
-
 				$user = (new Application_Model_User)->register(
 					array_merge(
 						$form->getValues(),
 						array(
-							'Conf_code' => $newsFactory->generateCode(),
+							'Conf_code' => My_CommonUtils::generateCode(),
 							'Status' => 'inactive'
 						)
 					)
@@ -406,8 +404,6 @@ class IndexController extends Zend_Controller_Action {
 
         $tableUser = new Application_Model_User;
 
-        $newsFactory = new Application_Model_NewsFactory();
-
         if($this->_request->isPost()) {
 
             if($email = $this->_request->getPost("email", null)) {
@@ -415,7 +411,7 @@ class IndexController extends Zend_Controller_Action {
                 if($row = $tableUser->getUsers(array("Email_id" => $email))) {
 
                     $row->Status = "inactive";
-                    $row->Conf_code = $newsFactory->generateCode();
+                    $row->Conf_code = My_CommonUtils::generateCode();
                     $row->save();
 
 					My_Email::send(
@@ -550,7 +546,7 @@ class IndexController extends Zend_Controller_Action {
 					array(
 						'sender_id' => new Zend_Db_Expr("NULL"),
 						'receiver_email'=>  new Zend_Db_Expr("NULL"),
-						'code' => (new Application_Model_NewsFactory)->generateCode(),
+						'code' => My_CommonUtils::generateCode(),
 						'self_email' => $email,
 						'created' => new Zend_Db_Expr('NOW()')
 					)

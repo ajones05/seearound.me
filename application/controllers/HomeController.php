@@ -128,23 +128,69 @@ class HomeController extends Zend_Controller_Action
         $this->view->changeLocation = true;
     }
 
-    public function imageUploadAction(){
-		$auth = Zend_Auth::getInstance()->getIdentity();
-
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+	public function imageUploadAction()
+	{
+		try
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$upload = new Zend_File_Transfer;
+			$upload->setValidators(array(
+				array('Extension', false, array('jpg', 'jpeg', 'png', 'gif')),
+				array('MimeType', false, array('image/jpeg', 'image/png', 'image/gif')),
+				array('Count', false, 1)
+			));
+
+			if (!$upload->isValid('ImageFile'))
+			{
+				throw new RuntimeException(implode('. ', $upload->getMessages()), -1);
+			}
+
+			$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('ImageFile')];
+
+			do
+			{
+				$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
+				$full_path = ROOT_PATH . '/www/upload/' . $name;
+			}
+			while (file_exists($full_path));
+
+			$upload->addFilter('Rename', $full_path);
+			$upload->addFilter(new Skoch_Filter_File_Resize(array(
+				'directory' => ROOT_PATH . '/uploads',
+				'width' => 320,
+				'height' => 320,
+				'keepRatio' => true,
+				'quality' => $ext == 'jpg' ? 60 : 4
+			)));
+			$upload->receive();
+
+			$model = new Application_Model_User;
+			$model->update(
+				array('Profile_image' => $name),
+				$model->getAdapter()->quoteInto('id =?', $user->id)
+			);
+
+			$response = array(
+				'status' => 1,
+				'url' => $this->view->baseUrl('uploads/' . $name)
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
+			);
 		}
 
-        $response = new stdClass();
-        $newsFactory = new Application_Model_NewsFactory();
-        if (isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST") {
-            $url = urldecode($newsFactory->imageUpload($_FILES['ImageFile']['name'], $_FILES['ImageFile']['size'], $_FILES['ImageFile']['tmp_name'], $user->id));
-            $response->url = $this->view->baseUrl($url);
-        }
-
-        die(Zend_Json_Encoder::encode($response));
-    }
+        $this->_helper->json($response);
+	}
 
 	public function profileAction()
 	{

@@ -75,7 +75,6 @@ class ContactsController extends Zend_Controller_Action
 
 			$emails = array_unique($emails);
 
-			$newsFactory = new Application_Model_NewsFactory;
 			$userTable = new Application_Model_User;
 			$emailInvites = new Application_Model_Emailinvites;
 
@@ -105,7 +104,7 @@ class ContactsController extends Zend_Controller_Action
 				}
 				else
 				{
-					$code = $newsFactory->generateCode();
+					$code = My_CommonUtils::generateCode();
 
 					$emailInvites->insert(array(
 						"sender_id" => $user->id,

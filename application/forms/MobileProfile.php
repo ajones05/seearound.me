@@ -112,7 +112,7 @@ class Application_Form_MobileProfile extends Zend_Form
 				return false;
 			}
 
-			$ext = My_File::$mimetype_extension[$upload->getMimeType('image')];
+			$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
 
 			do
 			{
@@ -122,12 +122,14 @@ class Application_Form_MobileProfile extends Zend_Form
 			while (file_exists($full_path));
 
 			$upload->addFilter('Rename', $full_path);
+			$upload->addFilter(new Skoch_Filter_File_Resize(array(
+				'directory' => ROOT_PATH . '/uploads',
+				'width' => 320,
+				'height' => 320,
+				'keepRatio' => true,
+				'quality' => $ext == 'jpg' ? 60 : 4
+			)));
 			$upload->receive();
-
-			$thumb = new My_Thumbnail($full_path);
-
-			$thumb->resize(320, 320);
-			$thumb->save(ROOT_PATH . '/uploads/' . $name, 60);
 
 			$this->addElement('text', 'image', array('value' => $name));
 		}

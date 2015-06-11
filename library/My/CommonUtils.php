@@ -5,6 +5,15 @@
 class My_CommonUtils
 {
 	/**
+	 * @var	array 	The extensions for mime types
+	 */
+	public static $mimetype_extension = array(
+		'image/gif' => 'gif',
+		'image/jpeg' => 'jpg',
+		'image/png' => 'png',
+	);
+
+	/**
 	 * @var	string
 	 */
 	public static $link_regex = '(((f|ht)tps?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=!;]*)';
@@ -91,4 +100,15 @@ class My_CommonUtils
 
 		return $link;
 	}
+
+	/**
+	 * Generates code.
+	 *
+	 * @return	string
+	 */
+    public static function generateCode()
+	{
+        mt_srand();
+        return substr(md5(mt_rand(0, time())), mt_rand(0, 20), 10);
+    }
 }

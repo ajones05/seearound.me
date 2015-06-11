@@ -431,14 +431,14 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 							$mimetype = mime_content_type($full_path);
 
-							if (!isset(My_File::$mimetype_extension[$mimetype]))
+							if (!isset(My_CommonUtils::$mimetype_extension[$mimetype]))
 							{
 								throw new Exception("Incorrect image mime type");
 							}
 
-							if (My_File::$mimetype_extension[$mimetype] != $ext)
+							if (My_CommonUtils::$mimetype_extension[$mimetype] != $ext)
 							{
-								$name = preg_replace('/' . $ext . '$/', My_File::$mimetype_extension[$mimetype], $name);
+								$name = preg_replace('/' . $ext . '$/', My_CommonUtils::$mimetype_extension[$mimetype], $name);
 
 								if (!rename($full_path, ROOT_PATH . '/uploads/' . $name))
 								{
