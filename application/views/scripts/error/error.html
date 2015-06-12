@@ -1,44 +1,7 @@
-
-
-   <!--<h1>An error occurred</h1>-->
-
-   <!--<h2><?php echo $this->message ?></h2>-->
-
-<div id="error404image" align="center" style="position: relative; height: 100%;margin-left:200px;width:149%;margin-top:90px;">
-
-       <img src="<?php echo $this->baseUrl("www/images/page_not_found.jpg"); ?>" />
-
+<div style="text-align: left; margin-top: 20px;">
+<div><?php echo $this->error->exception->getMessage() ?></div>
+<h3>Stack trace:</h3>
+<pre><?php echo $this->error->exception->getTraceAsString(); ?></pre>
+<h3>Request Parameters:</h3>
+<pre><?php echo $this->escape(var_export($this->error->request->getParams(), true)) ?></pre>
 </div>
-
-  <?php if (isset($this->exception)): ?>
-
-  
-
-  <h3>Exception information:</h3>
-
-  <p>
-
-      <b>Message:</b> <?php echo $this->exception->getMessage() ?>
-
-  </p>
-
-
-
-  <h3>Stack trace:</h3>
-
-  <pre><?php echo $this->exception->getTraceAsString() ?></pre>
-
-
-
-  <h3>Request Parameters:</h3>
-
-  <pre><?php echo $this->escape(var_export($this->request->getParams(), true)) ?>
-
-  </pre>
-
-
-
-  <?php endif ?>
-
-
-

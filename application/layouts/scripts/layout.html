@@ -27,186 +27,113 @@ $this->headScript()
 	->appendFile($this->baseUrl('www/scripts/common.js'));
 
 $image = $this->baseUrl('www/images/img-prof40x40.jpg');
-?>
+$class = '';
+
+if ($this->hideRight)
+{
+	$class .= ' hideRight';
+}
+	?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>seearound.me</title>
 <?php echo implode("\n", array($this->headMeta(), $this->headLink(), $this->headScript())); ?>
-	<?php if ($this->hideRight): ?>
-	<style type="text/css">
-    #midColLayout {
-		width:986px;
-		min-height: 593px;
-		border-right:0px solid #D3DDE6;
-	}
-	</style>
-	<?php endif; ?>
-	<script language="javascript" type="text/javascript">
-	var userLatitude = <?php echo json_encode($auth ? $user->lat() : $geoip[0]); ?>;
-	var userLongitude = <?php echo json_encode($auth ? $user->lng() : $geoip[1]); ?>;
-	var userAddress = <?php echo json_encode($auth ? $user->address() : ''); ?>;
-	var userName = <?php echo json_encode($auth ? $user->Name : ''); ?>;
-	var imagePath = "<?php echo $auth ? $user->getProfileImage($image) : $image; ?>";
+<script language="javascript" type="text/javascript">
+var userLatitude = <?php echo json_encode($auth ? $user->lat() : $geoip[0]); ?>;
+var userLongitude = <?php echo json_encode($auth ? $user->lng() : $geoip[1]); ?>;
+var userAddress = <?php echo json_encode($auth ? $user->address() : ''); ?>;
+var userName = <?php echo json_encode($auth ? $user->Name : ''); ?>;
+var imagePath = "<?php echo $auth ? $user->getProfileImage($image) : $image; ?>";
+<?php if (empty($this->hideRight)): ?>
+$(function(){
+	$(window).resize(function(){
+		var height, windowHeight = $(window).height();
 
-	$(function(){
-		$(window).resize(function(){
-			var height, windowHeight = $(window).height();
+		if (windowHeight > 770){
+			height = 500;
+		} else if (windowHeight > 450) {
+			height = windowHeight - 230;
+		} else {
+			height = 150;
+		}
 
-			if (windowHeight > 770){
-				height = 500;
-			} else if (windowHeight > 450) {
-				height = windowHeight - 276;
-			} else {
-				height = 150;
-			}
-
-			$('#map_canvas').height(height);
-		}).resize();
-	});
-	</script>
+		$('#map_canvas').height(height);
+	}).resize();
+});
+<?php endif; ?>
+</script>
 </head>
-<body>
-		<?php include '_header.html'; ?>
-        <div id="line_1" class="mainContainer_line"></div>
-        <div id="mainDiv" class="mainContainer">
-            <?php if(isset($this->currentPage) && ($this->currentPage == 'Message')): ?>
-                <div style="float:left;width:100%;">
-                <div class="midCol eqlCH" id="midColLayout" style="min-height: auto; height: 100%; position: relative; float: right; margin-right: 0px;width: 100%;">
-            <?php else: ?>
-                <div style="float:left;width:49%;">
-                    <?php if(isset($this->currentPage) && ($this->currentPage == 'Profile')):?>
-                    <div class="midCol eqlCH" id="midColLayout" ddd="ddd" style="height: 100%;width:auto;position: relative; margin-right: 0px;">
-                        <?php else: ?>
-                            <div class="midCol eqlCH" id="midColLayout" ddd="ccc"  style="min-height: auto; height: 100%; position: relative; float: right; margin-right: 0px;">
-                        <?php endif ?>
-                    <?php endif ?>
-                          <?=$this->layout()->content;?>
-                        </div>
-                    </div>
-       <?php if(!$this->message): ?>    
-            <?if(!$this->hideRight):?>
-                  <div style="float:right;width:49%;margin-left:0px;">
-               <?if(!isset($this->homePageExist)) { ?>
-                  <div id="mapDiv" class="rightCol textAlignCenter eqlCH">
-               <? } else { ?>
-                  <div id="mapDiv" class="rightColUpdated textAlignCenter" style="margin-left: 0px;">
-            <? } ?>
-          <?php if(!isset($this->friendListExist) && !isset($this->myprofileExist) && !isset($this->newsDetailExist) && !isset($this->message)  && !isset($this->myeditprofileExist)) { ?>
-            <div style="height:44px;position:relative;width: 355px;border-right: 1px solid #d7d7d7;">
-    			<div>
-    			   <div style="color:#4276cd;font:normal 18px lato-Regular;display: inline-block; width: 160px; text-align: right;float: left;margin: 13px 15px 0px 0px;">Filter Posts By:</div>
-                 <dl style="z-index:999999; display: inline-block; float: left; width: 160px;margin-top: 10px;" class="menu">
-    			       <dt>
-    				      <a  id="linkglobal" style="cursor: pointer;">
-                              <span class="result" style="text-align: left;color: #8d8d8d; font: normal 15px lato-lightItalic;padding: 5px 0px 4px 15px;"></span>
-                          </a>
-                       </dt>
-                       <dd style="margin-left:0px;">
-                           <ul style="display: none;z-index:99999;" id="ulglobal" >
-                               <li><a id="filter_all" href="#"><b>View All</b></a></li>
-                               <li><a id="filter_my" href="#Myconnection"><b>Mine Only</b></a></li> 
-                               <li><a id="filter_interests" href="#Interest"><b>My Interests</b></a></li>
-                              <li><a id="filter_friends" href="#Friends"><b>Following</b></a></li>
-                           </ul>
-                       </dd>
-    			    </dl>
-    			</div>
-		  </div>
-			<select class="hide" name="type" id="filter_type">
+<body class="layout<?php echo $class; ?>">
+<?php include '_header.html'; ?>
+<div class="mainContainer">
+<div class="leftContainer">
+	<div class="midCol eqlCH" id="midColLayout"><?php echo $this->layout()->content; ?></div>
+</div>
+<?php if (!$this->hideRight) { ?>
+<div class="rightContainer">
+	<div class="mapDiv <?php if(!empty($this->homePageExist)): ?>rightColUpdated eqlCH<?php else: ?><?php endif; ?>">
+		<?php if (!empty($this->displayMapFilter) || !empty($this->displayMapZoom)) { ?>
+		<div class="mapFilter">
+			<?php if (!empty($this->displayMapFilter)) { ?>
+			<span>Filter Posts By:</span>
+			<dl class="menu">
+				<dt>View All</dt>
+				<dd>
+					<ul style="display: none;">
+						<li>View All</li>
+						<li filter="Myconnection">Mine Only</li> 
+						<li filter="Interest">My Interests</li>
+						<li filter="Friends">Following</li>
+					</ul>
+				</dd>
+			</dl>
+			<select name="type" id="filter_type" style="display: none;">
 				<option value="">View All</option>
 				<option value="Myconnection">Mine Only</option>
 				<option value="Interest">My Interests</option>
 				<option value="Friends">Following</option>
 			</select>
-      <?php  } ?>       
-          <?php if(!isset($this->friendListExist) && !isset($this->myprofileExist) && !isset($this->newsDetailExist) && !isset($this->myeditprofileExist)) { ?>
-                <div class="gMapSec">
-                 <?php } else { ?>
-                    <div class="gMapSec" style="margin-top: 0px">
-                      <?php } ?>   
-                        <?php if(!$this->message) :?>
-						<?php if (!empty($this->homePageExist)): ?>
-						<div id="zoomController">
-							<div>
-								<img id="zoomIn" src="<?php echo $this->baseUrl("www/images/zoom_in.gif"); ?>" />
-							</div>
-							<div>
-								<img id="zoomOut" src="<?php echo $this->baseUrl("www/images/zoom_out.gif"); ?>" />
-							</div>
-						</div>
-						<?php endif; ?>
-                         <div class="gMap">
-                            <div id="map_canvas" class="mapCanvas"></div>
-                         </div>
-						<?php if (!empty($this->homePageExist)): ?>
-						<div class="sliderBackground">
-							<div>
-								<span id="radious">0.8</span>
-								<span>Miles</span>
-							</div>
-							<div id="slider"></div>
-						</div>
-						<?php endif; ?>
-                        <?php endif; ?>  
-                        <?if($this->changeLocation) :?>
-                        <div class="gMapBtnBar">
-                            <input id="locationButton" type="button" value="Change Location" class="btnBlueRpt" style="width: 100%; padding: 11px 0;"/>
-                        </div>
-                        <?endif;?>
-                    </div>
-              <?if(!isset($this->homePageExist)){?>
-                <div class="footer">
-                    <ul class="footerLinks" >
-                        <li>
-                            <a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
-                        </li>
-                        <li>
-							<a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
-                        </li>
-                        <li>
-							<span class="copyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
-						</li>
-						<div class="clr"></div>
-                    </ul>
-                </div> <?} else {?>
-                  <div class="footer">
-                    <ul class="footerLinks" >
-                        <li>
-                            <a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
-                        </li>
-                        <li>
-							<a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
-                        </li>
-                        <li>
-							<span class="copyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
-						</li>
-						<div class="clr"></div>
-                    </ul>
-                </div>
-                <? } ?>
-            </div>
-            <?else:?>            
-            <div class="loginFooter">
-                <ul style="float:right;" class="footerLinks" >
-                    <li>
-                        <a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
-                    </li>
-                    <li>
-                        <a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
-                    </li>
-                    <li>
-						<span class="copyRight">&copy; Copyright <?php echo date('Y'); ?> SeeAround.me</span>
-                    </li>
-					<div class="clr"></div>
-                </ul>
-            </div>
-            <?endif?>
+			<?php } ?>
 		</div>
-		<div class="clr"></div>
-     </div>
-    <?endif?>
-	<div id="fb-root"></div>
+		<?php } ?>
+		<div class="gMapSec">
+			<?php if (!empty($this->displayMapZoom)) { ?>
+			<div id="zoomController">
+				<div>
+					<img id="zoomIn" src="<?php echo $this->baseUrl("www/images/zoom_in.gif"); ?>" />
+				</div>
+				<div>
+					<img id="zoomOut" src="<?php echo $this->baseUrl("www/images/zoom_out.gif"); ?>" />
+				</div>
+			</div>
+			<?php } ?>
+			<div class="gMap">
+				<div id="map_canvas" class="mapCanvas"></div>
+			</div>
+			<?php if (!empty($this->displayMapSlider)) { ?>
+			<div class="sliderBackground">
+				<div>
+					<span id="radious">0.8</span>
+					<span>Miles</span>
+				</div>
+				<div id="slider"></div>
+			</div>
+			<?php } ?>
+			<?php if (!empty($this->changeLocation)) { ?>
+			<div class="gMapBtnBar">
+				<input id="locationButton" type="button" value="Change Location" class="btnBlueRpt" />
+			</div>
+			<?php } ?>
+		</div>
+		<?php include '_layout_footer.html'; ?>
+	</div>
+</div>
+<?php } else { ?>            
+<?php include '_layout_footer.html'; ?>
+<?php } ?>
+</div>
+<div id="fb-root"></div>
 </body>
 </html>

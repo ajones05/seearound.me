@@ -1,6 +1,6 @@
 <?php
 $config = Zend_Registry::get('config_global');
-$this->headLink()->appendStylesheet($this->baseUrl('www/css/mobile.css'));
+$this->headLink()->appendStylesheet($this->baseUrl('www/css/mobile.css?' . $config->mediaversion));
 ?>
 <!DOCTYPE html>
 <html lang="en">

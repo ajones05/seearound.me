@@ -33,7 +33,20 @@
 
 /* CSS Document */
 
-body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-top: 80px;}
+body {
+	background: #e8e8e8;
+	font: normal 12px  Lato-Regular;
+	color: #afafaf;
+	padding-top: 80px;
+}
+body.layout:not(.hideRight) .mainContainer > .leftContainer{
+	float: left;
+}
+.mainContainer > .rightContainer {
+	float: right;
+	width: 49%;
+	margin-left:0px;
+}
 
 /*****standard colors for site*********
 
@@ -255,8 +268,18 @@ body{background:#e8e8e8; font:normal 12px  Lato-Regular; color:#afafaf; padding-
 
 /******************/	
 
-/*.mainContainer .midCol{float:left; width:440px; padding:0;min-height: 570px;}*/
-.mainContainer .midCol{width: 100%; padding:0;}
+.mainContainer .midCol {
+	width: 100%;
+	padding:0;
+}
+#midColLayout {
+	height: 100%;
+	position: relative;
+	margin-right: 0px;
+}
+body.hideRight #midColLayout {
+	border-right: 0px solid #D3DDE6;
+}
 
 .scrpBox{margin:12px 0 0px; width:100%;}
 
@@ -430,15 +453,23 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 /*************/
 
-..mainContainer .rightCol{float:left;background:#fff; width:470px; padding:0px; position:fixed}
 .rightCol .mapCanvas { border-top: none;}
 
-.mainContainer .rightColUpdated{background:#fff; width:470px; padding:0px;position:fixed}
-.gMapSec{}
+.rightContainer .mapDiv {
+	text-align: center;
+}
+.mainContainer .rightColUpdated {
+	background: #fff;
+	width: 470px;
+	padding: 0px;
+	position: fixed
+}
 
 .gMap{ margin:0; padding:0px; background:#f1f5f8; height:100%;/*width:50%*/}
 
-.gMapBtnBar{ margin-top:46px; background: #668cd5;}
+.gMapBtnBar{
+	background: #668cd5;
+}
 .rightCol .gMapBtnBar { margin-top: 0px;}
 
 
@@ -516,6 +547,9 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 .editProfInfoTopNav li.txtBold{color:#4276cd; margin-right: 30px;}
 
 .editProfInfoTopNav li a.btnBlue{background:#668cd5; font:normal 16px Lato-Bold; color:#fff; padding:6px 25px; text-decoration:none;}
+#editProfileForm {
+	width: 470px;
+}
 
 .editProfInfoForm{background: #f8f7f7; font-size: 14px; padding-top: 5px;}
 
@@ -813,9 +847,16 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 /******************/
 
-.footer, .loginFooter{padding: 10px 0;}
-
-.footerUpdated, .loginFooter{margin:0 auto; color:#afafaf; border-top: 2px solid #d7d7d7;width: 100%; background: none; padding: 8px 0; }
+.footer {
+	padding: 10px 0;
+}
+body.hideRight .footer {
+	color: #afafaf;
+	border-top: 2px solid #d7d7d7;
+}
+body.hideRight .footer .footerLinks {
+	float: right;
+}
 
 .opacity-dev { background: #fff; position: fixed;bottom:0px; opacity: 0.5; height: 40px; width: 100%;}
 
@@ -829,20 +870,31 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .special-footer .loginFtr ul li .ftrCopyRight { color: #fff; float: none; margin: 0px; font-size: 15px;}
 
-.footer .footerLinks, .loginFooter .footerLinks{display: inline-block;}
-.footer .footerLinks { width: 100%;}
+.footer .footerLinks {
+	display: inline-block;
+}
 
 .footer .footerLinks li:first-child { margin-left: 18px; }
 
-.footer .footerLinks li, .loginFooter .footerLinks li{float:left; margin-left: 38px;}
-
-.footer .footerLinks li a, .loginFooter .footerLinks li a{font: normal 15px Lato-light; color:#8d8d8d; text-decoration:none; }
+.footer .footerLinks li {
+	float:left;
+	margin-left: 38px;
+}
+.footer .footerLinks li a {
+	font: normal 15px Lato-light;
+	color:#8d8d8d;
+	text-decoration:none;
+}
 
 .footerLinks .copyRight { font: normal 15px Lato-light; color: #8d8d8d;}
 
-.footer .footerLinks li a:hover, .loginFooter .footerLinks li a:hover{text-decoration:underline;}
-
-.footer .copyRight .loginFooter .copyRight{float:right;text-align:right; margin-right:20px;}
+.footer .footerLinks li a:hover {
+	text-decoration: underline;
+}
+.footer .copyRight {
+	float: right;
+	text-align: right; margin-right:20px;
+}
 
 .pac-container {border-top: none !important; background: #fff !important;}
 .pac-container .pac-item { border-top: none !important; padding: 8px !important; border-bottom: 1px solid #e7e7e7;}
@@ -1294,13 +1346,10 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 .sliderBackground {
 	background: none repeat scroll 0 0 #fff;
-	margin-bottom: -45px;
 	padding: 13px 0px;
 	width: 100%;
 	z-index: 0;
-	position: absolute;
-	left: 0;
-	bottom: 131px;
+	display: inline-block;
 }
 
 .sliderBackground div:first-child {
@@ -1414,46 +1463,82 @@ table tr td input { border: 1px solid #d7d7d7;}
 }
 
 /*style for dropdown list for search filter by*/
-	.menu dl{ margin-left:5px; }
-	.menu dd, .menu dt, .menu ul 
-	{ margin:0px; padding:0px; }
-	.menu dd { position:relative; }
+.mapFilter {
+	height: 44px;
+	position: relative;
+	width: 355px;
+	border-right: 1px solid #d7d7d7;
+}
+.mapFilter > span {
+	color: #4276cd;
+	font: normal 18px lato-Regular;
+	display: inline-block;
+	width: 160px;
+	text-align: right;
+	float: left;
+	margin: 13px 15px 0px 0px;
+}
+dl.menu {
+	display: inline-block;
+	float: left;
+	width: 160px;
+	margin-top: 10px;
+}
+.menu dd, .menu dt, .menu ul {
+	margin: 0px;
+	padding: 0px;
+}
+.menu dd {
+	position: relative;
+}
+.menu dt{
+	background: #EEEEEE url(../images/icon-down.png) no-repeat scroll right center;
+	display: block;
+	cursor: pointer;
+	border: 1px solid #DCDCDC;
+	text-align: left;
+	color: #8d8d8d;
+	font: normal 15px lato-lightItalic;
+	padding: 5px 0px 4px 15px;
+}
+.menu dt.selected {
+	background: #EEEEEE url(../images/icon-up.png) no-repeat scroll right center;
+}
+.menu dd ul {
+	background: #EEEEEE none repeat scroll 0 0;
+	display: none;
+	list-style: none;
+	padding: 3px 0 0px;
+	position: absolute;
+	left: 0px;
+	width: 160px;
+	left: auto;
+	right: 0;
+	cursor: pointer;
+	z-index: 99999;
+}
+.menu dd ul li {
+	background-color: #EEEEEE;
+	margin: 0;
+	width: 140px;
+	border-top: 1px dotted #d7d7d7;
+    display: block;
+	font: normal 14px lato-lightItalic;
+    text-align: left;
+	overflow: hidden;
+	padding: 4px 4px 4px 16px;
+    color: #8d8d8d;
+	text-decoration: none;
+}
+.menu dd ul li:first-child {
+	border-top: none;
+}
+.menu dd ul li:hover { 
+	background: #8CBEFE;
+	color: white;
+	text-decoration: none;
+}
 
-	
-	.menu dt a {background:#EEEEEE 
-	url(../images/icon-down.png) no-repeat scroll right center;
-		display:block; cursor:pointer;border: 1px solid #DCDCDC;}
-
-	.menu dt a.selected{
-		background:#EEEEEE url(../images/icon-down.png) 
-		no-repeat scroll right center;
-
-    }
-	.menu dt a span {
-	cursor:pointer; display:block; padding:5px;}
-
-	.menu dd ul { 
-	background:#EEEEEE none repeat scroll 0 0; display:none;
-		list-style:none; padding:3px 0 0px; position:absolute;
-		left:0px; width:160px; left:auto; right:0; 
-		cursor:pointer;
-		}
-	.menu dd ul li{ 
-	background-color:#EEEEEE; margin:0; width:160px; border-top: 1px dotted #d7d7d7;
-	}
-    .menu dd ul li:first-child { border-top: none;}
-	.menu span.value { display:none;}
-	.menu dd ul li a { 
-	    display:block; font: normal 14px lato-lightItalic;;  
-	    text-align:left; overflow:hidden; padding:4px 4px 4px 16px; 
-	    color:#8d8d8d; text-decoration:none;
-	}
-	.menu dd ul li a:hover{ 
-	background:#8CBEFE; color:white; text-decoration:none; 
-	}
-	.menu dd ul li a:visited{ 
-	 text-decoration:none; 
-	}
 /* End dropdown list style on home page*/
 
 .gm-style-iw > div{
@@ -1854,9 +1939,6 @@ input[type=submit], input[type=button] {
 	width: 400px;
 	margin: 30px 270px;
 }
-.loginFooter {
-	float: right; 
-}
 .waitimg {
 	margin-left: 196px;
 	margin-top: 5px;
@@ -1973,4 +2055,11 @@ label.error {
 }
 .message-list > div {
 	cursor: pointer;
+}
+body.error .mainContainer > img {
+	margin-top: 90px;
+}
+#locationButton {
+	width: 100%;
+	padding: 11px 0;
 }

@@ -405,7 +405,7 @@ function setThisHeight(height){
 			if (commentClass[xxx].indexOf($(this).attr('class')) >= 0){
 				$(this).css('min-height','auto');
 				$(this).height("100%");
-					if($(this).attr('id')!='mapDiv') {
+					if(!$(this).hasClass('mapDiv')) {
 					$(this).css("position","absolute");
 				}
 			}

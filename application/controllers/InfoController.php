@@ -3,23 +3,6 @@
 class InfoController extends Zend_Controller_Action
 {
 	/**
-	 * @var	Application_Model_UserRow
-	 */
-	protected $user;
-
-    public function init()
-    {
-        $auth = Zend_Auth::getInstance();
-        $authData  = $auth->getIdentity();
-        if(isset($authData['user_id'])) {
-            $this->view->hideRight = true;
-        } else {
-            $this->view->layout()->setLayout('login');
-        }
-        /* Initialize action controller here */
-    }
-
-	/**
 	 * News details action.
 	 *
 	 * @return void
@@ -38,8 +21,6 @@ class InfoController extends Zend_Controller_Action
 			$this->view->user = $user;
 		}
 
-        $this->view->layout()->setLayout('layout');
-        $this->view->hideRight = false;
         $this->view->newsDetailExist = true;
 
 		$news_id = $this->_request->getParam('nwid');
@@ -132,11 +113,6 @@ class InfoController extends Zend_Controller_Action
 				->setProperty('og:image:width', $size[0])
 				->setProperty('og:image:height', $size[1]);
 		}
-    }
-
-    public function totalCommentsAction()
-    {
-        $this->_helper->layout()->disableLayout();
     }
 
 	/**

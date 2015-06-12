@@ -723,7 +723,8 @@ function loadNews(start, callback){
 			radius: getRadius(),
 			search: $('#searchNews [name=sv]').val(),
 			filter: $('#filter_type').val(),
-			fromPage: start
+			fromPage: start,
+			html: 1
 		},
 		type: 'POST',
 		dataType: 'json',
@@ -757,7 +758,7 @@ function loadNews(start, callback){
 				window.scrollTo(scrollPosition[0], scrollPosition[1])
 
 				for (var i in response.result){
-					renderListingMarker(response.result[i]);
+					renderListingMarker(response.result[i], true);
 				}
 
 				resetMarkersCluster();
@@ -966,7 +967,7 @@ function getRadius(){
 	return 0.8;
 }
 
-function renderListingMarker(news){
+function renderListingMarker(news, readmore){
 	var position = new google.maps.LatLng(parseFloat(news.latitude), parseFloat(news.longitude));
 	var marker = createNewsMarker({
 		map: newsMap,
@@ -987,7 +988,11 @@ function renderListingMarker(news){
 					'<div>' + $.trim(newsMarker.opts.data.news.substring(0, 100));
 
 			if (newsMarker.opts.data.news.length > 100){
-				tooltip += '... <a href="#" class="more" onclick="higlightNews(' + newsMarker.opts.data.id + '); return false;">More</a>';
+				tooltip += '...';
+
+				if (readmore){
+					tooltip += ' <a href="#" class="more" onclick="higlightNews(' + newsMarker.opts.data.id + '); return false;">More</a>';
+				}
 			}
 
 			tooltip += '</div>' +
@@ -1111,6 +1116,65 @@ function updateMarkersCluster(){
 		}
 	}
 };
+
+function renderEditLocationDialog(callback){
+		editLocationDialog({
+			mapZoom: 14,
+			markerIcon: baseUrl + 'www/images/icons/icon_1.png',
+			inputPlaceholder: 'Enter address',
+			submitText: 'Use This Address',
+			defaultAddress: userAddress,
+			center: newsMapCircle.center,
+			infoWindowContent: function(address){
+				return userAddressTooltip(address, imagePath);
+			},
+			submit: function(dialogEvent, position, address){
+				$('#map-canvas', dialogEvent.target).mask('Waiting...');
+
+				$.ajax({
+					url: baseUrl + 'home/change-address',
+					data: {
+						address: address,
+						latitude: position.lat(),
+						longitude: position.lng()
+					},
+					type: 'POST',
+					dataType: 'json',
+					beforeSend: function(jqXHR, settings){
+						$('[name=address]', dialogEvent.target);
+					}
+				}).done(function(response){
+					if (response && response.status){
+						userAddress = address;
+						userLatitude = position.lat();
+						userLongitude = position.lng();
+
+						newsMap.setCenter(position);
+						newsMapCircle.changeCenter(position, 0.8);
+						currentLocationMarker.setPosition(position);
+
+						var $markerElement = $('#' + currentLocationMarker.id);
+
+						if ($markerElement.data('ui-tooltip')){
+							$markerElement.tooltip('destroy');
+						}
+
+						callback();
+
+						$(dialogEvent.target).dialog('close');
+					} else {
+						alert(response ? response.error.message : ERROR_MESSAGE);
+						$('#map-canvas', dialogEvent.target).unmask();
+						$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
+					}
+				}).fail(function(jqXHR, textStatus){
+					alert(textStatus);
+					$('#map-canvas', dialogEvent.target).unmask();
+					$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
+				});
+			}
+		});
+}
 
 /**
  * NewsMarker

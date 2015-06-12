@@ -103,62 +103,7 @@ $(function(){
 	});
 
 	$("#locationButton").click(function(){
-		editLocationDialog({
-			mapZoom: 14,
-			markerIcon: baseUrl + 'www/images/icons/icon_1.png',
-			inputPlaceholder: 'Enter address',
-			submitText: 'Use This Address',
-			defaultAddress: userAddress,
-			center: newsMapCircle.center,
-			infoWindowContent: function(address){
-				return userAddressTooltip(address, imagePath);
-			},
-			submit: function(dialogEvent, position, address){
-				$('#map-canvas', dialogEvent.target).mask('Waiting...');
-
-				$.ajax({
-					url: baseUrl + 'home/change-address',
-					data: {
-						address: address,
-						latitude: position.lat(),
-						longitude: position.lng()
-					},
-					type: 'POST',
-					dataType: 'json',
-					beforeSend: function(jqXHR, settings){
-						$('[name=address]', dialogEvent.target);
-					}
-				}).done(function(response){
-					if (response && response.status){
-						userAddress = address;
-						userLatitude = position.lat();
-						userLongitude = position.lng();
-
-						newsMap.setCenter(position);
-						newsMapCircle.changeCenter(position, 0.8);
-						currentLocationMarker.setPosition(position);
-
-						var $markerElement = $('#' + currentLocationMarker.id);
-
-						if ($markerElement.data('ui-tooltip')){
-							$markerElement.tooltip('destroy');
-						}
-
-						loadNews(0);
-
-						$(dialogEvent.target).dialog('close');
-					} else {
-						alert(response ? response.error.message : ERROR_MESSAGE);
-						$('#map-canvas', dialogEvent.target).unmask();
-						$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
-					}
-				}).fail(function(jqXHR, textStatus){
-					alert(textStatus);
-					$('#map-canvas', dialogEvent.target).unmask();
-					$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
-				});
-			}
-		});
+		renderEditLocationDialog(function(){loadNews(0); });
 	});
 
 	$('#newsPost')
@@ -233,36 +178,24 @@ $(function(){
 		$('#newsFile').click();
 	});
 
-	$(".menu dd ul li a").click(function(e){
-		e.preventDefault();
-		$('#filter_type').val($(this).prop("hash").substring(1));
+	$(".menu dd ul li").click(function(e){
+		$('#filter_type').val($(this).attr("filter"));
 		loadNews(0);
-
-		$(this).closest('dl').find('.result').html($(this).html());
+		$(this).closest('dt').html($(this).html());
 		$(".menu dd ul").hide();
 	});
-
-	$('.result').html("View All");
 
 	$(document).bind('click', function(e){
 		var $clicked = $(e.target);
 
 		if (!$clicked.parents().hasClass("menu")){
 			$(".menu dd ul").hide();
-			$(".menu dt a").removeClass("selected");
+			$(".menu dt").removeClass("selected");
 		}
 	});
 
-	$(".menu dt a").click(function(){
-		var clickedId = "#" + this.id.replace(/^link/,"ul");
-
-		$(".menu dd ul").not(clickedId).hide();
-		$(clickedId).toggle();
-		if ($(clickedId).css("display") == "none"){
-			$(this).removeClass("selected");
-		} else {
-			$(this).addClass("selected");
-		}
+	$(".menu dt").click(function(){
+		$(this).toggleClass('selected').closest('dl').find('dd > ul').toggle();
 	});
 
 	$(window).scroll(function(){
@@ -376,7 +309,7 @@ function addPost(location, address){
 
 			$('html, body').animate({scrollTop: 0}, 0);
 
-			renderListingMarker(response.news);
+			renderListingMarker(response.news, true);
 
 			resetMarkersCluster();
 

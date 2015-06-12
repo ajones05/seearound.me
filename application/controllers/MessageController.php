@@ -27,7 +27,6 @@ class MessageController extends Zend_Controller_Action
 
 		$this->view->user = $user;
         $this->view->paginator = $paginator;
-		$this->view->currentPage = 'Message';
 		$this->view->hideRight = true;
 
 		$this->view->headScript()->appendFile($this->view->baseUrl('www/scripts/messageindex.js?' .
@@ -58,7 +57,6 @@ class MessageController extends Zend_Controller_Action
 
 		$this->view->user = $user;
         $this->view->paginator = $paginator;
-		$this->view->currentPage = 'Message';
 		$this->view->hideRight = true;
 
 		$this->view->headScript()->appendFile($this->view->baseUrl('www/scripts/messageindex.js?' .

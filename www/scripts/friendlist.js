@@ -1,34 +1,140 @@
-var map, infowindow, markers = {};
-
 $(function(){
-	map = new google.maps.Map($('#map_canvas')[0], {
-		zoom: 14,
-		minZoom: 13,
-		maxZoom: 15,
-		center: new google.maps.LatLng(userLatitude, userLongitude),
-		disableDefaultUI: true,
-		panControl: false,
-		zoomControl: false,
-		scaleControl: false,
-		streetViewControl: false,
-		overviewMapControl: false,
-		mapTypeId: google.maps.MapTypeId.ROADMAP
+	var center = new google.maps.LatLng(userLatitude, userLongitude);
+
+	renderNewsMap({
+		center: center,
+		isListing: true
 	});
 
-	google.maps.event.addListenerOnce(map, 'idle', function(){
-		var marker = new google.maps.Marker({
-			position: map.getCenter(),
-			map: map,
-			icon: baseUrl + 'www/images/icons/icon_1.png'
-		});
+	google.maps.event.addListener(newsMap, 'click', function(event){
+		if (!newsMarkerClick){
+			$('.scrpBox').removeClass('higlight-news');
+		}
 
-		infowindow = new google.maps.InfoWindow({
-			content: userAddressTooltip(userAddress, imagePath)
-		});
-
-		infowindow.open(map, marker);
+		newsMarkerClick = false;
+	});
+	
+	currentLocationMarker = new NewsMarker({
+		position: newsMap.getCenter(),
+		map: newsMap,
+		id: 'currentLocationMarker',
+		icon: {
+			url: baseUrl + 'www/images/icons/icon_1.png',
+			width: 25,
+			height: 36
+		},
+		addClass: 'newsMarker'
 	});
 
+	google.maps.event.addListener(currentLocationMarker, 'mouseover', function(){
+		var self = this, $markerElement = $('#' + self.id);
+
+		if ($markerElement.data('ui-tooltip')){
+			return true;
+		}
+
+		$markerElement
+			.tooltip({
+				items: '*',
+				show: 0,
+				hide: .1,
+				tooltipClass: 'news-tooltip',
+				content: newsUserTooltipContent(imagePath, userName, 'This is me!'),
+				position: {
+					of: $markerElement,
+					my: "center bottom",
+					at: "center top",
+					using: function(position, feedback){
+						position.top = position.top - 17;
+						$(this).css(position);
+						$("<div>").addClass("arrow").appendTo(this);
+					}
+				},
+				close: function(event, ui){
+					ui.tooltip.hover(
+						function(){$(this).stop(true).show(); },
+						function(){$(this).remove(); }
+					);
+				}
+		})
+		.tooltip('open');
+	});
+
+	$('#zoomIn').click(function(){
+		var zoom = newsMap.getZoom();
+        newsMap.setZoom(++zoom);
+	});
+
+	$('#zoomOut').click(function(){
+		var zoom = newsMap.getZoom();
+        newsMap.setZoom(--zoom);
+	});
+
+	newsMapCircle = new AreaCircle({
+		map: newsMap,
+		center: newsMap.getCenter(),
+		radious: getRadius()
+	});
+
+	$("#slider")
+		.slider({
+			max: 1.5,
+			min: 0.5,
+			step: 0.1,
+			value: getRadius(),
+			animate: true
+		})
+		.bind("slidestop", function(event, ui){
+			newsMapCircle.changeCenter(newsMap.getCenter(), getRadius());
+			loadFriendNews();
+		})
+		.bind("slide", function(event, ui){
+			$("#radious").html(ui.value == 1 ? '1.0' : ui.value);
+		});
+
+	google.maps.event.addListener(newsMap, 'dragend', function(){
+		google.maps.event.clearListeners(newsMap, 'idle');
+		google.maps.event.addListener(newsMap, 'idle', function(){
+			newsMapCircle.changeCenter(newsMap.getCenter(), getRadius());
+			loadFriendNews();
+		});
+	});
+
+	$('#searchNews').submit(function(e){
+		var $form = $(this),
+			$searchInput = $('[name=sv]', $form),
+			$searchIcon = $('.search', $form);
+
+		e.preventDefault();
+
+		if ($.trim($searchInput.val()) === ''){
+			$searchInput.focus();
+			return false;
+		}
+
+		$('.clear', $form).remove();
+		$searchIcon.hide();
+		$searchInput.attr('disabled', true);
+
+		loadFriendNews(function(){
+			$searchInput.attr('disabled', false);
+
+			$('.sIcn', $form).append(
+				$('<img/>', {'class': 'clear', src: baseUrl + 'www/images/close_12x12.png'}).click(function(){
+					$(this).remove();
+					$searchInput.val('');
+					loadFriendNews(function(){$searchIcon.show(); });
+				})
+			);
+		});
+	});
+
+	$("#locationButton").click(function(){
+		renderEditLocationDialog(function(){loadFriendNews(); });
+	});
+
+	loadFriendNews();
+	
 	setHeight('.eqlCH');
 
 	$("#search")
@@ -46,10 +152,8 @@ $(function(){
 				}).done(function(response){
 					if (response && response.status){
 						callback(response.result);
-					} else if (response){
-						alert(response.error.message);
 					} else {
-						alert(ERROR_MESSAGE);
+						alert(response ? response.error.message : ERROR_MESSAGE);
 					}
 
 					$("#sacrchWait").hide();
@@ -86,6 +190,62 @@ $(function(){
 		moreFriends();
 	}
 });
+
+function loadFriendNews(callback){
+	if (!$.isEmptyObject(newsMarkers)){
+		for (var id in newsMarkers){
+			newsMarkers[id].remove();
+			delete newsMarkers[id];
+		}
+	}
+
+	resetMarkersCluster();
+
+	$.ajax({
+		url: baseUrl + 'home/get-nearby-points',
+		data: {
+			latitude: newsMap.getCenter().lat(),
+			longitude: newsMap.getCenter().lng(),
+			radius: getRadius(),
+			filter: 'Friends',
+			search: $('#searchNews [name=sv]').val(),
+			limit: 100
+		},
+		type: 'POST',
+		dataType: 'json',
+		async: false
+	}).done(function(response){
+		if (response && response.status){
+			if (typeof callback == 'function'){
+				callback();
+			}
+
+			if (typeof response.result !== 'object'){
+				return false;
+			}
+
+			for (var i in response.result){
+				renderListingMarker(response.result[i], false);
+			}
+
+			resetMarkersCluster();
+
+			if (newsMapRady){
+				setTimeout(function(){
+					updateMarkersCluster();
+				}, .1);
+			} else {
+				google.maps.event.addListener(newsMap, 'idle', function(){
+					updateMarkersCluster();
+				});
+			}
+		} else {
+			alert(response ? response.error.message : ERROR_MESSAGE);
+		}
+	}).fail(function(jqXHR, textStatus){
+		alert(textStatus);
+	});
+}
 
 function moreFriends(){
 	var offset = $('#friendList > .invtFrndList').size();
@@ -139,27 +299,6 @@ function moreFriends(){
 					$('<div/>', {'class': 'clr'})
 				);
 
-				var marker = new google.maps.Marker({
-					map: map,
-					position: new google.maps.LatLng(response.friends[x].latitude, response.friends[x].longitude),
-					icon: baseUrl + 'www/images/icons/icon_2.png',
-					data: {
-						address: response.friends[x].address,
-						image: response.friends[x].image,
-					}
-				});
-
-				google.maps.event.addListener(marker, 'click', function(){
-					if (infowindow){
-						infowindow.close();
-					}
-
-					infowindow.setContent(userAddressTooltip(this.data.address, this.data.image));
-					infowindow.open(map, this);
-				});
-				
-				markers[response.friends[x].id] = marker;
-
 				if ($("#midColLayout").height() > 714){
 					setThisHeight(Number($("#midColLayout").height()));
 				}
@@ -177,10 +316,8 @@ function moreFriends(){
 						.append($('<lable/>').text('More'))
 				);
 			}
-		} else if (response){
-			alert(response.error.message);
 		} else {
-			alert(ERROR_MESSAGE);
+			alert(response ? response.error.message : ERROR_MESSAGE);
 		}
 	}).fail(function(jqXHR, textStatus){
 		alert(textStatus);

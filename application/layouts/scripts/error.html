@@ -1,0 +1,37 @@
+<?php
+$config = Zend_Registry::get('config_global');
+$request = Zend_Controller_Front::getInstance()->getRequest();
+$auth = Zend_Auth::getInstance()->getIdentity();
+
+$this->headLink()
+	->appendStylesheet($this->baseUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
+	->appendStylesheet($this->baseUrl('www/css/reset.css?' . $config->mediaversion))
+	->appendStylesheet($this->baseUrl('www/css/global.css?' . $config->mediaversion));
+
+$this->headScript()
+	->appendScript(
+		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
+		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
+		"	var facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
+	)
+	->prependFile($this->baseUrl('bower_components/jquery/dist/jquery.min.js'))
+	->appendFile($this->baseUrl('bower_components/jquery-ui/jquery-ui.min.js'))
+	->appendFile($this->baseUrl('bower_components/jquery-validation/dist/jquery.validate.min.js'))
+	->appendFile($this->baseUrl('www/scripts/common.js'));
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>seearound.me</title>
+<?php echo $this->headLink() . "\n" . $this->headScript() . "\n"; ?>
+</head>
+<body class="error">
+<?php include '_header.html'; ?>
+<div align="center" class="mainContainer brdrNone">
+<img src="<?php echo $this->baseUrl("www/images/page_not_found.jpg"); ?>" />
+<?php echo $this->layout()->content; ?>
+</div>
+<div id="fb-root"></div>
+</body>
+</html>

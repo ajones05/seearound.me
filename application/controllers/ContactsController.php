@@ -13,7 +13,7 @@ class ContactsController extends Zend_Controller_Action
 
 		if (!Application_Model_User::checkId($auth['user_id'], $user))
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			$this->_redirect($this->view->baseUrl('/'));
 		}
 
 		$user_invites = (new Application_Model_Invitestatus)->getData(array("user_id" => $user->id));
@@ -25,7 +25,6 @@ class ContactsController extends Zend_Controller_Action
 
 		$this->view->invite_count = $user_invites->invite_count;
 		$this->view->hideRight = true;
-		$this->view->currentPage = 'Message';
 
 		$this->view->headScript()
 			->appendFile($this->view->baseUrl('www/scripts/contactsindex.js?' . Zend_Registry::get('config_global')->mediaversion));
@@ -42,7 +41,7 @@ class ContactsController extends Zend_Controller_Action
 
 		if (!Application_Model_User::checkId($auth['user_id'], $user))
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			$this->_redirect($this->view->baseUrl('/'));
 		}
 
 		$user_invites = (new Application_Model_Invitestatus)->getData(array("user_id" => $user->id));
@@ -135,7 +134,6 @@ class ContactsController extends Zend_Controller_Action
 		$this->view->invite_success = $invite_success;
 		$this->view->invite_count = $user_invites->invite_count;
 		$this->view->hideRight = true;
-		$this->view->currentPage = 'Message';
 	}
 
 	/**
@@ -331,7 +329,7 @@ class ContactsController extends Zend_Controller_Action
 
 		if (!Application_Model_User::checkId($auth['user_id'], $user))
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			$this->_redirect($this->view->baseUrl('/'));
 		}
 
 		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id, 1);
@@ -342,12 +340,16 @@ class ContactsController extends Zend_Controller_Action
 			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$this->view->headScript()
+			->appendScript("	var friends_count = " . $friends_count . ";\n")
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
-			->appendScript("	var friends_count = " . $friends_count . ";\n")
+			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion))
 			->appendFile($this->view->baseUrl('www/scripts/friendlist.js?' . $mediaversion));
 
-		$this->view->friendListExist = true;
+        $this->view->homePageExist = true;
+        $this->view->changeLocation = true;
+		$this->view->displayMapSlider = true;
+		$this->view->displayMapZoom = true;
 		$this->view->friends_count = $friends_count;
 	}
 
@@ -627,11 +629,10 @@ class ContactsController extends Zend_Controller_Action
 
 		if (!Application_Model_User::checkId($auth['user_id'], $user))
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			$this->_redirect($this->view->baseUrl('/'));
 		}
 
 		$this->view->data = (new Application_Model_Friends)->findAllByReceiverId($user->id, 0);
-		$this->view->friendListExist = true;
 
 		$this->view->headScript()
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');

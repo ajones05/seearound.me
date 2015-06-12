@@ -2,11 +2,6 @@
 
 class HomeController extends Zend_Controller_Action
 {
-    public function init() {
-          /* Initialize action controller here */
-         $this->view->changeLocation = false;
-    }
-
 	/**
 	 * Index action.
 	 *
@@ -23,6 +18,9 @@ class HomeController extends Zend_Controller_Action
 
         $this->view->homePageExist = true;
         $this->view->changeLocation = true;
+		$this->view->displayMapFilter = true;
+		$this->view->displayMapSlider = true;
+		$this->view->displayMapZoom = true;
 		$this->view->user = $user;
 
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
@@ -124,7 +122,6 @@ class HomeController extends Zend_Controller_Action
 
 		$this->view->form = $form;
         $this->view->user = $user;
-        $this->view->myeditprofileExist = true;
         $this->view->changeLocation = true;
     }
 
@@ -229,8 +226,6 @@ class HomeController extends Zend_Controller_Action
 				->order('id DESC')
 		);
 
-		$this->view->currentPage = 'Profile';
-		$this->view->myprofileExist = true;
 		$this->view->auth_id = $auth ? $user->id : null;
 		$this->view->profile = $profile;
 
@@ -384,6 +379,13 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect fromPage value: ' . var_export($fromPage, true), -1);
 			}
 
+			$limit = $this->_request->getPost('limit', 15);
+
+			if (!My_Validate::digit($limit) || $limit < 0 || $limit > 100)
+			{
+				throw new RuntimeException('Incorrect limit value', -1);
+			}
+
 			$newsTable = new Application_Model_News;
 			$select = $newsTable->select();
 
@@ -403,21 +405,23 @@ class HomeController extends Zend_Controller_Action
 				case 'Interest':
 					$interests = $user->parseInterests();
 					$response['interest'] = count($interests);
-					$result = $newsTable->findByLocationAndInterests($latitude, $longitude, $radius, 15, $fromPage, $interests, $select);
+					$result = $newsTable->findByLocationAndInterests($latitude, $longitude, $radius, $limit, $fromPage, $interests, $select);
 					break;
 				case 'Myconnection':
-					$result = $newsTable->findByLocationAndUser($latitude, $longitude, $radius, 15, $fromPage, $user, $select);
+					$result = $newsTable->findByLocationAndUser($latitude, $longitude, $radius, $limit, $fromPage, $user, $select);
 					break;
 				case 'Friends':
-					$result = $newsTable->findByLocationInFriends($latitude, $longitude, $radius, 15, $fromPage, $user, $select);
+					$result = $newsTable->findByLocationInFriends($latitude, $longitude, $radius, $limit, $fromPage, $user, $select);
 					break;
 				case 'All':
 				case null:
-					$result = $newsTable->findByLocation($latitude, $longitude, $radius, 15, $fromPage, $select);
+					$result = $newsTable->findByLocation($latitude, $longitude, $radius, $limit, $fromPage, $select);
 					break;
 				default:
 					throw new RuntimeException('Incorrect filter value: ' . var_export($filter, true), -1);
 			}
+
+			$html = $this->_request->getPost('html');
 
 			if (count($result))
 			{
@@ -426,23 +430,27 @@ class HomeController extends Zend_Controller_Action
 
 				foreach ($result as $row)
 				{
-					$user = Application_Model_User::findById($row->user_id);
+					$owner = $row->findDependentRowset('Application_Model_User')->current();
 
-					$response['result'][] = array(
+					$data = array(
 						'id' => $row->id,
 						'news' => $row->news,
 						'latitude' => $row->latitude,
 						'longitude' => $row->longitude,
 						'user' => array(
-							'id' => $user->id,
-							'name' => $user->Name,
-							'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-						),
-						'html' => My_ViewHelper::render(
+							'id' => $owner->id,
+							'name' => $owner->Name,
+							'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						)
+					);
+
+					if ($html)
+					{
+						$data['html'] = My_ViewHelper::render(
 							'news/item.html',
 							array(
 								'item' => $row,
-								'user' => $user,
+								'user' => $owner,
 								'auth' => array(
 									'id' => $user->id,
 									'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
@@ -451,11 +459,13 @@ class HomeController extends Zend_Controller_Action
 								'comments_count' => $commentTable->getCountByNewsId($row->id),
 								'comments' => $commentTable->findAllByNewsId($row->id, 3)
 							)
-						)
-					);
+						);
+					}
+
+					$response['result'][] = $data;
 				}
 			}
-			elseif ($fromPage == 0)
+			elseif ($html && $fromPage == 0)
 			{
 				$response['result'] = My_ViewHelper::render('news/empty.html');
 			}
@@ -470,7 +480,7 @@ class HomeController extends Zend_Controller_Action
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
     public function addNewCommentsAction()

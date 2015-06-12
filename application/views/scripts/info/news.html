@@ -4,6 +4,7 @@ $auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
 $user = $this->news->findDependentRowset('Application_Model_User')->current();
 $user_image = $user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
 
+// TODO: cache image size
 $image = $this->news->image && file_exists(ROOT_PATH . '/newsimages/' . $this->news->image) ? $this->news->image : null;
 
 if ($image)
