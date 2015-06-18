@@ -381,10 +381,16 @@ function renderComments($comments){
 	});
 
 	$('.moreButton', $comments).click(function(e){
+		e.preventDefault();
+
+		if ($(this).attr('disabled')){
+			return false;
+		}
+
+		$(this).attr('disabled', true);
+
 		var $target = $(this).closest('.cmntList'),
 			comment_id = $target.attr('id').replace('comment_', '');
-
-		e.preventDefault();
 
 		$.ajax({
 			url: baseUrl + 'home/read-more-comment',
@@ -937,10 +943,16 @@ function updateNews($news){
 	});
 
 	$('.moreButton', $news).click(function(e){
+		e.preventDefault();
+
+		if ($(this).attr('disabled')){
+			return false;
+		}
+
+		$(this).attr('disabled', true);
+
 		var $target = $(this),
 			$post = $target.closest('.scrpBox');
-
-		e.preventDefault();
 
 		$.ajax({
 			url: baseUrl + 'home/read-more-news',
