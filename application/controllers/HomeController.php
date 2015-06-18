@@ -487,9 +487,9 @@ class HomeController extends Zend_Controller_Action
 	{
 		try
 		{
-			$identity = Zend_Auth::getInstance()->getIdentity();
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
-			if (!$identity || !Application_Model_User::checkId($identity['user_id'], $user))
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -503,8 +503,6 @@ class HomeController extends Zend_Controller_Action
 
 			$form = new Application_Form_Comment;
 
-			$data['user_id'] = $user->id;
-
 			if (!$form->isValid($data))
 			{
 				throw new RuntimeException('Validate error', -1);
@@ -512,6 +510,8 @@ class HomeController extends Zend_Controller_Action
 
 			$model = new Application_Model_Comments;
 			$comment = $model->createRow($form->getValues());
+			$comment->user_id = $user->id;
+			$comment->news_id = $news->id;
 			$comment->save();
 
 			Application_Model_Voting::getInstance()->measureLikeScore('news', $news->id, $user->id);
@@ -597,7 +597,7 @@ class HomeController extends Zend_Controller_Action
 			{
 				foreach ($comments as $comment)
 				{
-					$response['data'][] = My_ViewHelper::render('comment/item.html', array('item' => $comment));
+					$response['data'][] = My_ViewHelper::render('comment/item.html', array('item' => $comment, 'limit' => 250));
 				}
 
 				$count = max($comentsTable->getCountByNewsId($news_id) - ($limitstart + $comentsTable->news_limit), 0);
@@ -827,7 +827,37 @@ class HomeController extends Zend_Controller_Action
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Read more comment action.
+	 *
+	 * @return void
+	 */
+	public function readMoreCommentAction()
+	{
+		try
+		{
+			if (!Application_Model_Comments::checkId($this->_request->getPost('id'), $comment, 0))
+			{
+				throw new RuntimeException('Incorrect comment ID', -1);
+			}
+
+			$response = array(
+				'status' => 1,
+				'html' => $comment->renderContent()
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
+			);
+		}
+
+		$this->_helper->json($response);
 	}
 
 	/**

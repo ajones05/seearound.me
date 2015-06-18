@@ -5,9 +5,11 @@ class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
 	/**
 	 * Renders comment content.
 	 *
+	 * @param	integer $limit
+	 *
 	 * @return string
 	 */
-	public function renderContent()
+	public function renderContent($limit = false)
 	{
 		$output = '';
 
@@ -21,6 +23,12 @@ class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
 			else
 			{
 				$output .= preg_replace('/\n/', '<br>', $this->comment[$i++]);
+			}
+
+			if ($limit && $i > $limit)
+			{
+				$output = trim($output) . '... <a href="#" class="moreButton">More</a>';
+				break;
 			}
 		}
 

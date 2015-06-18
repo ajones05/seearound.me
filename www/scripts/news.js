@@ -43,12 +43,6 @@ function renderNews($news){
 				return true;
 			}
 
-			if (comment.length > 250){
-				$commentField.val(comment = comment.substring(0, 250));
-				alert("The comment should be less the 250 Characters");
-				return false;
-			}
-
 			if (comment.indexOf('<') > 0 || comment.indexOf('>') > 0){
 				alert('You enter invalid text');
 				$commentField.val(comment.replace('<', '').replace('>', ''));
@@ -384,6 +378,26 @@ function renderComments($comments){
 				alert(textStatus);
 			});
 		}
+	});
+
+	$('.moreButton', $comments).click(function(e){
+		var $target = $(this).closest('.cmntList'),
+			comment_id = $target.attr('id').replace('comment_', '');
+
+		e.preventDefault();
+
+		$.ajax({
+			url: baseUrl + 'home/read-more-comment',
+			data: {id: comment_id},
+			type: 'POST',
+			dataType: 'json'
+		}).done(function(response){
+			if (response && response.status){
+				$('.cmnt', $target).html(response.html);
+			} else {
+				alert(response ? response.error.message : ERROR_MESSAGE);
+			}
+		});
 	});
 
 	$comments.closest('.cmntList').hover(

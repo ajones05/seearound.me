@@ -1254,6 +1254,8 @@ class MobileController extends Zend_Controller_Action
 
 			$model = new Application_Model_Comments;
 			$comment = $model->createRow($form->getValues());
+			$comment->user_id = $user->id;
+			$comment->news_id = $news->id;
 			$comment->save();
 
 			$response = array(

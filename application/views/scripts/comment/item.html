@@ -20,7 +20,7 @@ $news = $this->item->findDependentRowset('Application_Model_News')->current();
 		<li class="title">
 			<div class="title-wrapper">
 				<a href="<?php echo $this->baseUrl("home/profile/user/" . $user->id); ?>"><?php echo $user->Name; ?>:</a>
-				<span class="cmnt"><?php echo $this->item->renderContent(); ?></span>
+				<span class="cmnt"><?php echo $this->item->renderContent(My_ArrayHelper::getProp($this, 'limit', false)); ?></span>
 			</div>
 		</li>
 		<li class="dur">

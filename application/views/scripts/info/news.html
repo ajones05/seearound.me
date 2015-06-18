@@ -73,7 +73,7 @@ if ($image)
 		{
 			for ($i = count($this->comments) - 1; $i >= 0; $i--)
 			{
-				echo My_ViewHelper::render('comment/item.html', array('item' => $this->comments[$i]));
+				echo My_ViewHelper::render('comment/item.html', array('item' => $this->comments[$i], 'limit' => 250));
 			}
 		}
 

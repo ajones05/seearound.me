@@ -1265,6 +1265,11 @@ table tr td input { border: 1px solid #d7d7d7;}
 .post-bottom .post-content {color: #333333; font: normal 15px Lato-Regular; line-height: 16px; word-wrap: break-word;}
 .post-bottom .post-content a {color: #6699ff;}
 
+.cmntList li.title a.moreButton {
+	color: #6699ff;
+	text-decoration: underline;
+}
+
 .scrpBox > .dur {
 	height: 25px;
 }

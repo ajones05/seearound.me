@@ -14,24 +14,12 @@ class Application_Form_Comment extends Zend_Form
     {
         $this->addElement(
 			'text',
-			'user_id',
-			array('required' => true)
-		);
-
-        $this->addElement(
-			'text',
-			'news_id',
-			array('required' => true)
-		);
-
-        $this->addElement(
-			'text',
 			'comment',
 			array(
 				'required' => true,
 				'filters' => array('StringTrim'),
 				'validators' => array(
-					array('stringLength', false, array(1, 250))
+					array('stringLength', false, array(1, 65535))
 				)
 			)
 		);
