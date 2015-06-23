@@ -229,6 +229,22 @@ class HomeController extends Zend_Controller_Action
 		$this->view->auth_id = $auth ? $user->id : null;
 		$this->view->profile = $profile;
 
+		$this->view->karma_posts = $newsModel->fetchRow(
+			$newsModel->publicSelect()
+				->setIntegrityCheck(false)
+				->from($newsModel, array(
+					'IFNULL(SUM(if(news.user_id = "' . $user->id . '", 1, 0)), 0) AS news_count',
+					'IFNULL(SUM(comments.count), 0) as comments_count',
+					'IFNULL(SUM(comments_other.count), 0) as other_comments_count',
+					'IFNULL(SUM(votings.count), 0) as votings_count',
+				))
+				->joinLeft(array('comments' => $newsModel->commentsSubQuery()), 'comments.news_id = news.id AND news.user_id = ' . $user->id, '')
+				->joinLeft(array('comments_other' => $newsModel->commentsSubQuery()), 'comments_other.news_id = news.id AND comments_other.user_id = ' . $user->id . ' AND news.user_id <> ' . $user->id, '')
+				->joinLeft(array('votings' => $newsModel->votingsSubQuery()), 'votings.news_id = news.id AND news.user_id = ' . $user->id, '')
+		);
+
+		$this->view->karma_comments = (new Application_Model_Comments)->getCountByUserId($profile->id);
+
 		if ($auth && $user->id != $profile->id)
 		{
 			$this->view->friendStatus = (new Application_Model_Friends)->getStatus($user->id, $profile->id);

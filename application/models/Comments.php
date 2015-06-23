@@ -27,7 +27,7 @@ class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
 
 			if ($limit && $i > $limit)
 			{
-				$output = trim($output) . '... <a href="#" class="moreButton">More</a>';
+				$output = trim($output) . '... <a href="#" class="moreButton">See more...</a>';
 				break;
 			}
 		}
@@ -97,7 +97,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 	}
 
-	/*
+	/**
      * Returns an instance of a Zend_Db_Table_Select object.
      *
      * @param bool $withFromPart Whether or not to include the from part of the select based on the table
@@ -105,11 +105,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
      */
     public function publicSelect($withFromPart = self::SELECT_WITHOUT_FROM_PART)
     {
-        $select = parent::select($withFromPart)->setIntegrityCheck(false);
-		$select->joinLeft('user_data', 'news.user_id = user_data.id', array());
-		$select->where('isdeleted =?', 0);
-
-		return $select;
+        return parent::select($withFromPart)->where('comments.isdeleted =?', 0);
     }
 
 	/**
@@ -156,6 +152,32 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		if ($result)
 		{
 			return $result->comment_count;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Returns comments count by user ID.
+	 *
+	 * @param	integer	$user_id
+	 *
+	 * @return	integer
+	 */
+	public function getCountByUserId($user_id)
+	{
+		$result = $this->fetchRow(
+			$this->publicSelect()
+				->setIntegrityCheck(false)
+				->from($this, 'count(comments.id) as rows_count')
+				->where('comments.user_id=?', $user_id)
+				->joinLeft('news', 'comments.news_id = news.id', '')
+				->where('news.isdeleted=?', 0)
+		);
+
+		if ($result)
+		{
+			return $result->rows_count;
 		}
 
 		return 0;

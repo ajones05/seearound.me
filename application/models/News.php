@@ -151,7 +151,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
      */
     public function publicSelect($withFromPart = self::SELECT_WITHOUT_FROM_PART)
     {
-		return parent::select($withFromPart)->where('isdeleted =?', 0);
+		return parent::select($withFromPart)->where('news.isdeleted =?', 0);
     }
 
 	/**
@@ -173,16 +173,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			$select = $this->select();
 		}
 
-		$comments_subselect = Application_Model_Comments::getInstance()->select()
-			->from('comments', array('news_id', 'COUNT(*) as count'))
-			->where('comments.isdeleted =?', 0)
-			->group('news_id');
-
-		$votings_subselect = Application_Model_Voting::getInstance()->select()
-			->from('votings', array('news_id', 'news_count', 'COUNT(*) as count'))
-			->where('votings.news_count =?', 1)
-			->group('news_id');
-
 		$result = $this->fetchAll(
 			$select
 				->setIntegrityCheck(false)
@@ -198,8 +188,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				->where('news.isdeleted =?', 0)
 				->joinLeft('user_data', 'news.user_id = user_data.id', array())
 				->where('user_data.id IS NOT NULL')
-				->joinLeft(array('comments' => new Zend_Db_Expr('(' . $comments_subselect . ')')), 'comments.news_id = news.id', array())
-				->joinLeft(array('votings' => new Zend_Db_Expr('(' . $votings_subselect . ')')), 'votings.news_id = news.id', array())
+				->joinLeft(array('comments' => $this->commentsSubQuery()), 'comments.news_id = news.id', array())
+				->joinLeft(array('votings' => $this->votingsSubQuery()), 'votings.news_id = news.id', array())
 				->having('distance_from_source < ' . $radius . ' OR distance_from_source IS NULL')
 				->order('score DESC')
 				->limit($limit, $limitstart)
@@ -485,5 +475,36 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 			throw $e;
 		}
+	}
+
+	/**
+	 * Returns select news comments expression.
+	 *
+	 * @return	Zend_Db_Expr
+	 */
+	public function commentsSubQuery()
+	{
+		$commentsModel = new Application_Model_Comments;
+		$query = $commentsModel->publicSelect()
+			->from($commentsModel, array('user_id', 'news_id', 'COUNT(*) as count'))
+			->group('news_id');
+
+		return new Zend_Db_Expr('(' . $query . ')');
+	}
+
+	/**
+	 * Returns select news votings expression.
+	 *
+	 * @return	Zend_Db_Expr
+	 */
+	public function votingsSubQuery()
+	{
+		$votingsModel = new Application_Model_Voting;
+		$query = $votingsModel->select()
+			->from($votingsModel, array('user_id', 'news_id', 'news_count', 'COUNT(*) as count'))
+			->where('votings.news_count =?', 1)
+			->group('news_id');
+
+		return new Zend_Db_Expr('(' . $query . ')');
 	}
 }
