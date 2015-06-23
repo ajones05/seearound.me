@@ -64,7 +64,7 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
     <li>
         <label>Age</label>
 		<?php if ($this->profile->Birth_date): ?>
-        <span><?php echo $this->dateConversion(strtotime($this->profile->Birth_date)); ?></span>
+        <span><?php echo My_CommonUtils::dateConversion(strtotime($this->profile->Birth_date)); ?></span>
 		<?php endif; ?>
 		<div class="clr"></div>
     </li>
