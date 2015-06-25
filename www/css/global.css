@@ -403,13 +403,11 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 	float: left;
 	color: #8d8d8d;
 }
-.viewForm > li > .karma {
-	float: left;
-	width: 310px;
-}
-.viewForm > li > .karma > div {
-	display: inline-block;
-	width: 140px;
+.viewForm > li > span.karma b {
+	color: #4276cd;
+	font-weight: bold;
+	margin-right: 10px;
+	word-wrap: break-word;
 }
 
 /**/

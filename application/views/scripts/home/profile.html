@@ -6,9 +6,7 @@ $karma_post = $this->karma_posts->news_count +
 $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 	'User posts comments: ' . $this->karma_posts->comments_count . '<br/>' .
 	'User posts votings: ' . $this->karma_posts->votings_count . '<br/>' .
-	'User comments on other posts: ' . $this->karma_posts->other_comments_count. '<br/><hr/>' .
-	$this->karma_posts->news_count . ' + (.25 * (' . $this->karma_posts->votings_count . ' + ' . $this->karma_posts->comments_count . ')) + ' .
-		$this->karma_posts->other_comments_count . ' * .25 = ' . round($karma_post) . ' (' . $karma_post . ')';
+	'User comments on other posts: ' . $this->karma_posts->other_comments_count;
 ?>
 <div id="userDiv" class="leftCol">
 	<div class="profDtl">
@@ -27,14 +25,9 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 <ul class="viewForm" style="width:100%; margin-left: 0px;">
 	<li>
 		<label>Karma</label>
-		<div class="karma">
-			<div title="<?php echo htmlspecialchars($karma_post_title); ?>">
-				Posts <b style="color: #4276cd; font-weight: bold; margin-left: 15px;"><?php echo round($karma_post); ?></b>
-			</div>
-			<div>
-				Comments <b style="color: #4276cd; font-weight: bold; margin-left: 15px;"><?php echo $this->karma_comments; ?></b>
-			</div>
-		</div>
+		<span class="karma">
+			<b title="<?php echo htmlspecialchars($karma_post_title); ?>"><?php echo round($karma_post, 4); ?></b>(Calculated based on posts &amp; comments)
+		</span>
 		<div class="clr"></div>
 	</li>
 	<?php if ($this->auth_id == $this->profile->id): ?>
@@ -100,8 +93,7 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 <?php endif; ?>
 <script type="text/javascript">
 $(function(){
-	// TODO: for debug
-	$('.karma > div').tooltip({
+	$('.karma b').tooltip({
 		content: function(){
 			return $(this).prop('title');
 		}
