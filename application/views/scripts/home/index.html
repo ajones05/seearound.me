@@ -9,8 +9,7 @@
 		<form id="addNewsForm" action="<?php echo $this->baseUrl("home/add-news"); ?>" method="post" enctype="multipart/form-data">
 			<textarea id="newsPost" name="news" class="textAreaClassPost" placeholder="Share something from your current location..."></textarea>
 			<div id="postOptionId">
-				<input type="submit" value="Post" class="floatR marginT10 btnBlueRpt post addNews" />
-				<input type="button" class="btnBlueRpt" value="Post From Different Location" id="postlocationButton" />
+				<input type="submit" value="Post from..." class="floatR marginT10 btnBlueRpt post addNews" />
 				<div class="imgInput"></div>
 			</div>
 			<input id="newsFile" type="file" name="image" accept="image/*" size="1" style="display: none;" />

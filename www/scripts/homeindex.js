@@ -119,24 +119,15 @@ $(function(){
 	$('#addNewsForm').submit(function(e){
 		e.preventDefault();
 
-		if ($.trim($('#newsPost').val()) === ''){
+		var news = $('#newsPost').val();
+
+		if ($.trim(news) === ''){
 			$('#newsPost').focus();
 			return false;
 		}
 
-		var userPosition = new google.maps.LatLng(parseFloat(userLatitude), parseFloat(userLongitude));
-
-		if (userPosition.toString() != newsMapCircle.center.toString()){
-			$("#locationButton").click();
-			return false;
-		}
-
-		preparePost(userPosition, userAddress);
-	});
-
-	$('#postlocationButton').click(function(){
-		if ($.trim($('#newsPost').val()) === ''){
-			$('#newsPost').focus();
+		if (news.indexOf('<') > 0 || news.indexOf('>') > 0){
+			alert('You enter invalid text');
 			return false;
 		}
 
@@ -151,7 +142,21 @@ $(function(){
 				return userAddressTooltip(address, imagePath);
 			},
 			submit: function(dialogEvent, position, address){
-				preparePost(position, address);
+				$('#newsWaitOnAdd').show();
+
+				if ($.trim(address) !== ''){
+					addPost(position, address);
+				} else {
+					(new google.maps.Geocoder()).geocode({
+						'latLng': position
+					}, function(results, status){
+						if (status == google.maps.GeocoderStatus.OK){
+							addPost(position, results[0].formatted_address);
+						} else {
+							addPost(position);
+						}
+					});
+				}
 
 				if (latlngDistance(newsMap.getCenter(), position, 'M') > getRadius()){
 					newsMap.setCenter(position);
@@ -246,32 +251,6 @@ $(function(){
 function clearUpload(){
 	$('.fileNm').remove();
 	$('#newsFile').val('');
-}
-
-function preparePost(location, address){
-	var news = $('#newsPost').val();
-
-   	if (news.indexOf('<') > 0 || news.indexOf('>') > 0){
-		alert('You enter invalid text');
-		$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', false);
-		return false;
-	}
-
-	$('#newsWaitOnAdd').show();
-
-	if ($.trim(address) !== ''){
-		return addPost(location, address);
-	}
-
-	(new google.maps.Geocoder()).geocode({
-		'latLng': location
-	}, function(results, status){
-		if (status == google.maps.GeocoderStatus.OK){
-			addPost(location, results[0].formatted_address);
-		} else {
-			addPost(location);
-		}
-	});
 }
 
 function addPost(location, address){

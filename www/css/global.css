@@ -925,7 +925,6 @@ body.hideRight .footer .footerLinks {
 #Map-Popup-id #useNewAddress {font: normal 17px lato-Bold;margin-left: 50px;padding: 8px 10px;}
 #Change-Postlocation-Map-Popup-id .useNewAddress {font: normal 17px lato-Bold;margin-left: 50px;padding: 8px 10px;}
 /**/
-#postlocationButton {float:right;margin-right:10px;margin-top:10px;height:22px;cursor: pointer; overflow: visible; border: 0px none; color: #4276cd;}
 #postOptionId {
 	margin-right: 4px;
 	margin-top: -5px;
