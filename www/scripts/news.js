@@ -1177,7 +1177,10 @@ function renderNewsResponse(news, start, isNew){
 	for (i in news){
 		updateNews(isNew === true ? $(news[i].html).prependTo($("#newsData")) :
 			$(news[i].html).appendTo($("#newsData")));
-		start++;
+
+		if (!isNew){
+			start++;
+		}
 	}
 
 	if (news.length == 15){

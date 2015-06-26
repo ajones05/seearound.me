@@ -1,10 +1,5 @@
 $(function(){
-	var center = new google.maps.LatLng(userLatitude, userLongitude),
-		mapCenter = {
-			latitude: userLatitude,
-			longitude: userLongitude,
-			address: userAddress
-		};
+	var center = new google.maps.LatLng(userLatitude, userLongitude);
 
 	renderNewsMap({
 		center: center,
@@ -141,8 +136,8 @@ $(function(){
 			markerIcon: baseUrl + 'www/images/icons/icon_1.png',
 			inputPlaceholder: 'Enter address',
 			submitText: 'Use This Address',
-			defaultAddress: mapCenter.address,
-			center: new google.maps.LatLng(mapCenter.latitude, mapCenter.longitude),
+			defaultAddress: userAddress,
+			center: newsMap.getCenter(),
 			infoWindowContent: function(address){
 				return userAddressTooltip(address, imagePath);
 			},
@@ -289,12 +284,6 @@ $(function(){
 				$('#postOptionId').hide();
 				$('#newsPost').val('').css('height', 36);
 				$('#loading').hide();
-
-				mapCenter = {
-					latitude: location.lat(),
-					longitude: location.lng(),
-					address: address
-				};
 
 				if (resetMap){
 					newsMap.setCenter(location);
