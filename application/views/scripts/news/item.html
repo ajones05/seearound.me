@@ -1,12 +1,14 @@
 <?php
 $auth = Zend_Auth::getInstance()->getIdentity();
 $auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
-$comments = My_ArrayHelper::getProp($this, 'comments', array());
-$comments_count = My_ArrayHelper::getProp($this, 'comments_count', 0);
-$votings_count = My_ArrayHelper::getProp($this, 'votings_count', 0);
+$commentsModel = new Application_Model_Comments;
+$comments = !$this->is_new ? $commentsModel->findAllByNewsId($this->item->id, 3) : array();
+$comments_count = !$this->is_new ? $commentsModel->getCountByNewsId($this->item->id) : 0;
+$votings_count = !$this->is_new? (new Application_Model_Voting)->findCountByNewsId($this->item->id) : 0;
 $created_date = isset($this->item['created_date']) ? $this->item['created_date'] : date('Y-m-d H:i:s');
 $hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => $this->item['id']), $comments->toArray(), 1);
 
+// TODO: cache
 $image = isset($this->item['image']) && file_exists(ROOT_PATH . '/newsimages/' . $this->item['image']) ? $this->item['image'] : null;
 
 if ($image)
@@ -19,23 +21,23 @@ if ($image)
 		<li>
 			<ul class="post">
 				<li class="imgPro">
-					<a href="<?php echo $this->baseUrl("home/profile/user/" . $this->user->id); ?>">
-						<img src="<?php echo $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="smallImage" />
+					<a href="<?php echo $this->baseUrl("home/profile/user/" . $this->owner->id); ?>">
+						<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="smallImage" />
 					</a>
 				</li>
 				<li>
 					<div class="post-top">
-						<a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $this->user->id); ?>"><?php echo ucfirst($this->user->Name); ?></a>
+						<a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $this->owner->id); ?>"><?php echo ucfirst($this->owner->Name); ?></a>
 						<span class="post-date"><?php echo date("d F Y h:i a", strtotime($created_date)); ?></span>
 						<?php if ($this->item['id']): ?>
 						<span class="message_number" id="message_success_<?php echo $this->item['id']; ?>"><?php echo $votings_count; ?></span>
-						<?php endif; if ($auth_user_id != $this->user->id): ?>
+						<?php endif; if ($auth_user_id != $this->owner->id): ?>
 						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo $this->baseUrl("www/images/" . ($votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png')); ?>">
 						<img class="crp" id="img2_<?php echo $this->item['id']; ?>" style="display:none" onclick="voting(this, 'news', <?php echo $this->item['id']; ?>,<?php echo $auth_user_id; ?>);" src="<?php echo $this->baseUrl("www/images/thumsup_voted.jpg"); ?>" />
 						<div id="thumbs_up2_<?php echo $this->item['id']; ?>"  style="float: right; margin-right: -45px; margin-top: 22px;display:none;">
 							<span id="message_success_5" style="color: rgb(51, 204, 0);">Already-Voted</span>
 						</div>
-						<?php endif; if ($auth_user_id == $this->user->id): ?>
+						<?php endif; if ($auth_user_id == $this->owner->id): ?>
 						<img class="crp" id="img1_<?php echo $this->item['id']; ?>" onclick="alert('You can not vote your own post!');" src="<?php echo $this->baseUrl("www/images/" . ($votings_count ? 'thumsup_voted.jpg' : 'thumsup_voted_gray.png')); ?>" />
 						<?php endif; ?>
 					</div>
@@ -70,7 +72,7 @@ if ($image)
 					<img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" style="width: 25px; height: 25px;" />
 				</a>
 			</span>
-			<?php if ($auth_user_id == $this->user->id): ?>
+			<?php if ($auth_user_id == $this->owner->id): ?>
 			<input type="button" class="edit-post" value="Edit Post" />
 			<?php endif; ?>
 		</div>

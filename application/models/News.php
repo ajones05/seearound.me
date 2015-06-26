@@ -178,7 +178,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				->setIntegrityCheck(false)
 				->from($this, array(
 					'news.*',
-					'((IFNULL(votings.count, 0)+IFNULL(comments.count, 0)+1)/((IFNULL(TIMESTAMPDIFF(HOUR, created_date, NOW()), 0)+30)^1.1))*10000 as score',
+					'((IFNULL(votings.count, 0)+IFNULL(comments.count, 0)+1)/((IFNULL(TIMESTAMPDIFF(HOUR, news.created_date, NOW()), 0)+30)^1.1))*10000 as score',
 					// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
 					'(3959 * acos(cos(radians(' . $lat . ')) * cos(radians(news.latitude)) * cos(radians(news.longitude) - ' .
 						'radians(' . $lng . ')) + sin(radians(' . $lat . ')) * sin(radians(news.latitude)))) AS distance_from_source'
@@ -192,6 +192,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				->joinLeft(array('votings' => $this->votingsSubQuery()), 'votings.news_id = news.id', array())
 				->having('distance_from_source < ' . $radius . ' OR distance_from_source IS NULL')
 				->order('score DESC')
+				->group('news.id')
 				->limit($limit, $limitstart)
 		);
 
@@ -199,90 +200,62 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	}
 
 	/**
-	 * Finds news by location and user ID.
+	 * Search news by parameters.
 	 *
-	 * @param	float	$lat
-	 * @param	float	$lng
-	 * @param	float	$radius
-	 * @param	integer	$limit
-	 * @param	integer	$limitstart
-	 * @param	Application_Model_UserRow	$user
-	 * @param	Zend_Db_Table_Select		$attributes
+	 * @param	array $parameters
+	 * @param	Application_Model_UserRow $user
+	 * @param	string $filter
 	 *
 	 * @return	array
 	 */
-	public function findByLocationAndUser($lat, $lng, $radius, $limit, $limitstart, Application_Model_UserRow $user, Zend_Db_Table_Select $select = null)
+	public function search(array $parameters, Application_Model_UserRow $user, $filter = null)
 	{
-		if ($select === null)
+		$query = $this->select()->from($this);
+
+		if (trim(My_ArrayHelper::getProp($parameters, 'keywords')) !== '')
 		{
-			$select = $this->select();
+			$query->where('news.news LIKE ?', '%' . $parameters['keywords'] . '%');
 		}
 
-		$select->where('news.user_id =?', $user->id);
-
-		return $this->findByLocation($lat, $lng, $radius, $limit, $limitstart, $select);
-	}
-
-	/**
-	 * Finds news in user friends by location.
-	 *
-	 * @param	float	$lat
-	 * @param	float	$lng
-	 * @param	float	$radius
-	 * @param	integer	$limit
-	 * @param	integer	$limitstart
-	 * @param	Application_Model_UserRow	$user
-	 * @param	Zend_Db_Table_Select		$attributes
-	 *
-	 * @return	array
-	 */
-	public function findByLocationInFriends($lat, $lng, $radius, $limit, $limitstart, Application_Model_UserRow $user, Zend_Db_Table_Select $select = null)
-	{
-		if ($select === null)
+		switch ($filter)
 		{
-			$select = $this->select();
+			case 'Interest':
+				$interests = $user->parseInterests();
+
+				if (count($interests))
+				{
+					$adapter = $this->getAdapter();
+
+					foreach ($interests as &$_interest)
+					{
+						$_interest = 'news.news LIKE ' . $adapter->quote('%' . $_interest . '%');
+					}
+
+					$query->where(implode(' OR ', $interests));
+				}
+
+				break;
+			case 'Myconnection':
+				$query->where('news.user_id =?', $user->id);
+				break;
+			case 'Friends':
+				$query->where('news.user_id <>?', $user->id);
+				$query->joinLeft('friends', 'news.user_id = friends.sender_id OR news.user_id = friends.reciever_id', '');
+				$query->where('(friends.sender_id = ' . $user->id . ' OR friends.reciever_id = ' . $user->id . ')');
+				$query->where('friends.status =?', 1);
+				break;
 		}
 
-		$select->where('news.user_id <>?', $user->id);
-		$select->where('news.user_id in (SELECT sender_id FROM friends WHERE reciever_id = ' . $user->id . ' AND status = "1")');
-		$select->orWhere('news.user_id in (SELECT reciever_id FROM friends WHERE sender_id = ' . $user->id . ' AND status = "1")');
-
-		return $this->findByLocation($lat, $lng, $radius, $limit, $limitstart, $select);
-	}
-
-	/**
-	 * Finds news by location and user interests.
-	 *
-	 * @param	float	$lat
-	 * @param	float	$lng
-	 * @param	float	$radius
-	 * @param	integer	$limit
-	 * @param	integer	$limitstart
-	 * @param	array	$interests
-	 * @param	Zend_Db_Table_Select	$attributes
-	 *
-	 * @return	array
-	 */
-	public function findByLocationAndInterests($lat, $lng, $radius, $limit, $limitstart, array $interests, Zend_Db_Table_Select $select = null)
-	{
-		if (count($interests))
+		if (count(My_ArrayHelper::getProp($parameters, 'exclude_id', array())))
 		{
-			if ($select === null)
+			foreach ($parameters['exclude_id'] as $id)
 			{
-				$select = $this->select();
+				$query->where('news.id <>?', $id);
 			}
-
-			$adapter = $this->getAdapter();
-
-			foreach ($interests as &$_interest)
-			{
-				$_interest = 'news.news like ' . $adapter->quote('%' . $_interest . '%');
-			}
-
-			$select->where(implode(' OR ', $interests));
 		}
 
-		return $this->findByLocation($lat, $lng, $radius, $limit, $limitstart, $select);
+		return $this->findByLocation($parameters['latitude'], $parameters['longitude'], $parameters['radius'],
+			$parameters['limit'], My_ArrayHelper::getProp($parameters, 'start', 0), $query);
 	}
 
 	/**

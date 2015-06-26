@@ -6,7 +6,7 @@
 		<a class="user-name" title="<?php echo $this->user->Name; ?>" href="<?php echo $this->baseUrl("home/profile"); ?>"><?php echo My_StringHelper::stringLimit($this->user->Name, 7, '...'); ?></a>
 	</li>
 	<li class="bgTxtArea">
-		<form id="addNewsForm" action="<?php echo $this->baseUrl("home/add-news"); ?>" method="post" enctype="multipart/form-data">
+		<form id="addNewsForm" action="<?php echo $this->baseUrl("home/add-news"); ?>" method="post" enctype="multipart/form-data" autocomplete="off">
 			<textarea id="newsPost" name="news" class="textAreaClassPost" placeholder="Share something from your current location..."></textarea>
 			<div id="postOptionId">
 				<input type="submit" value="Post from..." class="floatR marginT10 btnBlueRpt post addNews" />

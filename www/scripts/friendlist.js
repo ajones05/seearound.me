@@ -202,14 +202,12 @@ function loadFriendNews(callback){
 	resetMarkersCluster();
 
 	$.ajax({
-		url: baseUrl + 'home/get-nearby-points',
+		url: baseUrl + 'home/load-friend-news',
 		data: {
+			keywords: $('#searchNews [name=sv]').val(),
 			latitude: newsMap.getCenter().lat(),
 			longitude: newsMap.getCenter().lng(),
-			radius: getRadius(),
-			filter: 'Friends',
-			search: $('#searchNews [name=sv]').val(),
-			limit: 100
+			radius: getRadius()
 		},
 		type: 'POST',
 		dataType: 'json',
@@ -242,8 +240,6 @@ function loadFriendNews(callback){
 		} else {
 			alert(response ? response.error.message : ERROR_MESSAGE);
 		}
-	}).fail(function(jqXHR, textStatus){
-		alert(textStatus);
 	});
 }
 

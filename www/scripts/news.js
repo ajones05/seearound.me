@@ -720,31 +720,24 @@ function higlightNews(newsId){
 
 function loadNews(start, callback){
 	if (start == 0){
-		if (!$.isEmptyObject(newsMarkers)){
-			for (var id in newsMarkers){
-				newsMarkers[id].remove();
-				delete newsMarkers[id];
-			}
-		}
-
-		resetMarkersCluster();
-
-		$("#newsData").html('');
+		resetNews();
 	}
 
     $('#loading').width($("#newsData").width()).show();
 	$('#newsData #pagingDiv').remove();
 
 	$.ajax({
-		url: baseUrl + 'home/get-nearby-points',
+		url: baseUrl + 'home/load-news',
 		data: {
 			latitude: newsMap.getCenter().lat(),
 			longitude: newsMap.getCenter().lng(),
 			radius: getRadius(),
-			search: $('#searchNews [name=sv]').val(),
+			keywords: $('#searchNews [name=sv]').val(),
 			filter: $('#filter_type').val(),
-			fromPage: start,
-			html: 1
+			start: start,
+			'new': $('#addNewsForm [name=new\\[\\]]').map(function(){
+				return $(this).val();
+			}).get()
 		},
 		type: 'POST',
 		dataType: 'json',
@@ -759,39 +752,8 @@ function loadNews(start, callback){
 					self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
 				];
 
+				renderNewsResponse(response.result, start);
 				window.scrollTo(scrollPosition[0], scrollPosition[1]);
-
-				for (i in response.result){
-					start++;
-					updateNews($(response.result[i].html).appendTo($("#newsData")));
-				}
-
-				if (response.result.length == 15){
-					$(window).bind('scroll', function(){
-						if ($(window).scrollTop() + $(window).height() > $(document).height() - 400){
-							$(window).unbind('scroll');
-							loadNews(start);
-						}
-					});
-				}
-
-				window.scrollTo(scrollPosition[0], scrollPosition[1])
-
-				for (var i in response.result){
-					renderListingMarker(response.result[i], true);
-				}
-
-				resetMarkersCluster();
-
-				if (newsMapRady){
-					setTimeout(function(){
-						updateMarkersCluster();
-					}, .1);
-				} else {
-					google.maps.event.addListener(newsMap, 'idle', function(){
-						updateMarkersCluster();
-					});
-				}
 			} else if (typeof response.result === 'string'){
 				$("#newsData").append(response.result);
 			}
@@ -803,10 +765,8 @@ function loadNews(start, callback){
 			if (typeof callback == 'function'){
 				callback();
 			}
-		} else if (response){
-			alert(response.error.message);
 		} else {
-			alert(ERROR_MESSAGE);
+			alert(response ? response.error.message : ERROR_MESSAGE);
 		}
 	}).fail(function(jqXHR, textStatus){
 		alert(textStatus);
@@ -1200,6 +1160,50 @@ function renderEditLocationDialog(callback){
 				});
 			}
 		});
+}
+
+function resetNews(){
+	if (!$.isEmptyObject(newsMarkers)){
+		for (var id in newsMarkers){
+			newsMarkers[id].remove();
+			delete newsMarkers[id];
+		}
+	}
+	resetMarkersCluster();
+	$("#newsData").html('');
+}
+
+function renderNewsResponse(news, start, isNew){
+	for (i in news){
+		updateNews(isNew === true ? $(news[i].html).prependTo($("#newsData")) :
+			$(news[i].html).appendTo($("#newsData")));
+		start++;
+	}
+
+	if (news.length == 15){
+		$(window).bind('scroll', function(){
+			if ($(window).scrollTop() + $(window).height() > $(document).height() - 400){
+				$(window).unbind('scroll');
+				loadNews(start);
+			}
+		});
+	}
+
+	for (var i in news){
+		renderListingMarker(news[i], true);
+	}
+
+	resetMarkersCluster();
+
+	if (newsMapRady){
+		setTimeout(function(){
+			updateMarkersCluster();
+		}, .1);
+	} else {
+		google.maps.event.addListener(newsMap, 'idle', function(){
+			updateMarkersCluster();
+		});
+	}	
 }
 
 /**

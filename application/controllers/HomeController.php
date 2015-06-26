@@ -304,29 +304,55 @@ class HomeController extends Zend_Controller_Action
 
 			$response = array(
 				'status' => 1,
-				'news' => array(
-					'id' => $news->id,
-					'news' => $news->news,
-					'latitude' => $news->latitude,
-					'longitude' => $news->longitude,
-					'user' => array(
-						'id' => $user->id,
-						'name' => $user->Name,
-						'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-					),
-					'html' => My_ViewHelper::render(
-						'news/item.html',
-						array(
-							'item' => $news,
-							'user' => $user,
-							'auth' => array(
-								'id' => $user->id,
-								'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-							),
+				'result' => array(
+					array(
+						'id' => $news->id,
+						'news' => $news->news,
+						'latitude' => $news->latitude,
+						'longitude' => $news->longitude,
+						'user' => array(
+							'id' => $user->id,
+							'name' => $user->Name,
+							'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						),
+						'html' => My_ViewHelper::render(
+							'news/item.html',
+							array('item' => $news, 'owner' => $user, 'is_new' => true)
 						)
 					)
-				),
+				)
 			);
+
+			if ($this->_request->getPost('reset_map', 0))
+			{
+				$result = (new Application_Model_News)->search(array(
+					'latitude' => $news->latitude,
+					'longitude' => $news->longitude,
+					'radius' => 0.8,
+					'limit' => 14,
+					'exclude_id' => array($news->id)
+				), $user);
+
+				foreach ($result as $row)
+				{
+					$owner = $row->findDependentRowset('Application_Model_User')->current();
+					$response['result'][] = array(
+						'id' => $row->id,
+						'news' => $row->news,
+						'latitude' => $row->latitude,
+						'longitude' => $row->longitude,
+						'user' => array(
+							'id' => $owner->id,
+							'name' => $owner->Name,
+							'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						),
+						'html' => My_ViewHelper::render(
+							'news/item.html',
+							array('item' => $row, 'owner' => $owner)
+						)
+					);
+				}
+			}
 		}
 		catch (Exception $e)
 		{
@@ -336,119 +362,156 @@ class HomeController extends Zend_Controller_Action
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
 	/**
+	 * Load news action.
 	 *
-	 *
-	 * @return	void
+	 * @return void
 	 */
-	public function getNearbyPointsAction()
+	public function loadNewsAction()
 	{
 		try
 		{
 			$auth = Zend_Auth::getInstance()->getIdentity();
 
-			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $user))
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$latitude = $this->_getParam('latitude');
+			$latitude = $this->_request->getPost('latitude');
 
-			if (My_Validate::emptyString($latitude))
+			if (My_Validate::emptyString($latitude) || !My_Validate::latitude($latitude))
 			{
-				throw new RuntimeException('Latitude cannot be blank', -1);
+				throw new RuntimeException('Incorrect latitude value', -1);
 			}
 
-			if (!My_Validate::latitude($latitude))
+			$longitude = $this->_request->getPost('longitude');
+
+			if (My_Validate::emptyString($longitude) || !My_Validate::longitude($longitude))
 			{
-				throw new RuntimeException('Incorrect latitude value: ' . var_export($latitude, true), -1);
+				throw new RuntimeException('Incorrect longitude value', -1);
 			}
 
-			$longitude = $this->_getParam('longitude');
-
-			if (My_Validate::emptyString($longitude))
-			{
-				throw new RuntimeException('Longitude cannot be blank', -1);
-			}
-
-			if (!My_Validate::longitude($longitude))
-			{
-				throw new RuntimeException('Incorrect longitude value: ' . var_export($longitude, true), -1);
-			}
-
-			$radius = $this->_getParam('radius', 0.8);
+			$radius = $this->_request->getPost('radius', 0.8);
 
 			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
 			{
-				throw new RuntimeException('Incorrect radius value: ' . var_export($radius, true), -1);
+				throw new RuntimeException('Incorrect radius value', -1);
 			}
 
-			$radius = $radius - 0.01;
+			$start = $this->_request->getPost('start', 0);
 
-			$fromPage = $this->_getParam('fromPage', 0);
-
-			if (!My_Validate::digit($fromPage) || $fromPage < 0)
+			if (!My_Validate::digit($start) || $start < 0)
 			{
-				throw new RuntimeException('Incorrect fromPage value: ' . var_export($fromPage, true), -1);
+				throw new RuntimeException('Incorrect start value', -1);
 			}
 
-			$limit = $this->_request->getPost('limit', 15);
+			$result = (new Application_Model_News)->search(array(
+				'keywords' => $this->_request->getPost('keywords'),
+				'latitude' => $latitude,
+				'longitude' => $longitude,
+				'radius' => $radius,
+				'limit' => 15,
+				'start' => $start,
+				'exclude_id' => $this->_request->getPost('new', array())
+			), $user, $this->_request->getPost('filter'));
 
-			if (!My_Validate::digit($limit) || $limit < 0 || $limit > 100)
-			{
-				throw new RuntimeException('Incorrect limit value', -1);
-			}
-
-			$newsTable = new Application_Model_News;
-			$select = $newsTable->select();
-
-			$keywords = $this->_getParam('search');
-
-			if (!My_Validate::emptyString($keywords))
-			{
-				$select->where('news LIKE ?', '%' . $keywords . '%');
-			}
-
-			$filter = $this->_getParam('filter');
-
-			$response = array();
-
-			switch ($filter)
-			{
-				case 'Interest':
-					$interests = $user->parseInterests();
-					$response['interest'] = count($interests);
-					$result = $newsTable->findByLocationAndInterests($latitude, $longitude, $radius, $limit, $fromPage, $interests, $select);
-					break;
-				case 'Myconnection':
-					$result = $newsTable->findByLocationAndUser($latitude, $longitude, $radius, $limit, $fromPage, $user, $select);
-					break;
-				case 'Friends':
-					$result = $newsTable->findByLocationInFriends($latitude, $longitude, $radius, $limit, $fromPage, $user, $select);
-					break;
-				case 'All':
-				case null:
-					$result = $newsTable->findByLocation($latitude, $longitude, $radius, $limit, $fromPage, $select);
-					break;
-				default:
-					throw new RuntimeException('Incorrect filter value: ' . var_export($filter, true), -1);
-			}
-
-			$html = $this->_request->getPost('html');
+			$response = array('status' => 1);
 
 			if (count($result))
 			{
-				$commentTable = new Application_Model_Comments;
-				$votingTable = new Application_Model_Voting;
-
 				foreach ($result as $row)
 				{
 					$owner = $row->findDependentRowset('Application_Model_User')->current();
+					$response['result'][] = array(
+						'id' => $row->id,
+						'news' => $row->news,
+						'latitude' => $row->latitude,
+						'longitude' => $row->longitude,
+						'user' => array(
+							'id' => $owner->id,
+							'name' => $owner->Name,
+							'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						),
+						'html' => My_ViewHelper::render(
+							'news/item.html',
+							array('item' => $row, 'owner' => $owner)
+						)
+					);
+				}
+			}
+			elseif ($start == 0)
+			{
+				$response['result'] = My_ViewHelper::render('news/empty.html');
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
+			);
+		}
 
-					$data = array(
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Load friend news action.
+	 *
+	 * @return	void
+	 */
+	public function loadFriendNewsAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$latitude = $this->_request->getPost('latitude');
+
+			if (My_Validate::emptyString($latitude) || !My_Validate::latitude($latitude))
+			{
+				throw new RuntimeException('Incorrect latitude value', -1);
+			}
+
+			$longitude = $this->_request->getPost('longitude');
+
+			if (My_Validate::emptyString($longitude) || !My_Validate::longitude($longitude))
+			{
+				throw new RuntimeException('Incorrect longitude value', -1);
+			}
+
+			$radius = $this->_request->getPost('radius', 0.8);
+
+			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
+			{
+				throw new RuntimeException('Incorrect radius value', -1);
+			}
+
+			$result = (new Application_Model_News)->search(array(
+				'keywords' => $this->_request->getPost('keywords'),
+				'latitude' => $latitude,
+				'longitude' => $longitude,
+				'radius' => $radius,
+				'limit' => 100
+			), $user, 'Friends');
+
+			$response = array('status' => 1);
+
+			if (count($result))
+			{
+				foreach ($result as $row)
+				{
+					$owner = $row->findDependentRowset('Application_Model_User')->current();
+					$response['result'][] = array(
 						'id' => $row->id,
 						'news' => $row->news,
 						'latitude' => $row->latitude,
@@ -459,40 +522,14 @@ class HomeController extends Zend_Controller_Action
 							'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 						)
 					);
-
-					if ($html)
-					{
-						$data['html'] = My_ViewHelper::render(
-							'news/item.html',
-							array(
-								'item' => $row,
-								'user' => $owner,
-								'auth' => array(
-									'id' => $user->id,
-									'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-								),
-								'votings_count' => $votingTable->findCountByNewsId($row->id),
-								'comments_count' => $commentTable->getCountByNewsId($row->id),
-								'comments' => $commentTable->findAllByNewsId($row->id, 3)
-							)
-						);
-					}
-
-					$response['result'][] = $data;
 				}
 			}
-			elseif ($html && $fromPage == 0)
-			{
-				$response['result'] = My_ViewHelper::render('news/empty.html');
-			}
-
-			$response['status'] = 1;
 		}
 		catch (Exception $e)
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
+				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
 			);
 		}
 
@@ -689,7 +726,7 @@ class HomeController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 0,
-				array('error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'))
+				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
 			);
 		}
 

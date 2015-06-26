@@ -1,5 +1,10 @@
 $(function(){
-	var center = new google.maps.LatLng(userLatitude, userLongitude);
+	var center = new google.maps.LatLng(userLatitude, userLongitude),
+		mapCenter = {
+			latitude: userLatitude,
+			longitude: userLongitude,
+			address: userAddress
+		};
 
 	renderNewsMap({
 		center: center,
@@ -136,8 +141,8 @@ $(function(){
 			markerIcon: baseUrl + 'www/images/icons/icon_1.png',
 			inputPlaceholder: 'Enter address',
 			submitText: 'Use This Address',
-			defaultAddress: userAddress,
-			center: new google.maps.LatLng(userLatitude, userLongitude),
+			defaultAddress: mapCenter.address,
+			center: new google.maps.LatLng(mapCenter.latitude, mapCenter.longitude),
 			infoWindowContent: function(address){
 				return userAddressTooltip(address, imagePath);
 			},
@@ -145,26 +150,18 @@ $(function(){
 				$('#newsWaitOnAdd').show();
 
 				if ($.trim(address) !== ''){
-					addPost(position, address);
-				} else {
-					(new google.maps.Geocoder()).geocode({
-						'latLng': position
-					}, function(results, status){
-						if (status == google.maps.GeocoderStatus.OK){
-							addPost(position, results[0].formatted_address);
-						} else {
-							addPost(position);
-						}
-					});
+					return addPost(position, address);
 				}
 
-				if (latlngDistance(newsMap.getCenter(), position, 'M') > getRadius()){
-					newsMap.setCenter(position);
-					newsMapCircle.changeCenter(position, 0.8);
-					loadNews(0);
-				}
+				(new google.maps.Geocoder()).geocode({
+					'latLng': position
+				}, function(results, status){
+					if (status == google.maps.GeocoderStatus.OK){
+						return addPost(position, results[0].formatted_address);
+					}
 
-				$(dialogEvent.target).dialog('close');
+					addPost(position);
+				});
 			}
 		});
 	});
@@ -246,72 +243,85 @@ $(function(){
 	} else {
 		loadNews(0);
 	}
-});
 
-function clearUpload(){
-	$('.fileNm').remove();
-	$('#newsFile').val('');
-}
-
-function addPost(location, address){
-	var $form = $('#addNewsForm'), 
-		$images = $('[name=image]', $form),
-		data = new FormData();
-
-	data.append('news', $('[name=news]', $form).val());
-	data.append('latitude', location.lat());
-	data.append('longitude', location.lng());
-
-	if (address){
-		data.append('address', address);
+	function clearUpload(){
+		$('.fileNm').remove();
+		$('#newsFile').val('');
 	}
 
-	if ($.trim($images.val()) !== ''){
-		data.append('image', $images[0].files[0]);
-	}
+	function addPost(location, address){
+		var $form = $('#addNewsForm'), 
+			$images = $('[name=image]', $form),
+			resetMap = latlngDistance(newsMap.getCenter(), location, 'M') > getRadius() ? 1 : 0,
+			data = new FormData();
 
-	$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', true);
+		data.append('reset_map', resetMap);
+		data.append('news', $('[name=news]', $form).val());
+		data.append('latitude', location.lat());
+		data.append('longitude', location.lng());
 
-	$.ajax({
-		url: $form.attr('action'),
-		data: data,
-		cache: false,
-		contentType: false,
-		processData: false,
-		dataType: 'json',
-		type: 'POST',
-	}).done(function(response){
-		if (response && response.status){
-			updateNews($(response.news.html).prependTo($('#newsData')));
-			$('#noNews').html('');
-			$('#newsWaitOnAdd').hide();
-
-			$('html, body').animate({scrollTop: 0}, 0);
-
-			renderListingMarker(response.news, true);
-
-			resetMarkersCluster();
-
-			setTimeout(function(){
-				updateMarkersCluster();
-			}, .1);
-
-			clearUpload();
-
-			$('#postOptionId').hide();
-			$('#newsPost').val('').css('height', 36);
-			$('#loading').hide();
-		} else if (response){
-			alert(response.error.message);
-		} else {
-			alert(ERROR_MESSAGE);
+		if (address){
+			data.append('address', address);
 		}
 
-		$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', false);
-	}).fail(function(jqXHR, textStatus){
-		alert(textStatus);
-		$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', false);
-	});
+		if ($.trim($images.val()) !== ''){
+			data.append('image', $images[0].files[0]);
+		}
 
-	$("#mainForm").parent().remove();
-}
+		$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', true);
+
+		$.ajax({
+			url: $form.attr('action'),
+			data: data,
+			cache: false,
+			contentType: false,
+			processData: false,
+			dataType: 'json',
+			type: 'POST',
+		}).done(function(response){
+			if (response && response.status){
+				$('#noNews').remove();
+				$('#newsWaitOnAdd').hide();
+				$('html, body').animate({scrollTop: 0}, 0);
+
+				clearUpload();
+
+				$('#postOptionId').hide();
+				$('#newsPost').val('').css('height', 36);
+				$('#loading').hide();
+
+				mapCenter = {
+					latitude: location.lat(),
+					longitude: location.lng(),
+					address: address
+				};
+
+				if (resetMap){
+					newsMap.setCenter(location);
+					newsMapCircle.changeCenter(location, 0.8);
+					$('[name=new\\[\\]]', $form).remove();
+					resetNews();
+
+					if (response.result.length > 1){
+						renderNewsResponse(response.result.slice(1), 0);
+					}
+
+					if ($("#newsData").height() > 714){
+						setThisHeight(Number($("#newsData").height())+100);
+					}
+				}
+
+				renderNewsResponse(response.result.slice(0, 1), 0, true);
+
+				$form.append($('<input/>', {type: 'hidden', name: 'new[]'}).val(response.result[0].id));
+				$('.location-dialog').dialog('close');
+			} else {
+				alert(response ? response.error.message : ERROR_MESSAGE);
+			}
+
+			$('.bgTxtArea input, .bgTxtArea textarea').attr('disabled', false);
+		});
+
+		$("#mainForm").parent().remove();
+	}
+});

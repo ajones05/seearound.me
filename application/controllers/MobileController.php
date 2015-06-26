@@ -1068,44 +1068,29 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect radius value', -1);
 			}
 
-			$fromPage = $this->_request->getPost('fromPage', 0);
+			$start = $this->_request->getPost('fromPage', 0);
 
-			if (!My_Validate::digit($fromPage) || $fromPage < 0)
+			if (!My_Validate::digit($start) || $start < 0)
 			{
-				throw new RuntimeException('Incorrect fromPage value', -1);
-			}
-
-			$newsTable = new Application_Model_News;
-			$select = $newsTable->select();
-
-			$keywords = $this->_request->getPost('searchText');
-
-			if (!My_Validate::emptyString($keywords))
-			{
-				$select->where('news LIKE ?', '%' . $keywords . '%');
+				throw new RuntimeException('Incorrect start value', -1);
 			}
 
 			$response = array();
-
 			$filter = $this->_request->getPost('filter');
 
-			switch ($filter)
+			if ($filter == 'Interest')
 			{
-				case 'Interest':
-					$interests = $user->parseInterests();
-					$response['interest'] = count($interests);
-					$result = $newsTable->findByLocationAndInterests($latitude, $longitude, $radius, 15, $fromPage, $interests, $select);
-					break;
-				case 'Myconnection':
-					$result = $newsTable->findByLocationAndUser($latitude, $longitude, $radius, 15, $fromPage, $user, $select);
-					break;
-				case 'Friends':
-					$result = $newsTable->findByLocationInFriends($latitude, $longitude, $radius, 15, $fromPage, $user, $select);
-					break;
-				default:
-					$result = $newsTable->findByLocation($latitude, $longitude, $radius, 15, $fromPage, $select);
-					break;
+				$response['interest'] = count($user->parseInterests());
 			}
+
+			$result = (new Application_Model_News)->search(array(
+				'keywords' => $this->_request->getPost('searchText'),
+				'latitude' => $latitude,
+				'longitude' => $longitude,
+				'radius' => $radius,
+				'limit' => 15,
+				'start' => $start
+			), $user, $filter);
 
 			if (count($result))
 			{
