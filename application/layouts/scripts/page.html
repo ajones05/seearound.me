@@ -3,7 +3,7 @@ $config = Zend_Registry::get('config_global');
 $request = Zend_Controller_Front::getInstance()->getRequest();
 $auth = Zend_Auth::getInstance()->getIdentity();
 
-$this->headLink()
+$this->headLink(array('rel' => 'favicon', 'href' => $this->baseUrl('/www/images/favicon.ico')), 'PREPEND')
 	->appendStylesheet($this->baseUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
 	->appendStylesheet($this->baseUrl('www/css/reset.css?' . $config->mediaversion))
 	->appendStylesheet($this->baseUrl('www/css/global.css?' . $config->mediaversion));
