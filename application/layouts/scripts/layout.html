@@ -9,7 +9,9 @@ if ($auth)
 $config = Zend_Registry::get('config_global');
 $geoip = My_Ip::geolocation();
 
-$this->headLink(array('rel' => 'favicon', 'href' => $this->baseUrl('/www/images/favicon.ico')), 'PREPEND')
+My_Layout::renderFavicon($this);
+
+$this->headLink()
 	->appendStylesheet($this->baseUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
 	->appendStylesheet($this->baseUrl('www/css/reset.css?' . $config->mediaversion))
 	->appendStylesheet($this->baseUrl('www/css/global.css?' . $config->mediaversion));

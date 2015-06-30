@@ -1,6 +1,7 @@
 <?php
 $config = Zend_Registry::get('config_global');
-$this->headLink(array('rel' => 'favicon', 'href' => $this->baseUrl('/www/images/favicon.ico')), 'PREPEND')
+My_Layout::renderFavicon($this);
+$this->headLink()
 	->appendStylesheet($this->baseUrl('www/css/mobile.css?' . $config->mediaversion));
 ?>
 <!DOCTYPE html>
