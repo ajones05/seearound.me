@@ -70,11 +70,13 @@ ALTER TABLE `news` CHANGE `news` `news` VARCHAR(500) CHARACTER SET utf8 COLLATE 
 ALTER TABLE `news` CHANGE `news_html` `news_html` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 ALTER TABLE `news` CHANGE `images` `image` TEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 ALTER TABLE `news` DROP `news_html`;
+ALTER TABLE `news` ADD `vote` INT(11) NOT NULL DEFAULT '0' AFTER `Address`;
+ALTER TABLE `news` DROP `score`;
 
 --
 -- Table structure for table `news_link`
 --
-CREATE TABLE `seearoun_seearoundme`.`news_link` (
+CREATE TABLE `news_link` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
 	`news_id` INT(11) NOT NULL,
 	`link` VARCHAR(2000) NOT NULL,
@@ -94,6 +96,14 @@ CREATE TABLE `seearoun_seearoundme`.`news_link` (
 ALTER TABLE `votings` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `votings` ADD FOREIGN KEY `user_data_fk_2`(`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE;
 ALTER TABLE `votings` ADD FOREIGN KEY `user_data_fk_3`(`comments_id`) REFERENCES `comments`(`id`) ON DELETE CASCADE;
+ALTER TABLE `votings` DROP FOREIGN KEY votings_ibfk_4;
+ALTER TABLE `votings` DROP `comments_id`;
+ALTER TABLE `votings` DROP `comments_count`;
+ALTER TABLE `votings` DROP `type`;
+ALTER TABLE `votings` DROP `news_count`;
+ALTER TABLE `votings` ADD `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `news_id`;
+ALTER TABLE `votings` ADD `vote` TINYINT NOT NULL DEFAULT '1' AFTER `id`;
+ALTER TABLE `votings` CHANGE `vote` `vote` TINYINT(4) NOT NULL;
 
 --
 -- Table structure for table `facebook_temp_users`

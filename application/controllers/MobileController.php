@@ -104,8 +104,8 @@ class MobileController extends Zend_Controller_Action
 					'address' => $user->address(),
 					'latitude' => $user->lat(),
 					'longitude' => $user->lng(),
-					'Activities' => $user->Activities,
-					'Gender' => $user->Gender,
+					'Activities' => $user->activities(),
+					'Gender' => $user->gender(),
 					'login_id' => $login_id,
 				)
 			);
@@ -426,8 +426,8 @@ class MobileController extends Zend_Controller_Action
 					'Name' => $other_user->Name,
 					'Profile_image' => $this->view->serverUrl() . $other_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					'Email_id' => $other_user->Email_id,
-					'Gender' => $other_user->Gender,
-					'Activities' => $other_user->Activities,
+					'Gender' => $other_user->gender(),
+					'Activities' => $other_user->activities(),
 					'Birth_date' => $other_user->Birth_date
 				))
 			);
@@ -816,11 +816,6 @@ class MobileController extends Zend_Controller_Action
 
 			$news = (new Application_Model_News)->save(array_merge($form->getValues(), array('user_id' => $user->id)));
 
-			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $news->id, $user->id))
-			{
-				throw new RuntimeException('Save voting error', -1);
-			}
-
 			$response = array(
 				'status' => 'SUCCESS',
 				'message' => $news->news,
@@ -1002,8 +997,8 @@ class MobileController extends Zend_Controller_Action
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
-						'news_count' => $votingTable->findCountByNewsId($row->id),
-						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id, 1) ? 'Yes' : 'No',
+						'news_count' => $row->vote,
+						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
@@ -1116,8 +1111,8 @@ class MobileController extends Zend_Controller_Action
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $commentTable->getCountByNewsId($row->id),
-						'news_count' => $votingTable->findCountByNewsId($row->id),
-						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id, 1) ? 'Yes' : 'No',
+						'news_count' => $row->vote,
+						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
@@ -1290,31 +1285,35 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect user ID', -1);
 			}
 
-            $model = new Application_Model_Voting;
-			$vote_count = $model->getTotalVoteCounts('news', $news->id, $user->id);
+			$vote = $this->_request->getPost('vote');
 
-			if ($model->saveVotingData('news', $news->id, $user->id))
+			if ($vote != 1 && $vote != -1)
+			{
+				throw new RuntimeException('Incorrect vote value', -1);
+			}
+
+            $model = new Application_Model_Voting;
+
+			if ($model->findNewsLikeByUserId($data['id'], $data['user_id']))
 			{
 				$response = array(
 					'successalready' => 'registered already',
-					'noofvotes_1' => $vote_count
+					'noofvotes_1' => $news->vote
 				);
 			}
 			else
 			{
-				$votingTable = new Application_Model_Voting;
+				$model->saveVotingData($vote, $user->id, $news);
 
 				$response = array(
 					'news' => array(
-						'id' => $row->id,
-						'news_count' => $votingTable->findCountByNewsId($row->id),
-						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id, 1) ? 'Yes' : 'No'
+						'id' => $news->id,
+						'news_count' => $news->vote,
+						'isLikedByUser' => 'Yes'
 					),
 					'success' => 'voted successfully',
-					'noofvotes_2' => $vote_count
+					'noofvotes_2' => $news->vote
 				);
-
-				$model->measureLikeScore('news', $news->id, $user->id);
 			}
         }
 		catch (Exception $e)

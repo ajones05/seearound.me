@@ -38,7 +38,6 @@ class InfoController extends Zend_Controller_Action
 
 		$this->view->comments = $this->view->comentsModel->findAllByNewsId($news->id, 5);
 		$this->view->totalcomments = $this->view->comentsModel->getCountByNewsId($news->id);
-		$this->view->newsVote = Application_Model_Voting::getInstance()->findCountByNewsId($news->id);
 
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 

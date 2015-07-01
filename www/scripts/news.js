@@ -342,6 +342,35 @@ function renderNews($news){
 	});
 
 	renderComments($news.find('.cmntList'));
+
+	$('.like,.dislike', $news).click(function(){
+		if ($(this).attr('disabled')){
+			return false;
+		}
+
+		var $self = $(this),
+			$target = $(this).closest('.scrpBox');
+
+		$('.vote .icon > div', $target).attr('disabled', true);
+
+		$.ajax({
+			url: baseUrl + 'home/vote',
+			data: {
+				news_id: getNewsID($target),
+				vote: ($(this).hasClass('like') ? 1 : -1)
+			},
+			type: 'POST',
+			dataType: 'json'
+		}).done(function(response){
+			if (!response || !response.status){
+				alert(response ? response.error.message : ERROR_MESSAGE);
+				return false;
+			}
+
+			$self.addClass('active');
+			$('.vote ._3_copy', $target).html(response.vote);
+		});
+	});
 }
 
 function showCommentHandle(){
@@ -596,45 +625,6 @@ function openImage(image, width, height){
 				$(window).unbind('resize.dialog');
 			}
 		});
-}
-
-function voting(thisone, action, elid,userid) {
-    if(action && elid && userid){
-        $.ajax({
-            url  : baseUrl+'home/store-voting',
-            type : 'post',
-            data : {
-                action:action, 
-                id:elid, 
-                user_id:userid
-            },
-            success: function(data) {
-                data = $.parseJSON(data);
-
-                if (data && data.successalready){
-                    $('#thumbs_up2_'+elid).show('slow');
-                    $('#img1_'+elid).hide();
-                    $('#img2_'+elid).show();
-                }
-
-                if (data && data.success && action == 'news') {
-					$('#thumbs_up2_'+elid).hide();
-					$('#img1_'+elid).hide();
-					$('#img2_'+elid).show();
-					var doFlag = true;
-                }
-
-                if(data && data.noofvotes_2){
-                    $('#message_success_'+elid).html(data.noofvotes_2); 
-                }
-                else if(data && data.error) {
-                    alert('Sorry! we are unable to perform voting action');
-                } 
-            }
-        });
-    } else {
-        alert('Sorry! we are unable to performe delete action');
-    }
 }
 
 function newsUserTooltipContent(image, name, body){

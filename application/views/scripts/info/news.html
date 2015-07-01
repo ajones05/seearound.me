@@ -26,18 +26,12 @@ if ($image)
                     <div class="post-top">
                         <a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $user->id); ?>" style="z-index:9999;color: #0068C4;text-decoration: none;"><?=$user->Name?></a> 
                         <span class="post-date"><?php echo date("d F Y h:i a", strtotime($this->news->created_date));?></span>
-                        <span class="message_number" id="message_success_<?=$this->news->id?>"><?=$this->newsVote?></span>
-                         <div id="thumbs_up2_<?=$this->news->id?>"  style="float: right; margin-right: -46px; margin-top: 22px;display:none;">
-                            <span id="message_success" style="color: rgb(51, 204, 0);">Already-Voted</span>
-                         </div>
-                         <div id="thumbsup_blck" class="deteleIcon12" style="display:inline;">
-                          <?php if($this->newsVote == 0) { ?>      
-                                <img id="img1_<?=$this->news->id?>" class="crp" src="<?php echo $this->baseUrl("www/images/thumsup_voted_gray.png"); ?>" <?php if ($user->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
-                          <?php } else { ?>     
-                                <img id="img1_<?=$this->news->id?>" class="crp" src="<?php echo $this->baseUrl("www/images/thumsup_voted.jpg"); ?>" <?php if ($user->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
-                          <?php } ?> 
-                                <img id="img2_<?=$this->news->id?>" class="crp" style="display: none" src="<?php echo $this->baseUrl("www/images/thumsup_voted.jpg"); ?>" <?php if ($user->id != $auth_user_id) { ?> onclick="voting(this, 'news', '<?=$this->news->id?>' ,<?=$auth_user_id?>);" <?php } else { ?> onclick="alert('You can not vote your own post!');" <?php } ?> >
-                         </div>
+						<?php
+						echo My_ViewHelper::render('news/_vote.html', array(
+							'user' => $this->user,
+							'news' => $this->news
+						));
+						?>
                     </div>
 					<?php endif; ?>
 					<div class="post-bottom">

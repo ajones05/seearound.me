@@ -8,6 +8,7 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 	'User posts votings: ' . $this->karma_posts->votings_count . '<br/>' .
 	'User comments on other posts: ' . $this->karma_posts->other_comments_count;
 ?>
+<div class="profile">
 <div id="userDiv" class="leftCol">
 	<div class="profDtl">
 		<div class="profile-img">
@@ -17,7 +18,7 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 		</div>
 		<div class="profile-describe">
 			<h3 class="name"><?php echo ucfirst($this->profile->Name); ?></h3>
-			<p class="loc"><?php echo ucfirst(My_StringHelper::stringLimit($this->profile->address, 50, '...')); ?></p>
+			<p class="loc"><?php echo ucfirst(My_StringHelper::stringLimit($this->profile->address(), 50, '...')); ?></p>
 		</div>
 		<div class="clr"></div>
 	</div>
@@ -39,18 +40,18 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 	<?php endif; ?>
     <li>
         <label>Gender</label>
-        <span><?php echo $this->profile->Gender; ?></span>
+        <span><?php echo $this->profile->gender(); ?></span>
 		<div class="clr"></div>
     </li>
     <li>
 		<label>Interests</label>
-        <span><?php echo $this->profile->Activities; ?></span>
+        <span><?php echo $this->profile->activities(); ?></span>
 		<div class="clr"></div>
     </li>
-    <?php if ($this->profile->address): ?>
+    <?php if ($this->profile->address()): ?>
 	<li>
         <label>Location</label>
-        <span><?php echo $this->profile->address; ?></span>
+        <span><?php echo $this->profile->address(); ?></span>
 		<div class="clr"></div>
     </li>
     <?php endif; ?>
@@ -193,3 +194,4 @@ function makeFriend(action, isnew){
 	});
 }
 </script>
+</div>

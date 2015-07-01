@@ -88,13 +88,13 @@ class HomeController extends Zend_Controller_Action
 		{
 			$form->populate(array(
 				'email' => $user->Email_id,
-				'public_profile' => $user->public_profile,
+				'public_profile' => $user->getPublicProfile(),
 				'name' => $user->Name,
-				'gender' => $user->Gender,
-				'activities' => $user->Activities,
-				'address' => $user->address,
-				'latitude' => $user->latitude,
-				'longitude' => $user->longitude,
+				'gender' => $user->gender(),
+				'activities' => $user->activities(),
+				'address' => $user->address(),
+				'latitude' => $user->lat(),
+				'longitude' => $user->lng(),
 			));
 
 			if ($user->Birth_date != null)
@@ -236,11 +236,11 @@ class HomeController extends Zend_Controller_Action
 					'IFNULL(SUM(if(news.user_id = "' . $profile->id . '", 1, 0)), 0) AS news_count',
 					'IFNULL(SUM(comments.count), 0) as comments_count',
 					'IFNULL(SUM(comments_other.count), 0) as other_comments_count',
-					'IFNULL(SUM(votings.count), 0) as votings_count',
+					'IFNULL(SUM(if(news.user_id = "' . $profile->id . '", news.vote, 0)), 0) as votings_count',
 				))
 				->joinLeft(array('comments' => $newsModel->commentsSubQuery()), 'comments.news_id = news.id AND news.user_id = ' . $profile->id, '')
-				->joinLeft(array('comments_other' => $newsModel->commentsSubQuery()), 'comments_other.news_id = news.id AND comments_other.user_id = ' . $profile->id . ' AND news.user_id <> ' . $profile->id, '')
-				->joinLeft(array('votings' => $newsModel->votingsSubQuery()), 'votings.news_id = news.id AND news.user_id = ' . $profile->id, '')
+				->joinLeft(array('comments_other' => $newsModel->commentsSubQuery()), 'comments_other.news_id = news.id AND comments_other.user_id = ' .
+					$profile->id . ' AND news.user_id <> ' . $profile->id, '')
 		);
 
 		$this->view->karma_comments = (new Application_Model_Comments)->getCountByUserId($profile->id);
@@ -297,11 +297,6 @@ class HomeController extends Zend_Controller_Action
 
 			$news = (new Application_Model_News)->save(array_merge($form->getValues(), array('user_id' => $user->id)));
 
-			if (!Application_Model_Voting::getInstance()->firstNewsExistence('news', $news->id, $user->id))
-			{
-				throw new RuntimeException('Save voting error', -1);
-			}
-
 			$response = array(
 				'status' => 1,
 				'result' => array(
@@ -317,7 +312,7 @@ class HomeController extends Zend_Controller_Action
 						),
 						'html' => My_ViewHelper::render(
 							'news/item.html',
-							array('item' => $news, 'owner' => $user, 'is_new' => true)
+							array('user' => $user, 'item' => $news, 'owner' => $user, 'is_new' => true)
 						)
 					)
 				)
@@ -348,7 +343,7 @@ class HomeController extends Zend_Controller_Action
 						),
 						'html' => My_ViewHelper::render(
 							'news/item.html',
-							array('item' => $row, 'owner' => $owner)
+							array('user' => $user, 'item' => $row, 'owner' => $owner)
 						)
 					);
 				}
@@ -438,7 +433,7 @@ class HomeController extends Zend_Controller_Action
 						),
 						'html' => My_ViewHelper::render(
 							'news/item.html',
-							array('item' => $row, 'owner' => $owner)
+							array('user' => $user, 'item' => $row, 'owner' => $owner)
 						)
 					);
 				}
@@ -566,8 +561,6 @@ class HomeController extends Zend_Controller_Action
 			$comment->user_id = $user->id;
 			$comment->news_id = $news->id;
 			$comment->save();
-
-			Application_Model_Voting::getInstance()->measureLikeScore('news', $news->id, $user->id);
 
 			$comment_users = $model->getAllCommentUsers($news->id, array($user->id, $news->user_id));
 
@@ -809,49 +802,63 @@ class HomeController extends Zend_Controller_Action
 		die(Zend_Json_Encoder::encode($response));
     }
 
-    /*
+	/**
+	 * Vote news action.
+	 *
+	 * @return void
+	 */
+	public function voteAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
 
-      function to store voting value by user
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
 
-      @created by : D
+			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
+			{
+				throw new RuntimeException('Incorrect news ID', -1);
+			}
 
-      @created date : 28/12/2012
+			if ($news->user_id == $user->id)
+			{
+				throw new RuntimeException('You can not vote your own post', -1);
+			}
 
-     */
+			$votingTable = new Application_Model_Voting;
 
-    public function storeVotingAction() {
-
-        $response = new stdClass();
-
-        if ($this->_request->isPost()) {
-
-            $data = $this->_request->getPost();
-
-            $userTable = new Application_Model_User();
-
-            $votingTable = new Application_Model_Voting();
-
-            $row = $votingTable->saveVotingData($data['action'], $data['id'], $data['user_id']);
-
-            if ($row) {
-                $response->successalready = 'registered already';
-                $response->noofvotes_1 = $votingTable->getTotalVoteCounts($data['action'], $data['id'], $data['user_id']);
-            } else {
-                $response->success = 'voted successfully';
-                $response->noofvotes_2 = $votingTable->getTotalVoteCounts($data['action'], $data['id'], $data['user_id']);
-                 /*Code for score measurement*/
-                $score = $votingTable->measureLikeScore($data['action'], $data['id'], $data['user_id']);
+            if ($votingTable->findNewsLikeByUserId($news->id, $user->id))
+			{
+				throw new RuntimeException('Alredy voted', -1);
             }
-          
-            if ($this->_request->isXmlHttpRequest()) {
 
-                die(Zend_Json_Encoder::encode($response));
-            }
-        } else {
+			$vote = $this->_request->getPost('vote');
 
-            echo "Sorry unable to vote";
-        }
-    }
+			if ($vote != 1 && $vote != -1)
+			{
+				throw new RuntimeException('Incorrect vote value', -1);
+			}
+
+			$votingTable->saveVotingData($vote, $user->id, $news);
+
+			$response = array(
+				'status' => 1,
+				'vote' => $news->vote
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
+			);
+		}
+
+		$this->_helper->json($response);
+	}
 
 	/**
 	 * Read more news action.

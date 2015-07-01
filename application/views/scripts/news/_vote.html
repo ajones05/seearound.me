@@ -1,0 +1,22 @@
+<?php
+$user_vote = 0;
+
+if (!$this->is_new)
+{
+	$result = (new Application_Model_Voting)->findNewsLikeByUserId($this->news->id, $this->user->id);
+
+	if ($result)
+	{
+		$user_vote = intval($result->vote);
+	}
+}
+
+$disabled = $user_vote !== 0 || $this->news->user_id == $this->user->id;
+?>
+<div class="vote">
+	<div class="_3_copy"><?php echo $this->news->vote; ?></div>
+	<div class="icon">
+		<div class="like<?php if ($user_vote === 1): ?> active<?php endif; ?>"<?php if ($disabled): ?> disabled<?php endif; ?>></div>
+		<div class="dislike<?php if ($user_vote === -1): ?> active<?php endif; ?>"<?php if ($disabled): ?> disabled<?php endif; ?>></div>
+	</div>
+</div>

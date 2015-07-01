@@ -178,7 +178,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				->setIntegrityCheck(false)
 				->from($this, array(
 					'news.*',
-					'((IFNULL(votings.count, 0)+IFNULL(comments.count, 0)+1)/((IFNULL(TIMESTAMPDIFF(HOUR, news.created_date, NOW()), 0)+30)^1.1))*10000 as score',
+					// TODO: cache
+					'((news.vote+IFNULL(comments.count, 0)+1)/((IFNULL(TIMESTAMPDIFF(HOUR, news.created_date, NOW()), 0)+30)^1.1))*10000 as score',
 					// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
 					'(3959 * acos(cos(radians(' . $lat . ')) * cos(radians(news.latitude)) * cos(radians(news.longitude) - ' .
 						'radians(' . $lng . ')) + sin(radians(' . $lat . ')) * sin(radians(news.latitude)))) AS distance_from_source'
@@ -188,8 +189,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				->where('news.isdeleted =?', 0)
 				->joinLeft('user_data', 'news.user_id = user_data.id', array())
 				->where('user_data.id IS NOT NULL')
+				// TODO: cache
 				->joinLeft(array('comments' => $this->commentsSubQuery()), 'comments.news_id = news.id', array())
-				->joinLeft(array('votings' => $this->votingsSubQuery()), 'votings.news_id = news.id', array())
 				->having('distance_from_source < ' . $radius . ' OR distance_from_source IS NULL')
 				->order('score DESC')
 				->group('news.id')
@@ -460,22 +461,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		$commentsModel = new Application_Model_Comments;
 		$query = $commentsModel->publicSelect()
 			->from($commentsModel, array('user_id', 'news_id', 'COUNT(*) as count'))
-			->group('news_id');
-
-		return new Zend_Db_Expr('(' . $query . ')');
-	}
-
-	/**
-	 * Returns select news votings expression.
-	 *
-	 * @return	Zend_Db_Expr
-	 */
-	public function votingsSubQuery()
-	{
-		$votingsModel = new Application_Model_Voting;
-		$query = $votingsModel->select()
-			->from($votingsModel, array('user_id', 'news_id', 'news_count', 'COUNT(*) as count'))
-			->where('votings.news_count =?', 1)
 			->group('news_id');
 
 		return new Zend_Db_Expr('(' . $query . ')');

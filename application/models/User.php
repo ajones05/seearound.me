@@ -13,7 +13,7 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	{
 		$result = array();
 
-		$activities = trim($this->Activities);
+		$activities = trim($this->activities());
 
 		if ($activities !== '')
 		{
@@ -51,6 +51,23 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 		}
 
 		return $default;
+	}
+
+	/**
+	 * Returns user public profile value.
+	 *
+	 * @return	integer
+	 */
+	public function getPublicProfile()
+	{
+		$profile = $this->findDependentRowset('Application_Model_UserProfile')->current();
+
+		if ($profile)
+		{
+			return $profile->public_profile;
+		}
+
+		return 0;
 	}
 
 	/**
@@ -368,31 +385,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	public static function findById($id)
 	{
 		$db = new self;
-
 		$result = $db->fetchRow(
-			$db->select()
-				->setIntegrityCheck(false)
-				->from($db, '*')
-				->joinLeft(
-					'user_profile',
-					'user_data.id = user_profile.user_id',
-					array(
-						'user_profile.public_profile',
-						'user_profile.Activities',
-						'user_profile.Looking_for',
-						'user_profile.Gender'
-					)
-				)
-				->joinLeft(
-					'address',
-					'user_data.id = address.user_id',
-					array(
-						'address.address',
-						'address.latitude',
-						'address.longitude'
-					)
-				)
-				->where('user_data.id =?', $id)
+			$db->select()->where('user_data.id =?', $id)
 		);
 
 		return $result;
@@ -444,31 +438,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	public static function findByEmail($email)
 	{
 		$db = new self;
-
 		$result = $db->fetchRow(
-			$db->select()
-				->setIntegrityCheck(false)
-				->from($db, '*')
-				->joinLeft(
-					'user_profile',
-					'user_data.id = user_profile.user_id',
-					array(
-						'user_profile.public_profile',
-						'user_profile.Activities',
-						'user_profile.Looking_for',
-						'user_profile.Gender'
-					)
-				)
-				->joinLeft(
-					'address',
-					'user_data.id = address.user_id',
-					array(
-						'address.address',
-						'address.latitude',
-						'address.longitude'
-					)
-				)
-				->where('Email_id =?', $email)
+			$db->select()->where('Email_id =?', $email)
 		);
 
 		return $result;

@@ -234,7 +234,11 @@ body.layout:not(.hideRight) .mainContainer > .leftContainer{
 
 .profDtl .profile-describe .name { font:normal 18px Lato-Regular; color: #4276cd; margin: 2px 0px 3px;}
 
-.profDtl .profile-describe .loc { font-size:14px; color: #8d8d8d;}
+.profDtl .profile-describe .loc {
+	font-size: 14px;
+	color: #8d8d8d;
+	word-wrap: break-word;
+}
 
 .profDtl_updated{margin:0; text-align:left; border-bottom:1px solid #d3dde6; padding:0 20px;} /*Original */
 
@@ -394,6 +398,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 	font-size: 14px;
 	border-bottom: 1px solid #d7d7d7;
 	max-width: 410px;
+	word-wrap: break-word;
 }
 
 .viewForm li label{width:100px; float:left;color: #4276cd; /*background:url(../images/icn-colan.gif) no-repeat right center;*/}
@@ -2082,4 +2087,41 @@ body.error .mainContainer > img {
 #locationButton {
 	width: 100%;
 	padding: 11px 0;
+}
+.profile {
+	width: 435px;
+}
+.vote {
+	float: right;
+}
+.vote ._3_copy {
+  font-size: 20px;
+  font-family: Lato;
+  color: rgb(66, 117, 205);
+  font-style: italic;
+  line-height: 0.714;
+  float: left;
+  margin-right: 5px;
+  padding: 20.5px 0;
+}
+.vote .icon {
+	float: right;
+}
+.vote .icon > div {
+	height: 22px;
+	width: 23px;
+	cursor: pointer;
+}
+.vote .icon .like {
+	background: url(../images/like.png) no-repeat scroll center center;
+	margin-bottom: 12px;
+}
+.vote .icon .like.active {
+	background: url(../images/like-active.png) no-repeat scroll center center;
+}
+.vote .icon .dislike {
+	background: url(../images/dislike.png) no-repeat scroll center center;
+}
+.vote .icon .dislike.active {
+	background: url(../images/dislike-active.png) no-repeat scroll center center;
 }
