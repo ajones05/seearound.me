@@ -962,16 +962,22 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect radius value', -1);
 			}
 
-			$fromPage = $this->_request->getPost('fromPage', 0);
+			$start = $this->_request->getPost('fromPage', 0);
 
-			if (!My_Validate::digit($fromPage) || $fromPage < 0)
+			if (!My_Validate::digit($start) || $start < 0)
 			{
-				throw new RuntimeException('Incorrect fromPage value', -1);
+				throw new RuntimeException('Incorrect start value', -1);
 			}
 
 			$response = array();
 
-			$result = Application_Model_News::getInstance()->findByLocation($latitude, $longitude, $radius, 15, $fromPage);
+			$result = (new Application_Model_News)->search(array(
+				'latitude' => $latitude,
+				'longitude' => $longitude,
+				'radius' => $radius,
+				'limit' => 15,
+				'start' => $start
+			), $user);
 
 			if (count($result))
 			{
@@ -996,7 +1002,7 @@ class MobileController extends Zend_Controller_Action
 						'Address' => $row->Address,
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
-						'comment_count' => $commentTable->getCountByNewsId($row->id),
+						'comment_count' => $row->comment,
 						'news_count' => $row->vote,
 						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
@@ -1071,9 +1077,9 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$response = array();
-			$filter = $this->_request->getPost('filter');
+			$filter = strtolower($this->_request->getPost('filter'));
 
-			if ($filter == 'Interest')
+			if ($filter == 'interest')
 			{
 				$response['interest'] = count($user->parseInterests());
 			}
@@ -1084,8 +1090,9 @@ class MobileController extends Zend_Controller_Action
 				'longitude' => $longitude,
 				'radius' => $radius,
 				'limit' => 15,
-				'start' => $start
-			), $user, $filter);
+				'start' => $start,
+				'filter' => $filter
+			), $user);
 
 			if (count($result))
 			{
@@ -1110,7 +1117,7 @@ class MobileController extends Zend_Controller_Action
 						'Address' => $row->Address,
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
-						'comment_count' => $commentTable->getCountByNewsId($row->id),
+						'comment_count' => $row->comment,
 						'news_count' => $row->vote,
 						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id) ? 'Yes' : 'No',
 						'Name' => $owner->Name,
@@ -1168,13 +1175,10 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect offset value', -1);
 			}
 
-			$model = new Application_Model_Comments;
-			$comments = $model->findAllByNewsId($news->id, 10, $page);
+			$comments = (new Application_Model_Comments)->findAllByNewsId($news->id, 10, $page);
 
 			if (count($comments))
 			{
-				$total = $model->getCountByNewsId($news->id);
-
 				foreach ($comments as $comment)
 				{
 					$comment_user = $comment->findDependentRowset('Application_Model_User')->current();
@@ -1188,7 +1192,7 @@ class MobileController extends Zend_Controller_Action
                         'Profile_image' => $this->view->serverUrl() .
 							$comment_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
                         'commTime' => $comment->created_at,
-                        'totalComments' => $total
+                        'totalComments' => $news->comment
 					);
 				}
 			}
@@ -1232,11 +1236,7 @@ class MobileController extends Zend_Controller_Action
 				$this->_formValidateException($form);
 			}
 
-			$model = new Application_Model_Comments;
-			$comment = $model->createRow($form->getValues());
-			$comment->user_id = $user->id;
-			$comment->news_id = $news->id;
-			$comment->save();
+			$comment = (new Application_Model_Comments)->save($form, $news, $user);
 
 			$response = array(
 				'status' => 'SUCCESS',
@@ -1249,7 +1249,7 @@ class MobileController extends Zend_Controller_Action
 					'user_id' => $user->id,
 					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					'commTime' => $comment->created_at,
-					'totalComments' => $model->getCountByNewsId($news->id)
+					'totalComments' => $news->comment
 				)
 			);
 		}

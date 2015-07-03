@@ -1,9 +1,8 @@
 <?php
 $commentsModel = new Application_Model_Comments;
 $comments = !$this->is_new ? $commentsModel->findAllByNewsId($this->item->id, 3) : array();
-$comments_count = !$this->is_new ? $commentsModel->getCountByNewsId($this->item->id) : 0;
 $created_date = isset($this->item['created_date']) ? $this->item['created_date'] : date('Y-m-d H:i:s');
-$hide_comments = !$comments_count || !My_ArrayHelper::search(array('news_id' => $this->item['id']), $comments->toArray(), 1);
+$hide_comments = !$this->item->comment || !My_ArrayHelper::search(array('news_id' => $this->item['id']), $comments->toArray(), 1);
 
 // TODO: cache
 $image = isset($this->item['image']) && file_exists(ROOT_PATH . '/newsimages/' . $this->item['image']) ? $this->item['image'] : null;
@@ -53,8 +52,8 @@ if ($image)
 			<?php if ($hide_comments): ?>
 			<div class="post-comment">Comment</div>
 			<?php endif; ?>
-			<?php if ($comments_count > 3): ?>
-			<div class="view-comment"><?php echo Application_Model_Comments::viewMoreLabel($comments_count - 3); ?></div>
+			<?php if ($this->item->comment > 3): ?>
+			<div class="view-comment"><?php echo Application_Model_Comments::viewMoreLabel($this->item->comment - 3); ?></div>
 			<?php endif; ?>
 			<span class="floatR">
 				<span style="display: block; float: left;">Share:</span>
@@ -73,7 +72,7 @@ if ($image)
 	</div>
 	<ul id="comment_list_<?php echo $this->item['id']; ?>" class="cmntRow">
 	<?php
-		if ($comments_count)
+		if ($this->item->comment)
 		{
 			for ($i = count($comments) - 1; $i >= 0; $i--)
 			{

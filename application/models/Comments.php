@@ -289,4 +289,43 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 		return $result;
 	}
+
+	/**
+	 * Saves form.
+	 *
+	 * @param	Application_Form_Comment $form
+	 * @param	Application_Model_NewsRow $news
+	 * @param	Application_Model_UserRow $user
+	 * @return	Application_Model_CommentsRow
+	 */
+	public function save(Application_Form_Comment $form, Application_Model_NewsRow $news, Application_Model_UserRow $user)
+	{
+		$row = $this->createRow($form->getValues());
+		$row->user_id = $user->id;
+		$row->news_id = $news->id;
+		$row->save();
+
+		$news->comment++;
+		$news->save();
+
+		return $row;
+	}
+
+	/**
+	 * Deletes row.
+	 *
+	 * @param	Application_Model_CommentsRow $comment
+	 * @param	Application_Model_NewsRow $news
+	 * @return	boolean
+	 */
+	public function deleteRow(Application_Model_CommentsRow $comment, Application_Model_NewsRow $news)
+	{
+		$comment->isdeleted = 1;
+		$comment->save();
+
+		$news->comment--;
+		$news->save();
+
+		return true;
+	}
 }

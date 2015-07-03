@@ -72,6 +72,7 @@ ALTER TABLE `news` CHANGE `images` `image` TEXT CHARACTER SET latin1 COLLATE lat
 ALTER TABLE `news` DROP `news_html`;
 ALTER TABLE `news` ADD `vote` INT(11) NOT NULL DEFAULT '0' AFTER `Address`;
 ALTER TABLE `news` DROP `score`;
+ALTER TABLE `news` ADD `comment` INT(11) NOT NULL DEFAULT '0' AFTER `vote`; 
 
 --
 -- Table structure for table `news_link`

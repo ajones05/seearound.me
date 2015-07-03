@@ -48,11 +48,11 @@ if ($image)
 		<?php endif; ?>
     </ul>
 	<div class="clr"></div>
-	<?php if ($this->totalcomments > 5 || $auth_user_id == $user->id): ?>
+	<?php if ($this->news->comment > 5 || $auth_user_id == $user->id): ?>
 	<div class="dur">
 		<div class="news-footer">
-			<?php if ($this->totalcomments > 5): ?>
-			<div class="view-comment"><?php echo $this->comentsModel->viewMoreLabel($this->totalcomments - 5); ?></div>
+			<?php if ($this->news->comment > 5): ?>
+			<div class="view-comment"><?php echo $this->comentsModel->viewMoreLabel($this->news->comment - 5); ?></div>
 			<?php endif; ?>
 			<?php if ($auth_user_id == $user->id): ?>
 			<input type="button" class="edit-post" value="Edit Post" />
@@ -63,7 +63,7 @@ if ($image)
 	<?php endif;?>
 	<ul class="cmntRow">
         <?php
-		if ($this->totalcomments)
+		if ($this->news->comment)
 		{
 			for ($i = count($this->comments) - 1; $i >= 0; $i--)
 			{

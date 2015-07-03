@@ -229,6 +229,8 @@ class HomeController extends Zend_Controller_Action
 		$this->view->auth_id = $auth ? $user->id : null;
 		$this->view->profile = $profile;
 
+		// TODO: check performance
+
 		$this->view->karma_posts = $newsModel->fetchRow(
 			$newsModel->publicSelect()
 				->setIntegrityCheck(false)
@@ -411,10 +413,13 @@ class HomeController extends Zend_Controller_Action
 				'radius' => $radius,
 				'limit' => 15,
 				'start' => $start,
-				'exclude_id' => $this->_request->getPost('new', array())
-			), $user, $this->_request->getPost('filter'));
+				'exclude_id' => $this->_request->getPost('new', array()),
+				'filter' => strtolower($this->_request->getPost('filter'))
+			), $user);
 
 			$response = array('status' => 1);
+
+			// TODO: check performance
 
 			if (count($result))
 			{
@@ -496,8 +501,9 @@ class HomeController extends Zend_Controller_Action
 				'latitude' => $latitude,
 				'longitude' => $longitude,
 				'radius' => $radius,
-				'limit' => 100
-			), $user, 'Friends');
+				'limit' => 100,
+				'filter' => 'friends'
+			), $user);
 
 			$response = array('status' => 1);
 
@@ -557,11 +563,7 @@ class HomeController extends Zend_Controller_Action
 			}
 
 			$model = new Application_Model_Comments;
-			$comment = $model->createRow($form->getValues());
-			$comment->user_id = $user->id;
-			$comment->news_id = $news->id;
-			$comment->save();
-
+			$comment = $model->save($form, $news, $user);
 			$comment_users = $model->getAllCommentUsers($news->id, array($user->id, $news->user_id));
 
 			if (count($comment_users) || $news->user_id != $user->id)
@@ -646,7 +648,7 @@ class HomeController extends Zend_Controller_Action
 					$response['data'][] = My_ViewHelper::render('comment/item.html', array('item' => $comment, 'limit' => 250));
 				}
 
-				$count = max($comentsTable->getCountByNewsId($news_id) - ($limitstart + $comentsTable->news_limit), 0);
+				$count = max($news->comment - ($limitstart + $comentsTable->news_limit), 0);
 
 				if ($count)
 				{
@@ -786,8 +788,7 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$comment->isdeleted = 1;
-			$comment->save();
+			(new Application_Model_Comments)->deleteRow($comment, $news);
 
 			$response = array('status' => 1);
 		}

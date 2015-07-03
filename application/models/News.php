@@ -155,52 +155,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
     }
 
 	/**
-	 * Finds news by location.
-	 *
-	 * @param	float	$lat
-	 * @param	float	$lng
-	 * @param	float	$radius
-	 * @param	integer	$limit
-	 * @param	integer	$limitstart
-	 * @param	Zend_Db_Table_Select	$attributes
-	 *
-	 * @return	array
-	 */
-	public function findByLocation($lat, $lng, $radius, $limit, $limitstart, Zend_Db_Table_Select $select = null)
-	{
-		if ($select === null)
-		{
-			$select = $this->select();
-		}
-
-		$result = $this->fetchAll(
-			$select
-				->setIntegrityCheck(false)
-				->from($this, array(
-					'news.*',
-					// TODO: cache
-					'((news.vote+IFNULL(comments.count, 0)+1)/((IFNULL(TIMESTAMPDIFF(HOUR, news.created_date, NOW()), 0)+30)^1.1))*10000 as score',
-					// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
-					'(3959 * acos(cos(radians(' . $lat . ')) * cos(radians(news.latitude)) * cos(radians(news.longitude) - ' .
-						'radians(' . $lng . ')) + sin(radians(' . $lat . ')) * sin(radians(news.latitude)))) AS distance_from_source'
-				))
-				->where('news.latitude IS NOT NULL')
-				->where('news.longitude IS NOT NULL')
-				->where('news.isdeleted =?', 0)
-				->joinLeft('user_data', 'news.user_id = user_data.id', array())
-				->where('user_data.id IS NOT NULL')
-				// TODO: cache
-				->joinLeft(array('comments' => $this->commentsSubQuery()), 'comments.news_id = news.id', array())
-				->having('distance_from_source < ' . $radius . ' OR distance_from_source IS NULL')
-				->order('score DESC')
-				->group('news.id')
-				->limit($limit, $limitstart)
-		);
-
-		return $result;
-	}
-
-	/**
 	 * Search news by parameters.
 	 *
 	 * @param	array $parameters
@@ -211,7 +165,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 */
 	public function search(array $parameters, Application_Model_UserRow $user, $filter = null)
 	{
-		$query = $this->select()->from($this);
+		$query = $this->publicSelect()->setIntegrityCheck(false);
 
 		if (trim(My_ArrayHelper::getProp($parameters, 'keywords')) !== '')
 		{
@@ -220,7 +174,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 		switch ($filter)
 		{
-			case 'Interest':
+			case 'interest':
 				$interests = $user->parseInterests();
 
 				if (count($interests))
@@ -236,10 +190,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				}
 
 				break;
-			case 'Myconnection':
+			case 'myconnection':
 				$query->where('news.user_id =?', $user->id);
 				break;
-			case 'Friends':
+			case 'friends':
 				$query->where('news.user_id <>?', $user->id);
 				$query->joinLeft('friends', 'news.user_id = friends.sender_id OR news.user_id = friends.reciever_id', '');
 				$query->where('(friends.sender_id = ' . $user->id . ' OR friends.reciever_id = ' . $user->id . ')');
@@ -255,8 +209,23 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			}
 		}
 
-		return $this->findByLocation($parameters['latitude'], $parameters['longitude'], $parameters['radius'],
-			$parameters['limit'], My_ArrayHelper::getProp($parameters, 'start', 0), $query);
+		$result = $this->fetchAll(
+			$query
+				->from($this, array(
+					'news.*',
+					'((news.vote+news.comment+1)/((IFNULL(TIMESTAMPDIFF(HOUR, news.created_date, NOW()), 0)+30)^1.1))*10000 as score',
+					// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
+					'(3959 * acos(cos(radians(' . $parameters['latitude'] . ')) * cos(radians(news.latitude)) * ' .
+						'cos(radians(news.longitude) - ' . 'radians(' . $parameters['longitude'] . ')) + ' .
+						'sin(radians(' . $parameters['latitude'] . ')) * sin(radians(news.latitude)))) AS distance_from_source'
+				))
+				->having('IFNULL(distance_from_source, 0) < ' . $parameters['radius'])
+				->order('score DESC')
+				->group('news.id')
+				->limit($parameters['limit'], My_ArrayHelper::getProp($parameters, 'start', 0))
+		);
+
+		return $result;
 	}
 
 	/**
