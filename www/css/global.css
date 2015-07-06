@@ -344,7 +344,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .cmntRow{ border-bottom: 1px solid #d7d7d7; margin-top: 0px; border-top: 1px solid #d7d7d7; background: #f1f1f1;}
 
-.cmntRow li{padding: 14px 5px 5px 18px;}
+.cmntRow li{padding:5px ;}/*14px 5px 5px 18px*/
 
 .cmntRow .cmntList div.imgPro { float: left;}
 
@@ -369,13 +369,13 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .cmntList li.imgPro{position:relative; margin:0;  float:left;}
 
-.cmntList li.title {font: normal 15px Lato-Regular; color:#4276cd; padding-left: 15px; background: url(../images/title_symbol.png) no-repeat 0px 5px; width: 345px;}
+.cmntList li.title {font: normal 15px Lato-Regular; color:#4276cd; padding-left: 15px; background: url(../images/title_symbol.png) no-repeat 0px 5px; width: 382px;}/*345px*/
 
 .cmntList li.title .title-wrapper {padding: 5px 10px; background: #fff; min-height: 40px; overflow: scroll; overflow-x: hidden; overflow-y: hidden;}
 
 .cmntList li.title a {color:#4276cd;text-decoration: none;}
 
-.cmntList li.title .cmnt { color: #8d8d8d; font: normal 15px Lato-Regular;}
+.cmntList li.title .cmnt { color: #333 ; font: normal 15px Lato-Regular;}/*8d8d8d*/
 
 .cmntList li.cmnt{}
 
@@ -1276,7 +1276,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 .post .imgPro a {z-index: 9999;display: block;text-align: center;} 
 
-.post .imgPro .smallImage { width: 63px; -moz-border-radius:80px;-webkit-border-radius:80px;border-radius: 80px;-khtml-border-radius: 80px; border: 3px solid #4276cd; height: 63px;}
+.post .imgPro .smallImage { width: 45px; -moz-border-radius:80px;-webkit-border-radius:80px;border-radius: 80px;-khtml-border-radius: 80px; border: 3px solid #4276cd; height: 45px;}
 
 .post-top a.title { z-index:9999;color: #4276cd;text-decoration: none; font-family:Lato-Regular; font-size: 18px; display: inline-block; margin-right: 8px;}
 
@@ -2037,9 +2037,15 @@ input[type=submit], input[type=button] {
 }
 .post-image {
 	text-align: center;
+	margin-left: -82px;
+	overflow: hidden;
+  	height: 320px;
+  	position: relative;
+  	width: 448px;
 }
 .post-image img {
 	cursor: pointer;
+	width: 100%;
 }
 label.error {
 	color: #FF5959;
