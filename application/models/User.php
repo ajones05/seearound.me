@@ -175,6 +175,36 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 
 		return $token;
 	}
+
+	/**
+	 * Updates user invite count.
+	 *
+	 * @return	integer
+	 */
+	public function updateInviteCount()
+	{
+		$userInvite = $this->findDependentRowset('Application_Model_Invitestatus')->current();
+
+		if (floor((time() - strtotime($userInvite->updated)) / 86400) >= 7)
+		{
+			$loginStatusModel = new Application_Model_Loginstatus;
+			$result = $loginStatusModel->fetchRow(
+				$loginStatusModel->select()
+					->from($loginStatusModel, 'count(*) as count')
+					->where('user_id =?', $this->id)
+					->where('login_time >= CURRENT_DATE() - INTERVAL 7 DAY')
+			);
+
+			if ($result && $result->count > 5)
+			{
+				$userInvite->invite_count += floor($result->count / 5);
+				$userInvite->updated = new Zend_Db_Expr('NOW()');
+				$userInvite->save();
+			}
+		}
+
+		return $userInvite->invite_count;
+	}
 }
 
 /**
@@ -207,7 +237,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'Application_Model_Message',
 		'Application_Model_MessageReply',
 		'Application_Model_Friends',
-		'Application_Model_UserProfile'
+		'Application_Model_UserProfile',
+		'Application_Model_Invitestatus'
 	);
 
 	/**
@@ -257,6 +288,11 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'Profile' => array(
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_UserProfile',
+			'refColumns' => 'user_id'
+		),
+		'InviteStatus' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_Invitestatus',
 			'refColumns' => 'user_id'
 		)
 	); 
@@ -466,8 +502,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 		$user->id = $user->save();
 
-		$inviteStausModel = new Application_Model_Invitestatus;
-		$inviteStausModel->insert(array(
+		(new Application_Model_Invitestatus)->insert(array(
 			'user_id' => $user->id,
 			'invite_count' => 10,
 			'created' => new Zend_Db_Expr('NOW()'),

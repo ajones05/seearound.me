@@ -19,30 +19,30 @@
                 *We´ll never post to facebook without your permission
            </p>
 			<div id="regForm">
-				<form id="reg_form" class="form" method="post" name="reg_form">
+				<form id="reg_form" action="<?php echo $this->baseUrl('register'); ?>" class="form" method="post" name="reg_form">
 					<ul class="frm">
 						<li>
-							<input id="Name" name="name" type="text" placeholder="Name" value="<?php echo $this->form->name->getValue(); ?>" />
-							<?php echo $this->form->name->renderErrors(); ?>
+							<input id="Name" name="name" type="text" placeholder="Name" value="<?php echo $this->reg_form->name->getValue(); ?>" />
+							<?php echo $this->reg_form->name->renderErrors(); ?>
 						</li>
 						<li>
-							<input id="Email_id" name="email" type="text" placeholder="Email address" value="<?php echo $this->form->email->getValue(); ?>" />
-							<?php echo $this->form->email->renderErrors(); ?>
+							<input id="Email_id" name="email" type="text" placeholder="Email address" value="<?php echo $this->reg_form->email->getValue(); ?>" />
+							<?php echo $this->reg_form->email->renderErrors(); ?>
 						</li>
 						<li>
 							<input id="Password" name="password" type="password" placeholder="Password" value="" />
-							<?php echo $this->form->password->renderErrors(); ?>
+							<?php echo $this->reg_form->password->renderErrors(); ?>
 						</li>
 						<li>
 							<input id="Re-password" name="repassword" type="password" placeholder="Re-password" value="" />
-							<?php echo $this->form->repassword->renderErrors(); ?>
+							<?php echo $this->reg_form->repassword->renderErrors(); ?>
 						</li>
 						<li>
-							<input id="Location" name="address" readonly="true" type="text" placeholder="User Location" value="<?php echo $this->form->address->getValue(); ?>" />
+							<input id="Location" name="address" readonly="true" type="text" placeholder="User Location" value="<?php echo $this->reg_form->address->getValue(); ?>" />
 							<img class="myLoc" src="<?php echo $this->baseUrl("www/images/icn-location.gif"); ?>" alt="My Location" />
-							<input type="hidden" name="latitude" value="<?php echo $this->form->latitude->getValue(); ?>" />
-							<input type="hidden" name="longitude" value="<?php echo $this->form->longitude->getValue(); ?>" />
-							<?php echo $this->form->address->renderErrors(); ?>
+							<input type="hidden" name="latitude" value="<?php echo $this->reg_form->latitude->getValue(); ?>" />
+							<input type="hidden" name="longitude" value="<?php echo $this->reg_form->longitude->getValue(); ?>" />
+							<?php echo $this->reg_form->address->renderErrors(); ?>
 						</li>
 						<li class="clr"></li>
 					</ul>

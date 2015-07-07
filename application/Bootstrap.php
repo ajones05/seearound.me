@@ -61,6 +61,29 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				)
 			)
 		);
+
+		$router->addRoute(
+			'login',
+			new Zend_Controller_Router_Route(
+				'login',
+				array(
+					'controller' => 'index',
+					'action' => 'index',
+					'isLogin' => true
+				)
+			)
+		);
+
+		$router->addRoute(
+			'register',
+			new Zend_Controller_Router_Route(
+				'register',
+				array(
+					'controller' => 'index',
+					'action' => 'index'
+				)
+			)
+		);
 	}
 
 	protected function _initLog()

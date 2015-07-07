@@ -66,28 +66,15 @@ class MobileController extends Zend_Controller_Action
 
 			$user->updateToken();
 
-			$loginStatus = new Application_Model_Loginstatus;
-			$login_id = $loginStatus->insert(array(
+			$login_id = (new Application_Model_Loginstatus)->insert(array(
 				'user_id' => $user->id,
 				'login_time' => new Zend_Db_Expr('NOW()'),
 				'ip_address' => $_SERVER['REMOTE_ADDR'])
 			);
 
-			// TODO: check
-			// Calculation for the invites counts for the login user
-			if (date('D') == 'Mon')
+			if (date('N') == 1)
 			{
-				$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array(
-					'user_id' => $user->id
-				));
-
-				if ($inviteStatusRow != null && floor((time() - strtotime($inviteStatusRow->updated)) / 86400) >= 7)
-				{
-					$loginRows = $loginStatus->sevenDaysOldData($user->id);
-					$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + floor(count($loginRows) / 5);
-					$inviteStatusRow->updated = new Zend_Db_Expr('NOW()');
-					$inviteStatusRow->save();
-				}
+				$user->updateInviteCount();
 			}
 
 			$response = array(
@@ -210,7 +197,7 @@ class MobileController extends Zend_Controller_Action
 						'longitude' => $geolocation[1]
 					));
 
-					Application_Model_Invitestatus::getInstance()->insert(array(
+					(new Application_Model_Invitestatus)->insert(array(
 						'user_id' => $user->id,
 						'created' => new Zend_Db_Expr('NOW()'),
 						'updated' => new Zend_Db_Expr('NOW()')
@@ -237,27 +224,15 @@ class MobileController extends Zend_Controller_Action
 				}
 			}
 
-			$loginStatus = new Application_Model_Loginstatus;
-
-			$login_id = $loginStatus->insert(array(
+			$login_id = (new Application_Model_Loginstatus)->insert(array(
 				'user_id' => $user->id,
 				'login_time' => new Zend_Db_Expr('NOW()'),
 				'ip_address' => $_SERVER['REMOTE_ADDR'])
 			);
 
-			// TODO: ???
-			if (date('D') == 'Mon')
+			if (date('N') == 1)
 			{
-				$loginRows = $loginStatus->sevenDaysOldData($user->id);
-				$inviteCount = floor(count($loginRows) / $this->credit);
-				$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $user->id));
-
-				if ($inviteStatusRow && floor((time() - strtotime($inviteStatusRow->updated)) / (24 * 60 * 60)) >= 7)
-				{
-					$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + $inviteCount;
-					$inviteStatusRow->updated = new Zend_Db_Expr('NOW()');
-					$inviteStatusRow->save();
-				}
+				$user->updateInviteCount();
 			}
 
 			$response = array(

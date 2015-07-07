@@ -32,7 +32,6 @@ class InfoController extends Zend_Controller_Action
 
 		$this->view->news = $news;
 		$this->view->news_owner = $news->findDependentRowset('Application_Model_User')->current();
-		$this->view->returnUrl = $this->view->baseUrl('info/news/nwid/' . $news->id);
 
 		$this->view->comentsModel = new Application_Model_Comments;
 

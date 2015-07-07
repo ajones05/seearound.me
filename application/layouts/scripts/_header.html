@@ -67,11 +67,13 @@ $request = Zend_Controller_Front::getInstance()->getRequest();
 		<a href="<?php echo $this->baseUrl('/'); ?>">
 			<img src="<?php echo $this->baseUrl("www/images/logo.png"); ?>" style="height: auto;width:200px;margin: 8px 0px 8px 3px;" />
 		</a>
-		<form id="loginForm" action="<?php echo $this->baseUrl("index/login"); ?>" method="POST" class="loginForm">
+		<form id="loginForm" action="<?php echo $this->baseUrl('login'); ?>" method="POST" class="loginForm">
 			<ul>
+				<?php if (isset($this->login_form)): ?>
 				<li>
-					<span id="loginError" class="loginerror"></span>
+					<span id="loginError" class="loginerror"><?php echo implode('<br/>', $this->login_form->getMessages()); ?></span>
 				</li>
+				<?php endif; ?>
 				<li>
 					<input type="email" name="email" placeholder="Email Address" tabindex="1" />
 					<span>

@@ -10,8 +10,6 @@ class IndexController extends Zend_Controller_Action {
 		{
 			$this->_redirect($this->view->baseUrl("home"));
 		}
-
-		$this->credit = 5;
 	}
 
 	/**
@@ -32,9 +30,9 @@ class IndexController extends Zend_Controller_Action {
 			return true;
 		}
 
-		$form = new Application_Form_Registration;
-
-        $form->addElement(
+		$login_form = new Application_Form_Login;
+		$reg_form = new Application_Form_Registration;
+        $reg_form->addElement(
 			'password',
 			'repassword',
 			array(
@@ -51,146 +49,101 @@ class IndexController extends Zend_Controller_Action {
 		{
 			$data = $this->_request->getPost();
 
-			if ($form->isValid($data))
+			if ($this->_request->get('isLogin'))
 			{
-				$user = (new Application_Model_User)->register(
-					array_merge(
-						$form->getValues(),
-						array(
-							'Conf_code' => My_CommonUtils::generateCode(),
-							'Status' => 'inactive'
-						)
-					)
-				);
+				if ($login_form->isValid($data))
+				{
+					$user = (new Application_Model_User)->findByEmail($login_form->email->getValue());
 
-				My_Email::send(
-					$user->Email_id,
-					'SeeAround.me Registration',
-					array(
-						'template' => 'registration',
-						'assign' => array('user' => $user)
-					)
-				);
+					if ($user && $user->Password === hash('sha256', $login_form->password->getValue()))
+					{
+						if ($user->Status !== 'active')
+						{
+							$this->_redirect($this->view->baseUrl('index/reg-success/id/' . $user->id));
+						}
 
-				$login_id = (new Application_Model_Loginstatus)->insert(array(
-					'user_id' => $user->id,
-					'login_time' => new Zend_Db_Expr('NOW()'),
-					'ip_address' => $_SERVER['REMOTE_ADDR'])
-				);
+						$login_id = (new Application_Model_Loginstatus)->insert(array(
+							'user_id' => $user->id,
+							'login_time' => new Zend_Db_Expr('NOW()'),
+							'ip_address' => $_SERVER['REMOTE_ADDR'])
+						);
 
-				Zend_Auth::getInstance()->getStorage()->write(array(
-					"user_id" => $user->id,
-					"login_id" => $login_id
-				));
+						Zend_Auth::getInstance()->getStorage()->write(array(
+							'user_id' => $user->id,
+							'login_id' => $login_id
+						));
 
-				$this->_redirect($this->view->baseUrl("home/index"));
+						if (date('N') == 1)
+						{
+							$user->updateInviteCount();
+						}
+
+						if ($login_form->remember->getValue())
+						{
+							Zend_Session::rememberMe();
+						}
+
+						$this->_redirect($this->view->baseUrl('home'));
+					}
+					else
+					{
+						$login_form->addError('Incorrect user email or password');
+					}
+				}
 			}
 			else
 			{
-				if ($form->getErrors('latitude') || $form->getErrors('longitude'))
+				if ($reg_form->isValid($data))
 				{
-					$form->address->addError('Incorrect user location');
+					$user = (new Application_Model_User)->register(
+						array_merge(
+							$reg_form->getValues(),
+							array(
+								'Conf_code' => My_CommonUtils::generateCode(),
+								'Status' => 'inactive'
+							)
+						)
+					);
+
+					My_Email::send(
+						$user->Email_id,
+						'SeeAround.me Registration',
+						array(
+							'template' => 'registration',
+							'assign' => array('user' => $user)
+						)
+					);
+
+					$login_id = (new Application_Model_Loginstatus)->insert(array(
+						'user_id' => $user->id,
+						'login_time' => new Zend_Db_Expr('NOW()'),
+						'ip_address' => $_SERVER['REMOTE_ADDR'])
+					);
+
+					Zend_Auth::getInstance()->getStorage()->write(array(
+						"user_id" => $user->id,
+						"login_id" => $login_id
+					));
+
+					$this->_redirect($this->view->baseUrl("home/index"));
+				}
+				else
+				{
+					if ($reg_form->getErrors('latitude') || $reg_form->getErrors('longitude'))
+					{
+						$reg_form->address->addError('Incorrect user location');
+					}
 				}
 			}
 		}
 
 		$this->view->layout()->setLayout('login');
-		$this->view->form = $form;
+		$this->view->login_form = $login_form;
+		$this->view->reg_form = $reg_form;
 
 		$this->view->headScript()
 			->appendScript("	var	geolocation = " . json_encode(My_Ip::geolocation()) . ";\n")
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');
-	}
-
-	/**
-	 * Login action.
-	 *
-	 * @return void
-	 */
-	public function loginAction()
-	{
-		try
-		{
-			$email = $this->_request->getPost('email');
-
-			if (My_Validate::emptyString($email))
-			{
-				throw new RuntimeException('Email cannot be blank', -1);
-			}
-
-			if (!filter_var($email, FILTER_VALIDATE_EMAIL))
-			{
-				throw new RuntimeException('Incorrect email address format: ' . var_export($email, true), -1);
-			}
-
-			$password = $this->_request->getPost('password');
-
-			if (My_Validate::emptyString($password))
-			{
-				throw new RuntimeException('Password cannot be blank', -1);
-			}
-
-			$user = (new Application_Model_User)->findByEmail($email);
-
-			if (!$user || $user->Password !== hash('sha256', $password))
-			{
-				throw new RuntimeException('Incorrect user email or password', -1);
-			}
-
-			$response = array('status' => 1);
-
-			if ($user->Status == 'active')
-			{
-				$loginStatus = new Application_Model_Loginstatus;
-				$login_id = $loginStatus->insert(array(
-					'user_id' => $user->id,
-					'login_time' => new Zend_Db_Expr('NOW()'),
-					'ip_address' => $_SERVER['REMOTE_ADDR'])
-				);
-
-				Zend_Auth::getInstance()->getStorage()->write(array(
-					'user_id' => $user->id,
-					'login_id' => $login_id
-				));
-
-				// TODO: ???
-				if (date('D') == 'Mon')
-				{
-					$loginRows = $loginStatus->sevenDaysOldData($user->id);
-					$inviteCount = floor(count($loginRows) / $this->credit);
-					$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $user->id));
-
-					if ($inviteStatusRow && floor((time() - strtotime($inviteStatusRow->updated)) / (24 * 60 * 60)) >= 7)
-					{
-						$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + $inviteCount;
-						$inviteStatusRow->updated = new Zend_Db_Expr('NOW()');
-						$inviteStatusRow->save();
-					}
-				}
-
-				if ($this->_request->getPost('remember'))
-				{
-					Zend_Session::rememberMe();
-				}
-
-				$response['active'] = 1;
-				$response['redirect'] = $this->view->baseUrl('home');
-			}
-			else
-			{
-				$response['active'] = 0;
-				$response['redirect'] = $this->view->baseUrl('index/reg-success/id/' . $user->id);
-			}
-		}
-		catch (Exception $e)
-		{
-			$response = array(
-				'status' => 0,
-				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
-			);
-		}
-
-		$this->_helper->json($response);
 	}
 
 	/**
@@ -276,7 +229,7 @@ class IndexController extends Zend_Controller_Action {
 					'longitude' => $geolocation[1]
 				));
 
-				Application_Model_Invitestatus::getInstance()->insert(array(
+				(new Application_Model_Invitestatus)->insert(array(
 					'user_id' => $user->id,
 					'created' => new Zend_Db_Expr('NOW()'),
 					'updated' => new Zend_Db_Expr('NOW()')
@@ -303,8 +256,7 @@ class IndexController extends Zend_Controller_Action {
 			}
 		}
 
-		$loginStatus = new Application_Model_Loginstatus;
-		$login_id = $loginStatus->insert(array(
+		$login_id = (new Application_Model_Loginstatus)->insert(array(
 			'user_id' => $user->id,
 			'login_time' => new Zend_Db_Expr('NOW()'),
 			'ip_address' => $_SERVER['REMOTE_ADDR'])
@@ -315,31 +267,13 @@ class IndexController extends Zend_Controller_Action {
 			'login_id' => $login_id
 		));
 
-		// TODO: ???
-		if (date('D') == 'Mon')
+		if (date('N') == 1)
 		{
-			$loginRows = $loginStatus->sevenDaysOldData($user->id);
-			$inviteCount = floor(count($loginRows) / $this->credit);
-			$inviteStatusRow = Application_Model_Invitestatus::getInstance()->getData(array('user_id' => $user->id));
-
-			if ($inviteStatusRow && floor((time() - strtotime($inviteStatusRow->updated)) / (24 * 60 * 60)) >= 7)
-			{
-				$inviteStatusRow->invite_count = $inviteStatusRow->invite_count + $inviteCount;
-				$inviteStatusRow->updated = new Zend_Db_Expr('NOW()');
-				$inviteStatusRow->save();
-			}
+			$user->updateInviteCount();
 		}
 
 		$this->_redirect($this->view->baseUrl('home'));
 	}
-
-    public function registerAction()
-
-    {
-
-        // action body
-
-    }
 
 	/**
 	 * Inactive account action.

@@ -49,7 +49,7 @@ class HomeController extends Zend_Controller_Action
 
 		if ($data)
 		{
-			$status = Application_Model_Loginstatus::getInstance()->find($data['login_id'])->current();
+			$status = (new Application_Model_Loginstatus)->find($data['login_id'])->current();
 
 			if ($status)
 			{

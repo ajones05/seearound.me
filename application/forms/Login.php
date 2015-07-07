@@ -31,5 +31,14 @@ class Application_Form_Login extends Zend_Form
 				'required' => true
 			)
 		);
+
+        $this->addElement(
+			'checkbox',
+			'remember',
+			array(
+				'default' => 0,
+				'required' => false
+			)
+		);
 	}
 }

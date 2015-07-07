@@ -16,9 +16,9 @@ class ContactsController extends Zend_Controller_Action
 			$this->_redirect($this->view->baseUrl('/'));
 		}
 
-		$user_invites = (new Application_Model_Invitestatus)->getData(array("user_id" => $user->id));
+		$user_invites = $user->findDependentRowset('Application_Model_Invitestatus')->current();
 
-		if (!$user_invites || $user_invites->invite_count <= 0)
+		if ($user_invites->invite_count <= 0)
 		{
 			$this->_redirect($this->view->baseUrl('contacts/friends-list'));
 		}
@@ -44,9 +44,9 @@ class ContactsController extends Zend_Controller_Action
 			$this->_redirect($this->view->baseUrl('/'));
 		}
 
-		$user_invites = (new Application_Model_Invitestatus)->getData(array("user_id" => $user->id));
+		$user_invites = $user->findDependentRowset('Application_Model_Invitestatus')->current();
 
-		if (!$user_invites || $user_invites->invite_count <= 0)
+		if ($user_invites->invite_count <= 0)
 		{
 			$this->_redirect($this->view->baseUrl('contacts/friends-list'));
 		}
@@ -220,9 +220,9 @@ class ContactsController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$user_invites = (new Application_Model_Invitestatus)->getData(array("user_id" => $user->id));
+			$user_invites = $user->findDependentRowset('Application_Model_Invitestatus')->current();
 
-			if (!$user_invites || $user_invites->invite_count <= 0)
+			if ($user_invites->invite_count <= 0)
 			{
 				throw new RuntimeException('Sorry! you can not send this invitation', -1);
 			}

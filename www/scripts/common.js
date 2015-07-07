@@ -116,36 +116,6 @@ $(function(){
 				password: {
 					required: true
 				}
-			},
-			submitHandler: function(form){
-				$('#loginError').html('');
-
-				$.ajax({
-					url: $(form).attr('action'),
-					data: $(form).serialize(),
-					type: 'POST',
-					dataType: 'json'
-				}).done(function(response){
-					if (response && response.status){
-						if (!response.active){
-							window.location.href = response.redirect;
-							return false;
-						}
-
-						if (typeof returnUrl !== 'undefined' && returnUrl != ''){
-							window.location.href = returnUrl;
-							return false;
-						}
-
-						window.location.href = response.redirect;
-					} else if (response){
-						$('#loginError').html(response.error.message);
-					} else {
-						alert(ERROR_MESSAGE);
-					}
-				}).fail(function(jqXHR, textStatus){
-					alert(textStatus);
-				});
 			}
 		});
 	}

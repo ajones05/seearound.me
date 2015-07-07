@@ -14,8 +14,7 @@ $this->headScript()
 	->appendScript(
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
 		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
-		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
-		"	var	returnUrl = " . json_encode($request->getParam('url', '')) . ";\n"
+		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n"
 	)
 	->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 	->prependFile($this->baseUrl('bower_components/jquery/dist/jquery.min.js'))
