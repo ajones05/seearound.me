@@ -7,7 +7,6 @@ My_Layout::renderFavicon($this);
 
 $this->headLink()
 	->appendStylesheet($this->baseUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
-	->appendStylesheet($this->baseUrl('www/css/reset.css?' . $config->mediaversion))
 	->appendStylesheet($this->baseUrl('www/css/global.css?' . $config->mediaversion));
 
 $this->headScript()
