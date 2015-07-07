@@ -427,7 +427,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .cmntList li.imgPro{position:relative; margin:0;  float:left;}
 
-.cmntList li.title {font: normal 15px Lato-Regular; color:#4276cd; padding-left: 15px; background: url(../images/title_symbol.png) no-repeat 0px 5px; width: 382px;}/*345px*/
+.cmntList li.title {font: normal 15px Lato-Regular; color:#4276cd; padding-left: 15px; background: url(../images/title_symbol.png) no-repeat 0px 5px; width: 372px;}/*345px*/
 
 .cmntList li.title .title-wrapper {padding: 5px 10px; background: #fff; min-height: 40px; overflow: scroll; overflow-x: hidden; overflow-y: hidden;}
 
