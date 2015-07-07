@@ -26,7 +26,7 @@ $this->headScript()
 	->prependFile($this->baseUrl('bower_components/jquery/dist/jquery.min.js'))
 	->appendFile($this->baseUrl('bower_components/jquery-ui/jquery-ui.min.js'))
 	->appendFile($this->baseUrl('bower_components/jquery-validation/dist/jquery.validate.min.js'))
-	->appendFile($this->baseUrl('www/scripts/common.js'));
+	->appendFile($this->baseUrl('www/scripts/common.js?' . $config->mediaversion));
 
 $image = $this->baseUrl('www/images/img-prof40x40.jpg');
 $class = '';

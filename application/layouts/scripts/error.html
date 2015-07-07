@@ -19,7 +19,7 @@ $this->headScript()
 	->prependFile($this->baseUrl('bower_components/jquery/dist/jquery.min.js'))
 	->appendFile($this->baseUrl('bower_components/jquery-ui/jquery-ui.min.js'))
 	->appendFile($this->baseUrl('bower_components/jquery-validation/dist/jquery.validate.min.js'))
-	->appendFile($this->baseUrl('www/scripts/common.js'));
+	->appendFile($this->baseUrl('www/scripts/common.js?' . $config->mediaversion));
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
