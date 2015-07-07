@@ -52,7 +52,7 @@ function renderNews($news){
 			if (keyCode(e) === 13 && !e.shiftKey){
 				$commentField.attr('disabled', true);
 
-				$('.commentLoading').show();
+				$('.commentLoading', $news).show();
 
 				$.ajax({
 					url: baseUrl + 'home/add-new-comments',
@@ -66,16 +66,14 @@ function renderNews($news){
 				}).done(function(response){
 					if (response && response.status){
 						e.preventDefault();
-						$commentField.val('').height('auto').attr('disabled', false).blur();
+						$commentField.val('').height(38).attr('disabled', false).blur();
 						renderComments($(response.html).insertBefore($commentField.closest('.cmntList-last')));
-						$('.commentLoading').hide();
+						$('.commentLoading', $news).hide();
 					} else if (response){
 						alert(response.error.message);
 					} else {
 						alert(ERROR_MESSAGE);
 					}
-				}).fail(function(jqXHR, textStatus){
-					alert(textStatus);
 				});
 			} else {
 				if (Number($("#newsData").height()) > 714){
