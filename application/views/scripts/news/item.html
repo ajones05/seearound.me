@@ -24,7 +24,7 @@ if ($image)
 				<li>
 					<div class="post-top">
 						<a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $this->owner->id); ?>"><?php echo ucfirst($this->owner->Name); ?></a>
-						<span class="post-date"><?php echo date("d F Y h:i a", strtotime($created_date)); ?></span>
+						<span class="post-date"><?php echo date('F j \a\t h:ia', strtotime($created_date)); ?></span>
 						<?php
 						echo My_ViewHelper::render('news/_vote.html', array(
 							'user' => $this->user,
