@@ -1660,12 +1660,15 @@ body .link-meta {
 	border-style: solid;
 	border-width: 1px;
 	margin-top: 10px;
+	margin-left: -82px;
+  	clear: both;
 }
 body .link-meta .image {
 	text-align: center;
 }
 body .link-meta .image img {
-	max-width: 364px;
+	max-height: 320px;
+  	width: 100%;
 }
 body .link-meta .title {
 	color: #141823;
