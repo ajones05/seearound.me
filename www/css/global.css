@@ -1,3 +1,4 @@
+@import url(//fonts.googleapis.com/css?family=Lato:700);
 /* v2.0 | 20110126
 
 http://meyerweb.com/eric/tools/css/reset/
@@ -48,7 +49,6 @@ table {
 	border-spacing: 0;
 }
 
-@import url(//fonts.googleapis.com/css?family=Lato:700);
 @font-face {
     font-family: 'Lato-Bold';
     src: url('fonts/Lato-Bold.eot');
