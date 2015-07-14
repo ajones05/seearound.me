@@ -233,6 +233,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
     protected $_dependentTables = array(
 		'Application_Model_News',
 		'Application_Model_Comments',
+		'Application_Model_CommentNotify',
 		'Application_Model_Address',
 		'Application_Model_Message',
 		'Application_Model_MessageReply',
@@ -253,6 +254,11 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'Comments' => array(
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Comments',
+			'refColumns' => 'user_id'
+		),
+		'CommentsNotify' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_CommentNotify',
 			'refColumns' => 'user_id'
 		),
 		'Receiver' => array(

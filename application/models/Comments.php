@@ -109,31 +109,6 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
     }
 
 	/**
-	 * Returns notify
-	 *
-	 *
-	 *
-	 * @reutrn	array
-	 */
-    public function getAllCommentUsers($news_id, array $except_user_ids)
-    {
-		$select = $this->select()
-			->setIntegrityCheck(false)
-			->from($this, 'user_data.*')
-			->joinLeft('user_data', 'comments.user_id = user_data.id')
-			->where('comments.isdeleted =?', 0)
-			->where('comments.news_id =?', $news_id)
-			->group('comments.user_id'); 
-
-		foreach ($except_user_ids as $user_id)
-		{
-			$select->where('comments.user_id <>?', $user_id);
-		}
-
-		return $this->fetchAll($select);
-    }
-
-	/**
 	 * Returns comments count by news ID.
 	 *
 	 * @param	integer	$news_id
@@ -182,21 +157,6 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 		return 0;
 	}
-
-   public function getCommentsByUser($newsId,$userId) {
-        $select = $this->select()
-                  ->from('comments', array('news_id'))
-                  ->where('user_id=?', $userId)
-                  ->where('news_id=?', $newsId)
-                  ->where('isdeleted =?', 0);
-        $resultSet =  $this->fetchAll($select);
-        $resultSet = $resultSet->toArray();
-        if($resultSet) {
-            return "Yes";
-        }   else {
-             return "No";
-        }
-   }
 
 	/**
 	 * Finds records by news ID.

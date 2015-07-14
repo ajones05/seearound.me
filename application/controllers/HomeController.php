@@ -562,45 +562,7 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('Validate error', -1);
 			}
 
-			$model = new Application_Model_Comments;
-			$comment = $model->save($form, $news, $user);
-			$comment_users = $model->getAllCommentUsers($news->id, array($user->id, $news->user_id));
-
-			if (count($comment_users) || $news->user_id != $user->id)
-			{
-				$subject = 'SeeAroundme comment on a post you commented on';
-				$body = My_Email::renderBody('comment-notify-comment', array(
-					'news' => $news,
-					'user' => $user,
-					'comment' => $comment->comment
-				));
-
-				if (count($comment_users))
-				{
-					foreach ($comment_users as $row)
-					{
-						My_Email::send(array($row->Name => $row->Email_id), $subject, array('body' => $body));
-					}
-				}
-
-				if ($news->user_id != $user->id)
-				{
-					$news_user = $news->findDependentRowset('Application_Model_User')->current();
-
-					My_Email::send(
-						array($news_user->Name => $news_user->Email_id),
-						'SeeAroundme comment on your post',
-						array(
-							'template' => 'comment-notify-owner',
-							'assign' => array(
-								'news' => $news,
-								'user' => $user,
-								'comment' => $comment->comment
-							)
-						)
-					);
-				}
-			}
+			$comment = (new Application_Model_Comments)->save($form, $news, $user);
 
 			$response = array(
 				'status' => 1,

@@ -16,6 +16,8 @@ ALTER TABLE `comments` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `u
 ALTER TABLE `comments` CHANGE `created_at` `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE `comments` CHANGE `isdeleted` `isdeleted` INT(2) NOT NULL DEFAULT '0';
 ALTER TABLE `comments` CHANGE `comment` `comment` VARCHAR(65535) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `comments` ADD FOREIGN KEY `comments_fk_2`(`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE;
+ALTER TABLE `comments` ADD `notify` TINYINT NOT NULL DEFAULT '0' AFTER `updated_at`; 
 
 --
 -- Table structure for table `friends`
@@ -117,3 +119,16 @@ ALTER TABLE `facebook_temp_users` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) 
 --
 ALTER TABLE `email_invites` ENGINE = InnoDB;
 ALTER TABLE `email_invites` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE SET NULL;
+
+--
+-- Table structure for table `comment_user_notify`
+--
+CREATE TABLE `comment_user_notify` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`comment_id` INT(11) NOT NULL,
+	`user_id` INT(11) NOT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`),
+	FOREIGN KEY `comment_user_notify_ibfk_1`(`comment_id`) REFERENCES `comments`(`id`) ON DELETE CASCADE,
+	FOREIGN KEY `comment_user_notify_ibfk_2`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
