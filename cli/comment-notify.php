@@ -1,4 +1,8 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 defined('ROOT_PATH') 
     || define('ROOT_PATH', dirname(dirname(__FILE__)));
 
@@ -22,10 +26,12 @@ $application = new Zend_Application(
 
 $application->bootstrap();
 
+$_SERVER['HTTP_HOST'] = Zend_Registry::get('config_global')->server->http_host;
+
 $userModel = new Application_Model_User;
 $postModel = new Application_Model_News;
 $commentModel = new Application_Model_Comments;
-$commentUserNotifyModel = new Application_Model_CommentUserNotify();
+$commentUserNotifyModel = new Application_Model_CommentUserNotify;
 
 $limit = 100;
 
