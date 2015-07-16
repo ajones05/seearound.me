@@ -1,5 +1,5 @@
 var newsMap, newsMapRady = false, newsMarkers = {}, newsMarkersCluster = [], newsMarkerClick = false,
-	newsMapCircle, currentLocationMarker;
+	newsMapCircle, currentLocationMarker, modalDialog = false;
 
 function renderNews($news){
 	$('.textAreaClass', $news)
@@ -603,12 +603,14 @@ function openImage(image, width, height){
 			height: dialogHeight + 15,
 			dialogClass: 'colorbox',
 			open: function(event, ui){
+				modalDialog = true;
 				$(window).bind('resize.dialog', function(){
 					$(event.target).dialog('close');
 					openImage(image, width, height);
 				});
 			},
 			beforeClose: function(event, ui){
+				modalDialog = false;
 				$('#midColLayout').css({
 					top: 0,
 					position: 'static',
@@ -1173,6 +1175,10 @@ function renderNewsResponse(news, start, isNew){
 
 	if (news.length == 15){
 		$(window).bind('scroll', function(){
+			if (modalDialog){
+				return false;
+			}
+
 			if ($(window).scrollTop() + $(window).height() > $(document).height() - 400){
 				$(window).unbind('scroll');
 				loadNews(start);
