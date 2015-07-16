@@ -1,51 +1,18 @@
 <?php
 $commentsModel = new Application_Model_Comments;
 $comments = !$this->is_new ? $commentsModel->findAllByNewsId($this->item->id, 3) : array();
-$created_date = isset($this->item['created_date']) ? $this->item['created_date'] : date('Y-m-d H:i:s');
-$hide_comments = !$this->item->comment || !My_ArrayHelper::search(array('news_id' => $this->item['id']), $comments->toArray(), 1);
-
-// TODO: cache
-$image = isset($this->item['image']) && file_exists(ROOT_PATH . '/newsimages/' . $this->item['image']) ? $this->item['image'] : null;
-
-if ($image)
-{
-	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $image);
-}
+$hide_comments = !$this->item->comment || !My_ArrayHelper::search(array('news_id' => $this->item->id), $comments->toArray(), 1);
 ?>
-<div id="scrpBox_<?php echo $this->item['id']; ?>" class="scrpBox">
-	<ul class="myScrp">
-		<li>
-			<ul class="post">
-				<li class="imgPro">
-					<a href="<?php echo $this->baseUrl("home/profile/user/" . $this->owner->id); ?>">
-						<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="smallImage" />
-					</a>
-				</li>
-				<li>
-					<div class="post-top">
-						<a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $this->owner->id); ?>"><?php echo ucfirst($this->owner->Name); ?></a>
-						<span class="post-date"><?php echo date('F j \a\t h:ia', strtotime($created_date)); ?></span>
-						<?php
-						echo My_ViewHelper::render('news/_vote.html', array(
-							'user' => $this->user,
-							'news' => $this->item,
-							'is_new' => $this->is_new
-						));
-						?>
-					</div>
-					<div class="post-bottom">
-						<div class="post-content"><?php echo $this->item->renderContent(350); ?></div>
-						<?php if ($image != null): ?>
-						<div class="post-image" style="margin-top: 10px;">
-							<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" />
-						</div>
-						<?php endif; ?>
-					</div>
-				</li>
-				<li class="clr"></li>
-			</ul>
-		</li>
-	</ul>
+<div id="scrpBox_<?php echo $this->item->id; ?>" class="scrpBox">
+<?php
+echo My_ViewHelper::render('news/_body.html', array(
+	'user' => $this->user,
+	'owner' => $this->owner,
+	'item' => $this->item,
+	'is_new' => $this->is_new,
+	'length' => 350
+));
+?>
 	<div class="clr"></div>
 	<div class="dur">
 		<div class="news-footer">
@@ -53,11 +20,11 @@ if ($image)
 			<div class="post-comment">Comment</div>
 			<?php endif; ?>
 			<?php if ($this->item->comment > 3): ?>
-			<div class="view-comment"><?php echo Application_Model_Comments::viewMoreLabel($this->item->comment - 3); ?></div>
+			<div class="view-comment"><?php echo $commentsModel->viewMoreLabel($this->item->comment - 3); ?></div>
 			<?php endif; ?>
 			<span class="floatR">
 				<span style="display: block; float: left;">Share:</span>
-				<a class="share crp" href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->item['id']); ?>">
+				<a class="share crp" href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->item->id); ?>">
 					<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" style="width: 25px; height: 25px;" />
 				</a>
 				<a href="#" class="crp email-share">
@@ -70,7 +37,7 @@ if ($image)
 		</div>
 		<div class="clr"></div>
 	</div>
-	<ul id="comment_list_<?php echo $this->item['id']; ?>" class="cmntRow">
+	<ul id="comment_list_<?php echo $this->item->id; ?>" class="cmntRow">
 	<?php
 		if ($this->item->comment)
 		{

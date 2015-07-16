@@ -1,0 +1,46 @@
+<?php
+$created_date = $this->item->created_date ? strtotime($this->item->created_date) : time();
+
+// TODO: cache
+$image = $this->item->image && file_exists(ROOT_PATH . '/newsimages/' . $this->item->image) ? $this->item->image : null;
+
+if ($image)
+{
+	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $image);
+}
+?>
+	<ul class="myScrp">
+		<li>
+			<ul class="post">
+				<li class="imgPro">
+					<a href="<?php echo $this->baseUrl("home/profile/user/" . $this->owner->id); ?>">
+						<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="smallImage" />
+					</a>
+				</li>
+				<li>
+					<?php if ($this->user->id != null): ?>
+					<div class="post-top">
+						<a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $this->owner->id); ?>"><?php echo ucfirst($this->owner->Name); ?></a>
+						<span class="post-date"><?php echo date('F j \a\t h:ia', $created_date); ?></span>
+						<?php
+						echo My_ViewHelper::render('news/_vote.html', array(
+							'user' => $this->user,
+							'news' => $this->item,
+							'is_new' => $this->is_new
+						));
+						?>
+					</div>
+					<?php endif; ?>
+					<div class="post-bottom">
+						<div class="post-content"><?php echo $this->item->renderContent(My_ArrayHelper::getProp($this, 'length')); ?></div>
+						<?php if ($image != null): ?>
+						<div class="post-image" style="margin-top: 10px;">
+							<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" />
+						</div>
+						<?php endif; ?>
+					</div>
+				</li>
+				<li class="clr"></li>
+			</ul>
+		</li>
+	</ul>

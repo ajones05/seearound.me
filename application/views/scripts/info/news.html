@@ -1,60 +1,23 @@
 <?php
-$auth = Zend_Auth::getInstance()->getIdentity();
-$auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
-$user = $this->news->findDependentRowset('Application_Model_User')->current();
-$user_image = $user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
-
-// TODO: cache image size
-$image = $this->news->image && file_exists(ROOT_PATH . '/newsimages/' . $this->news->image) ? $this->news->image : null;
-
-if ($image)
-{
-	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $image);
-}
+$commentsModel = new Application_Model_Comments;
+$comments = $commentsModel->findAllByNewsId($this->item->id, 5);
 ?>
-<div id="scrpBox_<?php echo $this->news->id; ?>" class="scrpBox scrpBox_new">
-	<ul class="myScrp">
-		<li>
-			<ul class="post">
-				<li class="imgPro">
-					<a href="<?php echo $this->baseUrl("home/profile/user/" . $user->id); ?>">
-						<img src="<?php echo $user_image; ?>" class="smallImage" />
-					</a>
-				</li>
-				<li>
-					<?php if ($this->user): ?>
-                    <div class="post-top">
-                        <a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $user->id); ?>" style="z-index:9999;color: #0068C4;text-decoration: none;"><?=$user->Name?></a> 
-                        <span class="post-date"><?php echo date('F j \a\t h:ia', strtotime($this->news->created_date));?></span>
-						<?php
-						echo My_ViewHelper::render('news/_vote.html', array(
-							'user' => $this->user,
-							'news' => $this->news
-						));
-						?>
-                    </div>
-					<?php endif; ?>
-					<div class="post-bottom">
-						<div class="post-content"><?php echo $this->news->renderContent(); ?></div>
-					</div>
-				</li>
-				<li class="clr"></li>
-			</ul>
-		</li>
-		<?php if ($image != null): ?>
-		<li class="cmnt">
-			<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" />
-		</li>
-		<?php endif; ?>
-    </ul>
+<div id="scrpBox_<?php echo $this->item->id; ?>" class="scrpBox">
+<?php
+echo My_ViewHelper::render('news/_body.html', array(
+	'user' => $this->user,
+	'owner' => $this->owner,
+	'item' => $this->item
+));
+?>
 	<div class="clr"></div>
-	<?php if ($this->news->comment > 5 || $auth_user_id == $user->id): ?>
+	<?php if ($this->item->comment > 5 || $this->user->id == $this->owner->id): ?>
 	<div class="dur">
 		<div class="news-footer">
-			<?php if ($this->news->comment > 5): ?>
-			<div class="view-comment"><?php echo $this->comentsModel->viewMoreLabel($this->news->comment - 5); ?></div>
+			<?php if ($this->item->comment > 5): ?>
+			<div class="view-comment"><?php echo $commentsModel->viewMoreLabel($this->item->comment - 5); ?></div>
 			<?php endif; ?>
-			<?php if ($auth_user_id == $user->id): ?>
+			<?php if ($this->user->id == $this->owner->id): ?>
 			<input type="button" class="edit-post" value="Edit Post" />
 			<?php endif; ?>
 		</div>
@@ -63,11 +26,11 @@ if ($image)
 	<?php endif;?>
 	<ul class="cmntRow">
         <?php
-		if ($this->news->comment)
+		if ($this->item->comment)
 		{
-			for ($i = count($this->comments) - 1; $i >= 0; $i--)
+			for ($i = count($comments) - 1; $i >= 0; $i--)
 			{
-				echo My_ViewHelper::render('comment/item.html', array('item' => $this->comments[$i], 'limit' => 250));
+				echo My_ViewHelper::render('comment/item.html', array('item' => $comments[$i], 'limit' => 250));
 			}
 		}
 

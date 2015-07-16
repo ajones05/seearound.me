@@ -339,19 +339,6 @@ body.hideRight #midColLayout {
 
 .scrpBox .bottom{border-bottom:none}
 
-.scrpBox_new{width: 470px;}
-
-.scrpBox_new .bottom{border-bottom:none}
-
-.scrpBox_new .cmnt {
-	font-size: 12px;
-	text-align: center;
-}
-.scrpBox_new .cmnt img {
-	cursor: pointer;
-	width: 96%;
-}
-
 .scrpRow{border-bottom: 1px solid #d7d7d7; margin-left: 0px; padding: 8px 0px 6px; width: 100%; background: #f1f1f1;}
 
 .scrpRow li.imgPro {
@@ -370,8 +357,6 @@ body.hideRight #midColLayout {
 .scrpRow li.bgTxtArea{width: 358px; padding-left: 20px; float: right; margin-right: 7px; background: url(../images/user-symbol.png) no-repeat 2px 1px; margin-top: 4px;}
 
 .scrpRow li.bgTxtArea textarea{border:0;}
-
-.scrpBox_new .myScrp { padding-top: 5px; background: #fff;}
 
 .deteleIcon1 {
 	display: none;

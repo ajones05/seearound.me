@@ -17,11 +17,11 @@ class InfoController extends Zend_Controller_Action
 			{
 				throw new RuntimeException('Incorrect user ID', -1);
 			}
-
-			$this->view->user = $user;
 		}
-
-        $this->view->newsDetailExist = true;
+		else
+		{
+			$user = (new Application_Model_User)->createRow();
+		}
 
 		$news_id = $this->_request->getParam('nwid');
 
@@ -30,12 +30,11 @@ class InfoController extends Zend_Controller_Action
 			$this->_redirect($this->view->baseUrl('/'));
         }
 
-		$this->view->news = $news;
-		$this->view->news_owner = $news->findDependentRowset('Application_Model_User')->current();
+		$owner = $news->findDependentRowset('Application_Model_User')->current();
 
-		$this->view->comentsModel = new Application_Model_Comments;
-
-		$this->view->comments = $this->view->comentsModel->findAllByNewsId($news->id, 5);
+		$this->view->item = $news;
+		$this->view->user = $user;
+		$this->view->owner = $owner;
 
 		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
 
@@ -51,9 +50,9 @@ class InfoController extends Zend_Controller_Action
 				'longitude' => $news->longitude,
 			)) . ";\n" .
 			"	var newsOwner = " . json_encode(array(
-				'address' => $this->view->news_owner->address(),
-				'name' => $this->view->news_owner->Name,
-				'image' => $this->view->news_owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+				'address' => $owner->address(),
+				'name' => $owner->Name,
+				'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 			)) . ";\n")
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 			->appendFile($this->view->baseUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js'))
