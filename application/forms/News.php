@@ -122,16 +122,16 @@ class Application_Form_News extends Zend_Form
 
 			$thumbs = new Zend_Filter();
 			$thumbs->appendFilter(new Skoch_Filter_File_Resize(array(
-				'directory' => ROOT_PATH . '/tbnewsimages',
-				'width' => 320,
-				'height' => 320,
+				'directory' => ROOT_PATH . '/newsimages',
+				'width' => 960,
+				'height' => 960,
 				'keepRatio' => true,
 				'quality' => $quality
 			)));
 			$thumbs->appendFilter(new Skoch_Filter_File_Resize(array(
-				'directory' => ROOT_PATH . '/newsimages',
-				'width' => 960,
-				'height' => 960,
+				'directory' => ROOT_PATH . '/tbnewsimages',
+				'width' => 320,
+				'height' => 320,
 				'keepRatio' => true,
 				'quality' => $quality
 			)));
