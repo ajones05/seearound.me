@@ -350,6 +350,14 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						{
 							$ext = strtolower(My_ArrayHelper::getProp(pathinfo($meta['property']['og:image']), 'extension', 'tmp'));
 
+							if (!in_array($ext, My_CommonUtils::$mimetype_extension))
+							{
+								if (preg_match('/^(' . implode('|', My_CommonUtils::$mimetype_extension) . ')/', $ext, $matches))
+								{
+									$ext = $matches[0];
+								}
+							}
+
 							do
 							{
 								$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
