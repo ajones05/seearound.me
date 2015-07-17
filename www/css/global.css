@@ -1328,7 +1328,10 @@ table tr td input { border: 1px solid #d7d7d7;}
 .post-top .post-date {color: #4276cd; font-family: Lato-LightItalic; font-size: 11px; letter-spacing: 0.6px; }
 
 .post-bottom .post-content {color: #333333; font: normal 15px Lato-Regular; line-height: 16px; word-wrap: break-word;}
-.post-bottom .post-content a {color: #6699ff;}
+.post-bottom .post-content a {
+	color: #6699ff;
+	display: inline-block;
+}
 
 .cmntList li.title a.moreButton {
 	color: #6699ff;
@@ -1641,9 +1644,6 @@ body.page {
  * Links metadata
  */
 body .link-meta {
-	border-color: #e9eaed #e9eaed #d1d1d1;
-	border-style: solid;
-	border-width: 1px;
 	margin-top: 10px;
 	margin-left: -82px;
   	clear: both;
@@ -1672,8 +1672,11 @@ body .link-meta .delim {
 	padding-right: 10px;
 }
 body .link-meta .meta-content {
+	border-color: #e9eaed #e9eaed #d1d1d1;
+	border-style: solid;
+	border-width: 1px;
 	text-align: left;
-	margin: 10px 12px;
+	padding: 10px 12px;
 }
 .colorbox.ui-widget-content {
 	background: none;
