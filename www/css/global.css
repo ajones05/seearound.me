@@ -1332,7 +1332,9 @@ table tr td input { border: 1px solid #d7d7d7;}
 	color: #6699ff;
 	display: inline-block;
 }
-
+.post-content > a {
+	max-width: 100%;
+}
 .cmntList li.title a.moreButton {
 	color: #6699ff;
 	text-decoration: underline;
