@@ -380,19 +380,12 @@ class IndexController extends Zend_Controller_Action {
 
     public function changePasswordAction() 
     {
-		if (Zend_Auth::getInstance()->hasIdentity()) {
-			$this->_redirect($this->view->baseUrl('/'));    
-		}
-
 		$this->view->layout()->setLayout('login');
-
-        $erorrs = array();
-
         $this->view->email = $email = $this->_request->getParam("em", null);
-
         $this->view->code = $code = $this->_request->getParam("cd", null);
 
-        if($this->_request->isPost()) { 
+        if ($this->_request->isPost())
+		{ 
 
             $tableUser = new Application_Model_User;
 
@@ -424,7 +417,7 @@ class IndexController extends Zend_Controller_Action {
 
                     $insData = array(
 
-                        'Password'  => md5($password),
+                        'Password'  => hash('sha256', $password),
 
                         'Conf_code' => new Zend_Db_Expr("NULL"),
 
