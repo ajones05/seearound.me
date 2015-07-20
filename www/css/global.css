@@ -2104,7 +2104,7 @@ input[type=submit], input[type=button] {
 }
 .post-image {
 	text-align: center;
-	margin-left: -82px;
+	/*margin-left: -82px;*/
 	overflow: hidden;
   	max-height: 320px;
   	position: relative;
