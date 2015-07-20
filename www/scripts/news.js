@@ -702,10 +702,16 @@ function latlngDistance(firstPoint, secondPoint, unit){
 }
 
 function higlightNews(newsId){
-	var $target = $('#scrpBox_' + newsId);
+	var $target = $('#scrpBox_' + newsId),
+		locationMarkers = getMarkerPosition(newsId);
 	$('.scrpBox').removeClass('higlight-news');
+
+	for (var i in locationMarkers[1]){
+		$('#scrpBox_' + locationMarkers[1][i][0]).addClass('higlight-news');
+	}
+
 	$.scrollTo($target, 1000, {offset: {top: -100}});
-	$target.addClass('higlight-news').find('.moreButton').click();
+	$target.find('.moreButton').click();
 }
 
 function loadNews(start, callback){
@@ -773,11 +779,19 @@ function updateNews($news){
 			return true;
 		}
 
-		newsMarkers[newsId].setIcon({
-			url: baseUrl + 'www/images/icons/icon_3.png',
-			width: 20,
-			height: 29
-		});
+		var locationMarkers = getMarkerPosition(newsId);
+
+		for (var i in locationMarkers[1]){
+			newsMarkers[locationMarkers[1][i][0]].hide();
+		}
+
+		newsMarkers[newsId]
+			.setIcon({
+				url: baseUrl + 'www/images/icons/icon_3.png',
+				width: 20,
+				height: 29
+			})
+			.show();
 	});
 
 	$news.mouseout(function(){
@@ -1297,6 +1311,7 @@ NewsMarker.prototype.setIcon = function(icon){
 		});
 
 	this.setPosition(this.opts.position);
+	return this;
 };
 
 NewsMarker.prototype.show = function(){
