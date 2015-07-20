@@ -135,7 +135,8 @@ $(function(){
 			mapZoom: 14,
 			markerIcon: baseUrl + 'www/images/icons/icon_1.png',
 			inputPlaceholder: 'Enter address',
-			submitText: 'Use This Address',
+			submitText: 'Post from here',
+			cancelButton: true,
 			defaultAddress: userAddress,
 			center: newsMap.getCenter(),
 			infoWindowContent: function(address){

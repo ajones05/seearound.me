@@ -1459,7 +1459,16 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 #ddMyProf {z-index:9998; position:absolute;border-bottom:0; padding:}
 
-#ddMyProf .ddMyProfLinks{background:#4276cd; position:absolute; margin:5px 0 0 -10px; width:120px;z-index:998;-webkit-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);-moz-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);box-shadow: 0px 5px 18px -3px rgba(121,149,196,1); }
+#ddMyProf .ddMyProfLinks {
+	background: #4276cd;
+	position: absolute;
+	margin: 5px 0 0 -10px;
+	width: 120px;
+	z-index: 998;
+	-webkit-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
+	-moz-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
+	box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
+}
 
 #ddMyProf .ddMyProfLinks li{display:block; padding:8.8px 0; width:100%;border-bottom: 2px solid #fff; text-align: center; margin-right: 0px;}
 
@@ -1730,41 +1739,43 @@ body .link-meta .meta-content {
 	padding: 15px 0;
 	display: inline-block;
 }
+.location-dialog .panel input {
+	float: left;
+}
 .location-dialog .panel input[type=text] {
 	width: 290px;
 	padding: 8px 10px;
 	font: normal 15px Lato-lightItalic;
 	color: #8d8d8d;
 	border: 1px solid #d7d7d7;
-	float: left;
+}
+.location-dialog .panel input[type=submit],
+.location-dialog .panel input[type=button] {
+	font: normal 17px/17px lato-Bold;
+	color: #fff;
+	background: #4276cd;
+	-webkit-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
+	-moz-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
+	box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
+	padding: 8.8px 10px;
+	cursor: pointer;
+	width: 140px;
+}
+.location-dialog .panel input[type=submit] {
+	margin-left: 50px;
+}
+.location-dialog .panel input[type=button] {
+	margin-right: 50px;
+}
+.location-dialog .panel input[type=submit]:hover,
+.location-dialog .panel input[type=button]:hover {
+	color:#ccc;
 }
 .location-dialog .panel img.search {
 	cursor: pointer;
 	width: 39px;
 	height: 36px;
 	float: left;
-}
-.location-dialog .panel input[type=submit] {
-	font: normal 17px lato-Bold;
-	overflow:visible;
-	color:#fff;
-	background-color: #0064CD;
-	background-repeat: repeat-x;
-	background-image: -khtml-gradient(linear, left top, left bottom, from(#049cdb), to(#0064cd));
-	background-image: -moz-linear-gradient(top, #049cdb, #0064cd);
-	background-image: -ms-linear-gradient(top, #049cdb, #0064cd);
-	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #049cdb), color-stop(100%, #0064cd));
-	background-image: -webkit-linear-gradient(top, #049cdb, #0064cd);
-	background-image: -o-linear-gradient(top, #049cdb, #0064cd);
-	background-image: linear-gradient(top, #049cdb, #0064cd);
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#049cdb', endColorstr='#0064cd', GradientType=0);
-	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-	border-color: #0064CD #0064CD #003F81;
-	border-color: rgba(0, 0, 0, 0.1);
-	padding: 7px 10px;
-	margin-left: 50px;
-	float: left;
-	cursor: pointer;
 }
 #slider {
     background-color: #878787;

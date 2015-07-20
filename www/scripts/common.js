@@ -427,11 +427,18 @@ function keyCode(event){
 function editLocationDialog(options){
 	$('body').css({overflow: 'hidden'});
 
+	$form = $('<form/>');
+
+	// TODO: make buttons optional
+	if (typeof options.cancelButton !== 'undefined' && options.cancelButton === true){
+		$form.append($('<input/>', {type: 'button', value: 'Cancel'}))
+	}
+
 	$('<div/>', {'class': 'location-dialog'})
 		.append(
 			$('<div/>', {id: 'map-canvas'}),
 			$('<div/>', {'class': 'panel'}).append(
-				$('<form/>').append(
+				$form.append(
 					$('<input/>', {type: 'text', name: 'address', placeholder: options.inputPlaceholder}),
 					$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
 					$('<input/>', {type: 'submit', value: options.submitText})
@@ -549,6 +556,10 @@ function editLocationDialog(options){
 						$submitField.attr('disabled', true);
 						options.submit(dialogEvent, marker.getPosition(), $editAddress.val());
 					});
+
+				$('input[type=button]', dialogEvent.target).click(function(){
+					$(dialogEvent.target).dialog('close');
+				});
 
 				function updateMarker(event){
 					geocoder.geocode({
