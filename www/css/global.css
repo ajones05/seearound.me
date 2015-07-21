@@ -1748,7 +1748,7 @@ body .link-meta .meta-content {
 	float: left;
 }
 .location-dialog .panel input[type=text] {
-	min-width: 290px;
+	width: 290px;
 	padding: 8px 10px;
 	font: normal 15px Lato-lightItalic;
 	color: #8d8d8d;
@@ -1764,7 +1764,7 @@ body .link-meta .meta-content {
 	box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
 	padding: 8.8px 10px;
 	cursor: pointer;
-	width: 140px;
+	min-width: 140px;
 }
 .location-dialog .panel input[type=submit] {
 	margin-left: 50px;
