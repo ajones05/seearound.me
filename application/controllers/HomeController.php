@@ -16,6 +16,20 @@ class HomeController extends Zend_Controller_Action
 			$this->_redirect($this->view->baseUrl('/'));
 		}
 
+		$point = $this->_request->get('point');
+		
+		if (trim($point) !== '')
+		{
+			$point = explode(',', $point);
+
+			if (count($point) != 2 || !My_Validate::latitude($point[0]) || !My_Validate::longitude($point[1]))
+			{
+				throw new RuntimeException('incorrect point value', -1);
+			}
+
+			$this->view->headScript('script', 'var point = ' . json_encode($point) . ';');
+		}
+
         $this->view->homePageExist = true;
         $this->view->changeLocation = true;
 		$this->view->displayMapFilter = true;
@@ -404,6 +418,13 @@ class HomeController extends Zend_Controller_Action
 			if (!My_Validate::digit($start) || $start < 0)
 			{
 				throw new RuntimeException('Incorrect start value', -1);
+			}
+
+			$point = $this->_request->getPost('point', 0);
+
+			if ($point)
+			{
+				$radius = 0.018939;
 			}
 
 			$result = (new Application_Model_News)->search(array(

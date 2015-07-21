@@ -182,12 +182,6 @@ function renderNews($news){
 
 														updateMarkersCluster();
 													}
-
-													var $markerElement = $('#' + newsMarkers[news_id].id);
-
-													if ($markerElement.data('ui-tooltip')){
-														$markerElement.tooltip('destroy');
-													}
 												}
 
 												$(dialogEvent.target).dialog('close');
@@ -229,6 +223,8 @@ function renderNews($news){
 
 											resetMarkersCluster();
 											updateMarkersCluster();
+
+											$('#addNewsForm [value=' + news_id + ']').remove();
 										} else {
 											window.location = baseUrl + 'home';
 										}
@@ -265,12 +261,6 @@ function renderNews($news){
 									if (response && response.status){
 										if (newsMap.get('isListing')){
 											newsMarkers[news_id].opts.data.news = $('.edit-news-content [name=news]', $target).val();
-
-											var $markerElement = $('#' + newsMarkers[news_id].id);
-
-											if ($markerElement.data('ui-tooltip')){
-												$markerElement.tooltip('destroy');
-											}
 										}
 
 										$('.edit-news-content, .edit-news-panel', $target).remove();
@@ -525,14 +515,29 @@ function createNewsMarker(options, contentCallback){
 					);
 				},
 				close: function(event, ui){
+					var isOpen = false;
+
 					ui.tooltip.hover(
 						function(){
 							$(this).stop(true).show();
+							isOpen = true;
 						},
 						function(){
-							$(this).remove();
+							$(event.target).tooltip('close');
 						}
 					);
+
+					setTimeout(function(){
+						if (isOpen){
+							return false;
+						}
+
+						$(ui.tooltip).remove();
+
+						if ($(event.target).is(':ui-tooltip')){
+							$(event.target).tooltip('destroy');
+						}
+					}, .1);
 				}
 		})
 		.tooltip('open');
@@ -722,19 +727,28 @@ function loadNews(start, callback){
     $('#loading').width($("#newsData").width()).show();
 	$('#newsData #pagingDiv').remove();
 
+	var data = {
+		radius: getRadius(),
+		keywords: $('#searchNews [name=sv]').val(),
+		filter: $('#filter_type').val(),
+		start: start,
+		'new': $('#addNewsForm [name=new\\[\\]]').map(function(){
+			return $(this).val();
+		}).get()
+	};
+
+	if (typeof point !== 'undefined'){
+		data.latitude = point[0];
+		data.longitude = point[1];
+		data.point = 1;
+	} else {
+		data.latitude = newsMap.getCenter().lat();
+		data.longitude = newsMap.getCenter().lng();
+	}
+	
 	$.ajax({
 		url: baseUrl + 'home/load-news',
-		data: {
-			latitude: newsMap.getCenter().lat(),
-			longitude: newsMap.getCenter().lng(),
-			radius: getRadius(),
-			keywords: $('#searchNews [name=sv]').val(),
-			filter: $('#filter_type').val(),
-			start: start,
-			'new': $('#addNewsForm [name=new\\[\\]]').map(function(){
-				return $(this).val();
-			}).get()
-		},
+		data: data,
 		type: 'POST',
 		dataType: 'json',
 		async: false
@@ -988,9 +1002,15 @@ function renderListingMarker(news, readmore){
 			tooltip += '</div>' +
 				'</div>' +
 			'</div>' +
-			'<div class="tooltip-footer">' +
-				'<a href="' + baseUrl + 'info/news/nwid/' + newsMarker.opts.data.id + '">More details</a>' +
-			'</div>';
+			'<div class="tooltip-footer">';
+
+			if (getMarkerPosition(newsMarker.opts.data.id)[1].length == 1){
+				tooltip += '<a href="' + baseUrl + 'info/news/nwid/' + newsMarker.opts.data.id + '">More details</a>';
+			} else {
+				tooltip += '<a href="' + baseUrl + 'home/index/point/' + newsMarker.opts.data.latitude + ',' + newsMarker.opts.data.longitude + '">More details</a>';
+			}
+
+			tooltip += '</div>';
 
 			return tooltip;
 		}
@@ -1142,12 +1162,6 @@ function renderEditLocationDialog(callback){
 						newsMap.setCenter(position);
 						newsMapCircle.changeCenter(position, 0.8);
 						currentLocationMarker.setPosition(position);
-
-						var $markerElement = $('#' + currentLocationMarker.id);
-
-						if ($markerElement.data('ui-tooltip')){
-							$markerElement.tooltip('destroy');
-						}
 
 						callback();
 
