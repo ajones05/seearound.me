@@ -1,5 +1,6 @@
 $(function(){
-	var center = new google.maps.LatLng(userLatitude, userLongitude);
+	var userLocation = new google.maps.LatLng(userLatitude, userLongitude),
+		center = typeof point !== 'undefined' ? new google.maps.LatLng(point[0], point[1]) : userLocation;
 
 	renderNewsMap({
 		center: center,
@@ -15,7 +16,7 @@ $(function(){
 	});
 
 	currentLocationMarker = new NewsMarker({
-		position: newsMap.getCenter(),
+		position: userLocation,
 		map: newsMap,
 		id: 'currentLocationMarker',
 		icon: {
