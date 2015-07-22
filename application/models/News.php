@@ -159,11 +159,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 *
 	 * @param	array $parameters
 	 * @param	Application_Model_UserRow $user
-	 * @param	string $filter
 	 *
 	 * @return	array
 	 */
-	public function search(array $parameters, Application_Model_UserRow $user, $filter = null)
+	public function search(array $parameters, Application_Model_UserRow $user)
 	{
 		$query = $this->publicSelect()->setIntegrityCheck(false);
 
@@ -172,33 +171,38 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			$query->where('news.news LIKE ?', '%' . $parameters['keywords'] . '%');
 		}
 
-		switch ($filter)
+		$filter = My_ArrayHelper::getProp($parameters, 'filter');
+
+		if ($filter != null)
 		{
-			case 'interest':
-				$interests = $user->parseInterests();
+			switch ($filter)
+			{
+				case 'interest':
+					$interests = $user->parseInterests();
 
-				if (count($interests))
-				{
-					$adapter = $this->getAdapter();
-
-					foreach ($interests as &$_interest)
+					if (count($interests))
 					{
-						$_interest = 'news.news LIKE ' . $adapter->quote('%' . $_interest . '%');
+						$adapter = $this->getAdapter();
+
+						foreach ($interests as &$_interest)
+						{
+							$_interest = 'news.news LIKE ' . $adapter->quote('%' . $_interest . '%');
+						}
+
+						$query->where(implode(' OR ', $interests));
 					}
 
-					$query->where(implode(' OR ', $interests));
-				}
-
-				break;
-			case 'myconnection':
-				$query->where('news.user_id =?', $user->id);
-				break;
-			case 'friends':
-				$query->where('news.user_id <>?', $user->id);
-				$query->joinLeft('friends', 'news.user_id = friends.sender_id OR news.user_id = friends.reciever_id', '');
-				$query->where('(friends.sender_id = ' . $user->id . ' OR friends.reciever_id = ' . $user->id . ')');
-				$query->where('friends.status =?', 1);
-				break;
+					break;
+				case 'myconnection':
+					$query->where('news.user_id =?', $user->id);
+					break;
+				case 'friends':
+					$query->where('news.user_id <>?', $user->id);
+					$query->joinLeft('friends', 'news.user_id = friends.sender_id OR news.user_id = friends.reciever_id', '');
+					$query->where('(friends.sender_id = ' . $user->id . ' OR friends.reciever_id = ' . $user->id . ')');
+					$query->where('friends.status =?', 1);
+					break;
+			}
 		}
 
 		if (count(My_ArrayHelper::getProp($parameters, 'exclude_id', array())))

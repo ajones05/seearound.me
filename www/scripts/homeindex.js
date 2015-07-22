@@ -180,7 +180,7 @@ $(function(){
 	$(".menu dd ul li").click(function(e){
 		$('#filter_type').val($(this).attr("filter"));
 		loadNews(0);
-		$(this).closest('dt').html($(this).html());
+		$(this).closest('dl').find('dt').html($(this).html());
 		$(".menu dd ul").hide();
 	});
 
