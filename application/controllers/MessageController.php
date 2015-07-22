@@ -20,7 +20,7 @@ class MessageController extends Zend_Controller_Action
 			(new Application_Model_Message)->publicSelect()
 				->where('(receiver_id =?', $user->id)
 				->orWhere('reply_to =?)', $user->id)
-				->order('updated DESC')
+				->order('created DESC')
 		);
 		$paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
 		$paginator->setItemCountPerPage(14);
@@ -105,7 +105,7 @@ class MessageController extends Zend_Controller_Action
 						'receiver_id' => $reply_message->receiver_id,
 						'receiver_read' => $reply_message->receiver_read,
 						'reply_text' => $reply_message->reply_text,
-						'created' => $reply_message->created,
+						'created' => date('F j \a\t h:ia', strtotime($reply_message->created)),
 						'sender' => array(
 							'name' => $sender->Name,
 							'image' => $sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))

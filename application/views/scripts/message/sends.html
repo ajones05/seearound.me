@@ -20,7 +20,7 @@
 			<div>
 				<span class="subject"><?php echo $inboxData->subject; ?></span>
 				<span class="name">(<?php echo $receiver->Name; ?>)</span>
-				<span class="dateTime"><?php echo date('Y-m-d H:i', strtotime($inboxData->created)); ?></span>
+				<span class="dateTime"><?php echo date('F j \a\t h:ia', strtotime($inboxData->created)); ?></span>
 				<div class="clr"></div>
 			</div>
         </li>

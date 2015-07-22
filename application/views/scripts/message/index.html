@@ -32,7 +32,7 @@
 					</div>
 				</div>
 				<div class="message-third">
-					<span class="dateTime"><?php echo date('Y-m-d H:i', strtotime($inboxData->created)); ?></span>
+					<span class="dateTime"><?php echo date('F j \a\t h:ia', strtotime($inboxData->created)); ?></span>
 					<img src="<?php echo $this->baseUrl("www/images/" . $icon); ?>" />
                 </div>
 				<div class="clr"></div>
