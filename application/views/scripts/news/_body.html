@@ -8,20 +8,22 @@ if ($image)
 {
 	list($image_width, $image_height) = getimagesize(ROOT_PATH . '/newsimages/' . $image);
 }
+
+$profileLink = $this->baseUrl("home/profile/user/" . $this->owner->id);
 ?>
 	<ul class="myScrp">
 		<li>
 			<ul class="post">
 				<li class="imgPro">
-					<a href="<?php echo $this->baseUrl("home/profile/user/" . $this->owner->id); ?>">
+					<a href="<?php echo $profileLink; ?>">
 						<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="smallImage" />
 					</a>
 				</li>
 				<li>
 					<?php if ($this->user->id != null): ?>
 					<div class="post-top">
-						<a class="title" href="<?php echo $this->baseUrl("home/profile/user/" . $this->owner->id); ?>"><?php echo ucfirst($this->owner->Name); ?></a>
-						<span class="post-date"><?php echo date('F j \a\t h:ia', $created_date); ?></span>
+						<a class="title" href="<?php echo $profileLink; ?>"><?php echo ucfirst($this->owner->Name); ?></a>
+						<a class="post-date" href="<?php echo $this->baseUrl('info/news/nwid/' . $this->item->id); ?>"><?php echo date('F j \a\t h:ia', $created_date); ?></a>
 						<?php
 						echo My_ViewHelper::render('news/_vote.html', array(
 							'user' => $this->user,
