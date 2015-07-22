@@ -1754,8 +1754,8 @@ body .link-meta .meta-content {
 	color: #8d8d8d;
 	border: 1px solid #d7d7d7;
 }
-.location-dialog .panel input[type=submit],
-.location-dialog .panel input[type=button] {
+.location-dialog .panel input.save,
+.location-dialog .panel input.cancel {
 	font: normal 17px/17px lato-Bold;
 	color: #fff;
 	background: #4276cd;
@@ -1766,21 +1766,23 @@ body .link-meta .meta-content {
 	cursor: pointer;
 	min-width: 140px;
 }
-.location-dialog .panel input[type=submit] {
+.location-dialog .panel input.save {
 	margin-left: 50px;
 }
-.location-dialog .panel input[type=button] {
+.location-dialog .panel input.cancel {
 	margin-right: 50px;
 }
-.location-dialog .panel input[type=submit]:hover,
-.location-dialog .panel input[type=button]:hover {
+.location-dialog .panel input.save:hover,
+.location-dialog .panel input.cancel:hover {
 	color:#ccc;
 }
-.location-dialog .panel img.search {
+.location-dialog .panel .search {
 	cursor: pointer;
+	float: left;
+	background-image: url('../images/map_search39x36.png');
+	background-repeat: none;
 	width: 39px;
 	height: 36px;
-	float: left;
 }
 #slider {
     background-color: #878787;

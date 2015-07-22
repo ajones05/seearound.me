@@ -431,7 +431,7 @@ function editLocationDialog(options){
 
 	// TODO: make buttons optional
 	if (typeof options.cancelButton !== 'undefined' && options.cancelButton === true){
-		$form.append($('<input/>', {type: 'button', value: 'Cancel'}))
+		$form.append($('<input/>', {type: 'button'}).val('Cancel').addClass('cancel'));
 	}
 
 	$('<div/>', {'class': 'location-dialog'})
@@ -440,8 +440,8 @@ function editLocationDialog(options){
 			$('<div/>', {'class': 'panel'}).append(
 				$form.append(
 					$('<input/>', {type: 'text', name: 'address', placeholder: options.inputPlaceholder}),
-					$('<img/>', {'class': 'search', src: '/www/images/map_search.png'}),
-					$('<input/>', {type: 'submit', value: options.submitText})
+					$('<input/>', {type: 'submit'}).val('').addClass('search'),
+					$('<input/>', {type: 'button'}).val(options.submitText).addClass('save')
 				)
 			)
 		)
@@ -509,7 +509,13 @@ function editLocationDialog(options){
 					renderLocationAddress(place.formatted_address, place.geometry.location);
 				});
 
-				$('.search', dialogEvent.target).click(function(){
+				$editAddress.on('input', function(){
+					renderLocation = false;
+				});
+
+				$('form', dialogEvent.target).submit(function(e){
+					e.preventDefault();
+
 					var value = $.trim($editAddress.val());
 
 					if (value === ''){
@@ -517,12 +523,12 @@ function editLocationDialog(options){
 						return false;
 					}
 
-					if ($('.pac-container .pac-item:not(.hidden)').size()){
-						$editAddress.focus();
-						return false;
+					if (renderLocation){
+						return true;
 					}
 
 					$submitField.attr('disabled', true);
+					$editAddress.attr('disabled', true);
 
 					geocoder.geocode({
 						address: value
@@ -535,29 +541,21 @@ function editLocationDialog(options){
 						}
 
 						$submitField.attr('disabled', false);
+						$editAddress.attr('disabled', false);
 					});
 				});
 
-				$('form', dialogEvent.target)
-					.on('keyup keypress', function(e){
-						if (keyCode(e) === 13){
-							e.preventDefault();
-							return false;
-						}
-					})
-					.submit(function(e){
-						e.preventDefault();
+				$('.save', dialogEvent.target).click(function(){
+					if (!renderLocation){
+						$editAddress.focus();
+						return false;
+					}
 
-						if (!renderLocation){
-							$editAddress.focus();
-							return false;
-						}
+					$('input', dialogEvent.target).attr('disabled', true);
+					options.submit(dialogEvent, marker.getPosition(), $editAddress.val());
+				});
 
-						$submitField.attr('disabled', true);
-						options.submit(dialogEvent, marker.getPosition(), $editAddress.val());
-					});
-
-				$('input[type=button]', dialogEvent.target).click(function(){
+				$('.cancel', dialogEvent.target).click(function(){
 					$(dialogEvent.target).dialog('close');
 				});
 
