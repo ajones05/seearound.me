@@ -88,8 +88,6 @@ do
 
 				if ($comments->count())
 				{
-					echo $user->Email_id . " - " . $comments->count() . "\n";
-
 					My_Email::send(
 						array($user->Name => $user->Email_id),
 						$user->id == $post->user_id ?
