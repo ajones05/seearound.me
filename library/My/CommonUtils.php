@@ -14,6 +14,15 @@ class My_CommonUtils
 	);
 
 	/**
+	 * @var	array 	The extensions for image types
+	 */
+	public static $imagetype_extension = array(
+		IMAGETYPE_GIF => 'gif',
+		IMAGETYPE_JPEG => 'jpg',
+		IMAGETYPE_PNG => 'png'
+	);
+
+	/**
 	 * @var	string
 	 */
 	public static $link_regex = '(((f|ht)tps?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=!;]*)';
@@ -173,6 +182,83 @@ class My_CommonUtils
 		else
 		{
 			return 'Today';
+		}
+	}
+
+	/**
+	 * Creates image thumbnails.
+	 *
+	 * @param	string $image Image full path
+	 * @param	integer $imageType Image extension
+	 * @param	array $thumbs Thumbnails list in format array(width, height, path)
+	 * @return	void
+	 */
+	public static function createThumbs($image, $imageType, array $thumbs)
+	{
+		switch($imageType)
+		{
+			case IMAGETYPE_GIF:
+				$resource = imagecreatefromgif($image);
+				break;
+			case IMAGETYPE_JPEG:
+				$resource = imagecreatefromjpeg($image);
+				break;
+			case IMAGETYPE_PNG:
+				$resource = imagecreatefrompng($image);
+				break;
+			default: 
+				throw new InvalidArgumentException('Incorrect image type: ' . $imageType);
+		}
+
+		if (!$resource)
+		{
+			throw new InvalidArgumentException('Incorrect image file: ' . $image);
+		}
+
+		$img_w = imageSX($resource);
+		$img_h = imageSY($resource);
+
+		foreach ($thumbs as $thumb)
+		{
+			if ($img_w > $img_h)
+			{
+				$new_w = $thumb[0];
+				$new_h = $img_h*($thumb[1]/$img_w);
+			}
+			elseif ($img_w < $img_h)
+			{
+				$new_w = $img_w*($thumb[0]/$img_h);
+				$new_h = $thumb[1];
+			}
+			else
+			{
+				$new_w = $thumb[0];
+				$new_h = $thumb[1];
+			}
+
+			$new = imagecreatetruecolor($new_w, $new_h);
+
+			if ($imageType === IMAGETYPE_GIF || $imageType === IMAGETYPE_PNG)
+			{
+				imagecolortransparent($new, imagecolorallocatealpha($new, 0, 0, 0, 127));
+				imagealphablending($new, false);
+				imagesavealpha($new, true);
+			}
+
+			imagecopyresampled($new, $resource, 0, 0, 0, 0, $new_w, $new_h, $img_w, $img_h);
+
+			switch($imageType)
+			{
+				case IMAGETYPE_GIF:
+					imagegif($new, $thumb[2]);
+					break;
+				case IMAGETYPE_JPEG:
+					imagejpeg($new, $thumb[2], 60);
+					break;
+				case IMAGETYPE_PNG:
+					imagepng($new, $thumb[2], 4);
+					break;
+			}
 		}
 	}
 }
