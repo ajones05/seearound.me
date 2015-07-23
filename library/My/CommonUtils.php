@@ -223,11 +223,11 @@ class My_CommonUtils
 			if ($img_w > $img_h)
 			{
 				$new_w = $thumb[0];
-				$new_h = $img_h*($thumb[1]/$img_w);
+				$new_h = $img_h*($thumb[0]/$img_w);
 			}
 			elseif ($img_w < $img_h)
 			{
-				$new_w = $img_w*($thumb[0]/$img_h);
+				$new_w = $img_w*($thumb[1]/$img_h);
 				$new_h = $thumb[1];
 			}
 			else
