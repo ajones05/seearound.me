@@ -352,14 +352,20 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					{
 						try
 						{
+							$full_path = null;
 							$ext = strtolower(My_ArrayHelper::getProp(pathinfo($meta['property']['og:image']), 'extension', 'tmp'));
 
-							if (!in_array($ext, My_CommonUtils::$mimetype_extension))
+							if (!in_array($ext, My_CommonUtils::$imagetype_extension))
 							{
-								if (preg_match('/^(' . implode('|', My_CommonUtils::$mimetype_extension) . ')/', $ext, $matches))
+								if (preg_match('/^(' . implode('|', My_CommonUtils::$imagetype_extension) . ')/', $ext, $matches))
 								{
 									$ext = $matches[0];
 								}
+							}
+
+							if ($ext != 'tmp' && !in_array($ext, My_CommonUtils::$imagetype_extension))
+							{
+								throw new Exception('Incorrect image extension: ' . $ext);
 							}
 
 							do
@@ -374,22 +380,26 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 								throw new Exception("Download image error");
 							}
 
-							$mimetype = mime_content_type($full_path);
+							$imageType = exif_imagetype($full_path);
 
-							if (!isset(My_CommonUtils::$mimetype_extension[$mimetype]))
+							if (!isset(My_CommonUtils::$imagetype_extension[$imageType]))
 							{
-								throw new Exception("Incorrect image mime type");
+								throw new Exception('Incorrect image type: ' . $imageType);
 							}
 
-							if (My_CommonUtils::$mimetype_extension[$mimetype] != $ext)
+							if (My_CommonUtils::$imagetype_extension[$imageType] != $ext)
 							{
-								$name = preg_replace('/' . $ext . '$/', My_CommonUtils::$mimetype_extension[$mimetype], $name);
+								$name = preg_replace('/' . $ext . '$/', My_CommonUtils::$imagetype_extension[$imageType], $name);
 
 								if (!rename($full_path, ROOT_PATH . '/uploads/' . $name))
 								{
-									throw new Exception("Rename image error");
+									throw new Exception('Rename image error: ' . $full_path);
 								}
 							}
+
+							My_CommonUtils::createThumbs($full_path, $imageType, array(
+								array(448, 298, ROOT_PATH . '/thumb448x298/' . $name)
+							));
 
 							$meta['property']['og:image'] = $name;
 
@@ -401,6 +411,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 							$meta['property']['og:image'] = null;
 							$meta['property']['og:image:width'] = null;
 							$meta['property']['og:image:height'] = null;
+
+							if ($full_path != null)
+							{
+								@unlink($full_path);
+							}
 						}
 					}
 
