@@ -242,6 +242,18 @@ class My_CommonUtils
 				$new_h = $img_h / $factor;
 			}
 
+			if ($new_w < 1)
+			{
+				$new_h = min($thumb[1], $new_h * (1 / $new_w));
+				$new_w = 1;
+			}
+
+			if ($new_h < 1)
+			{
+				$new_w = min($thumb[0], $new_w * (1 / $new_h));
+				$new_h = 1;
+			}
+
 			$new = imagecreatetruecolor($new_w, $new_h);
 
 			if ($imageType === IMAGETYPE_GIF || $imageType === IMAGETYPE_PNG)
