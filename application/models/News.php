@@ -397,9 +397,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 								}
 							}
 
-							My_CommonUtils::createThumbs($full_path, $imageType, array(
-								array(448, 298, ROOT_PATH . '/thumb448x298/' . $name)
-							));
+							My_CommonUtils::createThumbs($full_path, array(
+								array(448, 320, ROOT_PATH . '/thumb448x320/' . $name)
+							), $imageType);
 
 							$meta['property']['og:image'] = $name;
 

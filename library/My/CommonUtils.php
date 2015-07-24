@@ -189,12 +189,17 @@ class My_CommonUtils
 	 * Creates image thumbnails.
 	 *
 	 * @param	string $image Image full path
-	 * @param	integer $imageType Image extension
 	 * @param	array $thumbs Thumbnails list in format array(width, height, path)
+	 * @param	integer $imageType Image type
 	 * @return	void
 	 */
-	public static function createThumbs($image, $imageType, array $thumbs)
+	public static function createThumbs($image, array $thumbs, $imageType = null)
 	{
+		if (!$imageType)
+		{
+			$imageType = exif_imagetype($image);
+		}
+
 		switch($imageType)
 		{
 			case IMAGETYPE_GIF:
@@ -223,17 +228,18 @@ class My_CommonUtils
 			if ($img_w > $img_h)
 			{
 				$new_w = $thumb[0];
-				$new_h = $img_h*($thumb[0]/$img_w);
+				$new_h = $img_h * ($thumb[0] / $img_w);
 			}
 			elseif ($img_w < $img_h)
 			{
-				$new_w = $img_w*($thumb[1]/$img_h);
+				$new_w = $img_w * ($thumb[1] / $img_h);
 				$new_h = $thumb[1];
 			}
 			else
 			{
-				$new_w = $thumb[0];
-				$new_h = $thumb[1];
+				$factor = max($img_w / $thumb[0], $img_h / $thumb[1]);
+				$new_w = $img_w / $factor;
+				$new_h = $img_h / $factor;
 			}
 
 			$new = imagecreatetruecolor($new_w, $new_h);
