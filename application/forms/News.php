@@ -108,7 +108,7 @@ class Application_Form_News extends Zend_Form
 			{
 				return false;
 			}
-			
+
 			$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
 
 			do
@@ -118,27 +118,14 @@ class Application_Form_News extends Zend_Form
 			}
 			while (file_exists($full_path));
 
-			$quality = $ext == 'jpg' ? 60 : 4;
-
-			$thumbs = new Zend_Filter();
-			$thumbs->appendFilter(new Skoch_Filter_File_Resize(array(
-				'directory' => ROOT_PATH . '/newsimages',
-				'width' => 960,
-				'height' => 960,
-				'keepRatio' => true,
-				'quality' => $quality
-			)));
-			$thumbs->appendFilter(new Skoch_Filter_File_Resize(array(
-				'directory' => ROOT_PATH . '/tbnewsimages',
-				'width' => 320,
-				'height' => 320,
-				'keepRatio' => true,
-				'quality' => $quality
-			)));
-
 			$upload->addFilter('Rename', $full_path);
-			$upload->addFilter($thumbs);
 			$upload->receive();
+
+			My_CommonUtils::createThumbs($full_path, array(
+				array(320, 320, ROOT_PATH . '/tbnewsimages/' . $name),
+				array(448, 320, ROOT_PATH . '/thumb448x320/' . $name),
+				array(960, 960, ROOT_PATH . '/newsimages/' . $name)
+			));
 
 			$this->addElement('text', 'image', array('value' => $name));
 		}

@@ -37,7 +37,7 @@ $profileLink = $this->baseUrl("home/profile/user/" . $this->owner->id);
 						<div class="post-content"><?php echo $this->item->renderContent(My_ArrayHelper::getProp($this, 'length')); ?></div>
 						<?php if ($image != null): ?>
 						<div class="post-image" style="margin-top: 10px;">
-							<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("tbnewsimages/" . $image); ?>" />
+							<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("thumb448x320/" . $image); ?>" />
 						</div>
 						<?php endif; ?>
 					</div>
