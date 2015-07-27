@@ -172,14 +172,11 @@ class HomeController extends Zend_Controller_Action
 			while (file_exists($full_path));
 
 			$upload->addFilter('Rename', $full_path);
-			$upload->addFilter(new Skoch_Filter_File_Resize(array(
-				'directory' => ROOT_PATH . '/uploads',
-				'width' => 320,
-				'height' => 320,
-				'keepRatio' => true,
-				'quality' => $ext == 'jpg' ? 60 : 4
-			)));
 			$upload->receive();
+
+			My_CommonUtils::createThumbs($full_path, array(
+				array(320, 320, ROOT_PATH . '/uploads/' . $name)
+			));
 
 			$model = new Application_Model_User;
 			$model->update(
