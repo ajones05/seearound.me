@@ -21,7 +21,7 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 			{
 				$i += strlen($matches[0]);
 
-				$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '">';
+				$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '" target="_blank">';
 
 				if ($limit && $length + strlen($matches[0]) > $limit)
 				{

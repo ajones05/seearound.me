@@ -4,13 +4,13 @@ $link = My_CommonUtils::renderLink($this->link);
 <div class="link-meta">
 	<?php if ($this->image != null): ?>
 	<div class="image">
-		<a href="<?php echo htmlspecialchars($link); ?>">
+		<a href="<?php echo htmlspecialchars($link); ?>" target="_blank">
 			<img src="<?php echo $this->baseUrl('thumb448x320/' . $this->image); ?>" />
-		</a>	
+		</a>
 	</div>
 	<?php endif; ?>
 	<div class="meta-content">
-		<a class="title" href="<?php echo htmlspecialchars($link); ?>"><?php echo $this->title; ?></a>
+		<a class="title" href="<?php echo htmlspecialchars($link); ?>" target="_blank"><?php echo $this->title; ?></a>
 		<?php if ($this->description != null): ?>
 		<div class="description"><?php echo My_StringHelper::stringLimit($this->description, 185, '...'); ?></div>
 		<?php endif; ?>

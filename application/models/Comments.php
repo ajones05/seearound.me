@@ -17,7 +17,7 @@ class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
 		{
 			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->comment, $i), $matches))
 			{
-				$output .= '<a href="' . htmlspecialchars(My_CommonUtils::renderLink($matches[0])) . '">' . $matches[0] . '</a>';
+				$output .= '<a href="' . htmlspecialchars(My_CommonUtils::renderLink($matches[0])) . '" target="_blank">' . $matches[0] . '</a>';
 				$i += strlen($matches[0]);
 			}
 			else
