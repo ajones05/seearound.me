@@ -336,14 +336,19 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
+			$start = $this->_request->getPost('start', 0);
+
+			if (!My_Validate::digit($start) || $start < 0)
+			{
+				throw new RuntimeException('Incorrect start value', -1);
+			}
+
 			$response = array(
 				'status' => 'SUCCESS',
 				'message' => 'My Friend list rendered successfully'
 			);
 
-			// TODO: add limit/start
-
-			$friends = (new Application_Model_Friends)->findAllByUserId($user->id, 100, 0);
+			$friends = (new Application_Model_Friends)->findAllByUserId($user->id, 100, $start);
 
 			if (count($friends))
 			{
@@ -521,14 +526,20 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect user ID', -1);
 			}
 
+			$start = $this->_request->getPost('start', 0);
+
+			if (!My_Validate::digit($start) || $start < 0)
+			{
+				throw new RuntimeException('Incorrect start value', -1);
+			}
+
 			$model = new Application_Model_Message;
 
 			$messages = $model->fetchAll(
 				$model->publicSelect()
 					->where('message.receiver_id =?', $user->id)
 					->order('updated DESC')
-					// TODO: limit/start
-					->limit(100, null)
+					->limit(100, $start)
 			);
 
 			$response = array(
@@ -584,6 +595,13 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
+			$start = $this->_request->getPost('start', 0);
+
+			if (!My_Validate::digit($start) || $start < 0)
+			{
+				throw new RuntimeException('Incorrect start value', -1);
+			}
+
 			$response = array(
 				'status' => 'SUCCESS',
 				'message' => 'Message list Send Successfully'
@@ -596,8 +614,7 @@ class MobileController extends Zend_Controller_Action
 					->where('receiver_id =?', $user->id)
 					->where('reciever_read =?', 'false')
 					->order('updated DESC')
-					// TODO: limit/start
-					->limit(100, 0)
+					->limit(100, $start)
 			);
 
 			if (count($messages))
@@ -654,6 +671,13 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect other user ID', -1);
 			}
 
+			$start = $this->_request->getPost('start', 0);
+
+			if (!My_Validate::digit($start) || $start < 0)
+			{
+				throw new RuntimeException('Incorrect start value', -1);
+			}
+
 			$response = array(
 				'status' => 'SUCCESS',
 				'message' => 'Inbox Message between two user rendered Successfully'
@@ -667,8 +691,7 @@ class MobileController extends Zend_Controller_Action
 					->orWhere('message.receiver_id =?',  $other_user->id)
 					->where('message.sender_id =?', $user->id)
 					->order('updated ASC')
-					// TODO: limit/start
-					->limit(100, 0)
+					->limit(100, $start)
 			);
 
 			if (count($messages))
