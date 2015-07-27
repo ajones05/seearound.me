@@ -10,16 +10,7 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function renderContent($limit = false)
 	{
-		if ($this->news)
-		{
-			$news_link = $this->findDependentRowset('Application_Model_NewsLink');
-			$render_link = count($news_link) ? $news_link->current()->link : null;
-		}
-		else
-		{
-			$render_link = false;
-		}
-
+		$newsLink = $this->findDependentRowset('Application_Model_NewsLink');
 		$output = '';
 
 		for ($length = $i = 0; $i < strlen($this->news);)
@@ -30,34 +21,20 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 			{
 				$i += strlen($matches[0]);
 
-				if ($render_link == $matches[0])
+				$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '">';
+
+				if ($limit && $length + strlen($matches[0]) > $limit)
 				{
-					$output .= My_ViewHelper::render('news/link-meta.html', $news_link->current()->toArray());
-
-					while (isset($this->news[$i]) && preg_match('/^[,. ]/', $this->news[$i]))
-					{
-						$i++;
-					}
-
-					$render_link = false;
+					$output .= My_StringHelper::stringLimit($matches[0], $limit - $length) . '...';
+					$link_limit = true;
 				}
 				else
 				{
-					$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '">';
-
-					if ($limit && $length + strlen($matches[0]) > $limit)
-					{
-						$output .= My_StringHelper::stringLimit($matches[0], $limit - $length) . '...';
-						$link_limit = true;
-					}
-					else
-					{
-						$output .= $matches[0];
-						$length += strlen($matches[0]);
-					}
-
-					$output .= '</a>';
+					$output .= $matches[0];
+					$length += strlen($matches[0]);
 				}
+
+				$output .= '</a>';
 			}
 			else
 			{
@@ -78,7 +55,11 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 
 				break;
 			}
+		}
 
+		if (count($newsLink))
+		{
+			$output .= My_ViewHelper::render('news/link-meta.html', $newsLink->current()->toArray());
 		}
 
 		return $output;
