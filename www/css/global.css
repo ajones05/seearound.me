@@ -1317,7 +1317,10 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 .myScrp li .post li { float: right; width: 366px; margin-right: 10px; position: relative;}
 
-.myScrp li .post li .post-top { margin: 4px 0 7px;} 
+.myScrp li .post li .post-top {
+	margin: 4px 0 7px;
+	min-height: 22px;
+}
 
 .post .imgPro a {z-index: 9999;display: block;text-align: center;} 
 

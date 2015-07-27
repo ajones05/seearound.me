@@ -11,38 +11,38 @@ if ($image)
 
 $profileLink = $this->baseUrl("home/profile/user/" . $this->owner->id);
 ?>
-	<ul class="myScrp">
-		<li>
-			<ul class="post">
-				<li class="imgPro">
-					<a href="<?php echo $profileLink; ?>">
-						<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="smallImage" />
-					</a>
-				</li>
-				<li>
+<ul class="myScrp">
+	<li>
+		<ul class="post">
+			<li class="imgPro">
+				<a href="<?php echo $profileLink; ?>">
+					<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" class="smallImage" />
+				</a>
+			</li>
+			<li>
+				<div class="post-top">
 					<?php if ($this->user->id != null): ?>
-					<div class="post-top">
-						<a class="title" href="<?php echo $profileLink; ?>"><?php echo ucfirst($this->owner->Name); ?></a>
-						<a class="post-date" href="<?php echo $this->baseUrl('info/news/nwid/' . $this->item->id); ?>"><?php echo date('F j \a\t h:ia', $created_date); ?></a>
-						<?php
-						echo My_ViewHelper::render('news/_vote.html', array(
-							'user' => $this->user,
-							'news' => $this->item,
-							'is_new' => $this->is_new
-						));
-						?>
+					<a class="title" href="<?php echo $profileLink; ?>"><?php echo ucfirst($this->owner->Name); ?></a>
+					<a class="post-date" href="<?php echo $this->baseUrl('info/news/nwid/' . $this->item->id); ?>"><?php echo date('F j \a\t h:ia', $created_date); ?></a>
+					<?php
+					echo My_ViewHelper::render('news/_vote.html', array(
+						'user' => $this->user,
+						'news' => $this->item,
+						'is_new' => $this->is_new
+					));
+					?>
+					<?php endif; ?>
+				</div>
+				<div class="post-bottom">
+					<div class="post-content"><?php echo $this->item->renderContent(My_ArrayHelper::getProp($this, 'length')); ?></div>
+					<?php if ($image != null): ?>
+					<div class="post-image" style="margin-top: 10px;">
+						<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("thumb448x320/" . $image); ?>" />
 					</div>
 					<?php endif; ?>
-					<div class="post-bottom">
-						<div class="post-content"><?php echo $this->item->renderContent(My_ArrayHelper::getProp($this, 'length')); ?></div>
-						<?php if ($image != null): ?>
-						<div class="post-image" style="margin-top: 10px;">
-							<img onclick="openImage('<?php echo $image; ?>', '<?php echo $image_width; ?>', '<?php echo $image_height; ?>');" src="<?php echo $this->baseUrl("thumb448x320/" . $image); ?>" />
-						</div>
-						<?php endif; ?>
-					</div>
-				</li>
-				<li class="clr"></li>
-			</ul>
-		</li>
-	</ul>
+				</div>
+			</li>
+			<li class="clr"></li>
+		</ul>
+	</li>
+</ul>
