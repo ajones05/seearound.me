@@ -65,4 +65,24 @@ class Application_Model_Message extends Zend_Db_Table_Abstract
 
 		return $message != null;
 	}
+
+	/**
+	 * Saves form.
+	 *
+	 * @param	array	$data
+	 * @return	Zend_Db_Table_Row_Abstract
+	 */
+	public function save(array $data)
+	{
+		$message = (new Application_Model_Message)->createRow($data);
+		$message->created = new Zend_Db_Expr('NOW()');
+		$message->updated = new Zend_Db_Expr('NOW()');
+		$message->is_deleted = 'false';
+		$message->is_valid = 'true';
+		$message->sender_read = 'true';
+		$message->reciever_read = 'false';
+		$message->save();
+
+		return $message;
+	}
 }

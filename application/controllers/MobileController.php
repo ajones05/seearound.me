@@ -448,7 +448,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('sender_id'), $sender))
+			if (!Application_Model_User::checkId($this->_request->getPost('sender_id'), $user))
 			{
 				throw new RuntimeException('Incorrect sender ID', -1);
 			}
@@ -458,34 +458,32 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect reciever ID', -1);
 			}
 
-			$subject = $this->_request->getPost('subject');
+			$form = new Application_Form_Message;
 
-			if (My_Validate::emptyString($subject))
+			if (!$form->isValid($this->_request->getPost()))
 			{
-				throw new RuntimeException('Incorrect subject value', -1);
+				throw new RuntimeException('Validate error', -1);
 			}
 
-			$body = $this->_request->getPost('message');
+			$data = $form->getValues();
+			$data['sender_id'] = $user->id;
+			$data['receiver_id'] = $receiver->id;
 
-			if (My_Validate::emptyString($body))
-			{
-				throw new RuntimeException('Incorrect message value', -1);
-			}
+			$message = (new Application_Model_Message)->save($data);
 
-			$message = (new Application_Model_Message)->createRow(array(
-				'sender_id' => $sender->id,
-				'receiver_id' => $receiver->id,
-				'subject' => $subject,
-				'message' => $body,
-				'created' => new Zend_Db_Expr('NOW()'),
-				'updated' => new Zend_Db_Expr('NOW()'),
-				'is_deleted' => 'false',
-				'is_valid' => 'true',
-				'sender_read' => 'true',
-				'reciever_read' => 'false',
-			));
-
-			$message->save();
+			My_Email::send(
+				array($receiver->Name => $receiver->Email_id),
+				$message->subject,
+				array(
+					'template' => 'message-notification',
+					'assign' => array(
+						'sender' => $user,
+						'receiver' => $receiver,
+						'subject' => $message->subject,
+						'message' => $message->message
+					)
+				)
+			);
 
 			$response = array(
 				'status' => "SUCCESS",
