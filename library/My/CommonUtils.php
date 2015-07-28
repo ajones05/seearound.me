@@ -190,7 +190,7 @@ class My_CommonUtils
 	 *
 	 * @param	string $image Image full path
 	 * @param	array $thumbs Thumbnails list in format array(width, height, path, mode)
-	 *	mode - 0 - letterbox; 1 - crop to fit
+	 *	mode - 0 - letterbox; 1 - crop to fit; 2 - crop to thumbnail width
 	 * @param	integer $imageType Image type
 	 * @return	void
 	 */
@@ -232,21 +232,34 @@ class My_CommonUtils
 
 			$mode = My_ArrayHelper::getProp($thumb, 3);
 
-			if ($mode === 1)
+			if ($mode > 0)
 			{
 				$thumb_ratio = $thumb[0] / $thumb[1];
 
-				if ($source_ratio > $thumb_ratio)
+				if ($mode === 1)
 				{
-					$temp_width = (int)($img_h * $thumb_ratio);
-					$temp_height = $img_h;
-					$source_x = (int)(($img_w - $temp_width) / 2);
+					if ($source_ratio > $thumb_ratio)
+					{
+						$temp_width = $img_h * $thumb_ratio;
+						$temp_height = $img_h;
+						$source_x = ($img_w - $temp_width) / 2;
+					}
+					else
+					{
+						$temp_width = $img_w;
+						$temp_height = (int)($img_w / $thumb_ratio);
+						$source_y = ($img_h - $temp_height) / 2;
+					}
+				}
+				elseif ($mode === 2)
+				{
+					$temp_width = $img_w;
+					$temp_height = $img_w / $thumb_ratio;
+					$source_y = ($img_h - $temp_height) / 2;
 				}
 				else
 				{
-					$temp_width = $img_w;
-					$temp_height = (int)($img_w / $thumb_ratio);
-					$source_y = (int)(($img_h - $temp_height) / 2);
+					throw new InvalidArgumentException('Incorrect thumbnail mode: ' . $mode);
 				}
 
 				$img_w = $temp_width;
