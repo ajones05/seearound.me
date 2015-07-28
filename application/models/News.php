@@ -11,49 +11,55 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 	public function renderContent($limit = false)
 	{
 		$newsLink = $this->findDependentRowset('Application_Model_NewsLink');
+		$link = count($newsLink) ? $newsLink->current()->link : '';
 		$output = '';
 
-		for ($length = $i = 0; $i < strlen($this->news);)
+		if (trim($this->news) !== $link)
 		{
-			$link_limit = false;
-
-			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->news, $i), $matches))
+			for ($length = $i = 0; $i < strlen($this->news);)
 			{
-				$i += strlen($matches[0]);
+				$link_limit = false;
 
-				$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '" target="_blank">';
-
-				if ($limit && $length + strlen($matches[0]) > $limit)
+				if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->news, $i), $matches))
 				{
-					$output .= My_StringHelper::stringLimit($matches[0], $limit - $length) . '...';
-					$link_limit = true;
+					// if ($render_link == $matches[0])
+
+					$i += strlen($matches[0]);
+
+					$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '" target="_blank">';
+
+					if ($limit && $length + strlen($matches[0]) > $limit)
+					{
+						$output .= My_StringHelper::stringLimit($matches[0], $limit - $length) . '...';
+						$link_limit = true;
+					}
+					else
+					{
+						$output .= $matches[0];
+						$length += strlen($matches[0]);
+					}
+
+					$output .= '</a>';
 				}
 				else
 				{
-					$output .= $matches[0];
-					$length += strlen($matches[0]);
+					$output .= preg_replace('/\n/', '<br>', $this->news[$i++]);
+					$length++;
 				}
 
-				$output .= '</a>';
-			}
-			else
-			{
-				$output .= preg_replace('/\n/', '<br>', $this->news[$i++]);
-				$length++;
-			}
-
-			if ($limit && ($link_limit || $length > $limit))
-			{
-				$output = trim($output);
-
-				if (!$link_limit)
+				if ($limit && ($link_limit || $length > $limit))
 				{
-					$output .= '...';
+					$output = trim($output);
+
+					if (!$link_limit)
+					{
+						$output .= '...';
+					}
+
+					$output .= ' <a href="#" class="moreButton">More</a>';
+
+					break;
 				}
-
-				$output .= ' <a href="#" class="moreButton">More</a>';
-
-				break;
 			}
 		}
 
