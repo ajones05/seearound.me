@@ -144,11 +144,11 @@ $(function(){
 				return userAddressTooltip(address, imagePath);
 			},
 			submit: function(dialogEvent, position, address){
+				$(dialogEvent.target).closest('.ui-dialog').mask('Loading...');
+
 				if ($.trim(address) !== ''){
 					return addPost(position, address);
 				}
-
-				$(dialogEvent.target).closest('.ui-dialog').mask('Loading...');
 
 				(new google.maps.Geocoder()).geocode({
 					'latLng': position
