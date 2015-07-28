@@ -148,6 +148,8 @@ $(function(){
 					return addPost(position, address);
 				}
 
+				$(dialogEvent.target).closest('.ui-dialog').mask('Loading...');
+
 				(new google.maps.Geocoder()).geocode({
 					'latLng': position
 				}, function(results, status){
