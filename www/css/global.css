@@ -1674,8 +1674,12 @@ body .link-meta {
 body .link-meta .image {
 	text-align: center;
 }
-body .link-meta .image img {
+body .link-meta .image a {
 	max-height: 320px;
+	overflow: hidden;
+}
+body .link-meta .image a,
+body .link-meta .image img {
   	width: 100%;
 }
 body .link-meta .title {

@@ -123,7 +123,7 @@ class Application_Form_News extends Zend_Form
 
 			My_CommonUtils::createThumbs($full_path, array(
 				array(320, 320, ROOT_PATH . '/tbnewsimages/' . $name),
-				array(448, 320, ROOT_PATH . '/thumb448x320/' . $name),
+				array(448, 320, ROOT_PATH . '/thumb448x320/' . $name, 1),
 				array(960, 960, ROOT_PATH . '/newsimages/' . $name)
 			));
 

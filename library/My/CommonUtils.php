@@ -189,7 +189,8 @@ class My_CommonUtils
 	 * Creates image thumbnails.
 	 *
 	 * @param	string $image Image full path
-	 * @param	array $thumbs Thumbnails list in format array(width, height, path)
+	 * @param	array $thumbs Thumbnails list in format array(width, height, path, mode)
+	 *	mode - 0 - letterbox; 1 - crop to fit
 	 * @param	integer $imageType Image type
 	 * @return	void
 	 */
@@ -203,55 +204,86 @@ class My_CommonUtils
 		switch($imageType)
 		{
 			case IMAGETYPE_GIF:
-				$resource = imagecreatefromgif($image);
+				$source = imagecreatefromgif($image);
 				break;
 			case IMAGETYPE_JPEG:
-				$resource = imagecreatefromjpeg($image);
+				$source = imagecreatefromjpeg($image);
 				break;
 			case IMAGETYPE_PNG:
-				$resource = imagecreatefrompng($image);
+				$source = imagecreatefrompng($image);
 				break;
 			default: 
 				throw new InvalidArgumentException('Incorrect image type: ' . $imageType);
 		}
 
-		if (!$resource)
+		if (!$source)
 		{
 			throw new InvalidArgumentException('Incorrect image file: ' . $image);
 		}
 
-		$img_w = imageSX($resource);
-		$img_h = imageSY($resource);
+		$img_w = imageSX($source);
+		$img_h = imageSY($source);
+		$source_ratio = $img_w / $img_h;
 
 		foreach ($thumbs as $thumb)
 		{
-			if ($img_w > $img_h)
+			$source_x = 0;
+			$source_y = 0;
+
+			$mode = My_ArrayHelper::getProp($thumb, 3);
+
+			if ($mode === 1)
 			{
+				$thumb_ratio = $thumb[0] / $thumb[1];
+
+				if ($source_ratio > $thumb_ratio)
+				{
+					$temp_width = (int)($img_h * $thumb_ratio);
+					$temp_height = $img_h;
+					$source_x = (int)(($img_w - $temp_width) / 2);
+				}
+				else
+				{
+					$temp_width = $img_w;
+					$temp_height = (int)($img_w / $thumb_ratio);
+					$source_y = (int)(($img_h - $temp_height) / 2);
+				}
+
+				$img_w = $temp_width;
+				$img_h = $temp_height;
 				$new_w = $thumb[0];
-				$new_h = $img_h * ($thumb[0] / $img_w);
-			}
-			elseif ($img_w < $img_h)
-			{
-				$new_w = $img_w * ($thumb[1] / $img_h);
 				$new_h = $thumb[1];
 			}
 			else
 			{
-				$factor = max($img_w / $thumb[0], $img_h / $thumb[1]);
-				$new_w = $img_w / $factor;
-				$new_h = $img_h / $factor;
-			}
+				if ($img_w > $img_h)
+				{
+					$new_w = $thumb[0];
+					$new_h = $img_h * ($thumb[0] / $img_w);
+				}
+				elseif ($img_w < $img_h)
+				{
+					$new_w = $img_w * ($thumb[1] / $img_h);
+					$new_h = $thumb[1];
+				}
+				else
+				{
+					$factor = max($img_w / $thumb[0], $img_h / $thumb[1]);
+					$new_w = $img_w / $factor;
+					$new_h = $img_h / $factor;
+				}
 
-			if ($new_w < 1)
-			{
-				$new_h = min($thumb[1], $new_h * (1 / $new_w));
-				$new_w = 1;
-			}
+				if ($new_w < 1)
+				{
+					$new_h = min($thumb[1], $new_h * (1 / $new_w));
+					$new_w = 1;
+				}
 
-			if ($new_h < 1)
-			{
-				$new_w = min($thumb[0], $new_w * (1 / $new_h));
-				$new_h = 1;
+				if ($new_h < 1)
+				{
+					$new_w = min($thumb[0], $new_w * (1 / $new_h));
+					$new_h = 1;
+				}
 			}
 
 			$new = imagecreatetruecolor($new_w, $new_h);
@@ -263,7 +295,7 @@ class My_CommonUtils
 				imagesavealpha($new, true);
 			}
 
-			imagecopyresampled($new, $resource, 0, 0, 0, 0, $new_w, $new_h, $img_w, $img_h);
+			imagecopyresampled($new, $source, 0, 0, $source_x, $source_y, $new_w, $new_h, $img_w, $img_h);
 
 			switch($imageType)
 			{
