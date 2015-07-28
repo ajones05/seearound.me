@@ -22,6 +22,8 @@ class MobileController extends Zend_Controller_Action
 		is_dir($log_path) || mkdir($log_path, 0700);
 		$writer = new Zend_Log_Writer_Stream($log_path . '/mobile_api_' . date('Y-m-d') . '.log');
 		$this->_logger = new Zend_Log($writer);
+
+		$this->getResponse()->setHeader('Access-Control-Allow-Origin', '*');
 	}
 
 	/**
