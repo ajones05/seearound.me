@@ -551,6 +551,7 @@ function editLocationDialog(options){
 						return false;
 					}
 
+					$(dialogEvent.target).closest('.ui-dialog').mask('Loading...');
 					$('input', dialogEvent.target).attr('disabled', true);
 					options.submit(dialogEvent, marker.getPosition(), $editAddress.val());
 				});

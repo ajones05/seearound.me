@@ -144,8 +144,6 @@ $(function(){
 				return userAddressTooltip(address, imagePath);
 			},
 			submit: function(dialogEvent, position, address){
-				$('#newsWaitOnAdd').show();
-
 				if ($.trim(address) !== ''){
 					return addPost(position, address);
 				}
@@ -278,7 +276,6 @@ $(function(){
 		}).done(function(response){
 			if (response && response.status){
 				$('#noNews').remove();
-				$('#newsWaitOnAdd').hide();
 				$('html, body').animate({scrollTop: 0}, 0);
 
 				clearUpload();
