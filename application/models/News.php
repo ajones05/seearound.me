@@ -11,21 +11,18 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 	public function renderContent($limit = false)
 	{
 		$newsLink = $this->findDependentRowset('Application_Model_NewsLink');
-		$link = count($newsLink) ? $newsLink->current()->link : '';
+		$linksCount = preg_match_all('/' . My_CommonUtils::$link_regex . '/', $this->news);
+
 		$output = '';
 
-		if (trim($this->news) !== $link)
+		for ($length = $i = 0; $i < strlen($this->news);)
 		{
-			for ($length = $i = 0; $i < strlen($this->news);)
+			$link_limit = false;
+
+			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->news, $i), $matches))
 			{
-				$link_limit = false;
-
-				if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->news, $i), $matches))
+				if ($linksCount > 1 || !count($newsLink))
 				{
-					// if ($render_link == $matches[0])
-
-					$i += strlen($matches[0]);
-
 					$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '" target="_blank">';
 
 					if ($limit && $length + strlen($matches[0]) > $limit)
@@ -41,25 +38,27 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 
 					$output .= '</a>';
 				}
-				else
+
+				$i += strlen($matches[0]);
+			}
+			else
+			{
+				$output .= preg_replace('/\n/', '<br>', $this->news[$i++]);
+				$length++;
+			}
+
+			if ($limit && ($link_limit || $length > $limit))
+			{
+				$output = trim($output);
+
+				if (!$link_limit)
 				{
-					$output .= preg_replace('/\n/', '<br>', $this->news[$i++]);
-					$length++;
+					$output .= '...';
 				}
 
-				if ($limit && ($link_limit || $length > $limit))
-				{
-					$output = trim($output);
+				$output .= ' <a href="#" class="moreButton">More</a>';
 
-					if (!$link_limit)
-					{
-						$output .= '...';
-					}
-
-					$output .= ' <a href="#" class="moreButton">More</a>';
-
-					break;
-				}
+				break;
 			}
 		}
 
@@ -68,7 +67,7 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 			$output .= My_ViewHelper::render('news/link-meta.html', $newsLink->current()->toArray());
 		}
 
-		return $output;
+		return preg_replace('/\s{2,}/', ' ', $output);
 	}
 }
 
