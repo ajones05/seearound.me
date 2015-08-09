@@ -150,7 +150,15 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 */
 	public function search(array $parameters, Application_Model_UserRow $user)
 	{
-		$query = $this->publicSelect()->setIntegrityCheck(false);
+		$query = $this->publicSelect()->setIntegrityCheck(false)
+			->from($this, array(
+				'news.*',
+				'((news.vote+news.comment+1)/((IFNULL(TIMESTAMPDIFF(HOUR, news.created_date, NOW()), 0)+30)^1.1))*10000 as score',
+				// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
+				'(3959 * acos(cos(radians(' . $parameters['latitude'] . ')) * cos(radians(news.latitude)) * ' .
+					'cos(radians(news.longitude) - ' . 'radians(' . $parameters['longitude'] . ')) + ' .
+					'sin(radians(' . $parameters['latitude'] . ')) * sin(radians(news.latitude)))) AS distance_from_source'
+			));
 
 		if (trim(My_ArrayHelper::getProp($parameters, 'keywords')) !== '')
 		{
@@ -184,9 +192,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					break;
 				case 'friends':
 					$query->where('news.user_id <>?', $user->id);
-					$query->joinLeft('friends', 'news.user_id = friends.sender_id OR news.user_id = friends.reciever_id', '');
-					$query->where('(friends.sender_id = ' . $user->id . ' OR friends.reciever_id = ' . $user->id . ')');
-					$query->where('friends.status =?', 1);
+					$query->joinLeft(array('f1' => 'friends'), 'news.user_id = f1.sender_id', '');
+					$query->joinLeft(array('f2' => 'friends'), 'news.user_id = f2.reciever_id', '');
+					$query->where('((f1.sender_id =?', $user->id);
+					$query->where('f1.status = 1)');
+					$query->orWhere('(f2.reciever_id =?', $user->id);
+					$query->where('f2.status = 1))');
 					break;
 			}
 		}
@@ -201,14 +212,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 		$result = $this->fetchAll(
 			$query
-				->from($this, array(
-					'news.*',
-					'((news.vote+news.comment+1)/((IFNULL(TIMESTAMPDIFF(HOUR, news.created_date, NOW()), 0)+30)^1.1))*10000 as score',
-					// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
-					'(3959 * acos(cos(radians(' . $parameters['latitude'] . ')) * cos(radians(news.latitude)) * ' .
-						'cos(radians(news.longitude) - ' . 'radians(' . $parameters['longitude'] . ')) + ' .
-						'sin(radians(' . $parameters['latitude'] . ')) * sin(radians(news.latitude)))) AS distance_from_source'
-				))
 				->having('IFNULL(distance_from_source, 0) < ' . $parameters['radius'])
 				->order('score DESC')
 				->group('news.id')
