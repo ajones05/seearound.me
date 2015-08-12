@@ -1139,6 +1139,8 @@ function renderEditLocationDialog(callback){
 				return userAddressTooltip(address, imagePath);
 			},
 			submit: function(dialogEvent, position, address){
+				$(window).scrollTo(0);
+
 				$('#map-canvas', dialogEvent.target).mask('Waiting...');
 
 				$.ajax({
