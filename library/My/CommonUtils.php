@@ -83,6 +83,22 @@ class My_CommonUtils
 				}
 			}
 
+			$link = $dom->getElementsByTagName('link');
+
+			if ($link->length)
+			{
+				foreach ($link as $tag)
+				{
+					$rel = $tag->getAttribute('rel');
+
+					if ($rel != '')
+					{
+						$result['link']['rel'][$rel] = My_StringHelper::utf8_decode($tag->getAttribute('href'));
+						continue;
+					}
+				}
+			}
+
 			$title = $dom->getElementsByTagName('title');
 
 			if ($title->length > 0)

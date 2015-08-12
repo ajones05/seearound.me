@@ -337,12 +337,24 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						continue;
 					}
 
-					if (My_ArrayHelper::getProp($meta, 'property.og:image') != null)
+					$image = My_ArrayHelper::getProp($meta, 'property.og:image',
+						My_ArrayHelper::getProp($meta, 'link.rel.image_src'));
+
+					if ($image != null)
 					{
+						$parseImageUrl = parse_url($image);
+
+						if (empty($parseImageUrl['host']))
+						{
+							$parseUrl = parse_url($link);
+							$image = My_ArrayHelper::getProp($parseUrl, 'scheme', 'http') . '://' .
+								My_ArrayHelper::getProp($parseUrl, 'host') . '/' . trim($image, '/');
+						}
+
 						try
 						{
 							$full_path = null;
-							$ext = strtolower(My_ArrayHelper::getProp(pathinfo($meta['property']['og:image']), 'extension', 'tmp'));
+							$ext = strtolower(My_ArrayHelper::getProp(pathinfo($image), 'extension', 'tmp'));
 
 							if (!in_array($ext, My_CommonUtils::$imagetype_extension))
 							{
@@ -364,7 +376,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 							}
 							while (file_exists($full_path));
 
-							if (!@copy($meta['property']['og:image'], $full_path))
+							if (!@copy($image, $full_path))
 							{
 								throw new Exception("Download image error");
 							}
