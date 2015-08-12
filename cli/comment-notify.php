@@ -1,8 +1,4 @@
 <?php
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 defined('ROOT_PATH') 
     || define('ROOT_PATH', dirname(dirname(__FILE__)));
 
@@ -25,6 +21,9 @@ $application = new Zend_Application(
 );
 
 $application->bootstrap();
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 $_SERVER['HTTP_HOST'] = Zend_Registry::get('config_global')->server->http_host;
 
@@ -110,6 +109,8 @@ do
 							'user_id' => $user->id
 						));
 					}
+
+					echo $user->Name . "<" . $user->Email_id . "> - " . $comments->count() . "\n";
 				}
 			}
 
