@@ -237,9 +237,9 @@ class My_CommonUtils
 			throw new InvalidArgumentException('Incorrect image file: ' . $image);
 		}
 
-		$img_w = imageSX($source);
-		$img_h = imageSY($source);
-		$source_ratio = $img_w / $img_h;
+		$source_img_w = imageSX($source);
+		$source_img_h = imageSY($source);
+		$source_ratio = $source_img_w / $source_img_h;
 
 		foreach ($thumbs as $thumb)
 		{
@@ -256,22 +256,22 @@ class My_CommonUtils
 				{
 					if ($source_ratio > $thumb_ratio)
 					{
-						$temp_width = $img_h * $thumb_ratio;
-						$temp_height = $img_h;
-						$source_x = ($img_w - $temp_width) / 2;
+						$temp_width = $source_img_h * $thumb_ratio;
+						$temp_height = $source_img_h;
+						$source_x = ($source_img_w - $temp_width) / 2;
 					}
 					else
 					{
-						$temp_width = $img_w;
-						$temp_height = (int)($img_w / $thumb_ratio);
-						$source_y = ($img_h - $temp_height) / 2;
+						$temp_width = $source_img_w;
+						$temp_height = (int)($source_img_w / $thumb_ratio);
+						$source_y = ($source_img_h - $temp_height) / 2;
 					}
 				}
 				elseif ($mode === 2)
 				{
-					$temp_width = $img_w;
-					$temp_height = $img_w / $thumb_ratio;
-					$source_y = ($img_h - $temp_height) / 2;
+					$temp_width = $source_img_w;
+					$temp_height = $source_img_w / $thumb_ratio;
+					$source_y = ($source_img_h - $temp_height) / 2;
 				}
 				else
 				{
@@ -285,21 +285,21 @@ class My_CommonUtils
 			}
 			else
 			{
-				if ($img_w > $img_h)
+				if ($source_img_w > $source_img_h)
 				{
 					$new_w = $thumb[0];
-					$new_h = $img_h * ($thumb[0] / $img_w);
+					$new_h = $source_img_h * ($thumb[0] / $source_img_w);
 				}
-				elseif ($img_w < $img_h)
+				elseif ($source_img_w < $source_img_h)
 				{
-					$new_w = $img_w * ($thumb[1] / $img_h);
+					$new_w = $source_img_w * ($thumb[1] / $source_img_h);
 					$new_h = $thumb[1];
 				}
 				else
 				{
-					$factor = max($img_w / $thumb[0], $img_h / $thumb[1]);
-					$new_w = $img_w / $factor;
-					$new_h = $img_h / $factor;
+					$factor = max($source_img_w / $thumb[0], $source_img_h / $thumb[1]);
+					$new_w = $source_img_w / $factor;
+					$new_h = $source_img_h / $factor;
 				}
 
 				if ($new_w < 1)
@@ -313,6 +313,9 @@ class My_CommonUtils
 					$new_w = min($thumb[0], $new_w * (1 / $new_h));
 					$new_h = 1;
 				}
+
+				$img_w = $source_img_w;
+				$img_h = $source_img_h;
 			}
 
 			$new = imagecreatetruecolor($new_w, $new_h);
