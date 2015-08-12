@@ -15,7 +15,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	{
 		$loader = Zend_Loader_Autoloader::getInstance();
 		$loader->registerNamespace('My_');
-		$loader->registerNamespace('Skoch');
 	}
 
 	protected function _initDB()
