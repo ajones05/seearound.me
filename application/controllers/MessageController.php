@@ -20,7 +20,10 @@ class MessageController extends Zend_Controller_Action
 			(new Application_Model_Message)->publicSelect()
 				->where('(receiver_id =?', $user->id)
 				->orWhere('reply_to =?)', $user->id)
-				->order('created DESC')
+				->order(implode(',', array(
+					'IF(reciever_read = "false" AND receiver_id = ' . $user->id . ', 1, 0) DESC',
+					'created DESC'
+				)))
 		);
 		$paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
 		$paginator->setItemCountPerPage(14);
