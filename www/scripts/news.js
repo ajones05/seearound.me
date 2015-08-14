@@ -693,6 +693,11 @@ function latlngDistance(firstPoint, secondPoint, unit){
 	var lon1 = firstPoint.lng();
 	var lat2 = secondPoint.lat();
 	var lon2 = secondPoint.lng();
+
+	if (lat1 === lat2 && lon1 === lon2){
+		return 0;
+	}
+
 	var theta = lon1 - lon2;
 	var dist = Math.sin(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) +  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(theta * Math.PI / 180);
 	var miles = (Math.acos(dist) * 180 / Math.PI) * 60 * 1.1515;
