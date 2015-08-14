@@ -12,3 +12,5 @@
 /composer.lock
 /bower_components/*
 /thumb448x320/*
+/www/scripts/common.js
+/www/css/global.css
