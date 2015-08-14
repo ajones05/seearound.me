@@ -27,7 +27,7 @@ class ContactsController extends Zend_Controller_Action
 		$this->view->hideRight = true;
 
 		$this->view->headScript()
-			->appendFile($this->view->baseUrl('www/scripts/contactsindex.js?' . Zend_Registry::get('config_global')->mediaversion));
+			->appendFile(My_Layout::assetUrl('www/scripts/contactsindex.js', $this->view));
 	}
 
 	/**
@@ -334,17 +334,15 @@ class ContactsController extends Zend_Controller_Action
 
 		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id, 1);
 
-		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
-
 		$this->view->headLink()
-			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
+			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
 		$this->view->headScript()
 			->appendScript("	var friends_count = " . $friends_count . ";\n")
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
-			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
-			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion))
-			->appendFile($this->view->baseUrl('www/scripts/friendlist.js?' . $mediaversion));
+			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
+			->appendFile(My_Layout::assetUrl('www/scripts/news.js', $this->view))
+			->appendFile(My_Layout::assetUrl('www/scripts/friendlist.js', $this->view));
 
         $this->view->homePageExist = true;
         $this->view->changeLocation = true;

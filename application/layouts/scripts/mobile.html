@@ -1,8 +1,7 @@
 <?php
-$config = Zend_Registry::get('config_global');
 My_Layout::renderFavicon($this);
 $this->headLink()
-	->appendStylesheet($this->baseUrl('www/css/mobile.css?' . $config->mediaversion));
+	->appendStylesheet(My_Layout::assetUrl('www/css/mobile.css', $this));
 ?>
 <!DOCTYPE html>
 <html lang="en">

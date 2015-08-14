@@ -36,10 +36,8 @@ class InfoController extends Zend_Controller_Action
 		$this->view->user = $user;
 		$this->view->owner = $owner;
 
-		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
-
 		$this->view->headLink()
-			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
+			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
 		$this->view->headScript()
 			->appendScript("	var news = " . json_encode(array(
@@ -55,10 +53,10 @@ class InfoController extends Zend_Controller_Action
 				'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 			)) . ";\n")
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
-			->appendFile($this->view->baseUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js'))
-			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
-			->appendFile($this->view->baseUrl('bower_components/textarea-autosize/src/jquery.textarea_autosize.js'))
-			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion));
+			->appendFile(My_Layout::assetUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js', $this->view))
+			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
+			->appendFile(My_Layout::assetUrl('bower_components/textarea-autosize/src/jquery.textarea_autosize.js', $this->view))
+			->appendFile(My_Layout::assetUrl('www/scripts/news.js', $this->view));
 
 		$this->view->doctype('XHTML1_RDFA');
 		$this->view->headMeta()

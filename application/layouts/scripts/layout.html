@@ -6,26 +6,25 @@ if ($auth)
 	$user = Application_Model_User::findById($auth['user_id']);
 }
 
-$config = Zend_Registry::get('config_global');
 $geoip = My_Ip::geolocation();
 
 My_Layout::renderFavicon($this);
 
 $this->headLink()
-	->appendStylesheet($this->baseUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
-	->appendStylesheet($this->baseUrl('www/css/global.css?' . $config->mediaversion));
+	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this))
+	->appendStylesheet(My_Layout::assetUrl('www/css/global.css', $this));
 
 $this->headScript()
 	->appendScript(
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
 		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
-		"	var	facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
+		"	var	facebook_appId = " . json_encode(Zend_Registry::get('config_global')->facebook->app->id) . ";\n" .
 		"	var	user_id = " . json_encode($auth ? $user->id : '') . ";\n"
 	)
-	->prependFile($this->baseUrl('bower_components/jquery/dist/jquery.min.js'))
-	->appendFile($this->baseUrl('bower_components/jquery-ui/jquery-ui.min.js'))
-	->appendFile($this->baseUrl('bower_components/jquery-validation/dist/jquery.validate.min.js'))
-	->appendFile($this->baseUrl('www/scripts/common.js?' . $config->mediaversion));
+	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))
+	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js', $this))
+	->appendFile(My_Layout::assetUrl('bower_components/jquery-validation/dist/jquery.validate.min.js', $this))
+	->appendFile(My_Layout::assetUrl('www/scripts/common.js', $this));
 
 $image = $this->baseUrl('www/images/img-prof40x40.jpg');
 $class = '';

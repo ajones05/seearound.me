@@ -21,7 +21,7 @@ class My_Layout
 		$view->headLink()
 			->headLink(array(
 				'rel' => 'icon',
-				'href' => $view->baseUrl('/www/images/favicon/favicon.ico')
+				'href' => self::assetUrl('/www/images/favicon/favicon.ico', $view)
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'manifest',
@@ -29,30 +29,49 @@ class My_Layout
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'shortcut icon',
-				'href' => $view->baseUrl('/www/images/favicon/favicon-16x16.png'),
+				'href' => self::assetUrl('/www/images/favicon/favicon-16x16.png', $view),
 				'type' => 'image/png',
 				'sizes' => '16x16'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'shortcut icon',
-				'href' => $view->baseUrl('/www/images/favicon/favicon-32x32.png'),
+				'href' => self::assetUrl('/www/images/favicon/favicon-32x32.png', $view),
 				'type' => 'image/png',
 				'sizes' => '32x32'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => $view->baseUrl('/www/images/favicon/favicon-72x72.png'),
+				'href' => self::assetUrl('/www/images/favicon/favicon-72x72.png', $view),
 				'sizes' => '72x72'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => $view->baseUrl('/www/images/favicon/favicon-60x60.png'),
+				'href' => self::assetUrl('/www/images/favicon/favicon-60x60.png', $view),
 				'sizes' => '60x60'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => $view->baseUrl('/www/images/favicon/favicon-57x57.png'),
+				'href' => self::assetUrl('/www/images/favicon/favicon-57x57.png', $view),
 				'sizes' => '57x57'
 			), 'PREPEND');
+	}
+
+	/**
+	 * Returns media asset url.
+	 *
+	 * @param	string $url
+	 * @param	Zend_View $view
+	 * @reutrn	string
+	 */
+	public static function assetUrl($url, Zend_View $view)
+	{
+		$config = Zend_Registry::get('config_global');
+
+		if (trim($config->mediaversion) !== '')
+		{
+			$url = 'assets-' . $config->mediaversion . '/' . $url;
+		}
+
+		return $view->baseUrl($url);
 	}
 }

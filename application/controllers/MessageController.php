@@ -32,8 +32,7 @@ class MessageController extends Zend_Controller_Action
         $this->view->paginator = $paginator;
 		$this->view->hideRight = true;
 
-		$this->view->headScript()->appendFile($this->view->baseUrl('www/scripts/messageindex.js?' .
-			Zend_Registry::get('config_global')->mediaversion));
+		$this->view->headScript()->appendFile(My_Layout::assetUrl('www/scripts/messageindex.js', $this->view));
 	}
 
 	/**
@@ -62,8 +61,7 @@ class MessageController extends Zend_Controller_Action
         $this->view->paginator = $paginator;
 		$this->view->hideRight = true;
 
-		$this->view->headScript()->appendFile($this->view->baseUrl('www/scripts/messageindex.js?' .
-			Zend_Registry::get('config_global')->mediaversion));
+		$this->view->headScript()->appendFile(My_Layout::assetUrl('www/scripts/messageindex.js', $this->view));
 	}
 
 	/**

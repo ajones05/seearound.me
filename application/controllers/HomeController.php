@@ -37,18 +37,16 @@ class HomeController extends Zend_Controller_Action
 		$this->view->displayMapZoom = true;
 		$this->view->user = $user;
 
-		$mediaversion = Zend_Registry::get('config_global')->mediaversion;
-
 		$this->view->headLink()
-			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
+			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
 		$this->view->headScript()
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
-			->appendFile($this->view->baseUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js'))
-			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
-			->appendFile($this->view->baseUrl('bower_components/textarea-autosize/src/jquery.textarea_autosize.js'))
-			->appendFile($this->view->baseUrl('www/scripts/news.js?' . $mediaversion))
-			->appendFile($this->view->baseUrl('www/scripts/homeindex.js?' . $mediaversion));
+			->appendFile(My_Layout::assetUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js', $this->view))
+			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
+			->appendFile(My_Layout::assetUrl('bower_components/textarea-autosize/src/jquery.textarea_autosize.js', $this->view))
+			->appendFile(My_Layout::assetUrl('www/scripts/news.js', $this->view))
+			->appendFile(My_Layout::assetUrl('www/scripts/homeindex.js', $this->view));
 	}
 
 	/**
@@ -132,7 +130,7 @@ class HomeController extends Zend_Controller_Action
 
 		$this->view->headScript()
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
-			->appendFile('/bower_components/jquery-form/jquery.form.js');
+			->appendFile(My_Layout::assetUrl('/bower_components/jquery-form/jquery.form.js', $this->view));
 
 		$this->view->form = $form;
         $this->view->user = $user;
@@ -277,12 +275,12 @@ class HomeController extends Zend_Controller_Action
 		}
 
 		$this->view->headLink()
-			->appendStylesheet($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
+			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
 		$this->view->headScript()
 			->appendScript("	var	reciever_userid = " . json_encode($profile->id) . ";\n")
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
-			->appendFile($this->view->baseUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'));
+			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view));
 	}
 
 	/**
