@@ -553,7 +553,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 .primNav .ddMyConnList ul.connList {
 	padding: 5px !important;
 	border: 0;
-	min-height: 62px;
+	min-height: 40px;
 	border-bottom: 1px solid #ccc;
 	display: inline-block;
 	width: 210px;
@@ -2212,4 +2212,7 @@ body.error .mainContainer > img {
 }
 .vote .icon .dislike.active {
 	background: url(../images/dislike-active.png) no-repeat scroll center center;
+}
+.uprBarInr li.rightCol ul.primNav li a.profileLink {
+	height: auto;
 }

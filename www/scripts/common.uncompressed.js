@@ -144,13 +144,19 @@ function showFriendRequest(thisone){
 
 				for (var x in response.data){ 
 					$("#ddMyConnList").append(
-						$('<ul/>').addClass('connList').append(
-							$('<li/>').addClass('thumb').append(
-								$('<img/>', {src: response.data[x].image, width: 40, height: 40})
+						$('<a/>', {href: response.data[x].link}).addClass('profileLink').append(
+							$('<ul/>').addClass('connList').append(
+								$('<li/>').addClass('thumb').append(
+									$('<img/>', {
+										src: response.data[x].image,
+										width: 40,
+										height: 40
+									})
+								),
+								$('<li/>').addClass('name').html(response.data[x].name + ' is<br/>following you')
 							),
-							$('<li/>').addClass('name').html(response.data[x].name + ' is<br/>following you')
-						),
-						$('<div/>').addClass('clear')
+							$('<div/>').addClass('clear')
+						)
 					);
 
 					currentRequests++;
@@ -171,7 +177,7 @@ function showFriendRequest(thisone){
 				$("#ddMyConnList").append($('<p/>').addClass('pendReq').text('No new friend request found'));
 			}
 
-			$("#ddMyConnList").append('<a class="friend" href="'+baseUrl+'contacts/friends-list">Go to my friends </a>');
+			$("#ddMyConnList").append('<a class="friend" href="'+baseUrl+'contacts/friends-list">See all</a>');
 		} else {
 			alert(response ? response.error.message : ERROR_MESSAGE);
 			$("#ddMyConnList").hide();

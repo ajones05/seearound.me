@@ -161,7 +161,8 @@ function makeFriend(action, isnew){
 		type: 'POST',
 		data: {
 			user: reciever_userid,
-			action: action
+			action: action,
+			total: true
 		},
 		dataType: 'json'
 	}).done(function(response){
@@ -186,6 +187,12 @@ function makeFriend(action, isnew){
 						userMessageDialog(user_profile.id);
 					})
 			);
+
+			if (response.total > 0){
+				$("#noteTotal").html(response.total);
+			} else {
+				$('#noteTotal').hide();
+			}
 		} else {
 			alert(ERROR_MESSAGE);
 		}

@@ -598,6 +598,7 @@ class ContactsController extends Zend_Controller_Action
 					$data[] = array(
 						'image' => $sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 						'name' => $sender->Name,
+						'link' => $this->view->baseUrl("home/profile/user/" . $sender->id)
 					);
 				}
 
