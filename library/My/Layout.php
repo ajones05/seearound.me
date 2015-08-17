@@ -21,7 +21,7 @@ class My_Layout
 		$view->headLink()
 			->headLink(array(
 				'rel' => 'icon',
-				'href' => self::assetUrl('/www/images/favicon/favicon.ico', $view)
+				'href' => self::assetUrl('www/images/favicon/favicon.ico', $view)
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'manifest',
@@ -29,29 +29,29 @@ class My_Layout
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'shortcut icon',
-				'href' => self::assetUrl('/www/images/favicon/favicon-16x16.png', $view),
+				'href' => self::assetUrl('www/images/favicon/favicon-16x16.png', $view),
 				'type' => 'image/png',
 				'sizes' => '16x16'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'shortcut icon',
-				'href' => self::assetUrl('/www/images/favicon/favicon-32x32.png', $view),
+				'href' => self::assetUrl('www/images/favicon/favicon-32x32.png', $view),
 				'type' => 'image/png',
 				'sizes' => '32x32'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => self::assetUrl('/www/images/favicon/favicon-72x72.png', $view),
+				'href' => self::assetUrl('www/images/favicon/favicon-72x72.png', $view),
 				'sizes' => '72x72'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => self::assetUrl('/www/images/favicon/favicon-60x60.png', $view),
+				'href' => self::assetUrl('www/images/favicon/favicon-60x60.png', $view),
 				'sizes' => '60x60'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => self::assetUrl('/www/images/favicon/favicon-57x57.png', $view),
+				'href' => self::assetUrl('www/images/favicon/favicon-57x57.png', $view),
 				'sizes' => '57x57'
 			), 'PREPEND');
 	}
