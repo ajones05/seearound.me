@@ -172,7 +172,7 @@ function showFriendRequest(thisone){
 					$("#ddMyConnList").append($('<p/>').addClass('pendReq2'));
 				}
 
-				$("#noteTotal").html(response.total);
+				$('#noteTotal').hide();
 			} else {
 				$("#ddMyConnList").append($('<p/>').addClass('pendReq').text('No new friend request found'));
 			}

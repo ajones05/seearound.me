@@ -1,27 +1,13 @@
 <?php
-
-
-
-class Application_Model_FriendsRow extends Zend_Db_Table_Row_Abstract 
+/**
+ * Friends model class.
+ */
+class Application_Model_Friends extends Zend_Db_Table_Abstract
 {
-
-    
-
-}
-
-
-
-class Application_Model_Friends extends Zend_Db_Table_Abstract {
-
-    protected $_name     = 'friends';
-
-    protected $_primary  = 'id';
-
-    protected $_rowClass = 'Application_Model_FriendsRow';
-
-    protected static $_instance = null;
-
-    protected $_dependentTables = array();
+	/**
+	 * @var	string
+	 */
+	protected $_name = 'friends';
 
 	/**
 	 * @var	array
@@ -38,18 +24,6 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
 			'refColumns' => 'sender_id'
         )
     );
-
-    public static function getInstance() {
-
-        if (null === self::$_instance) {
-
-            self::$_instance = new self();
-
-        }
-
-        return self::$_instance;
-
-    }    
 
     public function setData($data=array(), $check=array()) {
 
@@ -94,70 +68,6 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
         return $row;
 
     }
-
-
-
-    public function getdata($data=array(), $all=false, $limit=null, $offset=null, $order=array(), $group=null) {
-
-        $select = $this->select();
-
-        if(count($data) > 0){
-
-            foreach($data as $index => $value) {
-
-                $select->where($index." =?", $value);
-
-            }
-
-        }
-
-        
-
-        if($order) {
-
-            $select->order($order['field']." ".$order['type']);
-
-        }
-
-        
-
-        if($group) {
-
-            $select->group($group);
-
-        }
-
-        
-
-        if($limit) {
-
-            if($offset) {
-
-                $select->limit($limit, $offset);
-
-            }else {
-
-                $select->limit($limit);
-
-            }
-
-        }
-
-        
-
-        if($all) {
-
-            return $this->fetchAll($select);
-
-        }else {
-
-            return $this->fetchRow($select);
-
-        }
-
-    }
-
-    
 
     public function invite($data)
 
@@ -270,17 +180,16 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract {
 	 * Returns friends count by receiver ID.
 	 *
 	 * @param	integer	$receiver_id
-	 * @param	integer	$status
-	 *
 	 * @return	integer
 	 */
-	public function getCountByReceiverId($receiver_id, $status)
+	public function getCountByReceiverId($receiver_id)
 	{
 		$result = $this->fetchRow(
 			$this->select()
 				->from($this, array('count(*) as result_count'))
 				->where('reciever_id=?', $receiver_id)
-				->where('status=?', $status)
+				->where('status=0')
+				->where('notify=0')
 		);
 
 		if ($result)

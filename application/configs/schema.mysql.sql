@@ -28,6 +28,7 @@ ALTER TABLE `friends` CHANGE `reciever_id` `reciever_id` INT(10) NOT NULL;
 ALTER TABLE `friends` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `friends` ADD FOREIGN KEY `user_data_fk_2`(`reciever_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `friends` CHANGE `status` `status` SMALLINT NOT NULL DEFAULT '0';
+ALTER TABLE `friends` ADD `notify` TINYINT(1) NOT NULL DEFAULT '0' AFTER `udate`;
 
 --
 -- Table structure for table `invite_status`

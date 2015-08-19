@@ -528,7 +528,7 @@ class ContactsController extends Zend_Controller_Action
 
 			$response = array('status' => 1);
 
-			$friends = (new Application_Model_Friends)->getCountByReceiverId($user->id, 0);
+			$friends = (new Application_Model_Friends)->getCountByReceiverId($user->id);
 
 			if ($friends > 0)
 			{
@@ -585,7 +585,14 @@ class ContactsController extends Zend_Controller_Action
 			$response = array('status' => 1);
 
 			$model = new Application_Model_Friends;
-			$friends = $model->findAllByReceiverId($user->id, 0, 5);
+
+			$friends = $model->fetchAll(
+				$model->select()
+					->where('reciever_id=?', $user->id)
+					->where('status=0')
+					->where('notify=0')
+					->limit(10)
+			);
 
 			if ($count = count($friends))
 			{
@@ -602,15 +609,22 @@ class ContactsController extends Zend_Controller_Action
 					);
 				}
 
+				$model->update(
+					array('notify' => 1),
+					array('reciever_id=' . $user->id, 'status=0')
+				);
+
 				$response['data'] = $data;
-				$response['total'] = $count < 5 ? $count : $model->getCountByReceiverId($user->id, 0);
+				$response['total'] = $count < 5 ? $count : $model->getCountByReceiverId($user->id);
 			}
 		}
 		catch (Exception $e)
 		{
 			$response = array(
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				'error' => array(
+					'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				)
 			);
 		}
 
