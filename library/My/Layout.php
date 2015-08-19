@@ -74,4 +74,22 @@ class My_Layout
 
 		return $view->baseUrl($url);
 	}
+
+	/**
+	 * Defer load css files.
+	 *
+	 * @param	string $href
+	 * @reutrn	string
+	 */
+	public static function deferLoadCss($href)
+	{
+		return 'var cb=function(){var e=document.createElement("link");' .
+			'e.rel="stylesheet",' .
+			'e.href="' . $href . '";' .
+			'var a=document.getElementsByTagName("head")[0];' .
+			'a.parentNode.insertBefore(e,a)},' .
+			'raf=requestAnimationFrame||mozRequestAnimationFrame||' .
+			'webkitRequestAnimationFrame||msRequestAnimationFrame;' .
+			'raf?raf(cb):window.addEventListener("load",cb);';
+	}
 }

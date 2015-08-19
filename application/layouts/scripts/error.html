@@ -12,7 +12,8 @@ $this->headScript()
 	->appendScript(
 		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
 		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
-		"	var facebook_appId = " . json_encode(Zend_Registry::get('config_global')->facebook->app->id) . ";\n"
+		"	var facebook_appId = " . json_encode(Zend_Registry::get('config_global')->facebook->app->id) . ";\n" .
+		My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700')
 	)
 	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))
 	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js', $this))

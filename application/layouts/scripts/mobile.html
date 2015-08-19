@@ -1,15 +1,19 @@
 <?php
 My_Layout::renderFavicon($this);
+
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('www/css/mobile.css', $this));
+
+$this->headScript()
+	->appendScript(My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8" />
-	<title>seearound.me</title>
-	<?php echo $this->headLink() . "\n"; ?>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta charset="UTF-8" />
+<title>seearound.me</title>
+<?php echo $this->headLink() . "\n"; ?>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 </head>
 <body>
 	<div class="wraper-mobile">
