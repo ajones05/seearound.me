@@ -87,7 +87,7 @@ class My_Layout
 			'e.rel="stylesheet",' .
 			'e.href="' . $href . '";' .
 			'var a=document.getElementsByTagName("head")[0];' .
-			'a.parentNode.insertBefore(e,a)},' .
+			'a.appendChild(e)},' .
 			'raf=requestAnimationFrame||mozRequestAnimationFrame||' .
 			'webkitRequestAnimationFrame||msRequestAnimationFrame;' .
 			'raf?raf(cb):window.addEventListener("load",cb);';
