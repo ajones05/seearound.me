@@ -907,7 +907,7 @@ function updateNews($news){
 										.append(
 											$('<div/>', {'class': 'messageSuccess'}).append(
 												$('<img/>', {src: baseUrl + 'www/images/correct.gif'}),
-												$('<span/>').text('Message sent successful')
+												$('<span/>').text('Message sent')
 											)
 										);
 								} else {
