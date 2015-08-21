@@ -174,7 +174,7 @@ function showFriendRequest(thisone){
 
 				$('#noteTotal').hide();
 			} else {
-				$("#ddMyConnList").append($('<p/>').addClass('pendReq').text('No new friend request found'));
+				$("#ddMyConnList").append($('<p/>').addClass('pendReq').text('No new followers'));
 			}
 
 			$("#ddMyConnList").append('<a class="friend" href="'+baseUrl+'contacts/friends-list">See all</a>');

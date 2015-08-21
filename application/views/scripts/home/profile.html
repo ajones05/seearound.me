@@ -72,7 +72,7 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 		<?if(count($this->friendStatus) > 0) :?>
 			<?if($this->friendStatus->status == '0'):?>
 				<?if($this->friendStatus->sender_id == $this->auth_id):?>
-					<input class="wAuto btnBlueRpt" type="button" value="Pending" />
+					<input class="wAuto btnBlueRpt" type="button" value="Following" />
 				<?else:?>
 					<input class="wAuto btnBlueRpt" type="button" value="Follow" onclick="makeFriend('confirm');" />
 				<?endif;?>
@@ -170,7 +170,7 @@ function makeFriend(action, isnew){
 			$('.frndReqImg').hide();
 
 			if (isnew){
-				$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Pending" />');
+				$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Following" />');
 			} else {
 				if (action == 'confirm'){
 					$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Unfollow" onclick="makeFriend(\'reject\');" />');

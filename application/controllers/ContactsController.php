@@ -481,7 +481,7 @@ class ContactsController extends Zend_Controller_Action
 					'udate' => date('Y-m-d H:i:s')
 				))->save();
 
-				My_Email::send($reciever->Email_id, 'Friend invitation', array(
+				My_Email::send($reciever->Email_id, 'New follower', array(
 					'template' => 'friend-invitation',
 					'assign' => array('name' => $auth->Name)
 				));
@@ -494,8 +494,9 @@ class ContactsController extends Zend_Controller_Action
 				$response['total'] = $friendsModel->fetchRow(
 					$friendsModel->select()
 						->from($friendsModel, array('count(*) as friend_count'))
-						->where('reciever_id =?', $auth->id)
-						->where('status =?', 0)
+						->where('reciever_id=?', $auth->id)
+						->where('status=0')
+						->where('notify=0')
 				)->friend_count;
 			}
 		}
