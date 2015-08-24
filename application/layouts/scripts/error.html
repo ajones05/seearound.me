@@ -19,13 +19,13 @@ $this->headScript()
 	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js', $this))
 	->appendFile(My_Layout::assetUrl('bower_components/jquery-validation/dist/jquery.validate.min.js', $this))
 	->appendFile(My_Layout::assetUrl('www/scripts/common.js', $this));
+
+$this->headMeta('text/html; charset=utf-8', 'Content-Type', 'http-equiv');
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>seearound.me</title>
-<?php echo $this->headLink() . "\n" . $this->headScript() . "\n"; ?>
+<?php include '_head.html'; ?>
 </head>
 <body class="error">
 <?php include '_header.html'; ?>

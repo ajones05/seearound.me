@@ -7,6 +7,7 @@ if ($auth)
 }
 
 $geoip = My_Ip::geolocation();
+$image = $this->baseUrl('www/images/img-prof40x40.jpg');
 
 My_Layout::renderFavicon($this);
 
@@ -16,10 +17,15 @@ $this->headLink()
 
 $this->headScript()
 	->appendScript(
-		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
-		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
-		"	var	facebook_appId = " . json_encode(Zend_Registry::get('config_global')->facebook->app->id) . ";\n" .
-		"	var	user_id = " . json_encode($auth ? $user->id : '') . ";\n" .
+		"var isLogin = " . json_encode((boolean) $auth) . ";\n" .
+		"var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
+		"var facebook_appId = " . json_encode(Zend_Registry::get('config_global')->facebook->app->id) . ";\n" .
+		"var user_id = " . json_encode($auth ? $user->id : '') . ";\n" .
+		"var userLatitude = " . json_encode($auth ? $user->lat() : $geoip[0]) . ";\n" .
+		"var userLongitude = " . json_encode($auth ? $user->lng() : $geoip[1]) . ";\n" .
+		"var userAddress = " . json_encode($auth ? $user->address() : '') . ";\n" .
+		"var userName = " . json_encode($auth ? $user->Name : '') . ";\n" .
+		"var imagePath = " . json_encode($auth ? $user->getProfileImage($image) : $image) . ";\n" .
 		My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700')
 	)
 	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))
@@ -27,28 +33,9 @@ $this->headScript()
 	->appendFile(My_Layout::assetUrl('bower_components/jquery-validation/dist/jquery.validate.min.js', $this))
 	->appendFile(My_Layout::assetUrl('www/scripts/common.js', $this));
 
-$image = $this->baseUrl('www/images/img-prof40x40.jpg');
-$class = '';
-
-if ($this->hideRight)
+if (empty($this->hideRight))
 {
-	$class .= ' hideRight';
-}
-	?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>seearound.me</title>
-<?php echo implode("\n", array($this->headMeta(), $this->headLink(), $this->headScript())); ?>
-<script language="javascript" type="text/javascript">
-var userLatitude = <?php echo json_encode($auth ? $user->lat() : $geoip[0]); ?>;
-var userLongitude = <?php echo json_encode($auth ? $user->lng() : $geoip[1]); ?>;
-var userAddress = <?php echo json_encode($auth ? $user->address() : ''); ?>;
-var userName = <?php echo json_encode($auth ? $user->Name : ''); ?>;
-var imagePath = "<?php echo $auth ? $user->getProfileImage($image) : $image; ?>";
-<?php if (empty($this->hideRight)): ?>
-$(function(){
+	$this->headScript()->appendScript('$(function(){
 	$(window).resize(function(){
 		var height, windowHeight = $(window).height();
 
@@ -60,11 +47,25 @@ $(function(){
 			height = 150;
 		}
 
-		$('#map_canvas').height(height);
+		$("#map_canvas").height(height);
 	}).resize();
 });
-<?php endif; ?>
-</script>
+');
+}
+
+$this->headMeta('text/html; charset=utf-8', 'Content-Type', 'http-equiv');
+
+$class = '';
+
+if ($this->hideRight)
+{
+	$class .= ' hideRight';
+}
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<?php include '_head.html'; ?>
 </head>
 <body class="layout<?php echo $class; ?>">
 <?php include '_header.html'; ?>
