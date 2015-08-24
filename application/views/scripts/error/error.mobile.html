@@ -1,0 +1,7 @@
+<div style="text-align: left; margin-top: 20px;">
+<div><?php echo $this->error->exception->getMessage() ?></div>
+<h3>Stack trace:</h3>
+<pre><?php echo $this->error->exception->getTraceAsString(); ?></pre>
+<h3>Request Parameters:</h3>
+<pre><?php echo $this->escape(var_export($this->error->request->getParams(), true)) ?></pre>
+</div>
