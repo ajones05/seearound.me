@@ -94,4 +94,29 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 		return $logger;
 	}
+
+    /**
+     * Init save last visit timestamp
+     * 
+     * @return void
+     */
+    public function _initSaveLastVisitTimestamp()
+    {
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (!(new Application_Model_User)->checkId($auth['user_id'], $user))
+		{
+			return false;
+		}
+
+		$status = (new Application_Model_Loginstatus)->find($auth['login_id'])->current();
+
+		if (!$status)
+		{
+			return false;
+		}
+
+		$status->visit_time = (new DateTime)->format(DateTime::W3C);
+		$status->save();
+    }
 }

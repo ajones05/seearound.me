@@ -1,4 +1,18 @@
-<br /><br />
-<div id="view-content">
-	<p>View script for controller <b>Index</b> and script/action name <b>index</b></p>
+<div class="admin">
+	<h1>Statistic Dashboard</h1>
+	<div class="row">
+		<p>total number of users currently logged in: <b><?php echo $this->currentlyLoggedIn->count; ?></b></p>
+	</div>
+	<div class="row">
+		<h2>In past 24 hrs, number of:</h2>
+		<p>users logged in: <b><?php echo $this->pastDayLoggedIn->count; ?></b></p>
+		<p>posts: <b><?php echo $this->pastDayNews->count; ?></b></p>
+		<p>comments: <b><?php echo $this->pastDayComments->count; ?></b></p>
+	</div>
+	<div class="row">
+		<h2>In past week:</h2>
+		<p>users logged in: <b><?php echo $this->pastWeekLoggedIn->count; ?></b></p>
+		<p>posts: <b><?php echo $this->pastWeekNews->count; ?></b></p>
+		<p>comments: <b><?php echo $this->pastWeekComments->count; ?></b></p>
+	</div>
 </div>

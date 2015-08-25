@@ -2215,3 +2215,27 @@ body.error .mainContainer > img {
 .uprBarInr li.rightCol ul.primNav li a.profileLink {
 	height: auto;
 }
+.admin {
+	text-align: left;
+}
+.admin h1 {
+	display: block;
+	font-size: 2em;
+	margin-top: 0.67em;
+	margin-bottom: 0.67em;
+	margin-left: 0;
+	margin-right: 0;
+	font-weight: bold;
+}
+.admin h2 {
+    display: block;
+    font-size: 1.5em;
+    margin-top: 0.83em;
+    margin-bottom: 0.83em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+.admin b {
+	font-weight: 600;
+}

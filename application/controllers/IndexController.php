@@ -47,6 +47,7 @@ class IndexController extends Zend_Controller_Action {
 
 		if ($this->_request->isPost())
 		{
+			$nowTime = (new DateTime)->format(DateTime::W3C);
 			$data = $this->_request->getPost();
 
 			if ($this->_request->get('isLogin'))
@@ -64,7 +65,8 @@ class IndexController extends Zend_Controller_Action {
 
 						$login_id = (new Application_Model_Loginstatus)->insert(array(
 							'user_id' => $user->id,
-							'login_time' => new Zend_Db_Expr('NOW()'),
+							'login_time' => $nowTime,
+							'visit_time' => $nowTime,
 							'ip_address' => $_SERVER['REMOTE_ADDR'])
 						);
 
@@ -116,7 +118,8 @@ class IndexController extends Zend_Controller_Action {
 
 					$login_id = (new Application_Model_Loginstatus)->insert(array(
 						'user_id' => $user->id,
-						'login_time' => new Zend_Db_Expr('NOW()'),
+						'login_time' => $nowTime,
+						'visit_time' => $nowTime,
 						'ip_address' => $_SERVER['REMOTE_ADDR'])
 					);
 
@@ -256,9 +259,12 @@ class IndexController extends Zend_Controller_Action {
 			}
 		}
 
+		$nowTime = (new DateTime)->format(DateTime::W3C);
+
 		$login_id = (new Application_Model_Loginstatus)->insert(array(
 			'user_id' => $user->id,
-			'login_time' => new Zend_Db_Expr('NOW()'),
+			'login_time' => $nowTime,
+			'visit_time' => $nowTime,
 			'ip_address' => $_SERVER['REMOTE_ADDR'])
 		);
 

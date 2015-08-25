@@ -192,7 +192,7 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 				$loginStatusModel->select()
 					->from($loginStatusModel, 'count(*) as count')
 					->where('user_id =?', $this->id)
-					->where('login_time >= CURRENT_DATE() - INTERVAL 7 DAY')
+					->where('login_time >= "' . (new DateTime('-1 week'))->format(DateTime::W3C) . '"')
 			);
 
 			if ($result && $result->count > 5)

@@ -41,6 +41,9 @@ ALTER TABLE `invite_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENC
 --
 ALTER TABLE `login_status` ENGINE = InnoDB;
 ALTER TABLE `login_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
+ALTER TABLE `login_status` CHANGE `login_time` `login_time` TIMESTAMP NULL DEFAULT NULL;
+ALTER TABLE `login_status` CHANGE `logout_time` `logout_time` TIMESTAMP NULL DEFAULT NULL;
+ALTER TABLE `login_status` ADD `visit_time` TIMESTAMP NULL DEFAULT NULL AFTER `logout_time`;
 
 --
 -- Table structure for table `message`
