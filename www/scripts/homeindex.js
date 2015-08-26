@@ -1,6 +1,7 @@
 $(function(){
 	var userLocation = new google.maps.LatLng(userLatitude, userLongitude),
-		center = typeof point !== 'undefined' ? new google.maps.LatLng(point[0], point[1]) : userLocation;
+		center = typeof point !== 'undefined' ? new google.maps.LatLng(point[0], point[1]) :
+			(typeof mapCenter !== 'undefined' ? new google.maps.LatLng(mapCenter[0], mapCenter[1]) : userLocation);
 
 	renderNewsMap({
 		center: center,
@@ -71,10 +72,12 @@ $(function(){
         newsMap.setZoom(--zoom);
 	});
 
+	var renderRadius = typeof mapRadius !== 'undefined' ? mapRadius : getRadius();
+
 	newsMapCircle = new AreaCircle({
 		map: newsMap,
 		center: newsMap.getCenter(),
-		radious: getRadius()
+		radious: renderRadius
 	});
 
 	$("#slider")
@@ -82,7 +85,7 @@ $(function(){
 			max: 1.5,
 			min: 0.5,
 			step: 0.1,
-			value: getRadius(),
+			value: renderRadius,
 			animate: true
 		})
 		.bind("slidestop", function(event, ui){

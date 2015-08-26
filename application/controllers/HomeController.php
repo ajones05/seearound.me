@@ -30,6 +30,32 @@ class HomeController extends Zend_Controller_Action
 			$this->view->headScript('script', 'var point = ' . json_encode($point) . ';');
 		}
 
+		$center = $this->_request->get('center');
+		
+		if (trim($center) !== '')
+		{
+			$center = explode(',', $center);
+
+			if (count($center) != 2 || !My_Validate::latitude($center[0]) || !My_Validate::longitude($center[1]))
+			{
+				throw new RuntimeException('Incorrect center value', -1);
+			}
+
+			$this->view->headScript('script', 'var mapCenter = ' . json_encode($center) . ';');
+		}
+
+		$radius = $this->_request->get('radius');
+
+		if (trim($radius) !== '')
+		{
+			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
+			{
+				throw new RuntimeException('Incorrect radius value', -1);
+			}
+
+			$this->view->headScript('script', 'var mapRadius = ' . $radius . ';');
+		}
+
         $this->view->homePageExist = true;
         $this->view->changeLocation = true;
 		$this->view->displayMapFilter = true;

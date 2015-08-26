@@ -1,5 +1,6 @@
 <?php
 $auth = Zend_Auth::getInstance()->getIdentity();
+$request = Zend_Controller_Front::getInstance()->getRequest();
 
 if ($auth)
 {
@@ -117,7 +118,7 @@ if ($this->hideRight)
 			<?php if (!empty($this->displayMapSlider)) { ?>
 			<div class="sliderBackground">
 				<div>
-					<span id="radious">0.8</span>
+					<span id="radious"><?php echo $request->get('radius', 0.8); ?></span>
 					<span>Miles</span>
 				</div>
 				<div id="slider"></div>
