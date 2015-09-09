@@ -1,1 +1,5 @@
-deny from all
+<Limit GET POST>
+	order deny,allow
+	deny from all
+	allow from 54.148.226.196
+</Limit>

@@ -24,7 +24,7 @@ $application->bootstrap();
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
+set_time_limit(0);
 $_SERVER['HTTP_HOST'] = Zend_Registry::get('config_global')->server->http_host;
 
 $userModel = new Application_Model_User;
