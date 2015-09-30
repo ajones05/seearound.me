@@ -10,8 +10,6 @@ if ($auth)
 $geoip = My_Ip::geolocation();
 $image = $this->baseUrl('www/images/img-prof40x40.jpg');
 
-My_Layout::renderFavicon($this);
-
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this))
 	->appendStylesheet(My_Layout::assetUrl('www/css/global.css', $this));
