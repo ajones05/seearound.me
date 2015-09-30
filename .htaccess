@@ -3,7 +3,7 @@ RewriteEngine On
 RewriteCond %{HTTP_HOST} !^www\.
 RewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]
 
-RewriteRule ^assets-[0-9a-zA-Z.]+/(.*\.(gif|jpe?g|png|ico|css|js|swf|woff|ttf))$ /$1 [QSA,L]
+RewriteRule ^assets-[0-9a-zA-Z.]+/(.*\.(gif|jpe?g|png|ico|css|js|swf|woff|woff2|ttf))$ /$1 [QSA,L]
 
 RewriteCond %{REQUEST_FILENAME} -s [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
@@ -11,7 +11,7 @@ RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^.*$ - [NC,L]
 RewriteRule ^.*$ index.php [NC,L]
 
-<FilesMatch "\.(gif|jpe?g|png|ico|css|js|swf|woff|ttf)$">
+<FilesMatch "\.(gif|jpe?g|png|ico|css|js|swf|woff|woff2|ttf)$">
 	Header set Cache-Control "max-age=2592000, public, must-revalidate"
 </FilesMatch>
 
