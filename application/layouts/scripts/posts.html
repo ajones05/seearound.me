@@ -1,0 +1,174 @@
+<?php
+$config = Zend_Registry::get('config_global');
+
+My_Layout::renderFavicon($this);
+
+$this->headLink()
+	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this))
+	->appendStylesheet(My_Layout::assetUrl('www/css/posts.css', $this));
+
+$this->headScript()
+	->setAllowArbitraryAttributes(true)
+	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this), 'text/javascript', array('defer' => 'defer'))
+	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js', $this), 'text/javascript', array('defer' => 'defer'))
+	// TODO: make function
+	->appendScript(<<<JS
+(function(){
+	var script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.async = true;
+	script.src = '//maps.googleapis.com/maps/api/js?key={$config->google->maps->key}&sensor=true&v=3&callback=initMap';
+	(document.getElementsByTagName('head')[0]||document.getElementsByTagName('body')[0]).appendChild(script);
+})();
+JS
+	);
+
+$this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<?php echo implode("\n", array($this->headTitle(), $this->headMeta(), $this->headLink(), $this->headScript())); ?>
+<script type="text/javascript">
+var map, defaultZoom=14;
+function initMap(){
+	map = new google.maps.Map(document.getElementById('map_canvas'), {
+		center: new google.maps.LatLng(mapCenter[0], mapCenter[1]),
+		zoom: defaultZoom,
+		minZoom: 13,
+		maxZoom: 15,
+		disableDefaultUI: true,
+		scrollwheel: false
+	});
+
+	// TODO: combine icon
+	var controlUIzoomIn = $('<div/>', {title: 'Zoom in'}).addClass('zoom_in')
+		.append($('<img/>', {src: '/www/images/template/zoom_in25x25.png'}).attr({width: 25, height: 25})).get(0);
+
+	google.maps.event.addDomListener(controlUIzoomIn, 'click', function(){
+		map.setZoom(map.getZoom()+1);
+	});
+
+	// TODO: combine icon
+	var controlUIzoomOut = $('<div/>', {title: 'Zoom out'}).addClass('zoom_out')
+		.append($('<img/>', {src: '/www/images/template/zoom_out25x25.png'}).attr({width: 25, height: 25})).get(0);
+
+	google.maps.event.addDomListener(controlUIzoomOut, 'click', function(){
+		map.setZoom(map.getZoom()-1);
+	});
+
+	// TODO: combine icon
+	var controlUImyLocation = $('<div/>', {title: 'Zoom out'}).addClass('my_location')
+		.append($('<img/>', {src: '/www/images/template/my_location.png'}).attr({width: 20, height: 18})).get(0);
+
+	google.maps.event.addDomListener(controlUImyLocation, 'click', function(){
+		if (navigator.geolocation){
+			navigator.geolocation.getCurrentPosition(function(position){
+				map.setCenter({
+					lat: position.coords.latitude,
+					lng: position.coords.longitude
+				});
+				map.setZoom(defaultZoom);
+			}, function(){
+				handleLocationError(true);
+			});
+		} else {
+			handleLocationError(false);
+		}
+	});
+
+	map.controls[google.maps.ControlPosition.RIGHT_TOP].push(
+		$('<div/>').addClass('customMapControl')
+			.append(controlUIzoomIn, controlUIzoomOut, controlUImyLocation)[0]
+	);
+	
+	// RENDER SLIDER
+    $('#slider').slider();
+}
+function handleLocationError(browserHasGeolocation){
+	alert(browserHasGeolocation ?
+		'Error: The Geolocation service failed.' :
+		'Error: Your browser doesn\'t support geolocation.');
+}
+</script>
+</head>
+<body>
+<div class="navbar">
+	<div class="logo">
+		<a href="<?php echo $this->baseUrl('/'); ?>">
+			<img width="194" height="41" src="<?php echo $this->baseUrl('www/images/template/logo194x41.png'); ?>" alt="logo" />
+		</a>
+	</div>
+	<div class="post-new">
+		<img width="29" height="26" src="<?php echo $this->baseUrl('www/images/template/new-post.png'); ?>" alt="new" />
+	</div>
+	<div class="post-search">
+		<form>
+			<input type="text" name="keywords" placeholder="Search Posts..." />
+			<input type="image" src="/www/images/template/search14x14.png" alt="search" />
+		</form>
+	</div>
+	<div class="post-filter">
+		<select name="filter" style="display: none;">
+			<option value="">View all posts</option>
+			<option value="0">Mine Only</option>
+			<option value="1">My Interests</option>
+			<option value="2">Following</option>
+		</select>
+		<?php /* http://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_dropdown-menu&stacked=h */ ?>
+		<div class="dropdown">
+			<button type="button">View all posts <span class="caret"></span></button>
+			<ul class="dropdown-menu">
+				<li><a href="#">View all posts</a></li>
+				<li><a href="#">Mine Only</a></li>
+				<li><a href="#">My Interests</a></li>
+				<li><a href="#">Following</a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="main-menu">
+		<ul>
+			<li>
+				<a href="#">
+					<span class="community"></span><span class="text">Community</span>
+				</a>
+			</li>
+			<li>
+				<a href="<?php echo $this->baseUrl('message'); ?>">
+					<span class="message"></span><span class="text">Messages</span>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<?php // TODO: thumbnail 24x24 ?>
+					<img class="profile" width="24" height="24" src="<?php echo $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
+					<span class="text">Profile</span>
+				</a>
+			</li>
+		</ul>
+	</div>
+</div>
+<div class="container">
+	<div class="footer">
+		<div class="map-radius">
+			<div class="radius">Radius</div>
+			<div id="slider" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
+				<span class="ui-slider-handle ui-state-default ui-corner-all"></span>
+			</div>
+		</div>
+		<div class="user-location">
+			<button>Change Location</button>
+		</div>
+		<div class="about-info">
+			<a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
+			<a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
+			<span>Copyright <?php echo date('Y'); ?> SeeAround.me</span>
+		</div>
+	</div>
+	<div class="map-container">
+		<div id="map_canvas"></div>
+	</div>
+	<div class="posts"><?php echo $this->layout()->content; ?></div>
+</div>
+</body>
+</html>
