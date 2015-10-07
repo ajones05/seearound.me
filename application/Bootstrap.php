@@ -101,7 +101,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	{
 		$log_path = ROOT_PATH . '/log';
 		is_dir($log_path) || mkdir($log_path, 0700);
-		$writer = new Zend_Log_Writer_Stream($log_path . '/bootstrap_log_' . date('Y-m-d') . '.log');
+		$log = $log_path . '/bootstrap_log_' . date('Y-m-d') . '.log';
+		$writer = new Zend_Log_Writer_Stream($log);
+		chmod($log, 0777);
 		$logger = new Zend_Log($writer);
 
 		return $logger;
