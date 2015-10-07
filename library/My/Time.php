@@ -13,33 +13,52 @@ class My_Time
 	 */
 	public static function time_ago($date)
 	{
-		$estimate_time = time() - strtotime($date);
+		$now = new DateTime;
+		$date = new DateTime($date);
+		$diff = $now->getTimestamp() - $date->getTimestamp();
 
-		if ($estimate_time < 1)
+		$minutes = round($diff / 60);
+
+		if ($minutes < 1)
 		{
-			return 'less than 1 second ago';
+			return 'Just now';
 		}
 
-		$condition = array(
-			315705600 => 'decade',
-			31104000 => 'year',
-			2592000 => 'month',
-			604800 => 'week',
-			86400 => 'day',
-			3600 => 'hour',
-			60 => 'minute',
-			1 => 'second'
-		);
-
-		foreach ($condition as $secs => $str)
+		if ($minutes < 60)
 		{
-			$d = $estimate_time / $secs;
+			$output = $minutes . ' minute';
 
-			if ($d >= 1)
+			if ($minutes != 1)
 			{
-				$r = round($d);
-				return $r . ' ' . $str . ($r > 1 ? 's' : '') . ' ago';
+				$output .= 's';
 			}
+
+			return $output;
 		}
+
+		$today = (new DateTime)->setTime(0, 0, 0);
+
+		if ($date > $today)
+		{
+			$hours = round($diff / 3600);
+
+			$output = $hours . ' hour';
+
+			if ($hours != 1)
+			{
+				$output .= 's';
+			}
+
+			return $output;
+		}
+
+		$yesterday = (new DateTime)->modify('-1 day')->setTime(0, 0, 0);
+
+		if ($date > $yesterday)
+		{
+			return 'Yesterday at ' . $date->format('h:ia');
+		}
+
+		return $date->format('F j \a\t h:ia');
 	}
 }
