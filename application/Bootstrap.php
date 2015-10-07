@@ -13,8 +13,20 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 	protected function _initAutoload()
 	{
+		require_once ROOT_PATH . '/vendor/autoload.php';
+
 		$loader = Zend_Loader_Autoloader::getInstance();
 		$loader->registerNamespace('My_');
+
+		class_alias('Validation\Rules\Lat', 'Respect\Validation\Rules\Lat');
+		class_alias('Validation\Exceptions\LatException',
+			'Respect\Validation\Exceptions\LatException');
+		class_alias('Validation\Rules\Lng', 'Respect\Validation\Rules\Lng');
+		class_alias('Validation\Exceptions\LngException',
+			'Respect\Validation\Exceptions\LngException');
+		class_alias('Validation\Rules\LatLng', 'Respect\Validation\Rules\LatLng');
+		class_alias('Validation\Exceptions\LatLngException',
+			'Respect\Validation\Exceptions\LatLngException');
 	}
 
 	protected function _initDB()
