@@ -18,6 +18,11 @@ class My_ViewHelper
 		$view->addScriptPath(APPLICATION_PATH . '/views/scripts');
 		$view->assign($vars);
 
+		if (!preg_match('/\..+$/', $name))
+		{
+			$name .= '.html';
+		}
+
 		return $view->render($name);
 	}
 }
