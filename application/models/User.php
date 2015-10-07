@@ -105,6 +105,23 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	}
 
 	/**
+	 * Returns user's geolocation.
+	 *
+	 * @return	array
+	 */
+	public function location()
+	{
+		$address = $this->findDependentRowset('Application_Model_Address')->current();
+
+		if ($address)
+		{
+			return array($address->latitude, $address->longitude);
+		}
+
+		return My_Ip::geolocation();
+	}
+
+	/**
 	 * Returns user's address.
 	 *
 	 * @return	string

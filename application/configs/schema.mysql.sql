@@ -98,6 +98,56 @@ CREATE TABLE `news_link` (
 ) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 --
+-- Table structure for table `image`
+--
+CREATE TABLE `image` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`path` VARCHAR(2000) NULL,
+	`width` INT(10) NULL,
+	`height` INT(10) NULL,
+	PRIMARY KEY (`id`)
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+--
+-- Table structure for table `image_thumb`
+--
+CREATE TABLE `image_thumb` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`image_id` INT(11) NOT NULL,
+	`path` VARCHAR(2000) NULL,
+	`width` INT(10) NULL,
+	`height` INT(10) NULL,
+	`thumb_width` INT(10) NULL,
+	`thumb_height` INT(10) NULL,
+	PRIMARY KEY (`id`),
+	FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+--
+-- Table structure for table `news_image`
+--
+CREATE TABLE `news_image` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`news_id` INT(11) NOT NULL,
+	`image_id` INT(11) NOT NULL,
+	PRIMARY KEY (`id`),
+	FOREIGN KEY (`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE,
+	FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+--
+-- Table structure for table `news_link_image`
+--
+CREATE TABLE `news_link_image` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`news_link_id` INT(11) NOT NULL,
+	`image_id` INT(11) NOT NULL,
+	PRIMARY KEY (`id`),
+	FOREIGN KEY (`news_link_id`) REFERENCES `news_link`(`id`) ON DELETE CASCADE,
+	FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+--
 -- Table structure for table `votings`
 --
 ALTER TABLE `votings` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;

@@ -319,7 +319,27 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			$news->updated_date = new Zend_Db_Expr('NOW()');
 			$news->save();
 
-			if ($news->image == null && preg_match_all('/' . My_CommonUtils::$link_regex . '/', $news->news, $matches))
+			if (!empty($data['image']))
+			{
+				$image = (new Application_Model_Image)->save('/uploads/' . $data['image']);
+
+				(new Application_Model_NewsImage)->insert(array(
+					'news_id' => $news->id,
+					'image_id' => $image->id
+				));
+
+				$thumbModel = new Application_Model_ImageThumb;
+				$thumb320x320 = $thumbModel->save('/tbnewsimages/' . $data['image'], $image, array(320, 320));
+				$thumb448x320 = $thumbModel->save('/thumb448x320/' . $data['image'], $image, array(448, 320));
+				$thumb960x960 = $thumbModel->save('/newsimages/' . $data['image'], $image, array(960, 960));
+
+				My_CommonUtils::createThumbs(ROOT_PATH . $image->path, array(
+					array(320, 320, ROOT_PATH . $thumb320x320->path),
+					array(448, 320, ROOT_PATH . $thumb448x320->path, 2),
+					array(960, 960, ROOT_PATH . $thumb960x960->path)
+				));
+			}
+			elseif (preg_match_all('/' . My_CommonUtils::$link_regex . '/', $news->news, $matches))
 			{
 				foreach ($matches[0] as $link)
 				{
@@ -398,10 +418,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 								}
 							}
 
-							My_CommonUtils::createThumbs($full_path, array(
-								array(448, 320, ROOT_PATH . '/thumb448x320/' . $name, 2)
-							), $imageType);
-
 							$meta['property']['og:image'] = $name;
 
 							list($meta['property']['og:image:width'], $meta['property']['og:image:height']) = 
@@ -420,7 +436,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						}
 					}
 
-					(new Application_Model_NewsLink)->insert(array(
+					$newsLink = (new Application_Model_NewsLink)->createRow(array(
 						'news_id' => $news->id,
 						'link' => $link,
 						'title' => $title,
@@ -431,6 +447,25 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						'image_height' => My_ArrayHelper::getProp($meta, 'property.og:image:height'),
 						'author' => My_ArrayHelper::getProp($meta, 'name.author')
 					));
+					$newsLink->save(true);
+
+					// TODO: refactoring
+					if (($linkImage = My_ArrayHelper::getProp($meta, 'property.og:image')) != null)
+					{
+						$image = (new Application_Model_Image)->save('/uploads/' . $linkImage);
+
+						(new Application_Model_NewsLinkImage)->insert(array(
+							'news_link_id' => $newsLink->id,
+							'image_id' => $image->id
+						));
+
+						$thumb448x320 = (new Application_Model_ImageThumb)
+							->save('/thumb448x320/' . $linkImage, $image, array(448, 320));
+
+						My_CommonUtils::createThumbs(ROOT_PATH . $image->path, array(
+							array(448, 320, ROOT_PATH . $thumb448x320->path, 2)
+						), $imageType);
+					}
 
 					break;
 				}

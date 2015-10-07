@@ -121,12 +121,6 @@ class Application_Form_News extends Zend_Form
 			$upload->addFilter('Rename', $full_path);
 			$upload->receive();
 
-			My_CommonUtils::createThumbs($full_path, array(
-				array(320, 320, ROOT_PATH . '/tbnewsimages/' . $name),
-				array(448, 320, ROOT_PATH . '/thumb448x320/' . $name, 2),
-				array(960, 960, ROOT_PATH . '/newsimages/' . $name)
-			));
-
 			$this->addElement('text', 'image', array('value' => $name));
 		}
 
