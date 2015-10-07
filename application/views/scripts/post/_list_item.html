@@ -1,0 +1,24 @@
+<?php
+$profile = $this->baseUrl('home/profile/user/' . $this->owner->id);
+
+if ($this->post->image)
+{
+	// TODO: cache
+	list($imageWidth, $imageHeight) = getimagesize(ROOT_PATH . '/newsimages/' . $this->post->image);
+}
+?>
+<div class="post">
+	<div><?php echo $this->post->id; ?></div>
+	<a href="<?php echo $profile; ?>">
+		<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
+	</a>
+	<a href="<?php echo $profile; ?>"><?php echo ucfirst($this->owner->Name); ?></a>
+	<a href="<?php echo $this->baseUrl('info/news/nwid/' . $this->post->id); ?>"><?php echo My_Time::time_ago($this->post->created_date); ?></a>
+	<div><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'length')); ?></div>
+	<?php if ($this->post->image != null): ?>
+	<div>
+		<img onclick="openImage('<?php echo $this->post->image; ?>','<?php echo $imageWidth; ?>','<?php echo $imageHeight; ?>');"
+			src="<?php echo $this->baseUrl('thumb448x320/' . $this->post->image); ?>" />
+	</div>
+	<?php endif; ?>
+</div>

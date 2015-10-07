@@ -1,0 +1,17 @@
+<?php
+if (count($this->posts))
+{
+	foreach ($this->posts as $post)
+	{
+		echo My_ViewHelper::render('post/_list_item', array(
+			'post' => $post,
+			'owner' => $post->findDependentRowset('Application_Model_User')->current(),
+			'user' => $this->user,
+			'limit' => 350
+		));
+	}
+}
+else
+{
+	echo My_ViewHelper::render('post/_list_empty');
+}
