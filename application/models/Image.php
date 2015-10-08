@@ -12,7 +12,7 @@ class Application_Model_ImageRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function findThumb(array $thumb)
 	{
-		return (new Application_Model_ImageThumb)->fetchAll(array(
+		return (new Application_Model_ImageThumb)->fetchRow(array(
 			'image_id=' . $this->id,
 			'thumb_width=' . $thumb[0],
 			'thumb_height=' . $thumb[1]
@@ -72,7 +72,7 @@ class Application_Model_Image extends Zend_Db_Table_Abstract
 	{
 		$row = $this->createRow();
 		$row->path = $path;
-		list($row->width, $row->height) = getimagesize(ROOT_PATH . $path);
+		list($row->width, $row->height) = getimagesize(ROOT_PATH . '/' . $path);
 		$row->save(true);
 
 		return $row;

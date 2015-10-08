@@ -21,7 +21,7 @@ class Application_Model_ImageThumb extends Zend_Db_Table_Abstract
 		$row = $this->createRow();
 		$row->image_id = $image->id;
 		$row->path = $path;
-		list($row->width, $row->height) = getimagesize(ROOT_PATH . $path);
+		list($row->width, $row->height) = getimagesize(ROOT_PATH . '/' . $path);
 		list($row->thumb_width, $row->thumb_height) = $thumb;
 		$row->save(true);
 

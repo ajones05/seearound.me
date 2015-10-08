@@ -321,23 +321,27 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 			if (!empty($data['image']))
 			{
-				$image = (new Application_Model_Image)->save('/uploads/' . $data['image']);
+				$image = (new Application_Model_Image)->save('uploads/' . $data['image']);
 
 				(new Application_Model_NewsImage)->insert(array(
 					'news_id' => $news->id,
 					'image_id' => $image->id
 				));
 
-				$thumbModel = new Application_Model_ImageThumb;
-				$thumb320x320 = $thumbModel->save('/tbnewsimages/' . $data['image'], $image, array(320, 320));
-				$thumb448x320 = $thumbModel->save('/thumb448x320/' . $data['image'], $image, array(448, 320));
-				$thumb960x960 = $thumbModel->save('/newsimages/' . $data['image'], $image, array(960, 960));
+				$thumb320x320 = 'tbnewsimages/' . $data['image'];
+				$thumb448x320 = 'thumb448x320/' . $data['image'];
+				$thumb960x960 = 'newsimages/' . $data['image'];
 
-				My_CommonUtils::createThumbs(ROOT_PATH . $image->path, array(
-					array(320, 320, ROOT_PATH . $thumb320x320->path),
-					array(448, 320, ROOT_PATH . $thumb448x320->path, 2),
-					array(960, 960, ROOT_PATH . $thumb960x960->path)
+				My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
+					array(320, 320, ROOT_PATH . '/' . $thumb320x320),
+					array(448, 320, ROOT_PATH . '/' . $thumb448x320, 2),
+					array(960, 960, ROOT_PATH . '/' . $thumb960x960)
 				));
+
+				$thumbModel = new Application_Model_ImageThumb;
+				$thumbModel->save($thumb320x320, $image, array(320, 320));
+				$thumbModel->save($thumb448x320, $image, array(448, 320));
+				$thumbModel->save($thumb960x960, $image, array(960, 960));
 			}
 			elseif (preg_match_all('/' . My_CommonUtils::$link_regex . '/', $news->news, $matches))
 			{
@@ -452,19 +456,21 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					// TODO: refactoring
 					if (($linkImage = My_ArrayHelper::getProp($meta, 'property.og:image')) != null)
 					{
-						$image = (new Application_Model_Image)->save('/uploads/' . $linkImage);
+						$image = (new Application_Model_Image)->save('uploads/' . $linkImage);
 
 						(new Application_Model_NewsLinkImage)->insert(array(
 							'news_link_id' => $newsLink->id,
 							'image_id' => $image->id
 						));
 
-						$thumb448x320 = (new Application_Model_ImageThumb)
-							->save('/thumb448x320/' . $linkImage, $image, array(448, 320));
+						$thumb448x320 = 'thumb448x320/' . $linkImage;
 
-						My_CommonUtils::createThumbs(ROOT_PATH . $image->path, array(
-							array(448, 320, ROOT_PATH . $thumb448x320->path, 2)
+						My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
+							array(448, 320, ROOT_PATH . '/' . $thumb448x320, 2)
 						), $imageType);
+
+						(new Application_Model_ImageThumb)
+							->save($thumb448x320, $image, array(448, 320));
 					}
 
 					break;
