@@ -1,5 +1,26 @@
 <?php
 /**
+ * Row class for image thumb.
+ */
+class Application_Model_ImageThumbRow extends Zend_Db_Table_Row_Abstract
+{
+	/**
+	 * Deletes row and image.
+	 *
+	 * @return	boolean
+	 */
+	public function deleteThumb()
+	{
+		if (!@unlink(ROOT_PATH . '/' . $this->path))
+		{
+			throw new Exception('Delete thumb file ' . $this->path . ' error');
+		}
+
+		return parent::delete();
+	}
+}
+
+/**
  * This is the model class for table "image_thumb".
  */
 class Application_Model_ImageThumb extends Zend_Db_Table_Abstract
@@ -10,6 +31,31 @@ class Application_Model_ImageThumb extends Zend_Db_Table_Abstract
      * @var string
      */
     protected $_name = 'image_thumb';
+
+    /**
+     * Classname for row.
+     *
+     * @var string
+     */
+    protected $_rowClass = 'Application_Model_ImageThumbRow';
+
+	/**
+	 * @var	array
+	 */
+    protected $_dependentTables = array(
+		'Application_Model_Image'
+	);
+
+	/**
+	 * @var	array
+	 */
+	protected $_referenceMap = array(
+		'Image' => array(
+			'columns' => 'image_id',
+			'refTableClass' => 'Application_Model_Image',
+			'refColumns' => 'id'
+		),
+	);
 
     /**
      * Save thumb.

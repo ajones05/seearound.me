@@ -18,6 +18,28 @@ class Application_Model_ImageRow extends Zend_Db_Table_Row_Abstract
 			'thumb_height=' . $thumb[1]
 		));
 	}
+
+	/**
+	 * Deletes row, image and thumbnails.
+	 *
+	 * @return	boolean
+	 */
+	public function deleteImage()
+	{
+		if (!@unlink(ROOT_PATH . '/' . $this->path))
+		{
+			throw new Exception('Delete file ' . $this->path . ' error');
+		}
+
+		$thumbs = $this->findDependentRowset('Application_Model_ImageThumb');
+
+		foreach ($thumbs as $thumb)
+		{
+			$thumb->deleteThumb();
+		}
+
+		return parent::delete();
+	}
 }
 
 /**

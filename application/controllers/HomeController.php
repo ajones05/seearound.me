@@ -198,6 +198,14 @@ class HomeController extends Zend_Controller_Action
 			$upload->addFilter('Rename', $full_path);
 			$upload->receive();
 
+			$currentImage = $user->findManyToManyRowset('Application_Model_Image',
+				'Application_Model_UserImage')->current();
+
+			if ($currentImage)
+			{
+				$currentImage->deleteImage();
+			}
+
 			$image = (new Application_Model_Image)->save('www/upload/' . $name);
 
 			(new Application_Model_UserImage)->insert(array(
