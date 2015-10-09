@@ -126,6 +126,19 @@ CREATE TABLE `image_thumb` (
 --
 -- Table structure for table `news_image`
 --
+CREATE TABLE `user_image` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`user_id` INT(11) NOT NULL,
+	`image_id` INT(11) NOT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`),
+	FOREIGN KEY (`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE,
+	FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+--
+-- Table structure for table `news_image`
+--
 CREATE TABLE `news_image` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
 	`news_id` INT(11) NOT NULL,

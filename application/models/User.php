@@ -544,6 +544,145 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	}
 
 	/**
+	 * User authentication by facebook API.
+	 *
+	 * @param	Facebook\FacebookSession $session
+	 * @return	Application_Model_UserRow
+	 */
+	public function facebookAuthentication(Facebook\FacebookSession $session)
+	{
+		$me = (new Facebook\FacebookRequest(
+		  $session, 'GET', '/me'
+		))->execute()->getGraphObject(Facebook\GraphUser::className());
+
+		$email = $me->getEmail();
+
+		if (!$email)
+		{
+			throw new Exception('Email not activated');
+		}
+
+		$network_id = $me->getId();
+
+		$user = $this->findByNetworkId($network_id);
+
+		if (!$user)
+		{
+			$user = $this->findByEmail($email);
+
+			if ($user)
+			{
+				$this->update(array('Network_id' => $network_id), 'id=?' . $user->id);
+			}
+			else
+			{
+				$user = $this->createRow(array(
+					'Network_id' => $network_id,
+					'Name' => $me->getName(),
+					'Email_id' => $email,
+					'Status' => 'active',
+					'Creation_date'=> new Zend_Db_Expr('NOW()'),
+					'Update_date' => new Zend_Db_Expr('NOW()')
+				));
+				$user->save();
+
+				$picture = (new Facebook\FacebookRequest(
+					$session, 'GET', '/me/picture', array('type' => 'large', 'redirect' => false)
+				))->execute()->getGraphObject();
+
+				$pictureUrl = $picture->getProperty('url');
+
+				if (trim($pictureUrl) !== '')
+				{
+					try
+					{
+						$ext = strtolower(strtok((new SplFileInfo($pictureUrl))->getExtension(), '?'));
+
+						if (trim($ext) === '')
+						{
+							throw new Exception('Incorrect file extension');
+						}
+
+						do
+						{
+							$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
+							$fullPath = ROOT_PATH . '/www/upload/' . $name;
+						}
+						while (file_exists($fullPath));
+
+						if (!@copy($pictureUrl, $fullPath))
+						{
+							throw new Exception('Failed to copy file ' . $pictureUrl);
+						}
+
+						$image = (new Application_Model_Image)->save('www/upload/' . $name);
+
+						(new Application_Model_UserImage)->insert(array(
+							'user_id' => $user->id,
+							'image_id' => $image->id
+						));
+
+						$thumb320x320 = 'uploads/' . $name;
+
+						My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
+							array(320, 320, ROOT_PATH . '/' . $thumb320x320)
+						));
+
+						(new Application_Model_ImageThumb)
+							->save($thumb320x320, $image, array(320, 320));
+
+						$user->Profile_image = $name;
+						$user->save();
+					}
+					catch (Exception $e)
+					{
+					}
+				}
+
+				Application_Model_Profile::getInstance()->insert(array(
+					'user_id' => $user->id,
+					'Gender' => ucfirst($me->getGender())
+				));
+
+				$geolocation = My_Ip::geolocation();
+
+				Application_Model_Address::getInstance()->insert(array(
+					'user_id' => $user->id,
+					'latitude' => $geolocation[0],
+					'longitude' => $geolocation[1]
+				));
+
+				(new Application_Model_Invitestatus)->insert(array(
+					'user_id' => $user->id,
+					'created' => new Zend_Db_Expr('NOW()'),
+					'updated' => new Zend_Db_Expr('NOW()')
+				));
+
+				$users = Application_Model_Fbtempusers::getInstance()->findAllByNetworkId($network_id);
+
+				if (count($users))
+				{
+					$users_model = new Application_Model_Friends;
+
+					foreach($users as $tmp_user)
+					{
+						$users_model->insert(array(
+							'sender_id' => $tmp_user->sender_id,
+							'reciever_id' => $user->id,
+							'cdate' => new Zend_Db_Expr('NOW()'),
+							'udate' => new Zend_Db_Expr('NOW()')
+						));
+
+						$tmp_user->delete();
+					}
+				}
+			}
+		}
+
+		return $user;
+	}
+
+	/**
 	 * Update the user data.
 	 *
 	 * @param	Application_Model_UserRow	$user

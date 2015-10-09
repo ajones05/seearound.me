@@ -124,10 +124,6 @@ class Application_Form_MobileProfile extends Zend_Form
 			$upload->addFilter('Rename', $full_path);
 			$upload->receive();
 
-			My_CommonUtils::createThumbs($full_path, array(
-				array(320, 320, ROOT_PATH . '/uploads/' . $name)
-			));
-
 			$this->addElement('text', 'image', array('value' => $name));
 		}
 

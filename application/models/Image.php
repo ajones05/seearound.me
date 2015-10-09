@@ -43,6 +43,7 @@ class Application_Model_Image extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
     protected $_dependentTables = array(
+		'Application_Model_UserImage',
 		'Application_Model_NewsImage',
 		'Application_Model_NewsLinkImage'
 	);
@@ -51,6 +52,11 @@ class Application_Model_Image extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
 	protected $_referenceMap = array(
+		'UserImage' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_UserImage',
+			'refColumns' => 'image_id'
+		),
 		'NewsImage' => array(
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_NewsImage',

@@ -198,19 +198,28 @@ class HomeController extends Zend_Controller_Action
 			$upload->addFilter('Rename', $full_path);
 			$upload->receive();
 
-			My_CommonUtils::createThumbs($full_path, array(
-				array(320, 320, ROOT_PATH . '/uploads/' . $name)
+			$image = (new Application_Model_Image)->save('www/upload/' . $name);
+
+			(new Application_Model_UserImage)->insert(array(
+				'user_id' => $user->id,
+				'image_id' => $image->id
 			));
 
-			$model = new Application_Model_User;
-			$model->update(
-				array('Profile_image' => $name),
-				$model->getAdapter()->quoteInto('id =?', $user->id)
-			);
+			$thumb320x320 = 'uploads/' . $name;
+
+			My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
+				array(320, 320, ROOT_PATH . '/' . $thumb320x320)
+			));
+
+			$thumb = (new Application_Model_ImageThumb)
+				->save($thumb320x320, $image, array(320, 320));
+
+			(new Application_Model_User)
+				->update(array('Profile_image' => $name), 'id=' . $user->id);
 
 			$response = array(
 				'status' => 1,
-				'url' => $this->view->baseUrl('uploads/' . $name)
+				'url' => $this->view->baseUrl($thumb->path)
 			);
 		}
 		catch (Exception $e)

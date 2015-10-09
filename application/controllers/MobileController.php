@@ -132,102 +132,10 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$config = Zend_Registry::get('config_global');
-
 			Facebook\FacebookSession::setDefaultApplication($config->facebook->app->id, $config->facebook->app->secret);
 
 			$session = new Facebook\FacebookSession($token);
-
-			$me = (new Facebook\FacebookRequest(
-			  $session, 'GET', '/me'
-			))->execute()->getGraphObject(Facebook\GraphUser::className());
-
-			$email = $me->getEmail();
-
-			if (!$email)
-			{
-				throw new Exception('Email not activated');
-			}
-
-			$user_model = new Application_Model_User;
-
-			$network_id = $me->getId();
-
-			$user = $user_model->findByNetworkId($network_id);
-
-			if (!$user)
-			{
-				$user = $user_model->findByEmail($email);
-
-				if ($user)
-				{
-					$user_model->update(
-						array('Network_id' => $network_id),
-						$user_model->getAdapter()->quoteInto('id =?', $user->id)
-					);
-				}
-				else
-				{
-					$user = $user_model->createRow(array(
-						'Network_id' => $network_id,
-						'Name' => $me->getName(),
-						'Email_id' => $email,
-						'Status' => 'active',
-						'Creation_date'=> new Zend_Db_Expr('NOW()'),
-						'Update_date' => new Zend_Db_Expr('NOW()')
-					));
-
-					$me_picture = (new Facebook\FacebookRequest(
-						$session, 'GET', '/me/picture', array('type' => 'square', 'redirect' => false)
-					))->execute()->getGraphObject();
-
-					$picture = $me_picture->getProperty('url');
-
-					if ($picture != null)
-					{
-						$user->Profile_image = $me_picture->getProperty('url');
-					}
-
-					$user->save();
-					
-					Application_Model_Profile::getInstance()->insert(array(
-						'user_id' => $user->id,
-						'Gender' => ucfirst($me->getGender())
-					));
-
-					$geolocation = My_Ip::geolocation();
-
-					Application_Model_Address::getInstance()->insert(array(
-						'user_id' => $user->id,
-						'latitude' => $geolocation[0],
-						'longitude' => $geolocation[1]
-					));
-
-					(new Application_Model_Invitestatus)->insert(array(
-						'user_id' => $user->id,
-						'created' => new Zend_Db_Expr('NOW()'),
-						'updated' => new Zend_Db_Expr('NOW()')
-					));
-
-					$users = Application_Model_Fbtempusers::getInstance()->findAllByNetworkId($network_id);
-
-					if (count($users))
-					{
-						$users_model = new Application_Model_Friends;
-
-						foreach($users as $tmp_user)
-						{
-							$users_model->insert(array(
-								'sender_id' => $tmp_user->sender_id,
-								'reciever_id' => $user->id,
-								'cdate' => new Zend_Db_Expr('NOW()'),
-								'udate' => new Zend_Db_Expr('NOW()')
-							));
-
-							$tmp_user->delete();
-						}
-					}
-				}
-			}
+			$user = (new Application_Model_User)->facebookAuthentication($session);
 
 			$nowTime = (new DateTime)->format(DateTime::W3C);
 
@@ -879,6 +787,22 @@ class MobileController extends Zend_Controller_Action
 				if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
 				{
 					$user_data['Profile_image'] = $user->Profile_image = $data['image'];
+
+					$image = (new Application_Model_Image)->save('www/upload/' . $data['image']);
+
+					(new Application_Model_UserImage)->insert(array(
+						'user_id' => $user->id,
+						'image_id' => $image->id
+					));
+
+					$thumb320x320 = 'uploads/' . $data['image'];
+
+					My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
+						array(320, 320, ROOT_PATH . '/' . $thumb320x320)
+					));
+
+					(new Application_Model_ImageThumb)
+						->save($thumb320x320, $image, array(320, 320));
 				}
 
 				$model->update($user_data, $model->getDefaultAdapter()->quoteInto('id =?', $user->id));

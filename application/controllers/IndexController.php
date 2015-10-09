@@ -157,107 +157,16 @@ class IndexController extends Zend_Controller_Action {
 	public function fbLoginAction()
 	{
 		$config = Zend_Registry::get('config_global');
-
 		Facebook\FacebookSession::setDefaultApplication($config->facebook->app->id, $config->facebook->app->secret);
 
 		$session = (new Facebook\FacebookJavaScriptLoginHelper())->getSession();
 
 		if (!$session)
 		{
-			throw new Exception('Login error.');
+			throw new RuntimeException('Incorrect facebook access token');
 		}
 
-		$me = (new Facebook\FacebookRequest(
-		  $session, 'GET', '/me'
-		))->execute()->getGraphObject(Facebook\GraphUser::className());
-
-		$email = $me->getEmail();
-
-		if (!$email)
-		{
-			throw new Exception('Email not activated');
-		}
-
-		$user_model = new Application_Model_User;
-
-		$network_id = $me->getId();
-
-		$user = $user_model->findByNetworkId($network_id);
-
-		if (!$user)
-		{
-			$user = $user_model->findByEmail($email);
-
-			if ($user)
-			{
-				$user_model->update(
-					array('Network_id' => $network_id),
-					$user_model->getAdapter()->quoteInto('id =?', $user->id)
-				);
-			}
-			else
-			{
-				$user = $user_model->createRow(array(
-					'Network_id' => $network_id,
-					'Name' => $me->getName(),
-					'Email_id' => $email,
-					'Status' => 'active',
-					'Creation_date'=> new Zend_Db_Expr('NOW()'),
-					'Update_date' => new Zend_Db_Expr('NOW()')
-				));
-
-				$me_picture = (new Facebook\FacebookRequest(
-					$session, 'GET', '/me/picture', array('type' => 'square', 'redirect' => false)
-				))->execute()->getGraphObject();
-
-				$picture = $me_picture->getProperty('url');
-
-				if ($picture != null)
-				{
-					$user->Profile_image = $me_picture->getProperty('url');
-				}
-
-				$user->save();
-				
-				Application_Model_Profile::getInstance()->insert(array(
-					'user_id' => $user->id,
-					'Gender' => ucfirst($me->getGender())
-				));
-
-				$geolocation = My_Ip::geolocation();
-
-				Application_Model_Address::getInstance()->insert(array(
-					'user_id' => $user->id,
-					'latitude' => $geolocation[0],
-					'longitude' => $geolocation[1]
-				));
-
-				(new Application_Model_Invitestatus)->insert(array(
-					'user_id' => $user->id,
-					'created' => new Zend_Db_Expr('NOW()'),
-					'updated' => new Zend_Db_Expr('NOW()')
-				));
-
-				$users = Application_Model_Fbtempusers::getInstance()->findAllByNetworkId($network_id);
-
-				if (count($users))
-				{
-					$users_model = new Application_Model_Friends;
-
-					foreach($users as $tmp_user)
-					{
-						$users_model->insert(array(
-							'sender_id' => $tmp_user->sender_id,
-							'reciever_id' => $user->id,
-							'cdate' => new Zend_Db_Expr('NOW()'),
-							'udate' => new Zend_Db_Expr('NOW()')
-						));
-
-						$tmp_user->delete();
-					}
-				}
-			}
-		}
+		$user = (new Application_Model_User)->facebookAuthentication($session);
 
 		$nowTime = (new DateTime)->format(DateTime::W3C);
 
@@ -268,15 +177,15 @@ class IndexController extends Zend_Controller_Action {
 			'ip_address' => $_SERVER['REMOTE_ADDR'])
 		);
 
-		Zend_Auth::getInstance()->getStorage()->write(array(
-			'user_id' => $user->id,
-			'login_id' => $login_id
-		));
-
 		if (date('N') == 1)
 		{
 			$user->updateInviteCount();
 		}
+
+		Zend_Auth::getInstance()->getStorage()->write(array(
+			'user_id' => $user->id,
+			'login_id' => $login_id
+		));
 
 		$this->_redirect($this->view->baseUrl('home'));
 	}

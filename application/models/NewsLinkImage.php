@@ -15,7 +15,8 @@ class Application_Model_NewsLinkImage extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
     protected $_dependentTables = array(
-		'Application_Model_NewsLink'
+		'Application_Model_NewsLink',
+		'Application_Model_Image'
 	);
 
 	/**
@@ -25,6 +26,11 @@ class Application_Model_NewsLinkImage extends Zend_Db_Table_Abstract
 		'NewsLink' => array(
 			'columns' => 'news_link_id',
 			'refTableClass' => 'Application_Model_NewsLink',
+			'refColumns' => 'id'
+		),
+		'Image' => array(
+			'columns' => 'image_id',
+			'refTableClass' => 'Application_Model_Image',
 			'refColumns' => 'id'
 		)
 	);

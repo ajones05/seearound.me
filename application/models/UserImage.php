@@ -1,21 +1,21 @@
 <?php
 /**
- * This is the model class for table "news_image".
+ * This is the model class for table "user_image".
  */
-class Application_Model_NewsImage extends Zend_Db_Table_Abstract
+class Application_Model_UserImage extends Zend_Db_Table_Abstract
 {
     /**
      * The table name.
      *
      * @var string
      */
-    protected $_name = 'news_image';
+    protected $_name = 'user_image';
 
 	/**
 	 * @var	array
 	 */
     protected $_dependentTables = array(
-		'Application_Model_News',
+		'Application_Model_User',
 		'Application_Model_Image'
 	);
 
@@ -23,9 +23,9 @@ class Application_Model_NewsImage extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
 	protected $_referenceMap = array(
-		'News' => array(
-			'columns' => 'news_id',
-			'refTableClass' => 'Application_Model_News',
+		'User' => array(
+			'columns' => 'user_id',
+			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'id'
 		),
 		'Image' => array(
