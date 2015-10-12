@@ -1,0 +1,22 @@
+<?php
+// TODO: refactoring
+$auth = Zend_Auth::getInstance()->getIdentity();
+$auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
+
+$auth_pro_image = $this->baseUrl('www/images/img-prof40x40.jpg');
+
+if ($auth_user_id)
+{
+	$auth_pro_image = Application_Model_User::findById($auth_user_id)->getProfileImage($auth_pro_image);
+}
+?>
+<li class="<?php if (!empty($this->hidden)) echo 'hidden'; ?>">
+	<ul>
+		<li>
+			<img src="<?php echo $auth_pro_image; ?>" />
+		</li>
+		<li>
+			<textarea placeholder="Write a Comment"></textarea>
+		</li>
+	</ul>
+</li>

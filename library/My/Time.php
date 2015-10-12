@@ -7,11 +7,11 @@ class My_Time
 	/**
 	 * Converts timestamp to time ago.
 	 *
-	 * @param	string	$date
-	 *
+	 * @param	string $date
+	 * @param	boolean $ago
 	 * @return	string
 	 */
-	public static function time_ago($date)
+	public static function time_ago($date, $ago = false)
 	{
 		$now = new DateTime;
 		$date = new DateTime($date);
@@ -33,6 +33,11 @@ class My_Time
 				$output .= 's';
 			}
 
+			if ($ago)
+			{
+				$output .= ' ago';
+			}
+
 			return $output;
 		}
 
@@ -47,6 +52,11 @@ class My_Time
 			if ($hours != 1)
 			{
 				$output .= 's';
+			}
+
+			if ($ago)
+			{
+				$output .= ' ago';
 			}
 
 			return $output;
