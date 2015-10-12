@@ -26,6 +26,7 @@ if ($this->post->image)
 	<?php if ($this->post->comment > 3): ?>
 	<div><?php echo Application_Model_Comments::viewMoreLabel($this->post->comment - 3); ?></div>
 	<?php endif; ?>
+	<input type="button" value="Edit Post" />
 	<div>
 		<a href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->post->id); ?>">
 			<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" />
@@ -34,7 +35,6 @@ if ($this->post->image)
 			<img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" />
 		</a>
 	</div>
-	<?php // TODO: edit button (https://github.com/ajones05/seearound.me/issues/105#issuecomment-146648546) ?>
 	<ul>
 	<?php
 		if ($this->post->comment)
