@@ -92,4 +92,44 @@ class My_Layout
 			'webkitRequestAnimationFrame||msRequestAnimationFrame;' .
 			'raf?raf(cb):window.addEventListener("load",cb);';
 	}
+
+	/**
+	 * Async load javascript file.
+	 *
+	 * @param	string $src
+	 * @param	Zend_View $view
+	 * @reutrn	string
+	 */
+	public static function appendAsyncScript($src, $view, $x = false)
+	{
+		if (!isset($view->asyncScripts))
+		{
+			$view->asyncScripts = array();
+		}
+
+		$view->asyncScripts[$src] = <<<JS
+(function(){
+	var script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.async = true;
+	script.src = '{$src}';
+	(document.getElementsByTagName('head')[0]||document.getElementsByTagName('body')[0]).appendChild(script);
+})();
+JS;
+	}
+
+	/**
+	 * Returns async javascript code.
+	 *
+	 * @param	Zend_View $view
+	 * @reutrn	string
+	 */
+	public static function asyncScript()
+	{
+		if (isset($view->asyncScripts))
+		{
+			return '<script type="text/javascript">' .
+				implode($view->asyncScripts) . '</script>';
+		}
+	}
 }
