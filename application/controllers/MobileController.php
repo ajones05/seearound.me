@@ -345,9 +345,7 @@ class MobileController extends Zend_Controller_Action
 					throw new RuntimeException('Incorrect user ID', -1);
 				}
 
-				$result = (new Application_Model_Friends)->getStatus($user_id, $other_user_id);
-
-				$response['friends'] = count($result) && $result->status == 1 ? 1 : 0;
+				$response['friends'] = (new Application_Model_Friends)->isFriend($user, $other_user) ? 1 : 0;
 			}
 		}
 		catch (Exception $e)

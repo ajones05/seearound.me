@@ -162,16 +162,6 @@ function showFriendRequest(thisone){
 					currentRequests++;
 				}
 
-				if (response.total >= 5){
-					$("#ddMyConnList").append(
-						$('<div/>').addClass('pendReq').append(
-							$('<a/>', {href: baseUrl + 'contacts/all-requests'}).text('View all pending requests')
-						)
-					);
-				} else {
-					$("#ddMyConnList").append($('<p/>').addClass('pendReq2'));
-				}
-
 				$('#noteTotal').hide();
 			} else {
 				$("#ddMyConnList").append($('<p/>').addClass('pendReq').text('No new followers'));
@@ -185,70 +175,6 @@ function showFriendRequest(thisone){
 	}).fail(function(jqXHR, textStatus){
 		alert(textStatus);
 		$("#ddMyConnList").hide();
-	});
-}
-
-function friendRequest(thisone, id, action){
-	$(thisone).siblings('img').toggle();
-
-	$.ajax({
-		url: baseUrl + 'contacts/friend',
-		type: 'POST',
-		data: {
-			user: id,
-			action: action,
-			total: true
-		},
-		dataType: 'json'
-	}).done(function(response){
-		if (response && response.status){
-			$('#noteTotal').html(response.total);
-			$(thisone).parent().parent().remove();
-
-			currentRequests--;
-
-			if (response.total == 0){
-				$('#noteTotal').hide();
-			}
-
-			if (currentRequests <= 0){
-				showFriendRequest();
-			}
-		} else {
-			alert(response ? response.error.message : ERROR_MESSAGE);
-		}
-	}).fail(function(jqXHR, textStatus){
-		alert(textStatus);
-	});
-}
-
-// TODO: merge with friendRequest
-
-function deleteFriend(userId, target, callback){
-	if (!confirm("Are you sure to delete this friend?")){
-		return false;
-	}
-
-	$.ajax({
-		url: baseUrl + 'contacts/friend',
-		type: 'POST',
-		data: {
-			user: userId,
-			action: 'reject'
-		},
-		dataType: 'json'
-	}).done(function(response){
-		if (response && response.status){
-			$(target).remove();
-
-			if (typeof callback === 'function'){
-				callback.call();
-			}
-		} else {
-			alert(response ? response.error.message : ERROR_MESSAGE);
-		}
-	}).fail(function(jqXHR, textStatus){
-		alert(textStatus);
 	});
 }
 
@@ -592,4 +518,28 @@ function editLocationDialog(options){
 				}
 			}
 		});
+}
+
+function ajaxJson(url, settings){
+	if (typeof url === 'string'){
+		settings.url = url;
+	} else if (typeof url === 'object'){
+		settings = url;
+	}
+
+	settings.dataType = 'json';
+
+	var jqxhr = $.ajax($.extend(settings, {type: 'POST'}))
+		.done(function(data, textStatus, jqXHR){
+			if (typeof data !== 'object' || data.status == 0){
+				alert(typeof data === 'object' ? data.message : ERROR_MESSAGE);
+				return false;
+			}
+
+			if (typeof settings.done === 'function'){
+				return settings.done(data, textStatus, jqXHR);
+			}
+		});
+
+	return jqxhr;
 }

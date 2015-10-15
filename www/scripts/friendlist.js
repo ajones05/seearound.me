@@ -279,13 +279,25 @@ function moreFriends(){
 							),
 							$('<li/>', {'class': 'delete btnCol'}).append(
 								$('<img/>', {src: baseUrl + 'www/images/delete-icon.png'}).click(function(){
-									var $target = $(this).closest('.invtFrndList'),
-										id = $target.attr('id').replace('user-', '');
+									if (!confirm("Are you sure to delete this friend?")){
+										return false;
+									}
 
-									deleteFriend(id, $target, function(){
-										friends_count--;
-										markers[id].setMap(null);
-									});
+									var target = $(this).closest('.invtFrndList').attr('disabled', true),
+										id = target.attr('id').replace('user-', '');
+
+									ajaxJson({
+										url: baseUrl + 'contacts/friend',
+										data: {
+											user: id,
+											action: 'reject'
+										},
+										done: function(){
+											target.remove();
+											friends_count--;
+											loadFriendNews();
+										}
+									})
 								})
 							),
 							$('<div/>', {'class': 'clr'})

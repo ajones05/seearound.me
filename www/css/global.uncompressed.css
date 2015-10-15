@@ -114,11 +114,20 @@ body.layout:not(.hideRight) .mainContainer > .leftContainer{
 
 .floatL{float:left !important;}
 
-.wAuto{ width:auto !important;}
+.wAuto{ }
 
-.bgEven{background:#f8f7f7; border-bottom:1px solid #fff;}
-
-.bgOdd{background:#fbf9f9; border-bottom:1px solid #fff;}
+.bgEven,
+.viewForm li:nth-child(even)
+{
+	background: #f8f7f7;
+	border-bottom: 1px solid #fff;
+}
+.bgOdd,
+.viewForm li:nth-child(odd)
+{
+	background: #fbf9f9;
+	border-bottom: 1px solid #fff;
+}
 
 /**texts color*/
 
@@ -984,8 +993,27 @@ body.hideRight .footer .footerLinks {
 
 .btnBarM20 {text-align: center; background:#668cd5; padding: 4px 0px;}
 
-.btnBlueRpt, .btnBlueRptType1{background: none; overflow:visible; font-size:17px; font-family: Lato-Bold; color:#fff;}
-.friendAction .btnBlueRpt {cursor: pointer; overflow: visible; border: none;}
+.btnBlueRpt,
+.btnBlueRptType1,
+.profile .btnBarM20 input,
+.profile .btnBarM20 a {
+	background: none;
+	overflow: visible;
+	font-size: 17px;
+	font-family: Lato-Bold;
+	color: #fff;
+}
+.profile .btnBarM20 input {
+	cursor: pointer;
+	border: none;
+}
+.profile .btnBarM20 input,
+.profile .btnBarM20 a {
+	width: auto !important;
+}
+.profile .btnBarM20 a {
+	text-decoration: none;
+}
 
 .btnBlueRptType2{background:none; overflow:visible;font:normal 17px Lato-Bold;color:#fff;}
 
@@ -1503,16 +1531,10 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 }
 
-.frndReqImg{
-
+.frndReqImg {
     height: 20px;
-
     width: 20px;
-
     margin-bottom: -4px;
-
-    display: none;
-
 }
 
 .proImgChange{

@@ -175,7 +175,7 @@ class ContactsController extends Zend_Controller_Action
 				{
 					$response['address'] = $facebook_user->address();
 
-					$friends = (new Application_Model_Friends)->getStatus($user->id, $facebook_user->id);
+					$friends = (new Application_Model_Friends)->isFriend($user->id, $facebook_user->id);
 
 					if ($friends)
 					{
@@ -297,13 +297,25 @@ class ContactsController extends Zend_Controller_Action
 				)
 			);
 
-			(new Application_Model_Friends)->invite(array(
-				"reciever_id" => $facebook_user->id,
-				"sender_id" => $user->id,
-				"source" => "connect",
-				"cdate" => date("Y-m-d H:i:s"),
-				"udate" => date("Y-m-d H:i:s")
-			));
+			$friendsModel = new Application_Model_Friends;
+			$friendStatus = $friendsModel->isFriend($user, $facebook_user);
+
+			if (!$friendStatus)
+			{
+				$friendStatus = $friendsModel->createRow(array(
+					'sender_id' => $user->id,
+					'reciever_id' => $facebook_user->id,
+					'status' => $friendsModel->status['confirmed'],
+					'source' => 'connect'
+				));
+				$friendStatus->save();
+
+				(new Application_Model_FriendLog)->insert(array(
+					'friend_id' => $friendStatus->id,
+					'user_id' => $user->id,
+					'status_id' => $friendStatus->status
+				));
+			}
 
 			$response = array('status' => 1);
 		}
@@ -416,72 +428,59 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$reciever_id = $this->_request->getPost('user');
+			$receiver_id = $this->_request->getPost('user');
 
 			$auth = Zend_Auth::getInstance()->getIdentity();
 
-			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $auth) || $reciever_id == $auth->id)
+			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $auth) || $receiver_id == $auth->id)
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			if (!Application_Model_User::checkId($reciever_id, $reciever))
+			if (!Application_Model_User::checkId($receiver_id, $receiver))
 			{
-				throw new RuntimeException('Incorrect reciever user ID', -1);
+				throw new RuntimeException('Incorrect receiver user ID', -1);
 			}
-
-			$action = $this->_request->getPost('action');
 
 			$friendsModel = new Application_Model_Friends;
-			$friend = $friendsModel->getStatus($auth->id, $reciever->id);
+			$friendStatus = $friendsModel->isFriend($auth, $receiver);
 
-			if ($friend)
+			switch ($this->_request->getPost('action'))
 			{
-				if ($action == 'reject')
-				{
-					$friend->status = 2;
-					$friend->udate = date('Y-m-d H:i:s');
-					$friend->save();
-				}
-				else
-				{
-					if ($action != 'confirm')
+				case 'follow':
+					if ($friendStatus)
 					{
-						throw new RuntimeException('Incorrect action value', -1);
+						throw new RuntimeException('User already in friend list');
 					}
-
-					if ($friend->status == 2 && $friend->reciever_id != $auth->id)
-					{
-						throw new RuntimeException('Access denied', -1);
-					}
-
-					$friend->status = 1;
-					$friend->udate = date('Y-m-d H:i:s');
-					$friend->save();
-
-					My_Email::send($reciever->Email_id, 'Friend approval', array(
-						'template' => 'friend-approval',
-						'assign' => array('name' => $auth->Name)
+					$friendStatus = $friendsModel->createRow(array(
+						'sender_id' => $auth->id,
+						'reciever_id' => $receiver->id,
+						'status' => $friendsModel->status['confirmed'],
+						'source' => 'herespy'
 					));
-				}
+					break;
+				case 'reject':
+					if (!$friendStatus)
+					{
+						throw new RuntimeException('User not found in friend list');
+					}
+					$friendStatus->status = $friendsModel->status['rejected'];
+					break;
+				default:
+					throw new RuntimeException('Incorrect action', -1);
 			}
-			else
+
+			$friendStatus->save();
+
+			(new Application_Model_FriendLog)->insert(array(
+				'friend_id' => $friendStatus->id,
+				'user_id' => $auth->id,
+				'status_id' => $friendStatus->status
+			));
+
+			if ($friendStatus->status == $friendsModel->status['confirmed'])
 			{
-				if ($action != 'add')
-				{
-					throw new RuntimeException('Incorrect action value', -1);
-				}
-
-				$friendsModel->createRow(array(
-					'status' => 0,
-					'sender_id' => $auth->id,
-					'reciever_id' => $reciever_id,
-					'source' => 'herespy',
-					'cdate' => date('Y-m-d H:i:s'),
-					'udate' => date('Y-m-d H:i:s')
-				))->save();
-
-				My_Email::send($reciever->Email_id, 'New follower', array(
+				My_Email::send($receiver->Email_id, 'New follower', array(
 					'template' => 'friend-invitation',
 					'assign' => array('name' => $auth->Name)
 				));
@@ -493,18 +492,19 @@ class ContactsController extends Zend_Controller_Action
 			{
 				$response['total'] = $friendsModel->fetchRow(
 					$friendsModel->select()
-						->from($friendsModel, array('count(*) as friend_count'))
+						->from($friendsModel, array('COUNT(*) as count'))
 						->where('reciever_id=?', $auth->id)
-						->where('status=0')
+						->where('status=' . $friendsModel->status['confirmed'])
 						->where('notify=0')
-				)->friend_count;
+				)->count;
 			}
 		}
 		catch (Exception $e)
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 		}
 
@@ -590,7 +590,7 @@ class ContactsController extends Zend_Controller_Action
 			$friends = $model->fetchAll(
 				$model->select()
 					->where('reciever_id=?', $user->id)
-					->where('status=0')
+					->where('status=1')
 					->where('notify=0')
 					->limit(10)
 			);
@@ -612,7 +612,7 @@ class ContactsController extends Zend_Controller_Action
 
 				$model->update(
 					array('notify' => 1),
-					array('reciever_id=' . $user->id, 'status=0')
+					array('reciever_id=' . $user->id, 'status=1')
 				);
 
 				$response['data'] = $data;
@@ -630,26 +630,6 @@ class ContactsController extends Zend_Controller_Action
 		}
 
 		$this->_helper->json($response);
-	}
-
-	/**
-	 * Friend requests listing action.
-	 *
-	 * @return void
-	 */
-	public function allRequestsAction() 
-	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
-
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
-		{
-			$this->_redirect($this->view->baseUrl('/'));
-		}
-
-		$this->view->data = (new Application_Model_Friends)->findAllByReceiverId($user->id, 0);
-
-		$this->view->headScript()
-			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');
 	}
 
 	/**

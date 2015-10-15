@@ -29,6 +29,22 @@ ALTER TABLE `friends` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `
 ALTER TABLE `friends` ADD FOREIGN KEY `user_data_fk_2`(`reciever_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `friends` CHANGE `status` `status` SMALLINT NOT NULL DEFAULT '0';
 ALTER TABLE `friends` ADD `notify` TINYINT(1) NOT NULL DEFAULT '0' AFTER `udate`;
+ALTER TABLE `friends` DROP `udate`;
+ALTER TABLE `friends` DROP `cdate`;
+
+--
+-- Table structure for table `friend_log`
+--
+CREATE TABLE `friend_log` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`friend_id` INT(11) NOT NULL,
+	`user_id` INT(11) NOT NULL,
+	`status_id` SMALLINT NOT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (`friend_id`) REFERENCES `friends`(`id`) ON DELETE CASCADE,
+	FOREIGN KEY (`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE,
+	PRIMARY KEY (`id`)
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 --
 -- Table structure for table `invite_status`

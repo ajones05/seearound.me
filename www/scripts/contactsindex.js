@@ -55,26 +55,9 @@ var posturl ="/picture?type=square";
                                             '</div><div class="clr"></div>';
                                             $("#invite_div").html($("#invite_div").html()+html);
                                         }else if(data.type == "herespy") {
-                                            if((data.data).status == '0') {
-                                                var html = '<div id="'+friend.id+'" class="invtFrndList">'+
-                                                    '<ul class="invtFrndRow">'+
-                                                           '<li class="img"><img src="'+preurl+friend.id+posturl+'" width="40" height="40" /></li>';
-                                                            if((data.address).address) {
-                                                                html += '<li class="name">'+friend.name+'<span class="loc">'+(data.address).address+'</span></li>';
-                                                            } else {
-                                                                html += '<li class="name">'+friend.name+'<span class="loc"></span></li>';
-                                                            } 
-                                                            html += '<li class="btnCol" id="invite_'+friend.id+'"><a href="javascript:void(0);" id="stauts_'+friend.id+'">Pending</a></li>'+
-                                                    '</ul>'+
-                                                '</div><div class="clr"></div>';
-                                                $("#connect_div").html($("#connect_div").html()+html); 
-                                            } else if((data.data).status == '1') {
                                                 var alrConn = Number($("#alrConn").html());
                                                 $("#alrConn").html(alrConn+1);
                                                 $("#alrConn").parent().parent().show();
-                                            }else {
-
-                                            }
                                         }else if(data.type == "follow") {
                                             var html = '<div id="'+friend.id+'" class="invtFrndList">'+
                                                 '<ul class="invtFrndRow">'+

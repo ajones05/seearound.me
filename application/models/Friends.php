@@ -5,6 +5,17 @@
 class Application_Model_Friends extends Zend_Db_Table_Abstract
 {
 	/**
+	 * Friend status.
+	 *
+	 * @var	array
+	 */
+	public $status = array(
+		'awaiting' => 0,
+		'confirmed' => 1,
+		'rejected' => 2,
+	);
+
+	/**
 	 * @var	string
 	 */
 	protected $_name = 'friends';
@@ -25,91 +36,23 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
         )
     );
 
-    public function setData($data=array(), $check=array()) {
-
-        $select = $this->select();
-
-        $row = array();
-
-        if(count($check) > 0) {
-
-            foreach ($check as $index => $value) {
-
-                $select->where($index." =?", $value);
-
-            }
-
-            if($row = $this->fetchRow($select)) {
-
-                $row->setFromArray($data);
-
-                $row->save();
-
-            }else {
-
-               $row = $this->createRow($data);
-
-               $row->save();
-
-            }
-
-        }else {
-
-            if(count($data)) {
-
-                $row = $this->createRow($data);
-
-                $row->save();
-
-            }
-
-        }
-
-        return $row;
-
-    }
-
-    public function invite($data)
-
-    {
-
-        $select = $this->select()
-
-            ->where("sender_id = ".$data['sender_id']." AND reciever_id = ".$data['reciever_id'])
-
-            ->orWhere("sender_id = ".$data['reciever_id']." AND reciever_id = ".$data['sender_id']); //echo $select; exit;
-
-        $row = $this->fetchAll($select);
-
-        if(count($row) > 0) {
-
-            return $row->toArray(); 
-
-        }else {
-
-            return $this->setData($data)->toArray();
-
-        }
-
-        
-
-    }
-
-    public function getStatus($cuser, $rueser) 
-
-    {
-
-        $select = $this->select()
-
-                ->where("sender_id =".$cuser." AND reciever_id =".$rueser)
-
-                ->orWhere("sender_id =".$rueser." AND reciever_id =".$cuser); //echo $select; exit;
-
-        return $this->fetchRow($select);
-
-        
-
-    }
+	/**
+	 * Checks if users are friends.
+	 *
+	 * @param	integer	$user1
+	 * @param	integer	$user2
+	 *
+	 * @reutrn	mixed Zend_Db_Table_Row on success, otherwise NULL
+	 */
+	public function isFriend($user1, $user2)
+	{
+		return $this->fetchRow(
+			$this->select()
+				->where('status=' . $this->status['confirmed'])
+				->where('((sender_id=' . $user1->id . ' AND reciever_id=' . $user2->id . ')')
+				->orWhere('(sender_id=' . $user2->id . ' AND reciever_id=' . $user1->id . '))')
+		);
+	}
 
 	/**
 	 * Find records by user ID.
@@ -142,7 +85,7 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 		$result = $this->fetchRow(
 			$this->select()
 				->from($this, array('count(*) as result_count'))
-				->where('reciever_id=' . $user_id . ' OR sender_id=' . $user_id)
+				->where('(reciever_id=' . $user_id . ' OR sender_id=' . $user_id . ')')
 				->where('status=?', 1)
 		);
 
@@ -188,7 +131,7 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 			$this->select()
 				->from($this, array('count(*) as result_count'))
 				->where('reciever_id=?', $receiver_id)
-				->where('status=0')
+				->where('status=1')
 				->where('notify=0')
 		);
 

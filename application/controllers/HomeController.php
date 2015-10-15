@@ -278,6 +278,11 @@ class HomeController extends Zend_Controller_Action
 				->order('id DESC')
 		);
 
+		if ($auth)
+		{
+			$this->view->user = $user;
+		}
+
 		$this->view->auth_id = $auth ? $user->id : null;
 		$this->view->profile = $profile;
 
@@ -299,11 +304,6 @@ class HomeController extends Zend_Controller_Action
 
 		$this->view->karma_comments = (new Application_Model_Comments)->getCountByUserId($profile->id);
 
-		if ($auth && $user->id != $profile->id)
-		{
-			$this->view->friendStatus = (new Application_Model_Friends)->getStatus($user->id, $profile->id);
-		}
-
 		if (!$auth || $profile->id != $user->id)
 		{
 			$this->view->headScript()->appendScript('	var user_profile = ' . json_encode(array(
@@ -317,13 +317,24 @@ class HomeController extends Zend_Controller_Action
 			)) . ';');
 		}
 
+		if ($auth && $user->id != $profile->id)
+		{
+			$isFriend = (new Application_Model_Friends)->isFriend($user, $profile);
+			$this->view->headScript()
+				->appendScript('var isFriend=' . ($isFriend ? 'true' : 'false') . ';');
+			$this->view->isFriend = $isFriend;
+		}
+
 		$this->view->headLink()
 			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
+		$config = Zend_Registry::get('config_global');
 		$this->view->headScript()
-			->appendScript("	var	reciever_userid = " . json_encode($profile->id) . ";\n")
-			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
+			->appendScript('var reciever_userid=' . json_encode($profile->id) . ';')
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view));
+
+		My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
+				'key=' . $config->google->maps->key . '&sensor=false&v=3&callback=initMap', $this->view);
 	}
 
 	/**

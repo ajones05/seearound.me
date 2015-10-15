@@ -9,7 +9,7 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 	'User comments on other posts: ' . $this->karma_posts->other_comments_count;
 ?>
 <div class="profile">
-<div id="userDiv" class="leftCol">
+<div class="leftCol">
 	<div class="profDtl">
 		<div class="profile-img">
 			<span id="image_upload_field">
@@ -65,51 +65,53 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 </ul>
 <?php if ($this->profile->id == $this->auth_id): ?>
 <div class="btnBarM20">
-	<a style="z-index: 999;" class="hypDecNone btnBlueRpt wAuto" href="<?php echo $this->baseUrl("home/edit-profile"); ?>">Edit Profile Info</a>
+	<a href="<?php echo $this->baseUrl("home/edit-profile"); ?>">Edit Profile Info</a>
 </div>
-<?php elseif($this->auth_id): ?>
+<?php elseif ($this->auth_id): ?>
 <div class="friendAction btnBarM20">
-		<?if(count($this->friendStatus) > 0) :?>
-			<?if($this->friendStatus->status == '0'):?>
-				<?if($this->friendStatus->sender_id == $this->auth_id):?>
-					<input class="wAuto btnBlueRpt" type="button" value="Following" />
-				<?else:?>
-					<input class="wAuto btnBlueRpt" type="button" value="Follow" onclick="makeFriend('confirm');" />
-				<?endif;?>
-			<?elseif($this->friendStatus->status == '1'):?>
-				<input class="wAuto btnBlueRpt" type="button" value="Unfollow" onclick="makeFriend('reject');" />
-			<?elseif($this->friendStatus->status == '2'):?>
-				<?if($this->friendStatus->reciever_id == $this->auth_id):?>
-					<input class="wAuto btnBlueRpt" type="button" value="Follow" onclick="makeFriend('confirm');" />
-				<?else:?>
-					<input class="wAuto btnBlueRpt" type="button" value="Blocked" />
-				<?endif;?>
-			<?endif;?>
-		<?else :?>
-			<input class="wAuto btnBlueRpt" type="button" value="Follow" onclick="makeFriend('add', true);" />
-		<?endif;?>
-    <img class="frndReqImg" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>" />
-    <input class="message wAuto btnBlueRpt" type="button" value="Message" />
+<?php if ($this->isFriend): ?>
+<input class="friend" type="button" value="Unfollow" />
+<?php else: ?>
+<input class="friend" type="button" value="Follow" />
+<?php endif; ?>
+<input class="message" type="button" value="Message" />
 </div>
 <?php endif; ?>
+</div>
 <script type="text/javascript">
 $(function(){
 	$('.karma b').tooltip({
-		content: function(){
-			return $(this).prop('title');
-		}
+		content: function(){return $(this).prop('title'); }
 	});
-
-	$('.viewForm li:even').addClass('bgEven');
-	$('.viewForm li:odd').addClass('bgOdd');
-
+	$('.friendAction input.friend').click(function(){
+		var target = $(this).attr('disabled', true);
+		$('.friendAction').prepend(
+			$('<img/>', {src: baseUrl + 'www/images/wait.gif'})
+				.addClass('frndReqImg')
+		);
+		ajaxJson({
+			url: baseUrl + 'contacts/friend',
+			data: {
+				action: isFriend ? 'reject' : 'follow',
+				user: reciever_userid,
+				total: true
+			},
+			done: function(response){
+				target.val(isFriend ? 'Follow' : 'Unfollow')
+					.attr('disabled', false);
+				$('.frndReqImg').remove();
+				if (response.total > 0){
+					$('#noteTotal').html(response.total);
+				} else {
+					$('#noteTotal').hide();
+				}
+				isFriend = !isFriend;
+			}
+		});
+	});
+});
+function initMap(){
 	var otherProfile = reciever_userid != user_id;
-
-	$(window).scroll(function(){
-		if ($("#midColLayout").height() > 714){
-			setThisHeight(Number($("#midColLayout").height()));
-		}
-	});
 
 	var map = new google.maps.Map($('#map_canvas')[0], {
 		zoom: 14,
@@ -147,58 +149,5 @@ $(function(){
 			userMessageDialog(user_profile.id);
 		});
 	}
-
-	setHeight('.eqlCH');
-});
-
-// TODO: merge with friendRequest
-
-function makeFriend(action, isnew){
-	$('.frndReqImg').show();
-
-	$.ajax({
-		url: baseUrl + 'contacts/friend',
-		type: 'POST',
-		data: {
-			user: reciever_userid,
-			action: action,
-			total: true
-		},
-		dataType: 'json'
-	}).done(function(response){
-		if (response && response.status){
-			$('.frndReqImg').hide();
-
-			if (isnew){
-				$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Following" />');
-			} else {
-				if (action == 'confirm'){
-					$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Unfollow" onclick="makeFriend(\'reject\');" />');
-				} else if (action == 'reject'){
-					$(".friendAction").html('<input class="wAuto btnBlueRpt" type="button" value="Follow" onclick="makeFriend(\'confirm\');" />');
-				}
-			}
-
-			$(".friendAction").append(
-				$('<img/>', {src: baseUrl + 'www/images/wait.gif', 'class': 'frndReqImg'}),
-				$('<input/>', {type: 'button', 'class': 'message wAuto btnBlueRpt'})
-					.val('Message')
-					.click(function(){
-						userMessageDialog(user_profile.id);
-					})
-			);
-
-			if (response.total > 0){
-				$("#noteTotal").html(response.total);
-			} else {
-				$('#noteTotal').hide();
-			}
-		} else {
-			alert(ERROR_MESSAGE);
-		}
-	}).fail(function(jqXHR, textStatus){
-		alert(textStatus);
-	});
 }
 </script>
-</div>

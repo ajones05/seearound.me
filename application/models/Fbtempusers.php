@@ -30,8 +30,6 @@ class Application_Model_Fbtempusers extends Zend_Db_Table_Abstract {
         if($row = $this->fetchRow($select)) {
             return $row->toArray();
         }else {
-            $data['cdate'] = date('Y-m-d H:i:s');
-            $data['udate'] = date('Y-m-d H:i:s');
             $row = $this->createRow($data);
             $row->save();
             return $row->toArray();

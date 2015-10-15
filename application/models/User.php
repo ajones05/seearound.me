@@ -662,15 +662,22 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 				if (count($users))
 				{
-					$users_model = new Application_Model_Friends;
+					$friendsModel = new Application_Model_Friends;
 
 					foreach($users as $tmp_user)
 					{
-						$users_model->insert(array(
+						$friendStatus = $friendsModel->createRow(array(
 							'sender_id' => $tmp_user->sender_id,
 							'reciever_id' => $user->id,
-							'cdate' => new Zend_Db_Expr('NOW()'),
-							'udate' => new Zend_Db_Expr('NOW()')
+							'status' => $friendsModel->status['confirmed'],
+							'source' => 'herespy'
+						));
+						$friendStatus->save();
+
+						(new Application_Model_FriendLog)->insert(array(
+							'friend_id' => $friendStatus->id,
+							'user_id' => $user->id,
+							'status_id' => $friendStatus->status
 						));
 
 						$tmp_user->delete();
