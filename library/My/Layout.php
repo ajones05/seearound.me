@@ -124,7 +124,7 @@ JS;
 	 * @param	Zend_View $view
 	 * @reutrn	string
 	 */
-	public static function asyncScript()
+	public static function asyncScript($view)
 	{
 		if (isset($view->asyncScripts))
 		{

@@ -32,6 +32,6 @@ $this->headMeta('text/html; charset=utf-8', 'Content-Type', 'http-equiv');
 <?php echo $this->layout()->content; ?>
 </div>
 <div id="fb-root"></div>
-<?php echo My_Layout::asyncScript(); ?>
+<?php echo My_Layout::asyncScript($this); ?>
 </body>
 </html>
