@@ -21,10 +21,8 @@ $user = $this->comment->findDependentRowset('Application_Model_User')->current()
 			<div>
 				<a href="<?php echo $this->baseUrl("home/profile/user/" . $user->id); ?>"><?php echo $user->Name; ?>:</a>
 				<span><?php echo $this->comment->renderContent(My_ArrayHelper::getProp($this, 'limit', false)); ?></span>
-			</div>
-		</li>
-		<li>
 			<p><?php echo My_Time::time_ago($created_at); ?></p>
+			</div>
 		</li>
 	</ul>
 </li>

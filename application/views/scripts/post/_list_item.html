@@ -11,12 +11,19 @@ if ($this->post->image)
 ?>
 <div class="post">
 	<div><?php echo $this->post->id; ?></div>
-	<a href="<?php echo $profileUrl; ?>">
+	<a href="<?php echo $profileUrl; ?>" class="user_avatar">
 		<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
 	</a>
-	<a href="<?php echo $profileUrl; ?>"><?php echo ucfirst($this->owner->Name); ?></a>
-	<a href="<?php echo $this->baseUrl('info/news/nwid/' . $this->post->id); ?>"><?php echo My_Time::time_ago($this->post->created_date, true); ?></a>
-	<div><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'limit')); ?></div>
+	<a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($this->owner->Name); ?></a>
+	<a href="<?php echo $this->baseUrl('info/news/nwid/' . $this->post->id); ?>" class="post-time"><?php echo My_Time::time_ago($this->post->created_date, true); ?></a>
+	<div class="vote">
+		<div class="_3_copy">5</div>
+		<div class="icon">
+			<div class="like active" disabled="disabled"></div>
+			<div class="dislike"></div>
+		</div>
+	</div>
+	<div class="post_text"><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'limit')); ?></div>
 	<?php if ($this->post->image != null): ?>
 	<div>
 		<img onclick="openImage('<?php echo $this->post->image; ?>','<?php echo $imageWidth; ?>','<?php echo $imageHeight; ?>');"
@@ -27,7 +34,7 @@ if ($this->post->image)
 	<div><?php echo Application_Model_Comments::viewMoreLabel($this->post->comment - 3); ?></div>
 	<?php endif; ?>
 	<input type="button" value="Edit Post" />
-	<div>
+	<div class="social_share">
 		<a href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->post->id); ?>">
 			<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" />
 		</a>
@@ -35,7 +42,7 @@ if ($this->post->image)
 			<img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" />
 		</a>
 	</div>
-	<ul>
+	<ul class="post-coments">
 	<?php
 		if ($this->post->comment)
 		{

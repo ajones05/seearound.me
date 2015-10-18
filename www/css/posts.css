@@ -283,3 +283,55 @@ body {
 	font-family: 'Lato-Light';
 	color: rgb(255,255,255);
 }
+
+
+/* new styling */
+.post a{text-decoration: none; color:#cc3333;}
+.post .user_avatar{float: left; margin: 8px; }
+	.user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
+.post .user_name{color:#cc3333; font:normal 15.17px/42px 'Lato-Regular';}
+.post .post-time{color:#cc3333; font:italic 10px 'Lato-Italic';}
+.post .post_text{color:#333;font:normal 14.37px/19.55px 'Lato-Regular';margin-left: 70px; padding-right: 18px;}
+.post .link-meta .image{margin-left: -70px;}
+.post .social_share{text-align: right; border-top: solid 1px #ddd; border-bottom: solid 1px #ddd; padding: 3px 0 0;}
+	.post .social_share a{margin-right: 10px; display: inline-block;}
+		.post .social_share a img{width:20px; height: 18px;}
+.post .post-coments{background: #eee; list-style: none;padding: 0; margin: 0;}
+	.post .post-coments ul{list-style: none; margin: 0; padding: 0;}
+		.post .post-coments ul li { display: inline-block;}
+			.post .post-coments li img{width: 43px; height: 43px; border-radius: 50px; margin: 6px 8px 6px 12px;}
+.vote {
+    float: right;
+    margin-right: 18px;
+}
+.vote ._3_copy {
+    font-size: 14px;
+    font-family: Lato-Bold,sans-serif;
+    color: #cc3333;
+    font-style: italic;
+    line-height: .714;
+    float: left;
+    margin-right: 5px;
+    padding: 13.5px 0;
+}
+.vote .icon {
+    float: right;
+}
+.vote .icon>div {
+    height: 16px;
+    width: 18px;
+    cursor: pointer;
+}
+.vote .icon .like {
+    background: url(../images/like-small.png)center center no-repeat;
+    margin-bottom: 4px;
+}
+.vote .icon .dislike {
+    background: url(../images/dislike-small.png)center center no-repeat;
+}
+.vote .icon .like.active {
+    background: url(../images/like-active-red.png)center center no-repeat;
+}
+.vote .icon .dislike.active {
+    background: url(../images/dislike-active-red.png)center center no-repeat;
+}
