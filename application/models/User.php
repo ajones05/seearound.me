@@ -46,7 +46,7 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 		if ($userImage)
 		{
 			return Zend_Controller_Front::getInstance()->getBaseUrl() . '/' .
-				$userImage->path;
+				$userImage->findThumb(array(320, 320))->path;
 		}
 
 		return $default;
