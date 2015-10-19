@@ -35,6 +35,13 @@
     font-weight: normal;
     font-style: normal;
 }
+
+@font-face {
+	font-family:'Lato-LightItalic';
+	src: url('fonts/Lato-LightItalic.eot');
+	src:local('☺'),url('fonts/Lato-LightItalic.woff')format('woff'), url('fonts/Lato-LightItalic.ttf')format('truetype'), url('fonts/Lato-LightItalic.svg')format('svg');
+	font-weight:400;font-style:normal;
+}
 body {
 	padding: 0;
 	margin: 0;
@@ -261,14 +268,18 @@ body {
 .map-radius .radius {
 	float: left;
     color: rgb(204, 0, 0);
-    font-family: "Lato-Light";
-    font-size: 16px;
+    font-size: 13.48px;
+  font-family: "Lato-Bold";
     font-weight: bold;
+    line-height: 30px;
+        margin-left: 10px;
 }
 .map-radius #slider {
 	float: left;
 	width: 196px;
 	margin-left: 15px;
+	    height: 0;
+    margin-top: 15px;
 }
 .user-location {
 	float: left;
@@ -284,7 +295,7 @@ body {
 	color: rgb(255,255,255);
 }
 
-
+.ui-state-default, .ui-widget-content .ui-state-default{border-radius: 50px; width: 12px; height: 12px; top: -7px; background: #cc0000;}
 /* new styling */
 .post a{text-decoration: none; color:#cc3333;}
 .post .user_avatar{float: left; margin: 8px; }
@@ -300,13 +311,24 @@ body {
 	.post .post-coments ul{list-style: none; margin: 0; padding: 0;}
 		.post .post-coments ul li { display: inline-block;}
 			.post .post-coments li img{width: 43px; height: 43px; border-radius: 50px; margin: 6px 8px 6px 12px;}
+			.post .post-coments li.post-coment-existing img{margin: 6px 16px 6px 12px;}
+		.post .post_coment_new{border-top:1px solid #e4e4e4;}
+		.post .post-coments>li:last-child{border-top: 1px solid #d8d8d8;}
+	.post .post_coment_new textarea{font-size: 13.65px; height: 25px!important; outline: 0; padding: 6px 10px; resize: none; width: 317px; font-family: 'Lato-LightItalic';
+    background: #fff; color: #7d7d7d; border: none; margin-bottom: 7px;line-height: 25px;}
+    .post .post_coment_new li:nth-child(2){background: url('../images/user-symbol-small.png') no-repeat 0 0px; padding-left: 12px;}
+    .post .post-coment-existing{padding-top: 14px;font-size: 13.65px; font-family: 'Lato-Regular'; clear: both; min-height: 58px;}
+    .post .post-coments .post-coment-existing>ul{display: inline-block;max-width: 317px;}
+    .post .post-coments .post-coment-existing >a{display: block; float: left;}
+    .post .post-coment-existing .post-coment-date{font-family: 'Lato-LightItalic';font-size: 9.1px; color: #cc0000; margin: 6px 0;}
+    .post .post-coment-user-name{font-family: 'Lato-LightItalic';}
 .vote {
     float: right;
     margin-right: 18px;
 }
 .vote ._3_copy {
     font-size: 14px;
-    font-family: Lato-Bold,sans-serif;
+    font-family: 'Lato-Bold',sans-serif;
     color: #cc3333;
     font-style: italic;
     line-height: .714;
