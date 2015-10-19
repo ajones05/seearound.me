@@ -784,8 +784,6 @@ class MobileController extends Zend_Controller_Action
 
 				if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
 				{
-					$user_data['Profile_image'] = $user->Profile_image = $data['image'];
-
 					$image = (new Application_Model_Image)->save('www/upload/' . $data['image']);
 
 					(new Application_Model_UserImage)->insert(array(

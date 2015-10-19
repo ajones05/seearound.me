@@ -1,4 +1,9 @@
 --
+-- Table structure for table `user_data`
+--
+ALTER TABLE `user_data` DROP `Profile_image`;
+
+--
 -- Table structure for table `address`
 --
 ALTER TABLE `address` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;

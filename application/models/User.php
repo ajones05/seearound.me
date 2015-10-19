@@ -40,14 +40,13 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function getProfileImage($default)
 	{
-		if (trim($this->Profile_image) !== '')
-		{
-			if (strpos($this->Profile_image, '://'))
-			{
-				return $this->Profile_image;
-			}
+		$userImage = $this->findManyToManyRowset('Application_Model_Image',
+			'Application_Model_UserImage')->current();
 
-			return Zend_Controller_Front::getInstance()->getBaseUrl() . '/uploads/' . $this->Profile_image;
+		if ($userImage)
+		{
+			return Zend_Controller_Front::getInstance()->getBaseUrl() . '/' .
+				$userImage->path;
 		}
 
 		return $default;
@@ -631,7 +630,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 						(new Application_Model_ImageThumb)
 							->save($thumb320x320, $image, array(320, 320));
 
-						$user->Profile_image = $name;
 						$user->save();
 					}
 					catch (Exception $e)

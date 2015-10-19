@@ -222,9 +222,6 @@ class HomeController extends Zend_Controller_Action
 			$thumb = (new Application_Model_ImageThumb)
 				->save($thumb320x320, $image, array(320, 320));
 
-			(new Application_Model_User)
-				->update(array('Profile_image' => $name), 'id=' . $user->id);
-
 			$response = array(
 				'status' => 1,
 				'url' => $this->view->baseUrl($thumb->path)
