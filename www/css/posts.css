@@ -101,11 +101,11 @@ body {
 	background-color: rgb(255,255,255);
 }
 .post-search input[type=text] {
-	font-size: 18px;
+	font-size: 13.43px;
 	font-family: "Lato-Italic";
 	color: rgb(125,125,125);
 	font-style: italic;
-	line-height: 0.793;
+	line-height: 1.2;
 	text-align: left;
 
 	width: 254px;
@@ -123,7 +123,7 @@ body {
 	top: 21px;
 }
 .post-filter {
-	padding-left: 126px;
+	    padding-left: 85px;
 }
 .post-filter .dropdown {
 	height: 27px;
@@ -133,20 +133,26 @@ body {
 	background: none;
 	border: 0;
 	width: 100%;
+	font-size: 13.43px;
+	font-family: 'Lato-Regular';
+	color:#666;
+	line-height: 2;
 }
 .dropdown .caret {
-    background: url('../images/template/dropdown-caret.png') no-repeat;
-	width: 15px;
+    background: url('../images/template/dropdown-caret.png') no-repeat right center;
+    width: 15px;
     height: 9px;
     display: inline-block;
+    padding-left: 12px;
 }
 .main-menu {
 	float: right;
-	padding-top: 23px;
+	padding-top: 20px;
 }
 .main-menu ul {
 	list-style: none;
 	margin: 0;
+	padding: 0;
 }
 .main-menu li {
 	float: left;
@@ -154,7 +160,7 @@ body {
 }
 .main-menu a {
 	font-family: "Lato-Light";
-	font-size: 17px;
+	font-size: 15px;
 	font-weight: 600;
 	color: rgb(51,51,51);
 	text-decoration: none;
@@ -255,12 +261,13 @@ body {
 }
 .about-info span,
 .about-info a {
-  font-size: 16px;
+  font-size: 10.53px;
   font-family: "Lato-Light";
   color: rgb( 135, 135, 135 );
 }
 .about-info a {
 	text-decoration: none;
+	margin-right: 38px;
 }
 .map-radius {
 	float: left;
@@ -290,8 +297,8 @@ body {
 	height: 27px;
 	background-color: rgb( 255, 153, 153 );
 	border: 0;
-	font-size: 16px;
-	font-family: 'Lato-Light';
+    font-size: 13.48px;
+	font-family: 'Lato-Bold';
 	color: rgb(255,255,255);
 }
 
@@ -322,6 +329,16 @@ body {
     .post .post-coments .post-coment-existing >a{display: block; float: left;}
     .post .post-coment-existing .post-coment-date{font-family: 'Lato-LightItalic';font-size: 9.1px; color: #cc0000; margin: 6px 0;}
     .post .post-coment-user-name{font-family: 'Lato-LightItalic';}
+    .post .social_share input[type="button"]{float: left; border: none; margin: -1px 0 0 5px; background: transparent; font: normal 12px 'Lato-Regular'; cursor: pointer;}
+    .posts.post>.post-coments{position: absolute; width: 100%; border-bottom: solid 2px #999;}
+    	.posts.post>.post-coments img{margin-bottom: 0;}
+    	.posts.post>.post-coments .user-name-new-post{margin: 0; font-size: 15.17px; color: #cc0000; font-family: 'Lato-Regular'; text-align: center;}
+    	.posts.post>.post-coments .post_coment_new li:nth-child(2){background-position-y: 10px;}
+    		.posts.post>.post-coments .post_coment_new li textarea{height: 40px!important;}
+    .new-coment-links{text-align: right;}
+    	.new-coment-links .post-link{font-family: 'Lato-Regular'; font-size: 18.95px; margin: -3px 20px 0 0; display: block; float: right;}
+    	.new-coment-links .camera{margin-right: 50px;}
+    		.post .post-coments .new-coment-links .camera img{width: auto;  height: auto;  border-radius: 0;  margin: 0;}
 .vote {
     float: right;
     margin-right: 18px;

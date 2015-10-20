@@ -91,6 +91,7 @@ function handleLocationError(browserHasGeolocation){
 	</div>
 	<div class="post-new">
 		<img width="29" height="26" src="<?php echo $this->baseUrl('www/images/template/new-post.png'); ?>" alt="new" />
+		
 	</div>
 	<div class="post-search">
 		<form>
@@ -158,7 +159,26 @@ function handleLocationError(browserHasGeolocation){
 	<div class="map-container">
 		<div id="map_canvas"></div>
 	</div>
-	<div class="posts"><?php echo $this->layout()->content; ?></div>
+	<div class="posts post">
+		<ul class="post-coments">
+			<li class="hidden">
+				<ul class="post_coment_new">
+					<li>
+						<img src="/uploads/x5cedgdqd4.jpg">
+						<p class="user-name-new-post">Name</p>
+					</li>
+					<li>
+						<textarea placeholder="Write a Comment..."></textarea>
+					</li>
+				</ul>
+				<div class="new-coment-links">
+					<a class="camera" href="#"><img src="/www/images/icon-camera.png"></a>
+					<a class="post-link" href="#">Post</a>
+				</div>
+			</li>
+		</ul>
+		<?php echo $this->layout()->content; ?>
+	</div>
 </div>
 <?php echo My_Layout::asyncScript($this); ?>
 </body>

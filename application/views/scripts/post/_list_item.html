@@ -11,6 +11,7 @@ if ($image)
 	$thumb448x320 = $image->findThumb(array(448, 320));
 }
 ?>
+		
 <div class="post">
 	<div><?php echo $this->post->id; ?></div>
 	<a href="<?php echo $profileUrl; ?>" class="user_avatar">
@@ -35,8 +36,8 @@ if ($image)
 	<?php if ($this->post->comment > 3): ?>
 	<div><?php echo Application_Model_Comments::viewMoreLabel($this->post->comment - 3); ?></div>
 	<?php endif; ?>
-	<input type="button" value="Edit Post" />
 	<div class="social_share">
+		<input type="button" value="Edit Post" />
 		<a href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->post->id); ?>">
 			<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" />
 		</a>
