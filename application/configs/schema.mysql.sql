@@ -100,6 +100,7 @@ ALTER TABLE `news` DROP `news_html`;
 ALTER TABLE `news` ADD `vote` INT(11) NOT NULL DEFAULT '0' AFTER `Address`;
 ALTER TABLE `news` DROP `score`;
 ALTER TABLE `news` ADD `comment` INT(11) NOT NULL DEFAULT '0' AFTER `vote`; 
+ALTER TABLE `news` DROP `image`;
 
 --
 -- Table structure for table `news_link`
@@ -117,6 +118,10 @@ CREATE TABLE `news_link` (
 	PRIMARY KEY (`id`),
 	FOREIGN KEY `news_link_fk_1`(`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+ALTER TABLE `news_link` DROP `image`;
+ALTER TABLE `news_link` DROP `image_width`;
+ALTER TABLE `news_link` DROP `image_height`;
 
 --
 -- Table structure for table `image`

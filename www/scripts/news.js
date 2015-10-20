@@ -594,7 +594,7 @@ function openImage(image, width, height){
 	$('<div/>', {'class': 'news-image-dialog'})
 		.append(
 			$('<img/>', {
-				src: baseUrl + 'newsimages/' + image,
+				src: image,
 				width: dialogWidth,
 				height: dialogHeight
 			})

@@ -10,7 +10,7 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function renderContent($limit = false)
 	{
-		$newsLink = $this->findDependentRowset('Application_Model_NewsLink');
+		$newsLink = $this->findDependentRowset('Application_Model_NewsLink')->current();
 		$linksCount = preg_match_all('/' . My_CommonUtils::$link_regex . '/', $this->news);
 
 		$output = '';
@@ -21,7 +21,7 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 
 			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->news, $i), $matches))
 			{
-				if ($linksCount > 1 || !count($newsLink))
+				if ($linksCount > 1 || !$newsLink)
 				{
 					$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '" target="_blank">';
 
@@ -62,9 +62,9 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 			}
 		}
 
-		if (count($newsLink))
+		if ($newsLink)
 		{
-			$output .= My_ViewHelper::render('news/link-meta.html', $newsLink->current()->toArray());
+			$output .= My_ViewHelper::render('news/link-meta', array('link' => $newsLink));
 		}
 
 		return preg_replace('/\s{2,}/', ' ', $output);
@@ -423,15 +423,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 							}
 
 							$meta['property']['og:image'] = $name;
-
-							list($meta['property']['og:image:width'], $meta['property']['og:image:height']) = 
-								getimagesize(ROOT_PATH . '/uploads/' . $name);
 						}
 						catch (Exception $e)
 						{
 							$meta['property']['og:image'] = null;
-							$meta['property']['og:image:width'] = null;
-							$meta['property']['og:image:height'] = null;
 
 							if ($full_path != null)
 							{
@@ -446,9 +441,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						'title' => $title,
 						'description' => My_ArrayHelper::getProp($meta, 'property.og:description',
 							My_ArrayHelper::getProp($meta, 'name.description')),
-						'image' => My_ArrayHelper::getProp($meta, 'property.og:image'),
-						'image_width' => My_ArrayHelper::getProp($meta, 'property.og:image:width'),
-						'image_height' => My_ArrayHelper::getProp($meta, 'property.og:image:height'),
 						'author' => My_ArrayHelper::getProp($meta, 'name.author')
 					));
 					$newsLink->save(true);

@@ -1,24 +1,25 @@
 <?php
-$link = My_CommonUtils::renderLink($this->link);
+$link = My_CommonUtils::renderLink($this->link->link);
+$image = $this->link->findManyToManyRowset('Application_Model_Image', 'Application_Model_NewsLinkImage')->current();
 ?>
 <div class="link-meta">
-	<?php if ($this->image != null): ?>
+	<?php if ($image): ?>
 	<div class="image">
 		<a href="<?php echo htmlspecialchars($link); ?>" target="_blank">
-			<img src="<?php echo $this->baseUrl('thumb448x320/' . $this->image); ?>" />
+			<img src="<?php echo $this->baseUrl($image->findThumb(array(448, 320))->path); ?>" />
 		</a>
 	</div>
 	<?php endif; ?>
 	<div class="meta-content">
-		<a class="title" href="<?php echo htmlspecialchars($link); ?>" target="_blank"><?php echo $this->title; ?></a>
-		<?php if ($this->description != null): ?>
-		<div class="description"><?php echo My_StringHelper::stringLimit($this->description, 185, '...'); ?></div>
+		<a class="title" href="<?php echo htmlspecialchars($link); ?>" target="_blank"><?php echo $this->link->title; ?></a>
+		<?php if ($this->link->description != null): ?>
+		<div class="description"><?php echo My_StringHelper::stringLimit($this->link->description, 185, '...'); ?></div>
 		<?php endif; ?>
 		<div>
 			<span><?php echo strtoupper(parse_url($link, PHP_URL_HOST)); ?></span>
-			<?php if ($this->author != null): ?>
+			<?php if ($this->link->author != null): ?>
 			<span class="delim">|</span>
-			<span>BY <?php echo strtoupper($this->author); ?></span>
+			<span>BY <?php echo strtoupper($this->link->author); ?></span>
 			<?php endif; ?>
 		</div>
 	</div>

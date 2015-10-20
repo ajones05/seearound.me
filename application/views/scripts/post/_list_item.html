@@ -3,10 +3,12 @@ $profileUrl = $this->baseUrl('home/profile/user/' . $this->owner->id);
 $comments = (new Application_Model_Comments)->findAllByNewsId($this->post->id, 3);
 $hide_comments = !$this->post->comment || !My_ArrayHelper::search(array('news_id' => $this->post->id), $comments->toArray(), 1);
 
-if ($this->post->image)
+$image = $this->post->findManyToManyRowset('Application_Model_Image', 'Application_Model_NewsImage')->current();
+
+if ($image)
 {
-	// TODO: cache
-	list($imageWidth, $imageHeight) = getimagesize(ROOT_PATH . '/newsimages/' . $this->post->image);
+	$thumb960x960 = $image->findThumb(array(960, 960));
+	$thumb448x320 = $image->findThumb(array(448, 320));
 }
 ?>
 <div class="post">
@@ -24,10 +26,10 @@ if ($this->post->image)
 		</div>
 	</div>
 	<div class="post_text"><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'limit')); ?></div>
-	<?php if ($this->post->image != null): ?>
+	<?php if ($image != null): ?>
 	<div>
-		<img onclick="openImage('<?php echo $this->post->image; ?>','<?php echo $imageWidth; ?>','<?php echo $imageHeight; ?>');"
-			src="<?php echo $this->baseUrl('thumb448x320/' . $this->post->image); ?>" />
+		<img onclick="openImage('<?php echo $this->baseUrl($thumb960x960->path); ?>','<?php echo $thumb960x960->width; ?>','<?php echo $thumb960x960->height; ?>');"
+			src="<?php echo $this->baseUrl($thumb448x320->path); ?>" />
 	</div>
 	<?php endif; ?>
 	<?php if ($this->post->comment > 3): ?>

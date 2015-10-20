@@ -64,49 +64,58 @@ class InfoController extends Zend_Controller_Action
 			->setProperty('og:title', 'SeeAround.me')
 			->setProperty('og:description', My_StringHelper::stringLimit($news->news, 155, '...'));
 
-		if ($news->image != null)
-		{
-			$image = $this->view->baseUrl("tbnewsimages/" . $news->image);
+		$image = $news->findManyToManyRowset('Application_Model_Image',
+			'Application_Model_NewsImage')->current();
 
-			// TODO: cache
-			$size = @getimagesize(ROOT_PATH . $image);
+		if ($image)
+		{
+			$thumb = $image->findThumb(array(320, 320));
 		}
 		else
 		{
-			$image = false;
-			$links = $news->findDependentRowset('Application_Model_NewsLink');
+			$link = $news->findDependentRowset('Application_Model_NewsLink')->current();
 
-			if (count($links))
+			if ($link)
 			{
-				foreach ($links as $link)
+				$image = $newsLink->findManyToManyRowset('Application_Model_Image',
+					'Application_Model_NewsLinkImage')->current();
+
+				if ($image)
 				{
-					if ($link->image != null)
-					{
-						$image = $this->view->baseUrl('uploads/' . $link->image);
-						$size = array($link->image_width, $link->image_height);
-						break;
-					}
+					$thumb = $image->findThumb(array(448, 320));
 				}
 			}
 
 			if (!$image)
 			{
-				$image = $news->findDependentRowset('Application_Model_User')->current()
-					->getProfileImage($this->view->baseUrl('www/images/img-prof200x200.jpg'));
+				$image = $owner->findManyToManyRowset('Application_Model_Image',
+					'Application_Model_UserImage')->current();
 
-				// TODO: cache
-				$size = @getimagesize(ROOT_PATH . $image);
+				if ($image)
+				{
+					$thumb = $image->findThumb(array(320, 320));
+				}
 			}
 		}
 
-		$this->view->headMeta($this->view->serverUrl() . $image, 'og:image', 'property');
-
-		if ($size)
+		if ($image)
 		{
-			$this->view->headMeta()
-				->setProperty('og:image:width', $size[0])
-				->setProperty('og:image:height', $size[1]);
+			$imageUrl = $thumb->path;
+			$imageWidth = $thumb->width;
+			$imageHeight = $thumb->height;
 		}
+		else
+		{
+			// TODO: refactoring
+			$imageUrl = 'www/images/img-prof200x200.jpg';
+			$imageWidth = 200;
+			$imageHeight = 200;
+		}
+
+		$this->view->headMeta($this->view->serverUrl() .
+			$this->view->baseUrl($imageUrl), 'og:image', 'property')
+			->setProperty('og:image:width', $imageWidth)
+			->setProperty('og:image:height', $imageHeight);
     }
 
 	/**

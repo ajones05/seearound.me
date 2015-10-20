@@ -936,9 +936,13 @@ class MobileController extends Zend_Controller_Action
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
 
-					if ($row->image != null)
+					$image = $row->findManyToManyRowset('Application_Model_Image',
+						'Application_Model_NewsImage')->current();
+
+					if ($image)
 					{
-						$data['images'] = $this->view->serverUrl() . $this->view->baseUrl('newsimages/' . $row->image);
+						$data['images'] = $this->view->serverUrl() .
+							$this->view->baseUrl($image->findThumb(array(960, 960))->path);
 					}
 
 					$response['result'][] = $data;
@@ -1051,9 +1055,13 @@ class MobileController extends Zend_Controller_Action
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
 
-					if ($row->image != null)
+					$image = $row->findManyToManyRowset('Application_Model_Image',
+						'Application_Model_NewsImage')->current();
+
+					if ($image)
 					{
-						$data['images'] = $this->view->serverUrl() . $this->view->baseUrl('newsimages/' . $row->image);
+						$data['images'] = $this->view->serverUrl() .
+							$this->view->baseUrl($image->findThumb(array(960, 960))->path);
 					}
 
 					$response['result'][] = $data;
