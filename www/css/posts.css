@@ -379,27 +379,39 @@ body {
 /* new styling */
 .post a{text-decoration: none; color:#cc3333;}
 .post .user_avatar{float: left; margin: 8px; }
-.user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
+	.user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
 .post .user_name{color:#cc3333; font:normal 15.17px/42px 'Lato-Regular';}
 .post .post-time{color:#cc3333; font:italic 10px 'Lato-Italic';}
 .post .post_text{color:#333;font:normal 14.37px/19.55px 'Lato-Regular';margin-left: 70px; padding-right: 18px;}
 .post .link-meta .image{margin-left: -70px;}
 .post .social_share{text-align: right; border-top: solid 1px #ddd; border-bottom: solid 1px #ddd; padding: 3px 0 0;}
-.post .social_share a{margin-right: 10px; display: inline-block;}
-.post .social_share a img{width:20px; height: 18px;}
-.post-coments{background: #eee; list-style: none;padding: 0; margin: 0;}
-.post-coments ul{list-style: none; margin: 0; padding: 0;}
-.post-coments ul li { display: inline-block;}
-.post-coments li img{width: 43px; height: 43px; border-radius: 50px; margin: 6px 8px 6px 12px;}
-.post-coments li.post-coment-existing img{margin: 6px 16px 6px 12px;}
-.post-coments>li:last-child{border-top: 1px solid #d8d8d8;}
-.post .post-coment-existing{padding-top: 14px;font-size: 13.65px; font-family: 'Lato-Regular'; clear: both; min-height: 58px;}
-.post-coments .post-coment-existing>ul{display: inline-block;max-width: 317px;}
-.post-coments .post-coment-existing >a{display: block; float: left;}
-.post .post-coment-existing .post-coment-date{font-family: 'Lato-LightItalic';font-size: 9.1px; color: #cc0000; margin: 6px 0;}
-.post .post-coment-user-name{font-family: 'Lato-LightItalic';}
-.post .social_share input[type="button"]{float: left; border: none; margin: -1px 0 0 5px; background: transparent; font: normal 12px 'Lato-Regular'; cursor: pointer;}
-
+	.post .social_share a{margin-right: 10px; display: inline-block;}
+		.post .social_share a img{width:20px; height: 18px;}
+.post .post-coments{background: #eee; list-style: none;padding: 0; margin: 0;}
+	.post .post-coments ul{list-style: none; margin: 0; padding: 0;}
+		.post .post-coments ul li { display: inline-block;}
+			.post .post-coments li img{width: 43px; height: 43px; border-radius: 50px; margin: 6px 8px 6px 12px;}
+			.post .post-coments li.post-coment-existing img{margin: 6px 16px 6px 12px;}
+		.post .post_coment_new{border-top:1px solid #e4e4e4;}
+		.post .post-coments>li:last-child{border-top: 1px solid #d8d8d8;}
+	.post .post_coment_new textarea{font-size: 13.65px; height: 25px!important; outline: 0; padding: 6px 10px; resize: none; width: 317px; font-family: 'Lato-LightItalic';
+    background: #fff; color: #7d7d7d; border: none; margin-bottom: 7px;line-height: 25px;}
+    .post .post_coment_new li:nth-child(2){background: url('../images/user-symbol-small.png') no-repeat 0 0px; padding-left: 12px;}
+    .post .post-coment-existing{padding-top: 14px;font-size: 13.65px; font-family: 'Lato-Regular'; clear: both; min-height: 58px;}
+    .post .post-coments .post-coment-existing>ul{display: inline-block;max-width: 317px;}
+    .post .post-coments .post-coment-existing >a{display: block; float: left;}
+    .post .post-coment-existing .post-coment-date{font-family: 'Lato-LightItalic';font-size: 9.1px; color: #cc0000; margin: 6px 0;}
+    .post .post-coment-user-name{font-family: 'Lato-LightItalic';}
+    .post .social_share input[type="button"]{float: left; border: none; margin: -1px 0 0 5px; background: transparent; font: normal 12px 'Lato-Regular'; cursor: pointer;}
+	
+.post .post-coments li .delete {
+	float: right;
+}
+.post .post-coments li .delete img {
+	width: 20px;
+	height: 20px;
+	margin: 0;
+}
 .vote {
     float: right;
     margin-right: 18px;
