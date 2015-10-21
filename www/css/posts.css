@@ -190,14 +190,87 @@ body {
 	position: relative;
 }
 .posts {
-	left: 17px;
-    max-width: 435px;
     overflow-y: auto;
     position: relative;
-    top: 60px;
-    width: 60%;
 	z-index: 2;
 	overflow: hidden;
+}
+.posts,
+.post-new-dialog {
+    top: 60px;
+	left: 17px;
+    width: 435px;
+}
+.post-new-dialog {
+	position: fixed;
+	z-index: 3;
+	background-color: #f1f1f1;
+	border-bottom: solid 2px #999;
+	min-height: 97px;
+}
+.post-new-dialog .wrapper {
+	padding: 6px 12px 0 13px;
+}
+.post-new-dialog textarea {
+	font-size: 13.65px;
+	outline: 0;
+	padding: 6px 10px;
+	margin: 0;
+	width: 326px;
+	height: 47px;
+	font-family: 'Lato-LightItalic';
+	background: #fff;
+	color: #7d7d7d;
+	line-height: 25px;
+	border: none;
+	resize: none;
+	display: block;
+}
+.post-new-dialog .user {
+	float: left;
+}
+.post-new-dialog .user img {
+	width: 43px;
+	height: 43px;
+	border-radius: 50px;
+	margin: 0 5px;
+	display: block;
+}
+.post-new-dialog .user p {
+	margin: 0;
+	font-size: 15.17px;
+	color: #cc0000;
+	font-family: 'Lato-Regular';
+	text-align: center;
+	width: 53px;
+	overflow: hidden;
+	height: 18px;
+}
+.post-new-dialog .edit {
+	background: url('../images/user-symbol-small.png') no-repeat 0 0px;
+	padding-left: 11px;
+	background-position: left center;
+	margin-top: 2px;
+    margin-left: 53px;
+}
+.post-new-dialog .action {
+	text-align: right;
+	margin-top: 4px;
+}
+.post-new-dialog .action a:first-child {
+	margin-right: 50px;
+}
+.post-new-dialog .action a:first-child img {
+	margin: 0;
+}
+.post-new-dialog .action a:nth-child(2) {
+	font-family: 'Lato-Regular';
+	font-size: 18.95px;
+	line-height: 18.95px;
+	display: block;
+	float: right;
+	color: #cc3333;
+	text-decoration: none;
 }
 .posts .post {
 	background-color: rgb(255,255,255);
@@ -306,39 +379,27 @@ body {
 /* new styling */
 .post a{text-decoration: none; color:#cc3333;}
 .post .user_avatar{float: left; margin: 8px; }
-	.user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
+.user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
 .post .user_name{color:#cc3333; font:normal 15.17px/42px 'Lato-Regular';}
 .post .post-time{color:#cc3333; font:italic 10px 'Lato-Italic';}
 .post .post_text{color:#333;font:normal 14.37px/19.55px 'Lato-Regular';margin-left: 70px; padding-right: 18px;}
 .post .link-meta .image{margin-left: -70px;}
 .post .social_share{text-align: right; border-top: solid 1px #ddd; border-bottom: solid 1px #ddd; padding: 3px 0 0;}
-	.post .social_share a{margin-right: 10px; display: inline-block;}
-		.post .social_share a img{width:20px; height: 18px;}
-.post .post-coments{background: #eee; list-style: none;padding: 0; margin: 0;}
-	.post .post-coments ul{list-style: none; margin: 0; padding: 0;}
-		.post .post-coments ul li { display: inline-block;}
-			.post .post-coments li img{width: 43px; height: 43px; border-radius: 50px; margin: 6px 8px 6px 12px;}
-			.post .post-coments li.post-coment-existing img{margin: 6px 16px 6px 12px;}
-		.post .post_coment_new{border-top:1px solid #e4e4e4;}
-		.post .post-coments>li:last-child{border-top: 1px solid #d8d8d8;}
-	.post .post_coment_new textarea{font-size: 13.65px; height: 25px!important; outline: 0; padding: 6px 10px; resize: none; width: 317px; font-family: 'Lato-LightItalic';
-    background: #fff; color: #7d7d7d; border: none; margin-bottom: 7px;line-height: 25px;}
-    .post .post_coment_new li:nth-child(2){background: url('../images/user-symbol-small.png') no-repeat 0 0px; padding-left: 12px;}
-    .post .post-coment-existing{padding-top: 14px;font-size: 13.65px; font-family: 'Lato-Regular'; clear: both; min-height: 58px;}
-    .post .post-coments .post-coment-existing>ul{display: inline-block;max-width: 317px;}
-    .post .post-coments .post-coment-existing >a{display: block; float: left;}
-    .post .post-coment-existing .post-coment-date{font-family: 'Lato-LightItalic';font-size: 9.1px; color: #cc0000; margin: 6px 0;}
-    .post .post-coment-user-name{font-family: 'Lato-LightItalic';}
-    .post .social_share input[type="button"]{float: left; border: none; margin: -1px 0 0 5px; background: transparent; font: normal 12px 'Lato-Regular'; cursor: pointer;}
-    .posts.post>.post-coments{position: absolute; width: 100%; border-bottom: solid 2px #999;}
-    	.posts.post>.post-coments img{margin-bottom: 0;}
-    	.posts.post>.post-coments .user-name-new-post{margin: 0; font-size: 15.17px; color: #cc0000; font-family: 'Lato-Regular'; text-align: center;}
-    	.posts.post>.post-coments .post_coment_new li:nth-child(2){background-position-y: 10px;}
-    		.posts.post>.post-coments .post_coment_new li textarea{height: 40px!important;}
-    .new-coment-links{text-align: right;}
-    	.new-coment-links .post-link{font-family: 'Lato-Regular'; font-size: 18.95px; margin: -3px 20px 0 0; display: block; float: right;}
-    	.new-coment-links .camera{margin-right: 50px;}
-    		.post .post-coments .new-coment-links .camera img{width: auto;  height: auto;  border-radius: 0;  margin: 0;}
+.post .social_share a{margin-right: 10px; display: inline-block;}
+.post .social_share a img{width:20px; height: 18px;}
+.post-coments{background: #eee; list-style: none;padding: 0; margin: 0;}
+.post-coments ul{list-style: none; margin: 0; padding: 0;}
+.post-coments ul li { display: inline-block;}
+.post-coments li img{width: 43px; height: 43px; border-radius: 50px; margin: 6px 8px 6px 12px;}
+.post-coments li.post-coment-existing img{margin: 6px 16px 6px 12px;}
+.post-coments>li:last-child{border-top: 1px solid #d8d8d8;}
+.post .post-coment-existing{padding-top: 14px;font-size: 13.65px; font-family: 'Lato-Regular'; clear: both; min-height: 58px;}
+.post-coments .post-coment-existing>ul{display: inline-block;max-width: 317px;}
+.post-coments .post-coment-existing >a{display: block; float: left;}
+.post .post-coment-existing .post-coment-date{font-family: 'Lato-LightItalic';font-size: 9.1px; color: #cc0000; margin: 6px 0;}
+.post .post-coment-user-name{font-family: 'Lato-LightItalic';}
+.post .social_share input[type="button"]{float: left; border: none; margin: -1px 0 0 5px; background: transparent; font: normal 12px 'Lato-Regular'; cursor: pointer;}
+
 .vote {
     float: right;
     margin-right: 18px;

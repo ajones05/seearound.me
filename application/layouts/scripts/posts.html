@@ -75,6 +75,10 @@ function initMap(){
 	);
 
 	$('#slider').slider();
+	$('.post-new').click(function(e){
+		e.preventDefault();
+		$('.post-new-dialog').toggle();
+	});
 }
 function handleLocationError(browserHasGeolocation){
 	alert(browserHasGeolocation ?
@@ -160,25 +164,21 @@ function handleLocationError(browserHasGeolocation){
 	<div class="map-container">
 		<div id="map_canvas"></div>
 	</div>
-	<div class="posts post">
-		<ul class="post-coments">
-			<li class="hidden">
-				<ul class="post_coment_new">
-					<li>
-						<img src="<?php echo $profileImage; ?>">
-						<p class="user-name-new-post">Name</p>
-					</li>
-					<li>
-						<textarea placeholder="Write a Comment..."></textarea>
-					</li>
-				</ul>
-				<div class="new-coment-links">
-					<a class="camera" href="#"><img src="/www/images/icon-camera.png"></a>
-					<a class="post-link" href="#">Post</a>
-				</div>
-			</li>
-		</ul>
-		<?php echo $this->layout()->content; ?>
+	<div class="posts"><?php echo $this->layout()->content; ?></div>
+</div>
+<div class="post-new-dialog" style="display: none;">
+	<div class="wrapper">
+		<div class="user">
+			<img width="43" height="43" src="<?php echo $profileImage; ?>">
+			<p><?php echo ucwords($this->user->Name); ?></p>
+		</div>
+		<div class="edit">
+			<textarea placeholder="Share something about a location..."></textarea>
+		</div>
+		<div class="action">
+			<a href="#"><img width="27" height="20" src="/www/images/icon-camera.png"></a>
+			<a href="#">Post</a>
+		</div>
 	</div>
 </div>
 <?php echo My_Layout::asyncScript($this); ?>
