@@ -1,5 +1,6 @@
 <?php
 $config = Zend_Registry::get('config_global');
+$profileImage = $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
 
 My_Layout::renderFavicon($this);
 My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
@@ -132,7 +133,7 @@ function handleLocationError(browserHasGeolocation){
 			<li>
 				<a href="#">
 					<?php // TODO: thumbnail 24x24 ?>
-					<img class="profile" width="24" height="24" src="<?php echo $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
+					<img class="profile" width="24" height="24" src="<?php echo $profileImage; ?>" />
 					<span class="text">Profile</span>
 				</a>
 			</li>
@@ -164,7 +165,7 @@ function handleLocationError(browserHasGeolocation){
 			<li class="hidden">
 				<ul class="post_coment_new">
 					<li>
-						<img src="/uploads/x5cedgdqd4.jpg">
+						<img src="<?php echo $profileImage; ?>">
 						<p class="user-name-new-post">Name</p>
 					</li>
 					<li>
