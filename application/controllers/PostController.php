@@ -17,12 +17,11 @@ class PostController extends Zend_Controller_Action
 		$this->view->layout()->setLayout('posts');
 
 		$auth = Zend_Auth::getInstance()->getIdentity();
-		// TODO: remove
-		$auth['user_id'] = 276;
 
 		if (!Application_Model_User::checkId($auth['user_id'], $user))
 		{
-			throw new RuntimeException('You are not authorized to access this action');
+			$this->_helper->flashMessenger('Please log in to access this page.');
+			$this->_redirect($this->view->baseUrl('/'));
 		}
 
 		$point = $this->_request->getParam('point');
