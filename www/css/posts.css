@@ -415,6 +415,7 @@ body {
 .vote {
     float: right;
     margin-right: 18px;
+    margin-top: 8px;
 }
 .vote ._3_copy {
     font-size: 14px;
