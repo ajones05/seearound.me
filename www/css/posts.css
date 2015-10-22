@@ -377,6 +377,10 @@ body {
 
 .ui-state-default, .ui-widget-content .ui-state-default{border-radius: 50px; width: 12px; height: 12px; top: -7px; background: #cc0000;}
 /* new styling */
+.post .post_text,
+.post .user_name {
+	word-wrap: break-word;
+}
 .post a{text-decoration: none; color:#cc3333;}
 .post .user_avatar{float: left; margin: 8px; }
 	.user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
@@ -389,7 +393,11 @@ body {
 		.post .social_share a img{width:20px; height: 18px;}
 .post .post-coments{background: #eee; list-style: none;padding: 0; margin: 0;}
 	.post .post-coments ul{list-style: none; margin: 0; padding: 0;}
-		.post .post-coments ul li { display: inline-block;}
+.post .post-coments ul li {
+	display: inline-block;
+	max-width: 100%;
+	word-wrap: break-word;
+}
 			.post .post-coments li img{width: 43px; height: 43px; border-radius: 50px; margin: 6px 8px 6px 12px;}
 			.post .post-coments li.post-coment-existing img{margin: 6px 16px 6px 12px;}
 		.post .post_coment_new{border-top:1px solid #e4e4e4;}
