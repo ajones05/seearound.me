@@ -384,7 +384,7 @@ body {
 .post a{text-decoration: none; color:#cc3333;}
 .post .user_avatar{float: left; margin: 8px; }
 	.user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
-.post .user_name{color:#cc3333; font:normal 15.17px/42px 'Lato-Regular';}
+.post .user_name{color: #cc3333; font: normal 15.17px 'Lato-Regular'; max-width: 256px; display: inline-block; margin: 13px 0 10px;}
 .post .post-time{color:#cc3333; font:italic 10px 'Lato-Italic';}
 .post .post_text{color:#333;font:normal 14.37px/19.55px 'Lato-Regular';margin-left: 70px; padding-right: 18px;}
 .post .link-meta .image{margin-left: -70px;}
@@ -413,7 +413,9 @@ body {
     .post .social_share input[type="button"]{float: left; border: none; margin: -1px 0 0 5px; background: transparent; font: normal 12px 'Lato-Regular'; cursor: pointer;}
 	
 .post .post-coments li .delete {
-	float: right;
+    position: absolute;
+    right: 15px;
+    cursor: pointer;
 }
 .post .post-coments li .delete img {
 	width: 20px;
