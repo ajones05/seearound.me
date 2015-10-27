@@ -100,7 +100,7 @@ class My_Layout
 	 * @param	Zend_View $view
 	 * @reutrn	string
 	 */
-	public static function appendAsyncScript($src, $view, $x = false)
+	public static function appendAsyncScript($src, $view)
 	{
 		if (!isset($view->asyncScripts))
 		{
@@ -128,7 +128,7 @@ JS;
 	{
 		if (isset($view->asyncScripts))
 		{
-			return '<script type="text/javascript">' .
+			return '<script type="text/javascript" async="async">' .
 				implode($view->asyncScripts) . '</script>';
 		}
 	}
