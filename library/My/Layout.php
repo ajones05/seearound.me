@@ -102,34 +102,37 @@ class My_Layout
 	 */
 	public static function appendAsyncScript($src, $view)
 	{
-		if (!isset($view->asyncScripts))
-		{
-			$view->asyncScripts = array();
-		}
-
-		$view->asyncScripts[$src] = <<<JS
+		return $view->headScript()->appendScript(<<<JS
 (function(){
 	var script = document.createElement('script');
 	script.type = 'text/javascript';
-	script.async = true;
 	script.src = '{$src}';
 	(document.getElementsByTagName('head')[0]||document.getElementsByTagName('body')[0]).appendChild(script);
 })();
-JS;
+JS
+		);
 	}
 
 	/**
-	 * Returns async javascript code.
+	 * Async load stylesheet file.
 	 *
+	 * @param	string $href
 	 * @param	Zend_View $view
-	 * @reutrn	string
+	 * @reutrn	Zend_View_Helper_HeadScript
 	 */
-	public static function asyncScript($view)
+	public static function appendAsyncStylesheet($href, $view)
 	{
-		if (isset($view->asyncScripts))
-		{
-			return '<script type="text/javascript" async="async">' .
-				implode($view->asyncScripts) . '</script>';
-		}
+		return $view->headScript()->appendScript(<<<JS
+var cb = function() {
+  var l = document.createElement('link'); l.rel = 'stylesheet';
+  l.href = '{$href}';
+  var h = document.getElementsByTagName('head')[0]; h.parentNode.insertBefore(l, h);
+};
+var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+  webkitRequestAnimationFrame || msRequestAnimationFrame;
+if (raf) raf(cb);
+else window.addEventListener('load', cb);
+JS
+		);
 	}
 }

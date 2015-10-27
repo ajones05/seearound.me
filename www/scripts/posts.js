@@ -1,4 +1,11 @@
 var mainMap, defaultZoom=14;
+$(function(){
+	$.ajax({
+		url: 'https://maps.googleapis.com/maps/api/js?v=3.x&sensor=false&callback=initMap',
+		dataType: 'script',
+		cache: true
+	});
+});
 function initMap(){
 	mainMap = new google.maps.Map(document.getElementById('map_canvas'), {
 		center: new google.maps.LatLng(mapCenter[0], mapCenter[1]),

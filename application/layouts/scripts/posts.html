@@ -3,17 +3,20 @@ $config = Zend_Registry::get('config_global');
 $profileImage = $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
 
 My_Layout::renderFavicon($this);
+My_Layout::appendAsyncStylesheet(My_Layout::assetUrl(
+	'bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this), $this);
 
 $this->headLink()
-	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this))
 	->appendStylesheet(My_Layout::assetUrl('www/css/posts.css', $this));
 
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
-	->appendFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))
-	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js', $this))
-	->appendFile(My_Layout::assetUrl('www/scripts/posts.js', $this))
-	->appendFile('//maps.googleapis.com/maps/api/js?key=' . $config->google->maps->key . '&sensor=false&v=3.x&callback=initMap');
+	->appendFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this),
+		'text/javascript', array('defer' => 'defer'))
+	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js', $this),
+		'text/javascript', array('defer' => 'defer'))
+	->appendFile(My_Layout::assetUrl('www/scripts/posts.js', $this),
+		'text/javascript', array('defer' => 'defer'));
 
 $this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
 ?>
