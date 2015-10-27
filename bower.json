@@ -7,6 +7,8 @@
 		"jquery-form": "latest",
 		"jquery-loadmask": "yuriyua/jquery-loadmask",
 		"textarea-autosize": "latest",
-		"jquery.scrollTo": "latest"
+		"jquery.scrollTo": "latest",
+		"requirejs": "*",
+		"requirejs-plugins": "*"
 	}
 }

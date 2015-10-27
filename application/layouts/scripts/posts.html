@@ -11,18 +11,16 @@ $this->headLink()
 
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
-	->appendFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this),
-		'text/javascript', array('defer' => 'defer'))
-	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js', $this),
-		'text/javascript', array('defer' => 'defer'))
-	->appendFile(My_Layout::assetUrl('www/scripts/posts.js', $this),
-		'text/javascript', array('defer' => 'defer'));
+	->appendFile(My_Layout::assetUrl('bower_components/requirejs/require.js', $this),
+		'text/javascript', array('defer' => 'defer',
+		'data-main' => My_Layout::assetUrl('www/scripts/posts', $this)));
 
 $this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<head><?php echo implode("\n", array($this->headTitle(), $this->headMeta(), $this->headLink())); ?></head>
+<head><?php echo implode("\n", array($this->headTitle(), $this->headMeta(),
+$this->headLink(), $this->headScript())); ?></head>
 <body>
 <div class="navbar">
 	<div class="logo">
@@ -117,6 +115,5 @@ $this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
 		</div>
 	</div>
 </div>
-<?php echo $this->headScript(); ?>
 </body>
 </html>
