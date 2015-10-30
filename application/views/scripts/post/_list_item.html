@@ -12,7 +12,7 @@ if ($image)
 }
 ?>
 		
-<div class="post">
+<div class="post" data-id="<?php echo $this->post->id; ?>">
 	<a href="<?php echo $profileUrl; ?>" class="user_avatar">
 		<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
 	</a>

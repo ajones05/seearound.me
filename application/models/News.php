@@ -141,14 +141,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
     }
 
 	/**
-	 * Search news by parameters.
+	 * Returns search news query.
 	 *
 	 * @param	array $parameters
 	 * @param	Application_Model_UserRow $user
-	 *
-	 * @return	array
+	 * @return	Zend_Db_Table_Select
 	 */
-	public function search(array $parameters, Application_Model_UserRow $user)
+	public function searchQuery(array $parameters, Application_Model_UserRow $user)
 	{
 		$query = $this->publicSelect()->setIntegrityCheck(false)
 			->from($this, array(
@@ -210,13 +209,26 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			}
 		}
 
-		$result = $this->fetchAll(
-			$query
-				->having('IFNULL(distance_from_source, 0) < ' . $parameters['radius'])
-				->order('score DESC')
-				->group('news.id')
-				->limit($parameters['limit'], My_ArrayHelper::getProp($parameters, 'start', 0))
-		);
+		$query
+			->having('IFNULL(distance_from_source, 0) < ' . $parameters['radius'])
+			->order('score DESC')
+			->group('news.id');
+
+		return $query;
+	}
+
+ 	/**
+ 	 * Search news by parameters.
+ 	 *
+ 	 * @param	array $parameters
+ 	 * @param	Application_Model_UserRow $user
+ 	 * @return	array
+ 	 */
+ 	public function search(array $parameters, Application_Model_UserRow $user)
+ 	{
+		$query = $this->searchQuery($parameters, $user);
+		$result = $this->fetchAll($query->limit($parameters['limit'],
+			My_ArrayHelper::getProp($parameters, 'start', 0)));
 
 		return $result;
 	}

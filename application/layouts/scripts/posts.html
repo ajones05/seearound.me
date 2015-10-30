@@ -3,14 +3,13 @@ $config = Zend_Registry::get('config_global');
 $profileImage = $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
 
 My_Layout::renderFavicon($this);
-My_Layout::appendAsyncStylesheet(My_Layout::assetUrl(
-	'bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this), $this);
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('www/css/posts.css', $this));
 
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
+	->appendScript('var baseUrl=' . json_encode($this->serverUrl() . $this->baseUrl('/')) . ';')
 	->appendFile(My_Layout::assetUrl('bower_components/requirejs/require.js', $this),
 		'text/javascript', array('defer' => 'defer',
 		'data-main' => My_Layout::assetUrl('www/scripts/posts', $this)));
@@ -19,8 +18,8 @@ $this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<head><?php echo implode("\n", array($this->headTitle(), $this->headMeta(),
-$this->headLink(), $this->headScript())); ?></head>
+<head><?php echo $this->headTitle() . $this->headMeta() .
+$this->headLink() . $this->headScript(); ?></head>
 <body>
 <div class="navbar">
 	<div class="logo">
@@ -71,7 +70,7 @@ $this->headLink(), $this->headScript())); ?></head>
 			<li>
 				<a href="#">
 					<?php // TODO: thumbnail 24x24 ?>
-					<img class="profile" width="24" height="24" src="<?php echo $profileImage; ?>" />
+					<img class="profile" width="24" height="24" src="<?php echo $profileImage; ?>" alt="profile" />
 					<span class="text">Profile</span>
 				</a>
 			</li>
