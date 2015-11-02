@@ -68,7 +68,7 @@ class PostController extends Zend_Controller_Action
 			0 => array(
 				$userLocation[0],
 				$userLocation[1],
-				'www/images/template/user-location-icon.png'
+				true
 			)
 		);
 

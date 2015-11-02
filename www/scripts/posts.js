@@ -1,4 +1,9 @@
-var mainMap, defaultZoom=14, postMarkers={}, postMarkersCluster=[];
+var mainMap,areaCircle,
+	defaultZoom=14,defaultRadius=0.8,
+	locationIcon=baseUrl+'www/images/template/user-location-icon.png',
+	postIcon=baseUrl+'www/images/template/post-icon.png',
+	postMarkers={},postMarkersCluster=[];
+
 require.config({
     paths: {
 		'jquery': '../../bower_components/jquery/dist/jquery.min',
@@ -22,11 +27,17 @@ function renderMap_callback(){
 		disableDoubleClickZoom: true,
 		styles: [{
 			featureType: 'poi',
-			stylers: [{visibility: 'off'}]   
+			stylers: [{visibility: 'off'}]
 		}]
 	});
 
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
+		areaCircle = new googleMapsAreaCircle({
+			map: mainMap,
+			center: mainMap.getCenter(),
+			radius: defaultRadius
+		});
+
 		// TODO: combine icon
 		var controlUIzoomIn = $('<div/>', {title: 'Zoom in'}).addClass('zoom_in')
 			.append($('<img/>', {src: '/www/images/template/zoom_in25x25.png'}).attr({width: 25, height: 25})).get(0);
@@ -71,27 +82,57 @@ function renderMap_callback(){
 		require(['jquery','jquery-ui'], function(){
 			for (var id in postData){
 				postItem_marker(id);
+				$('.post[data-id="'+id+'"]').bind({
+					mouseenter: function(){
+						var group = postItem_findCluester($(this).attr('data-id'));
 
-				if (id > 0){
-					$('.post[data-id="'+id+'"]').hover(function(){
-						var group = postItem_findCluester($(this).attr('data-id'));
-						postMarkers[group].setIcon({
-							url: baseUrl+'www/images/template/user-location-icon.png',
-							width: 46,
-							height: 63
-						});
+						if (!postData[postMarkersCluster[group][0]][2]){
+							postMarkers[group].setIcon({
+								url: locationIcon,
+								width: 46,
+								height: 63
+							});
+						}
+
 						postMarkers[group].css({zIndex: 100001});
-					}, function(){
+					},
+					mouseleave: function(){
 						var group = postItem_findCluester($(this).attr('data-id'));
-						postMarkers[group].setIcon({
-							url: baseUrl+'www/images/template/post-icon.png',
-							width: 46,
-							height: 63
-						});
+
+						if (!postData[postMarkersCluster[group][0]][2]){
+							postMarkers[group].setIcon({
+								url: postIcon,
+								width: 46,
+								height: 63
+							});
+						}
+
 						postMarkers[group].css({zIndex: 'inherit'});
-					});
-				}
+					}
+				});
 			}
+
+			google.maps.event.addListener(mainMap, 'dragstart', function(){
+				$('#map_canvas :data(ui-tooltip)')
+					.tooltip('close')
+					.tooltip('option', 'disabled', true);
+			});
+
+			google.maps.event.addListener(mainMap, 'dragend', function(){
+				$('#map_canvas :data(ui-tooltip)')
+					.tooltip('option', 'disabled', false);
+			});
+
+			google.maps.event.addListener(mainMap, 'zoom_changed', function(){
+				$('#map_canvas :data(ui-tooltip)')
+					.tooltip('close')
+					.tooltip('option', 'disabled', true)
+					.tooltip('option', 'disabled', false);
+			});
+
+			$(window).on('resize scroll', function(){
+				$('#map_canvas :data(ui-tooltip)').tooltip('close');
+			});
 
 			$('#slider').slider();
 
@@ -107,9 +148,15 @@ function renderMap_callback(){
 		function postItem_marker(id){
 			if (!$.isEmptyObject(postMarkersCluster)){
 				for (var group in postMarkersCluster){
-					if (getDistance(postData[id], postData[postMarkersCluster[group][0]]) <= 30){
-						postMarkersCluster[group].push(id);
-						return false;
+					if (getDistance(postData[id], postData[postMarkersCluster[group][0]]) <= 0.018939){
+						if (postMarkersCluster[group][0]==0){
+							postMarkersCluster[group][0]=id;
+							postMarkers[group].opts.data.id=id;
+							postData[id][2]=true;
+						} else {
+							postMarkersCluster[group].push(id);
+						}
+						return postMarkers[group];
 					}
 				}
 			}
@@ -125,8 +172,7 @@ function renderMap_callback(){
 					parseFloat(postData[id][1])
 				),
 				icon: {
-					url: baseUrl + (postData[id][2] ? postData[id][2] :
-						'www/images/template/post-icon.png'),
+					url: postData[id][2] ? locationIcon : postIcon,
 					width: 46,
 					height: 63
 				},
@@ -172,6 +218,10 @@ function renderMap_callback(){
 						}
 					},
 					open: function(event, ui){
+						if ($(event.target).tooltip('option', 'disabled')){
+							return false;
+						}
+
 						var content = $(event.target).data('tooltip-content');
 
 						if ($.trim(content) !== ''){
@@ -179,26 +229,6 @@ function renderMap_callback(){
 						} else {
 							postTooltip_content(self.opts.data.id, self.opts.position, event, ui);
 						}
-
-						clearTimeout($(event.target).data('tooltip-mouseout'));
-						ui.tooltip.hover(
-							function(){
-								!$(event.target).data('tooltip-ajax') ||
-									$(event.target).data('tooltip-ajax').abort();
-								clearTimeout($(event.target).data('tooltip-mouseout'));
-								clearTimeout($(event.target).data('tooltip-close'));
-								$(this).stop(true);
-							}, function(){
-								ui.tooltip.remove();
-								clearTimeout($(event.target).data('tooltip-close'));
-								!$(event.target).data('tooltip-ajax') ||
-									$(event.target).data('tooltip-ajax').abort();
-								$(event.target).data('tooltip-mouseout', setTimeout(function(){
-									$(event.target).data('tooltip-content', '');
-									$(event.target).parent().css({zIndex: 'inherit'});
-								}, .1));
-							}
-						);
 					},
 					close: function(event, ui){
 						clearTimeout($(event.target).data('tooltip-mouseout'));
@@ -218,17 +248,15 @@ function renderMap_callback(){
 			});
 
 			postMarkers[group] = postMarker;
+
+			return postMarker;
 		}
 
 		/**
 		 * googleMapsCustomMarker
 		 */
 		function googleMapsCustomMarker(opts){
-			this.opts = $.extend({
-				id: '',
-				hide: false
-			}, opts);
-
+			this.opts = opts;
 			this.setMap(opts.map);
 		}
 		googleMapsCustomMarker.prototype = new google.maps.OverlayView();
@@ -249,11 +277,7 @@ function renderMap_callback(){
 					self.id = self.opts.id;
 				}
 
-				if (self.opts.hide){
-					self.div.hide();
-				} else {
-					self.div.show();
-				}
+				self.div.show();
 
 				google.maps.event.addDomListener(self.div[0], 'click', function(event){
 					google.maps.event.trigger(self, 'click');
@@ -286,26 +310,88 @@ function renderMap_callback(){
 			this.opts.position = position;
 		};
 		googleMapsCustomMarker.prototype.setIcon = function(icon){
-			var resetPosition = this.opts.icon.width != icon.width || this.opts.icon.height != icon.height;
-			this.opts.icon = icon;
+			if (this.div){
+				var resetPosition = this.opts.icon.width != icon.width ||
+					this.opts.icon.height != icon.height;
+				this.opts.icon = icon;
 
-			$(this.div).find('img')
-				.attr({
-					src: icon.url,
-					width: icon.width,
-					height: icon.height
-				}).css({
-					width: icon.width,
-					height: icon.height
-				});
+				$(this.div).find('img')
+					.attr({
+						src: icon.url,
+						width: icon.width,
+						height: icon.height
+					}).css({
+						width: icon.width,
+						height: icon.height
+					});
 
-			this.setPosition(this.opts.position);
+				this.setPosition(this.opts.position);
+			}
+
 			return this;
 		};
 		googleMapsCustomMarker.prototype.css = function(css){
 			return $(this.div).css(css);
 		};
 	});
+
+	/**
+	 * googleMapsAreaCircle
+	 */
+	function googleMapsAreaCircle(options){
+		this.setValues(options);
+		this.makeCircle();
+		return this;
+	};
+	googleMapsAreaCircle.prototype = new google.maps.OverlayView;
+	googleMapsAreaCircle.prototype.draw = function(){}
+	googleMapsAreaCircle.prototype.makeCircle = function(){
+		this.polyArea = new google.maps.Polygon({
+			map: this.map,
+			paths: [
+				this.drawCircle(this.center, 1000, 1),
+				this.drawCircle(this.center, this.radius, -1)
+			],
+			strokeColor: '#0000FF',
+			strokeOpacity: 0.1,
+			strokeWeight: 0.1,
+			fillColor: '#000000',
+			fillOpacity: 0.3,
+			draggable: false
+		});
+	}
+	googleMapsAreaCircle.prototype.changeCenter = function(center,radius){
+		this.polyArea.setMap(null);
+		this.center = center;
+		this.radius = (radius > 0) ? radius : defaultRadius;
+		this.makeCircle();
+	}
+	googleMapsAreaCircle.prototype.drawCircle = function(point, userRadius, dir){
+		var d2r = Math.PI / 180;
+		var r2d = 180 / Math.PI;
+		var earthsradius = 3963;
+		var points = 32;
+		var rlat = (userRadius / earthsradius) * r2d;
+		var rlng = rlat / Math.cos(point.lat() * d2r);
+		var extp = new Array(); 
+
+		if (dir == 1){
+			var start = 0;
+			var end = points + 1;
+		} else {
+			var start = points + 1;
+			var end = 0;
+		}
+
+		for (var i = start; (dir == 1 ? i < end : i > end); i = i + dir){
+			var theta = Math.PI * (i / (points/2));
+			ey = point.lng() + (rlng * Math.cos(theta));
+			ex = point.lat() + (rlat * Math.sin(theta));
+			extp.push(new google.maps.LatLng(ex, ey));
+		}
+
+		return extp;
+	}
 };
 
 /**
@@ -321,6 +407,28 @@ function handleLocationError(browserHasGeolocation){
  * Renders post tooltip.
  */
 function postTooltip_render(content, position, event, ui){
+	clearTimeout($(event.target).data('tooltip-mouseout'));
+
+	ui.tooltip.bind({
+		mouseenter: function(){
+			!$(event.target).data('tooltip-ajax') ||
+				$(event.target).data('tooltip-ajax').abort();
+			clearTimeout($(event.target).data('tooltip-mouseout'));
+			clearTimeout($(event.target).data('tooltip-close'));
+			$(this).stop(true);
+		},
+		mouseleave: function(){
+			$(this).remove();
+			clearTimeout($(event.target).data('tooltip-close'));
+			!$(event.target).data('tooltip-ajax') ||
+				$(event.target).data('tooltip-ajax').abort();
+			$(event.target).data('tooltip-mouseout', setTimeout(function(){
+				$(event.target).data('tooltip-content', '');
+				$(event.target).parent().css({zIndex: 'inherit'});
+			}, .1));
+		}
+	});
+
 	var tooltipContent = $('.ui-tooltip-content', ui.tooltip).html(content);
 
 	$('a.more', tooltipContent).click(function(e){
@@ -381,6 +489,8 @@ function postItem_higlight(id){
 	for (var i in postMarkersCluster[group]){
 		$('.post[data-id="'+postMarkersCluster[group][i]+'"]')
 			.addClass('higlight');
+		// TODO: open read more content
+		// xxx.find('.moreButton').click();
 	}
 }
 
@@ -399,25 +509,19 @@ function postItem_findCluester(id){
 }
 
 /**
- * Convert number radians.
- */
-var rad = function(x){
-  return x * Math.PI / 180;
-};
-
-/**
  * Returns the distance between two points in meters.
  */
 var getDistance = function(p1, p2){
-  var R = 6378137;
-  var dLat = rad(p2[0] - p1[0]);
-  var dLong = rad(p2[1] - p1[1]);
-  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(rad(p1[1])) * Math.cos(rad(p2[1])) *
-    Math.sin(dLong / 2) * Math.sin(dLong / 2);
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  var d = R * c;
-  return d;
+	if (p1[0] === p2[0] && p1[1] === p2[1]){
+		return 0;
+	}
+
+	var theta = p1[1] - p2[1];
+	var dist = Math.sin(p1[0] * Math.PI / 180) * Math.sin(p2[0] * Math.PI / 180) +
+		Math.cos(p1[0] * Math.PI / 180) * Math.cos(p2[0] * Math.PI / 180) *
+		Math.cos(theta * Math.PI / 180);
+	var miles = (Math.acos(dist) * 180 / Math.PI) * 60 * 1.1515;
+	return miles;
 };
 
 /**
