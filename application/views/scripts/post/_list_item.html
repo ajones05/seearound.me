@@ -11,53 +11,52 @@ if ($image)
 	$thumb448x320 = $image->findThumb(array(448, 320));
 }
 ?>
-		
 <div class="post" data-id="<?php echo $this->post->id; ?>">
-	<a href="<?php echo $profileUrl; ?>" class="user_avatar">
-		<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
-	</a>
-	<a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($this->owner->Name); ?></a>
-	<a href="<?php echo $this->baseUrl('info/news/nwid/' . $this->post->id); ?>" class="post-time"><?php echo My_Time::time_ago($this->post->created_date, true); ?></a>
-	<div class="vote">
-		<div class="_3_copy">5</div>
-		<div class="icon">
-			<div class="like active" disabled="disabled"></div>
-			<div class="dislike"></div>
-		</div>
-	</div>
-	<div class="post_text"><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'limit')); ?></div>
-	<?php if ($image != null): ?>
-	<div>
-		<img onclick="openImage('<?php echo $this->baseUrl($thumb960x960->path); ?>','<?php echo $thumb960x960->width; ?>','<?php echo $thumb960x960->height; ?>');"
-			src="<?php echo $this->baseUrl($thumb448x320->path); ?>" />
-	</div>
-	<?php endif; ?>
-	<?php if ($this->post->comment > 3): ?>
-	<div><?php echo Application_Model_Comments::viewMoreLabel($this->post->comment - 3); ?></div>
-	<?php endif; ?>
-	<div class="social_share">
-		<input type="button" value="Edit Post" />
-		<a href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->post->id); ?>">
-			<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" />
-		</a>
-		<a href="#">
-			<img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" />
-		</a>
-	</div>
-	<ul class="post-coments">
-	<?php
-		if ($this->post->comment)
-		{
-			for ($i = count($comments) - 1; $i >= 0; $i--)
-			{
-				echo My_ViewHelper::render('post/_comment', array(
-					'comment' => $comments[$i],
-					'post' => $this->post,
-					'limit' => 250
-				));
-			}
-		}
-		echo My_ViewHelper::render('post/_comment_new', array('hidden' => $hide_comments));
-	?>
-	</ul>
+<a href="<?php echo $profileUrl; ?>" class="user_avatar">
+<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
+</a>
+<a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($this->owner->Name); ?></a>
+<a href="<?php echo $this->baseUrl('info/news/nwid/' . $this->post->id); ?>" class="post-time"><?php echo My_Time::time_ago($this->post->created_date, true); ?></a>
+<div class="vote">
+<div class="_3_copy">5</div>
+<div class="icon">
+<div class="like active" disabled="disabled"></div>
+<div class="dislike"></div>
+</div>
+</div>
+<div class="post_text"><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'limit')); ?></div>
+<?php if ($image != null): ?>
+<div>
+<img onclick="openImage('<?php echo $this->baseUrl($thumb960x960->path); ?>','<?php echo $thumb960x960->width; ?>','<?php echo $thumb960x960->height; ?>');"
+src="<?php echo $this->baseUrl($thumb448x320->path); ?>" />
+</div>
+<?php endif; ?>
+<?php if ($this->post->comment > 3): ?>
+<div><?php echo Application_Model_Comments::viewMoreLabel($this->post->comment - 3); ?></div>
+<?php endif; ?>
+<div class="social_share">
+<input type="button" value="Edit Post" />
+<a href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->post->id); ?>">
+<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" />
+</a>
+<a href="#">
+<img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" />
+</a>
+</div>
+<ul class="post-coments">
+<?php
+if ($this->post->comment)
+{
+for ($i = count($comments) - 1; $i >= 0; $i--)
+{
+echo My_ViewHelper::render('post/_comment', array(
+'comment' => $comments[$i],
+'post' => $this->post,
+'limit' => 250
+));
+}
+}
+echo My_ViewHelper::render('post/_comment_new', array('hidden' => $hide_comments));
+?>
+</ul>
 </div>
