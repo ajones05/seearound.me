@@ -1,8 +1,9 @@
 var mainMap,areaCircle,
-	defaultZoom=14,defaultRadius=0.8,
+	postLimit=15,defaultZoom=14,defaultRadius=0.8,
 	locationIcon=baseUrl+'www/images/template/user-location-icon.png',
 	postIcon=baseUrl+'www/images/template/post-icon.png',
-	postMarkers={},postMarkersCluster=[];
+	postMarkers={},postMarkersCluster=[],
+	disableScroll=false;
 
 require.config({
     paths: {
@@ -81,35 +82,11 @@ function renderMap_callback(){
 
 		require(['jquery','jquery-ui'], function(){
 			for (var id in postData){
-				postItem_marker(id);
-				$('.post[data-id="'+id+'"]').bind({
-					mouseenter: function(){
-						var group = postItem_findCluester($(this).attr('data-id'));
+				postItem_render(id);
+			}
 
-						if (!postData[postMarkersCluster[group][0]][2]){
-							postMarkers[group].setIcon({
-								url: locationIcon,
-								width: 46,
-								height: 63
-							});
-						}
-
-						postMarkers[group].css({zIndex: 100001});
-					},
-					mouseleave: function(){
-						var group = postItem_findCluester($(this).attr('data-id'));
-
-						if (!postData[postMarkersCluster[group][0]][2]){
-							postMarkers[group].setIcon({
-								url: postIcon,
-								width: 46,
-								height: 63
-							});
-						}
-
-						postMarkers[group].css({zIndex: 'inherit'});
-					}
-				});
+			if (Object.size(postData) >= postLimit){
+				$(window).bind('scroll.load', postList_scrollHandler).scroll();
 			}
 
 			google.maps.event.addListener(mainMap, 'dragstart', function(){
@@ -141,6 +118,42 @@ function renderMap_callback(){
 				$('.post-new-dialog').toggle();
 			});
 		});
+
+		/**
+		 * Renders post item.
+		 */
+		function postItem_render(id){
+			postItem_marker(id);
+			// TODO: edit post, comment, vote...
+			$('.post[data-id="'+id+'"]').bind({
+				mouseenter: function(){
+					var group = postItem_findCluester($(this).attr('data-id'));
+
+					if (!postData[postMarkersCluster[group][0]][2]){
+						postMarkers[group].setIcon({
+							url: locationIcon,
+							width: 46,
+							height: 63
+						});
+					}
+
+					postMarkers[group].css({zIndex: 100001});
+				},
+				mouseleave: function(){
+					var group = postItem_findCluester($(this).attr('data-id'));
+
+					if (!postData[postMarkersCluster[group][0]][2]){
+						postMarkers[group].setIcon({
+							url: postIcon,
+							width: 46,
+							height: 63
+						});
+					}
+
+					postMarkers[group].css({zIndex: 'inherit'});
+				}
+			});
+		}
 
 		/**
 		 * Renders post item marker.
@@ -218,6 +231,8 @@ function renderMap_callback(){
 						}
 					},
 					open: function(event, ui){
+						$('#map_canvas :data(ui-tooltip)').not(event.target).tooltip('close');
+
 						if ($(event.target).tooltip('option', 'disabled')){
 							return false;
 						}
@@ -250,6 +265,67 @@ function renderMap_callback(){
 			postMarkers[group] = postMarker;
 
 			return postMarker;
+		}
+
+		/**
+		 * Ajax load posts.
+		 */
+		function postList_load(start, callback){
+			// if (start == 0){
+				// resetNews();
+			// }
+
+			// $('#loading').width($("#newsData").width()).show();
+			// $('#newsData #pagingDiv').remove();
+
+			var position = mainMap.getCenter();
+
+			ajaxJson({
+				url: baseUrl+'post/list',
+				data: {
+					// TODO: render
+					// radius: getRadius(),
+					keywords: $('#postSearch [name=keywords]').val(),
+					filter: $('#postSearch [name=filter]').val(),
+					center: [position.lat(),position.lng()],
+					start: start,
+					// TODO: render
+					// 'new': $('#addNewsForm [name=new\\[\\]]').map(function(){
+						// return $(this).val();
+					// }).get()
+				},
+				done: function(response){
+					if (response.empty){
+						// TODO: render empty response ...
+						return true;
+					}
+
+					for (var id in response.data){
+						postData[id]=response.data[id];
+						$('.posts').append(response.data[id][3]);
+						postItem_render(id);
+					}
+
+					if (Object.size(response.data) >= postLimit){
+						$(window).bind('scroll.load', postList_scrollHandler).scroll();
+					}
+				}
+			})
+		}
+
+		/**
+		 * Load posts on window scroll action.
+		 */
+		function postList_scrollHandler(){
+			if (disableScroll){
+				return false;
+			}
+
+			if ($(window).scrollTop() + $(window).height() > $(document).height() - 300){
+				console.log('scroll.load');
+				$(window).unbind('scroll.load');
+				postList_load(Object.size(postData));
+			}
 		}
 
 		/**
@@ -462,6 +538,8 @@ function postTooltip_content(id, position, event, ui){
 			id: id,
 			lat: position.lat(),
 			lng: position.lng(),
+			keywords: $('#postSearch [name=keywords]').val(),
+			filter: $('#postSearch [name=filter]').val(),
 			readmore: 1
 		},
 		type: 'POST',
@@ -525,6 +603,17 @@ var getDistance = function(p1, p2){
 };
 
 /**
+ * Returns length of a javascript object.
+ */
+Object.size = function(obj){
+	var size = 0, key;
+	for (key in obj){
+		if (obj.hasOwnProperty(key)) size++;
+	}
+	return size;
+};
+
+/**
  * Async load CSS files.
  */
 function loadCss(url){
@@ -533,4 +622,29 @@ function loadCss(url){
     link.rel = "stylesheet";
     link.href = url;
     document.getElementsByTagName("head")[0].appendChild(link);
+}
+
+// TODO: require from common js
+function ajaxJson(url, settings){
+	if (typeof url === 'string'){
+		settings.url = url;
+	} else if (typeof url === 'object'){
+		settings = url;
+	}
+
+	settings.dataType = 'json';
+
+	var jqxhr = $.ajax($.extend(settings, {type: 'POST'}))
+		.done(function(data, textStatus, jqXHR){
+			if (typeof data !== 'object' || data.status == 0){
+				alert(typeof data === 'object' ? data.message : ERROR_MESSAGE);
+				return false;
+			}
+
+			if (typeof settings.done === 'function'){
+				return settings.done(data, textStatus, jqXHR);
+			}
+		});
+
+	return jqxhr;
 }

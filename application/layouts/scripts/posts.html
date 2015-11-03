@@ -32,28 +32,30 @@ $this->headLink() . $this->headScript(); ?></head>
 		
 	</div>
 	<div class="post-search">
-		<form>
-			<input type="text" name="keywords" placeholder="Search Posts..." />
-			<input type="image" src="/www/images/template/search14x14.png" alt="search" />
+		<form id="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
+			<div class="keywords">
+				<input type="text" name="keywords" placeholder="Search Posts..." />
+				<input type="image" src="/www/images/template/search14x14.png" alt="search" />
+			</div>
+			<div class="filter">
+				<select name="filter" style="display: none;">
+					<option value="">View all posts</option>
+					<option value="0">Mine Only</option>
+					<option value="1">My Interests</option>
+					<option value="2">Following</option>
+				</select>
+				<?php /* http://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_dropdown-menu&stacked=h */ ?>
+				<div class="dropdown">
+					<button type="button">View all posts <span class="caret"></span></button>
+					<ul class="dropdown-menu">
+						<li><a href="#">View all posts</a></li>
+						<li><a href="#">Mine Only</a></li>
+						<li><a href="#">My Interests</a></li>
+						<li><a href="#">Following</a></li>
+					</ul>
+				</div>
+			</div>
 		</form>
-	</div>
-	<div class="post-filter">
-		<select name="filter" style="display: none;">
-			<option value="">View all posts</option>
-			<option value="0">Mine Only</option>
-			<option value="1">My Interests</option>
-			<option value="2">Following</option>
-		</select>
-		<?php /* http://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_dropdown-menu&stacked=h */ ?>
-		<div class="dropdown">
-			<button type="button">View all posts <span class="caret"></span></button>
-			<ul class="dropdown-menu">
-				<li><a href="#">View all posts</a></li>
-				<li><a href="#">Mine Only</a></li>
-				<li><a href="#">My Interests</a></li>
-				<li><a href="#">Following</a></li>
-			</ul>
-		</div>
 	</div>
 	<div class="main-menu">
 		<ul>

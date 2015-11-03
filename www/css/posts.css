@@ -87,13 +87,12 @@ body {
 	position: relative;
 	padding-left: 34px;
 }
-.post-search,
-.post-filter {
+.post-search {
 	display: inline-block;
 	float: left;
 	padding-top: 13px;
 }
-.post-filter .dropdown,
+.post-search .dropdown,
 .post-search input[type=text] {
 	border-style: solid;
 	border-width: 2px;
@@ -107,7 +106,6 @@ body {
 	font-style: italic;
 	line-height: 1.2;
 	text-align: left;
-
 	width: 254px;
 	height: 17px;
 	padding-left: 10px;
@@ -120,12 +118,19 @@ body {
     width: 14px;
 	position: absolute;
 	right: 11px;
-	top: 21px;
+	top: 8px;
 }
-.post-filter {
-	    padding-left: 85px;
+.post-search .keywords {
+	position: relative;
 }
-.post-filter .dropdown {
+.post-search .filter {
+	padding-left: 85px;
+}
+.post-search .filter,
+.post-search .keywords {
+	float: left;
+}
+.post-search .dropdown {
 	height: 27px;
 	width: 149px;
 }
