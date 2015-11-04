@@ -98,8 +98,6 @@ class PostController extends Zend_Controller_Action
 						$post->latitude,
 						$post->longitude,
 						// TODO: refactoring
-						false,
-						// TODO: refactoring
 						str_replace(array("\n", "\r"), '', My_ViewHelper::render('post/_list_item', array(
 							'post' => $post,
 							'owner' => $post->findDependentRowset('Application_Model_User')->current(),
@@ -114,13 +112,6 @@ class PostController extends Zend_Controller_Action
 					'data' => $postData
 				));
 			}
-
-			// TODO: refactoring
-			$postData[] = array(
-				$userLocation[0],
-				$userLocation[1],
-				true
-			);
 
 			foreach ($posts as $post)
 			{
@@ -150,6 +141,34 @@ class PostController extends Zend_Controller_Action
 			}
 
 			throw $e;
+		}
+	}
+
+	/**
+	 * User tooltip action.
+	 *
+	 * @return void
+	 */
+	public function userTooltipAction()
+	{
+		$this->_helper->layout()->disableLayout();
+
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$this->view->user = $user;
+		}
+		catch (Exception $e)
+		{
+			$this->_helper->viewRenderer->setNoRender(true);
+			echo $e instanceof RuntimeException ? $e->getMessage() :
+				'Internal Server Error';
 		}
 	}
 
@@ -308,6 +327,6 @@ class PostController extends Zend_Controller_Action
 	protected function __userLocation($user)
 	{
 		$this->_helper->viewRenderer->setNoRender(true);
-		echo My_ViewHelper::render('post/_user_locaton.html', array('user' => $user));
+		echo My_ViewHelper::render('post/user-tooltip.html', array('user' => $user));
 	}
 }

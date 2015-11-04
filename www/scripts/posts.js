@@ -1,5 +1,5 @@
 var mainMap,areaCircle,
-	postLimit=15,defaultZoom=14,defaultRadius=0.8,
+	postLimit=15,defaultZoom=14,defaultRadius=0.8,groupDistance=0.018939,
 	locationIcon=baseUrl+'www/images/template/user-location-icon.png',
 	postIcon=baseUrl+'www/images/template/post-icon.png',
 	postMarkers={},postMarkersCluster=[],
@@ -39,48 +39,74 @@ function renderMap_callback(){
 			radius: defaultRadius
 		});
 
-		// TODO: combine icon
-		var controlUIzoomIn = $('<div/>', {title: 'Zoom in'}).addClass('zoom_in')
-			.append($('<img/>', {src: '/www/images/template/zoom_in25x25.png'}).attr({width: 25, height: 25})).get(0);
-
-		google.maps.event.addDomListener(controlUIzoomIn, 'click', function(){
-			mainMap.setZoom(mainMap.getZoom()+1);
-		});
-
-		// TODO: combine icon
-		var controlUIzoomOut = $('<div/>', {title: 'Zoom out'}).addClass('zoom_out')
-			.append($('<img/>', {src: '/www/images/template/zoom_out25x25.png'}).attr({width: 25, height: 25})).get(0);
-
-		google.maps.event.addDomListener(controlUIzoomOut, 'click', function(){
-			mainMap.setZoom(mainMap.getZoom()-1);
-		});
-
-		// TODO: combine icon
-		var controlUImyLocation = $('<div/>', {title: 'Zoom out'}).addClass('my_location')
-			.append($('<img/>', {src: '/www/images/template/my_location.png'}).attr({width: 20, height: 18})).get(0);
-
-		google.maps.event.addDomListener(controlUImyLocation, 'click', function(){
-			if (navigator.geolocation){
-				navigator.geolocation.getCurrentPosition(function(position){
-					mainMap.setCenter({
-						lat: position.coords.latitude,
-						lng: position.coords.longitude
-					});
-					mainMap.setZoom(defaultZoom);
-				}, function(){
-					handleLocationError(true);
-				});
-			} else {
-				handleLocationError(false);
-			}
-		});
-
-		mainMap.controls[google.maps.ControlPosition.RIGHT_TOP].push(
-			$('<div/>').addClass('customMapControl')
-				.append(controlUIzoomIn, controlUIzoomOut, controlUImyLocation)[0]
-		);
-
 		require(['jquery','jquery-ui'], function(){
+			// TODO: combine icon
+			var controlUIzoomIn = $('<div/>', {title: 'Zoom in'}).addClass('zoom_in')
+				.append($('<img/>', {src: '/www/images/template/zoom_in25x25.png'}).attr({width: 25, height: 25})).get(0);
+
+			google.maps.event.addDomListener(controlUIzoomIn, 'click', function(){
+				mainMap.setZoom(mainMap.getZoom()+1);
+			});
+
+			// TODO: combine icon
+			var controlUIzoomOut = $('<div/>', {title: 'Zoom out'}).addClass('zoom_out')
+				.append($('<img/>', {src: '/www/images/template/zoom_out25x25.png'}).attr({width: 25, height: 25})).get(0);
+
+			google.maps.event.addDomListener(controlUIzoomOut, 'click', function(){
+				mainMap.setZoom(mainMap.getZoom()-1);
+			});
+
+			// TODO: combine icon
+			var controlUImyLocation = $('<div/>', {title: 'Zoom out'}).addClass('my_location')
+				.append($('<img/>', {src: '/www/images/template/my_location.png'}).attr({width: 20, height: 18})).get(0);
+
+			google.maps.event.addDomListener(controlUImyLocation, 'click', function(){
+				if (navigator.geolocation){
+					navigator.geolocation.getCurrentPosition(function(position){
+						mainMap.setCenter({
+							lat: position.coords.latitude,
+							lng: position.coords.longitude
+						});
+						mainMap.setZoom(defaultZoom);
+					}, function(){
+						handleLocationError(true);
+					});
+				} else {
+					handleLocationError(false);
+				}
+			});
+
+			mainMap.controls[google.maps.ControlPosition.RIGHT_TOP].push(
+				$('<div/>').addClass('customMapControl')
+					.append(controlUIzoomIn, controlUIzoomOut, controlUImyLocation)[0]
+			);
+
+			// TODO: repeat after change map center
+			if (getDistance(userLocation, mapCenter) <= groupDistance){
+				postItem_marker(0, userLocation, {isRoot:true});
+			} else {
+				postMarkers[0] = postList_tooltipmarker({
+					id: 'root',
+					position: userLocation,
+					data: {isRoot:true},
+					content: function(content, marker, event, ui){
+						if ($.trim(content) !== ''){
+							$('.ui-tooltip-content', ui.tooltip).html(content);
+							return true;
+						}
+						$.ajax({
+							url: baseUrl+'post/user-tooltip',
+							type: 'GET',
+							dataType: 'html'
+						}).done(function(response){
+							$(event.target).data('tooltip-content', response);
+							$('.ui-tooltip-content', ui.tooltip).html(response);
+							ui.tooltip.position($(event.target).tooltip('option', 'position'));
+						})
+					}
+				});
+			}
+
 			for (var id in postData){
 				postItem_render(id);
 			}
@@ -123,13 +149,13 @@ function renderMap_callback(){
 		 * Renders post item.
 		 */
 		function postItem_render(id){
-			postItem_marker(id);
+			postItem_marker(id, postData[id]);
 			// TODO: edit post, comment, vote...
 			$('.post[data-id="'+id+'"]').bind({
 				mouseenter: function(){
 					var group = postItem_findCluester($(this).attr('data-id'));
 
-					if (!postData[postMarkersCluster[group][0]][2]){
+					if (!postMarkers[group].data('isRoot')){
 						postMarkers[group].setIcon({
 							url: locationIcon,
 							width: 46,
@@ -142,7 +168,7 @@ function renderMap_callback(){
 				mouseleave: function(){
 					var group = postItem_findCluester($(this).attr('data-id'));
 
-					if (!postData[postMarkersCluster[group][0]][2]){
+					if (!postMarkers[group].data('isRoot')){
 						postMarkers[group].setIcon({
 							url: postIcon,
 							width: 46,
@@ -150,7 +176,7 @@ function renderMap_callback(){
 						});
 					}
 
-					postMarkers[group].css({zIndex: 'inherit'});
+					postMarkers[group].css({zIndex: ''});
 				}
 			});
 		}
@@ -158,14 +184,15 @@ function renderMap_callback(){
 		/**
 		 * Renders post item marker.
 		 */
-		function postItem_marker(id){
+		function postItem_marker(id, location, data){
+			data = data || {};
+
 			if (!$.isEmptyObject(postMarkersCluster)){
 				for (var group in postMarkersCluster){
-					if (getDistance(postData[id], postData[postMarkersCluster[group][0]]) <= 0.018939){
+					if (getDistance(location, postMarkers[group].getPosition(true)) <= groupDistance){
 						if (postMarkersCluster[group][0]==0){
 							postMarkersCluster[group][0]=id;
-							postMarkers[group].opts.data.id=id;
-							postData[id][2]=true;
+							postMarkers[group].data('id', id);
 						} else {
 							postMarkersCluster[group].push(id);
 						}
@@ -177,24 +204,99 @@ function renderMap_callback(){
 			postMarkersCluster.push([id]);
 
 			var group = postMarkersCluster.length-1;
-			var postMarker = new googleMapsCustomMarker({
+			var postMarker = postList_tooltipmarker({
+				id: group,
+				position: location,
+				data: $.extend({id:id}, data),
+				content: function(content, marker, event, ui){
+					if ($.trim(content) !== ''){
+						postTooltip_render(content, marker.getPosition(), event, ui);
+						return true;
+					}
+					postTooltip_content(marker.data('id'), marker.getPosition(), event, ui);
+				},
+				close: function(event, ui){
+					clearTimeout($(event.target).data('tooltip-mouseout'));
+					$(event.target).data('tooltip-close', setTimeout(function(){
+						ui.tooltip.remove();
+						!$(event.target).data('tooltip-ajax') ||
+							$(event.target).data('tooltip-ajax').abort();
+						$(event.target).data('tooltip-content', '');
+						$(event.target).parent().css({zIndex: ''});
+					}, .1));
+				}
+			});
+
+			google.maps.event.addListener(postMarker, 'click', function(e){
+				postItem_higlight(this.data('id'));
+			});
+
+			postMarkers[group] = postMarker;
+		}
+
+		/**
+		 * Ajax load posts.
+		 */
+		function postList_load(start, callback){
+			// if (start == 0){
+				// resetNews();
+			// }
+
+			var position = mainMap.getCenter();
+
+			ajaxJson({
+				url: baseUrl+'post/list',
+				data: {
+					// TODO: render
+					// radius: getRadius(),
+					keywords: $('#postSearch [name=keywords]').val(),
+					filter: $('#postSearch [name=filter]').val(),
+					center: [position.lat(),position.lng()],
+					start: start,
+					// TODO: render
+					// 'new': $('#addNewsForm [name=new\\[\\]]').map(function(){
+						// return $(this).val();
+					// }).get()
+				},
+				done: function(response){
+					if (response.empty){
+						// TODO: render empty response ...
+						return true;
+					}
+
+					for (var id in response.data){
+						postData[id]=response.data[id];
+						$('.posts').append(response.data[id][2]);
+						postItem_render(id);
+					}
+
+					if (Object.size(response.data) >= postLimit){
+						$(window).bind('scroll.load', postList_scrollHandler).scroll();
+					}
+				}
+			})
+		}
+
+		function postList_tooltipmarker(options){
+			var marker = new googleMapsCustomMarker({
 				map: mainMap,
-				id: 'markerGroup-'+group,
+				id: 'markerGroup-'+options.id,
 				position: new google.maps.LatLng(
-					parseFloat(postData[id][0]),
-					parseFloat(postData[id][1])
+					parseFloat(options.position[0]),
+					parseFloat(options.position[1])
 				),
 				icon: {
-					url: postData[id][2] ? locationIcon : postIcon,
+					url: options.data.isRoot==true ? locationIcon : postIcon,
 					width: 46,
 					height: 63
 				},
-				data: {id: id}
+				data: options.data,
+				addClass: options.data.isRoot===true ?'rootMarker':''
 			});
 
-			google.maps.event.addListener(postMarker, 'mouseover', function(e){
-				var self = this, $markerElement = $('#' + self.id).find('img');
-				$('#' + self.id).css({zIndex: 100001});
+			google.maps.event.addListener(marker, 'mouseover', function(e){
+				var self = this, $markerElement = $('#' + this.id).find('img');
+				this.css({zIndex: 100001});
 
 				if ($markerElement.data('ui-tooltip')){
 					return true;
@@ -237,80 +339,17 @@ function renderMap_callback(){
 							return false;
 						}
 
-						var content = $(event.target).data('tooltip-content');
-
-						if ($.trim(content) !== ''){
-							postTooltip_render(content, self.opts.position, event, ui);
-						} else {
-							postTooltip_content(self.opts.data.id, self.opts.position, event, ui);
-						}
+						options.content($(event.target).data('tooltip-content'), self, event, ui);
 					},
 					close: function(event, ui){
-						clearTimeout($(event.target).data('tooltip-mouseout'));
-						$(event.target).data('tooltip-close', setTimeout(function(){
-							ui.tooltip.remove();
-							!$(event.target).data('tooltip-ajax') ||
-								$(event.target).data('tooltip-ajax').abort();
-							$(event.target).data('tooltip-content', '');
-							$(event.target).parent().css({zIndex: 'inherit'});
-						}, .1));
+						if (typeof options.close === 'function'){
+							options.close(event, ui);
+						}
 					}
 				}).tooltip('open');
 			});
 
-			google.maps.event.addListener(postMarker, 'click', function(e){
-				postItem_higlight(this.opts.data.id);
-			});
-
-			postMarkers[group] = postMarker;
-
-			return postMarker;
-		}
-
-		/**
-		 * Ajax load posts.
-		 */
-		function postList_load(start, callback){
-			// if (start == 0){
-				// resetNews();
-			// }
-
-			// $('#loading').width($("#newsData").width()).show();
-			// $('#newsData #pagingDiv').remove();
-
-			var position = mainMap.getCenter();
-
-			ajaxJson({
-				url: baseUrl+'post/list',
-				data: {
-					// TODO: render
-					// radius: getRadius(),
-					keywords: $('#postSearch [name=keywords]').val(),
-					filter: $('#postSearch [name=filter]').val(),
-					center: [position.lat(),position.lng()],
-					start: start,
-					// TODO: render
-					// 'new': $('#addNewsForm [name=new\\[\\]]').map(function(){
-						// return $(this).val();
-					// }).get()
-				},
-				done: function(response){
-					if (response.empty){
-						// TODO: render empty response ...
-						return true;
-					}
-
-					for (var id in response.data){
-						postData[id]=response.data[id];
-						$('.posts').append(response.data[id][3]);
-						postItem_render(id);
-					}
-
-					if (Object.size(response.data) >= postLimit){
-						$(window).bind('scroll.load', postList_scrollHandler).scroll();
-					}
-				}
-			})
+			return marker;
 		}
 
 		/**
@@ -321,8 +360,7 @@ function renderMap_callback(){
 				return false;
 			}
 
-			if ($(window).scrollTop() + $(window).height() > $(document).height() - 300){
-				console.log('scroll.load');
+			if ($(window).scrollTop() + $(window).height() > $(document).height() - $(window).height() * 0.7){
 				$(window).unbind('scroll.load');
 				postList_load(Object.size(postData));
 			}
@@ -341,7 +379,8 @@ function renderMap_callback(){
 
 			if (!self.div){
 				self.div = $('<div/>')
-					.css({position: 'absolute', cursor: 'pointer'})
+					.addClass(this.opts.addClass)
+					.css($.extend({position: 'absolute', cursor: 'pointer'}, this.opts.css))
 					.append($('<img/>', {
 						src: self.opts.icon.url,
 						width: self.opts.icon.width,
@@ -385,6 +424,10 @@ function renderMap_callback(){
 
 			this.opts.position = position;
 		};
+		googleMapsCustomMarker.prototype.getPosition = function(array){
+			return array === true ? [this.opts.position.lat(),this.opts.position.lng()] :
+				this.opts.position;
+		};
 		googleMapsCustomMarker.prototype.setIcon = function(icon){
 			if (this.div){
 				var resetPosition = this.opts.icon.width != icon.width ||
@@ -408,6 +451,15 @@ function renderMap_callback(){
 		};
 		googleMapsCustomMarker.prototype.css = function(css){
 			return $(this.div).css(css);
+		};
+		googleMapsCustomMarker.prototype.data = function(param, value){
+			if (typeof value !== 'undefined'){
+				this.opts.data[param] = value;
+				return value;
+			}
+
+			return typeof this.opts.data[param] !== 'undefined' ?
+				this.opts.data[param] : null;
 		};
 	});
 
@@ -500,7 +552,7 @@ function postTooltip_render(content, position, event, ui){
 				$(event.target).data('tooltip-ajax').abort();
 			$(event.target).data('tooltip-mouseout', setTimeout(function(){
 				$(event.target).data('tooltip-content', '');
-				$(event.target).parent().css({zIndex: 'inherit'});
+				$(event.target).parent().css({zIndex: ''});
 			}, .1));
 		}
 	});

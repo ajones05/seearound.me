@@ -560,3 +560,6 @@ body {
 .ui-tooltip.postTooltip .arrow.bottom:after {
 	top: -20px;
 }
+.rootMarker {
+	z-index: 1001;
+}
