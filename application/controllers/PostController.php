@@ -57,6 +57,14 @@ class PostController extends Zend_Controller_Action
 					var_export($center, true));
 			}
 
+			$radius = $this->_request->getParam('radius', 0.8);
+
+			if (!v::float()->validate($radius) || $radius < 0.5 || $radius > 1.5)
+			{
+				throw new RuntimeException('Incorrect radius value: ' .
+					var_export($radius, true));
+			}
+
 			$keywords = $this->_request->getParam('keywords');
 
 			if (!v::string()->addOr(v::nullValue())->validate($keywords))
@@ -83,7 +91,7 @@ class PostController extends Zend_Controller_Action
 				'filter' => $filter,
 				'latitude' => $mapCenter[0],
 				'longitude' => $mapCenter[1],
-				'radius' => $point ? 0.018939 : 0.8,
+				'radius' => $point ? 0.018939 : $radius,
 				'limit' => 15,
 				'start' => $start
 			), $user);
@@ -92,25 +100,33 @@ class PostController extends Zend_Controller_Action
 
 			if ($this->_request->isXmlHttpRequest())
 			{
-				foreach ($posts as $post)
+				$response = array('status' => 1);
+
+				if (count($posts))
 				{
-					$postData[$post->id] = array(
-						$post->latitude,
-						$post->longitude,
-						// TODO: refactoring
-						str_replace(array("\n", "\r"), '', My_ViewHelper::render('post/_list_item', array(
-							'post' => $post,
-							'owner' => $post->findDependentRowset('Application_Model_User')->current(),
-							'user' => $user,
-							'limit' => 350
-						)))
-					);
+					foreach ($posts as $post)
+					{
+						$postData[$post->id] = array(
+							$post->latitude,
+							$post->longitude,
+							// TODO: refactoring
+							str_replace(array("\n", "\r"), '', My_ViewHelper::render('post/_list_item', array(
+								'post' => $post,
+								'owner' => $post->findDependentRowset('Application_Model_User')->current(),
+								'user' => $user,
+								'limit' => 350
+							)))
+						);
+					}
+
+					$response['data'] = $postData;
+				}
+				elseif ($start == 0)
+				{
+					$response['empty'] = My_ViewHelper::render('post/_list_empty');
 				}
 
-				$this->_helper->json(array(
-					'status' => 1,
-					'data' => $postData
-				));
+				$this->_helper->json($response);
 			}
 
 			foreach ($posts as $post)
@@ -126,7 +142,8 @@ class PostController extends Zend_Controller_Action
 			$this->view->headScript()->appendScript(
 				'var mapCenter=' . json_encode($mapCenter) . ',' .
 				'userLocation=' . json_encode($userLocation) . ',' .
-				'postData=' . json_encode($postData) . ';'
+				'postData=' . json_encode($postData) . ',' .
+				'renderRadius=' . json_encode($radius) . ';'
 			);
 		}
 		catch (Exception $e)

@@ -284,6 +284,14 @@ body {
 .posts .post.higlight {
 	background-color: #E17E79;
 }
+.posts .post.empty {
+	background-color: #fff;
+	padding: 20px;
+	font-size: 15.17px;
+	color: #cc0000;
+	font-family: 'Lato-Regular';
+	text-align: center;
+}
 .map-container {
     height: 100%;
     padding: 53px 0 0;
@@ -382,8 +390,14 @@ body {
 	font-family: 'Lato-Bold';
 	color: rgb(255,255,255);
 }
+.map-radius .ui-widget-content .ui-state-default {
+	border-radius: 50px;
+	width: 12px;
+	height: 12px;
+	top: -7px;
+	background: #cc0000;
+}
 
-.ui-state-default, .ui-widget-content .ui-state-default{border-radius: 50px; width: 12px; height: 12px; top: -7px; background: #cc0000;}
 /* new styling */
 .post .post_text,
 .post .user_name {
