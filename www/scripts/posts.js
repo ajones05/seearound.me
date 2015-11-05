@@ -36,18 +36,17 @@ function renderMap_callback(){
 		}]
 	});
 
-	mainMap.panBy(listMap_centerOffset(), 0);
-
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
 		userPosition = new google.maps.LatLng(userLocation[0], userLocation[1]);
-
-		areaCircle = new googleMapsAreaCircle({
-			map: mainMap,
-			center: centerPosition,
-			radius: getRadius()
-		});
-
 		require(['jquery','jquery-ui'], function(){
+			mainMap.panBy(listMap_centerOffset(), 0);
+
+			areaCircle = new googleMapsAreaCircle({
+				map: mainMap,
+				center: centerPosition,
+				radius: getRadius()
+			});
+
 			// TODO: combine icon
 			var controlUIzoomIn = $('<div/>', {title: 'Zoom in'}).addClass('zoom_in')
 				.append($('<img/>', {src: '/www/images/template/zoom_in25x25.png'}).attr({width: 25, height: 25})).get(0);
@@ -416,11 +415,7 @@ function renderMap_callback(){
 		 * Renders user location marker.
 		 */
 		function postList_locationMarker(center){
-			if (typeof center === 'undefined'){
-				var currentCenter = mainMap.getCenter();
-				center = [currentCenter.lat(),currentCenter.lng()];
-			}
-
+			var center = [areaCircle.center.lat(),areaCircle.center.lng()];
 			if (getDistance(userLocation, center) <= getRadius()){
 				postItem_marker(0, userLocation, {isRoot:true});
 			} else if (mainMap.getBounds().contains(userPosition)){
