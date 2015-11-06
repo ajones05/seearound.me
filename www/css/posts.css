@@ -397,6 +397,7 @@ body {
 	height: 12px;
 	top: -7px;
 	background: #cc0000;
+	cursor: pointer;
 }
 
 /* new styling */
@@ -577,4 +578,27 @@ body {
 }
 .rootMarker {
 	z-index: 1001;
+}
+
+/**
+ * Tooltip slider
+ */
+.ui-tooltip-slider .ui-slider-tooltip {
+  display: none;
+  background: url('../images/template/tooltip-bg.png') no-repeat scroll center center transparent;
+  color: #666666;
+  font: bold 12px Arial;
+  padding: 7px 10px 14px 8px;
+  text-align: center;
+  border: none;
+  background-size: 100% 100%;
+  white-space: nowrap;
+}
+.ui-tooltip-slider .ui-state-active .ui-slider-tooltip,
+.ui-slider .ui-state-focus .ui-slider-tooltip,
+.ui-slider .ui-state-hover .ui-slider-tooltip {
+  display: block;
+  position: absolute;
+  bottom: 1.5em;
+  text-align: center;
 }

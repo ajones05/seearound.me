@@ -20,6 +20,49 @@ require(['google.maps','jquery','jquery-ui'], function(){
 	loadCss('../../bower_components/jquery-ui/themes/base/jquery-ui.min.css');
 });
 
+require(['jquery','jquery-ui'], function(){
+	(function ($) {
+		$.widget('ui.tooltipSlider', $.ui.slider, {
+			options: {
+				'formatTooltip': '%v',
+				'is':false
+			},
+			_create: function(){
+				if (!this.options.value){
+					this.options.value = this.options.min;
+				}
+				$.ui.slider.prototype._create.apply(this, arguments);
+				this.element.addClass('ui-tooltip-slider');
+				this.tooltip = $('<span class="ui-slider-tooltip"></span>')
+					.html(this._formatTooltip(this.options.value))
+					.appendTo(this.handles);
+				this._updatePosition();
+			},
+			_slide: function(event, index, newVal){
+				$.ui.slider.prototype._slide.apply(this, arguments);
+				this.tooltip.html(this._formatTooltip(newVal));
+				this._updatePosition();
+			},
+			setValue: function(newValue){
+				if (!this.tooltip){
+					return false;
+				}
+				var value = newValue < 0 ? this.options.min : newValue;
+				this.element.tooltipSlider('value', value);
+				this.tooltip.html(this._formatTooltip(value));
+				this._updatePosition();
+			},
+			_formatTooltip: function(value){
+				return this.options.formatTooltip ? this.options.formatTooltip.replace(/%v/, value) : value;
+			},
+			_updatePosition: function(){
+				var handle = this.element.find('.ui-slider-handle');
+				this.tooltip.css('margin-left', ((handle.outerWidth()-this.tooltip.outerWidth())/2)+2);
+			}
+		});
+	}(jQuery));
+});
+
 function renderMap_callback(){
 	centerPosition = new google.maps.LatLng(mapCenter[0], mapCenter[1]);
 	mainMap = new google.maps.Map(document.getElementById('map_canvas'), {
@@ -152,18 +195,17 @@ function renderMap_callback(){
 				$('#map_canvas :data(ui-tooltip)').tooltip('close');
 			});
 
-			$('#slider')
-				.slider({
-					max: 1.5,
-					min: 0.5,
-					step: 0.1,
-					value: renderRadius,
-					animate: true
-				})
-				.bind('slidestop', function(event, ui){
+			$('#slider').tooltipSlider({
+				max: 1.5,
+				min: 0.5,
+				step: 0.1,
+				value: renderRadius,
+				formatTooltip: '%v Miles',
+				change: function(event, ui){
 					areaCircle.changeCenter(areaCircle.center, ui.value);
 					postList_change();
-				});
+				}
+			});
 
 			$('.post-new').click(function(e){
 				e.preventDefault();
@@ -745,8 +787,8 @@ function offsetCenter(map,latlng,offsetx,offsety){
  * Returns area circle radius.
  */
 function getRadius(){
-	if ($('#slider').data('ui-slider')){
-		return $('#slider').slider('option', 'value');
+	if ($('#slider').data('ui-tooltipSlider')){
+		return $('#slider').tooltipSlider('option', 'value');
 	}
 	return renderRadius;
 }
