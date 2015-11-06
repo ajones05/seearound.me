@@ -412,7 +412,14 @@ body {
 .post .post-time{color:#cc3333; font:italic 10px 'Lato-Italic';}
 .post .post_text{color:#333;font:normal 14.37px/19.55px 'Lato-Regular';margin-left: 70px; padding-right: 18px;}
 .post .link-meta .image{margin-left: -70px;}
-.post .social_share{text-align: right; border-top: solid 1px #ddd; border-bottom: solid 1px #ddd; padding: 3px 0 0;}
+.post .social_share {
+	text-align: right;
+	border-top: solid 1px #ddd;
+	border-bottom: solid 1px #ddd;
+	padding: 3px 0 0;
+    display: inline-block;
+    width: 100%;
+}
 	.post .social_share a{margin-right: 10px; display: inline-block;}
 		.post .social_share a img{width:20px; height: 18px;}
 .post .post-coments{background: #eee; list-style: none;padding: 0; margin: 0;}
