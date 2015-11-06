@@ -111,26 +111,16 @@ function renderMap_callback(){
 				.append($('<img/>', {src: '/www/images/template/my_location.png'}).attr({width: 20, height: 18})).get(0);
 
 			google.maps.event.addDomListener(controlUImyLocation, 'click', function(){
-				if (navigator.geolocation){
-					navigator.geolocation.getCurrentPosition(function(position){
-						var latlng = new google.maps.LatLng(position.coords.latitude,
-							position.coords.longitude);
-						mainMap.setZoom(defaultZoom);
-						if (getDistance([latlng.lat(),latlng.lng()],
-							[centerPosition.lat(),centerPosition.lng()]) <= 0){
-							$('html, body').animate({scrollTop: '0px'}, 300);
-							return true;
-						}
-						centerPosition = latlng;
-						mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
-						areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0), getRadius());
-						postList_change();
-					}, function(){
-						handleLocationError(true);
-					});
-				} else {
-					handleLocationError(false);
+				mainMap.setZoom(defaultZoom);
+				if (getDistance([userPosition.lat(),userPosition.lng()],
+					[centerPosition.lat(),centerPosition.lng()]) <= 0){
+					$('html, body').animate({scrollTop: '0px'}, 300);
+					return true;
 				}
+				centerPosition = userPosition;
+				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
+				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0), getRadius());
+				postList_change();
 			});
 
 			mainMap.controls[google.maps.ControlPosition.RIGHT_TOP].push(
@@ -639,15 +629,6 @@ function renderMap_callback(){
 		return extp;
 	}
 };
-
-/**
- * Location error handle.
- */
-function handleLocationError(browserHasGeolocation){
-	alert(browserHasGeolocation ?
-		'Error: The Geolocation service failed.' :
-		'Error: Your browser doesn\'t support geolocation.');
-}
 
 /**
  * Renders post tooltip.
