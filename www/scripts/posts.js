@@ -2,7 +2,8 @@ var mainMap,areaCircle,loadXhr,
 	// TODO: update on change user location
 	userPosition,
 	centerPosition,
-	postLimit=15,defaultZoom=14,defaultRadius=0.8,groupDistance=0.018939,
+	postLimit=15,defaultRadius=0.8,groupDistance=0.018939,
+	defaultZoom=14,defaultMinZoom=13,defaultMaxZoom=15,
 	locationIcon=baseUrl+'www/images/template/user-location-icon.png',
 	postIcon=baseUrl+'www/images/template/post-icon.png',
 	postMarkers={},postMarkersCluster=[],
@@ -64,12 +65,13 @@ require(['jquery','jquery-ui'], function(){
 });
 
 function renderMap_callback(){
+	updateMapZoom();
 	centerPosition = new google.maps.LatLng(mapCenter[0], mapCenter[1]);
 	mainMap = new google.maps.Map(document.getElementById('map_canvas'), {
 		center: centerPosition,
 		zoom: defaultZoom,
-		minZoom: 13,
-		maxZoom: 15,
+		minZoom: defaultMinZoom,
+		maxZoom: defaultMaxZoom,
 		disableDefaultUI: true,
 		scrollwheel: false,
 		disableDoubleClickZoom: true,
@@ -177,6 +179,12 @@ function renderMap_callback(){
 			});
 
 			$(window).on('resize', function(){
+				updateMapZoom();
+				mainMap.setZoom(defaultZoom);
+				mainMap.setOptions({
+					minZoom: defaultMinZoom,
+					maxZoom: defaultMaxZoom
+				});
 				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
 				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0), getRadius());
 			});
@@ -772,6 +780,21 @@ function getRadius(){
 		return $('#slider').tooltipSlider('option', 'value');
 	}
 	return renderRadius;
+}
+
+/**
+ * Updates map zoom by window dimension.
+ */
+function updateMapZoom(){
+	if (window.innerWidth > 1200){
+		defaultZoom = 15;
+		defaultMinZoom = 14;
+		defaultMaxZoom = 16;
+	} else {
+		defaultZoom = 14;
+		defaultMinZoom = 13;
+		defaultMaxZoom = 15;
+	}
 }
 
 /**
