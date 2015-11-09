@@ -1,4 +1,5 @@
 <?php
+$user_id = $this->user ? $this->user->id : null;
 $profileUrl = $this->baseUrl('home/profile/user/' . $this->owner->id);
 $comments = (new Application_Model_Comments)->findAllByNewsId($this->post->id, 3);
 $hide_comments = !$this->post->comment || !My_ArrayHelper::search(array('news_id' => $this->post->id), $comments->toArray(), 1);
@@ -35,13 +36,13 @@ src="<?php echo $this->baseUrl($thumb448x320->path); ?>" />
 <div><?php echo Application_Model_Comments::viewMoreLabel($this->post->comment - 3); ?></div>
 <?php endif; ?>
 <div class="social_share">
-<input type="button" value="Edit Post" />
-<a href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->post->id); ?>">
+<a class="email" href="#"><img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" /></a>
+<a class="facebook" href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->post->id); ?>">
 <img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" />
 </a>
-<a href="#">
-<img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" />
-</a>
+<?php if ($user_id == $this->post->user_id): ?>
+<a class="edit" href="#">Edit Post</a>
+<?php endif; ?>
 </div>
 <ul class="post-coments">
 <?php

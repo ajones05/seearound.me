@@ -431,14 +431,32 @@ body {
 }
 .post .link-meta .image{margin-left: -70px;}
 .post .social_share {
-	text-align: right;
 	border-top: solid 1px #ddd;
 	border-bottom: solid 1px #ddd;
-	padding: 3px 0 0;
-    display: inline-block;
+	padding: 3px 0;
     width: 100%;
+	margin-bottom: -5px;
+	display: inline-block;
 }
-	.post .social_share a{margin-right: 10px; display: inline-block;}
+.post .social_share a {
+	display: inline-block;
+	float: right;
+}
+.post .social_share a.edit {
+	margin: 2px 30% 0 0;
+	font: normal 12px 'Lato-Regular',sans-serif;
+	color: rgb(204, 51, 0);
+}
+.post .social_share a.facebook,
+.post .social_share a.email {
+	line-height: 10px;
+}
+.post .social_share a.facebook {
+	margin-right: 9px;
+}
+.post .social_share a.email {
+	margin-right: 10px;
+}
 		.post .social_share a img{width:20px; height: 18px;}
 .post .post-coments{background: #eee; list-style: none;padding: 0; margin: 0;}
 	.post .post-coments ul{list-style: none; margin: 0; padding: 0;}
@@ -476,8 +494,6 @@ body {
 	font-family: 'Lato-Regular',sans-serif;
 	color: rgb(204, 0, 0);
 }
-    .post .social_share input[type="button"]{float: left; border: none; margin: -1px 0 0 5px; background: transparent; font: normal 12px 'Lato-Regular'; cursor: pointer;}
-
 .post .post-coments li .delete {
     position: absolute;
     right: 15px;

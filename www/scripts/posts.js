@@ -192,6 +192,10 @@ function renderMap_callback(){
 				}
 			});
 
+			$('.edit', postContainer).click(function(e){
+				e.preventDefault();
+				alert('Edit post in progress');
+			});
 			$('.post-coment-existing', postContainer).each(function(){
 				comment_render($(this));
 			});
