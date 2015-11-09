@@ -169,9 +169,10 @@ function renderMap_callback(){
 		 * Renders post item.
 		 */
 		function postItem_render(id){
-			var marker = postItem_marker(id, postData[id]);
+			var marker = postItem_marker(id, postData[id]),
+				postContainer = $('.post[data-id="'+id+'"]');
 			// TODO: edit post, comment, vote...
-			$('.post[data-id="'+id+'"]').bind({
+			postContainer.bind({
 				mouseenter: function(){
 					marker.setIcon({
 						url: postActiveIcon,
@@ -189,6 +190,10 @@ function renderMap_callback(){
 					});
 					marker.css({zIndex: ''});
 				}
+			});
+
+			$('.post-coment-existing', postContainer).each(function(){
+				comment_render($(this));
 			});
 		}
 
@@ -694,6 +699,37 @@ function postItem_findCluester(id){
 		}
 	}
 	return false;
+}
+
+/**
+ * Renders comment.
+ */
+function comment_render(comment){
+	var id = comment.attr('data-id'),
+		deleteButton = comment.find('.delete');
+
+	comment.bind({
+		mouseenter: function(){
+			deleteButton.show();
+		},
+		mouseleave: function(){
+			deleteButton.hide();
+		}
+	});
+
+	deleteButton.click(function(){
+		if (!confirm('Are you sure you want to delete?')){
+			return false;
+		}
+
+		ajaxJson({
+			url: baseUrl+'home/delete-comment',
+			data: {id:id},
+			done: function(response){
+				comment.remove();
+			}
+		});
+	});
 }
 
 /**

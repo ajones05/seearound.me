@@ -47,14 +47,15 @@ src="<?php echo $this->baseUrl($thumb448x320->path); ?>" />
 <?php
 if ($this->post->comment)
 {
-for ($i = count($comments) - 1; $i >= 0; $i--)
-{
-echo My_ViewHelper::render('post/_comment', array(
-'comment' => $comments[$i],
-'post' => $this->post,
-'limit' => 250
-));
-}
+	for ($i = count($comments) - 1; $i >= 0; $i--)
+	{
+		echo $this->partial('post/_comment.html', array(
+			'user' => $this->user,
+			'comment' => $comments[$i],
+			'post' => $this->post,
+			'limit' => 250
+		));
+	}
 }
 echo My_ViewHelper::render('post/_comment_new', array('hidden' => $hide_comments));
 ?>

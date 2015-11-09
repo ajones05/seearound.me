@@ -800,7 +800,7 @@ class HomeController extends Zend_Controller_Action
 
 			if (!Application_Model_Comments::checkId($id, $comment, 0))
 			{
-				throw new Exception('Incorrect comment ID.');
+				throw new RuntimeException('Incorrect comment ID.');
 			}
 
 			$news = $comment->findDependentRowset('Application_Model_News')->current();
@@ -825,7 +825,8 @@ class HomeController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Sorry! we are unable to performe delete action')
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
 			);
 		}
 

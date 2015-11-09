@@ -447,8 +447,16 @@ body {
 	max-width: 100%;
 	word-wrap: break-word;
 }
-			.post .post-coments li img{width: 43px; height: 43px; border-radius: 50px; margin: 6px 8px 6px 12px;}
-			.post .post-coments li.post-coment-existing img{margin: 6px 16px 6px 12px;}
+.post .post-coments li .owner-image img {
+	width: 43px;
+	height: 43px;
+	border-radius: 50px;
+	margin: 6px 8px 6px 12px;
+}
+.post .post-coments li.post-coment-existing .owner-image img {
+	margin: 6px 16px 6px 12px;
+}
+
 		.post .post_coment_new{border-top:1px solid #e4e4e4;}
 		.post .post-coments>li:last-child{border-top: 1px solid #d8d8d8;}
 	.post .post_coment_new textarea{font-size: 13.65px; height: 25px!important; outline: 0; padding: 6px 10px; resize: none; width: 317px; font-family: 'Lato-LightItalic';
@@ -469,16 +477,12 @@ body {
 	color: rgb(204, 0, 0);
 }
     .post .social_share input[type="button"]{float: left; border: none; margin: -1px 0 0 5px; background: transparent; font: normal 12px 'Lato-Regular'; cursor: pointer;}
-	
+
 .post .post-coments li .delete {
     position: absolute;
     right: 15px;
     cursor: pointer;
-}
-.post .post-coments li .delete img {
-	width: 20px;
-	height: 20px;
-	margin: 0;
+	display: none;
 }
 .vote {
     float: right;

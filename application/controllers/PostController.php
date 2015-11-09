@@ -109,13 +109,13 @@ class PostController extends Zend_Controller_Action
 						$postData[$post->id] = array(
 							$post->latitude,
 							$post->longitude,
-							// TODO: refactoring
-							str_replace(array("\n", "\r"), '', My_ViewHelper::render('post/_list_item', array(
+							// TODO: remove spaces, new line...
+							My_ViewHelper::render('post/_list_item', array(
 								'post' => $post,
 								'owner' => $post->findDependentRowset('Application_Model_User')->current(),
 								'user' => $user,
 								'limit' => 350
-							)))
+							))
 						);
 					}
 
