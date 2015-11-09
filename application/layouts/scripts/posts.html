@@ -35,7 +35,7 @@ $this->headLink() . $this->headScript(); ?></head>
 		<form id="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
 			<div class="keywords">
 				<input type="text" name="keywords" placeholder="Search Posts..." />
-				<input type="image" src="/www/images/template/search14x14.png" alt="search" />
+				<input type="image" src="<?php echo $this->baseUrl('www/images/template/search14x14.png'); ?>" alt="search" />
 			</div>
 			<div class="filter">
 				<select name="filter" style="display: none;">
@@ -99,7 +99,7 @@ $this->headLink() . $this->headScript(); ?></head>
 	<div class="map-container">
 		<div id="map_canvas"></div>
 	</div>
-	<div class="posts post"><?php echo $this->layout()->content; ?></div>
+	<div class="posts"><?php echo $this->layout()->content; ?></div>
 </div>
 <div class="post-new-dialog" style="display: none;">
 	<div class="wrapper">

@@ -405,12 +405,30 @@ body {
 .post .user_name {
 	word-wrap: break-word;
 }
-.post a{text-decoration: none; color:#cc3333;}
+.post a{text-decoration: none;}
 .post .user_avatar{float: left; margin: 8px; }
-	.user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
-.post .user_name{color: #cc3333; font: normal 15.17px 'Lato-Regular'; max-width: 256px; display: inline-block; margin: 13px 0 10px;}
-.post .post-time{color:#cc3333; font:italic 10px 'Lato-Italic';}
-.post .post_text{color:#333;font:normal 14.37px/19.55px 'Lato-Regular';margin-left: 70px; padding-right: 18px;}
+.user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
+.post .user_name {
+	color: rgb(204, 51, 0);
+	font: normal 15.17px 'Lato-Regular',sans-serif;
+	max-width: 256px;
+	display: inline-block;
+	margin: 13px 0 10px;
+}
+.post .post-time {
+	color: rgb(204, 0, 0);
+	font: normal 10px 'Lato-Regular',sans-serif;
+}
+.post .post_text {
+	color: rgb(51, 51, 51);
+	font: normal 14.37px/19.55px 'Lato-Regular',sans-serif;
+	margin-left: 70px;
+	padding-right: 18px;
+}
+.post .post_text a,
+.post .post-coments a {
+	color: rgb(204, 51, 0);
+}
 .post .link-meta .image{margin-left: -70px;}
 .post .social_share {
 	text-align: right;
@@ -439,8 +457,17 @@ body {
     .post .post-coment-existing{padding-top: 14px;font-size: 13.65px; font-family: 'Lato-Regular'; clear: both; min-height: 58px;}
     .post .post-coments .post-coment-existing>ul{display: inline-block;max-width: 317px;}
     .post .post-coments .post-coment-existing >a{display: block; float: left;}
-    .post .post-coment-existing .post-coment-date{font-family: 'Lato-LightItalic';font-size: 9.1px; color: #cc0000; margin: 6px 0;}
-    .post .post-coment-user-name{font-family: 'Lato-LightItalic';}
+.post .post-coments span {
+	color: rgb(51, 51, 51);
+}
+.post .post-coment-date {
+	color: rgb(204, 0, 0);
+	font: normal 9.1px 'Lato-Regular',sans-serif;
+}
+.post .post-coment-user-name {
+	font-family: 'Lato-Regular',sans-serif;
+	color: rgb(204, 0, 0);
+}
     .post .social_share input[type="button"]{float: left; border: none; margin: -1px 0 0 5px; background: transparent; font: normal 12px 'Lato-Regular'; cursor: pointer;}
 	
 .post .post-coments li .delete {
