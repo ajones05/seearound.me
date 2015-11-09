@@ -69,6 +69,16 @@ class My_Time
 			return 'Yesterday at ' . $date->format('h:ia');
 		}
 
-		return $date->format('F j \a\t h:ia');
+		$interval = $date->diff($now)->format('%a');
+		$output = 'Before ' . $interval . ' day';
+
+		if ($interval != 1)
+		{
+			$output .= 's';
+		}
+
+		$output .= ' at ' . $date->format('h:ia');
+
+		return $output;
 	}
 }
