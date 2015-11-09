@@ -6,6 +6,7 @@ var mainMap,areaCircle,loadXhr,
 	defaultZoom=14,defaultMinZoom=13,defaultMaxZoom=15,
 	locationIcon=baseUrl+'www/images/template/user-location-icon.png',
 	postIcon=baseUrl+'www/images/template/post-icon.png',
+	postActiveIcon=baseUrl+'www/images/template/post-active-icon.png',
 	postMarkers={},postMarkersCluster=[],
 	disableScroll=false,markerClick=false;
 
@@ -219,23 +220,20 @@ function renderMap_callback(){
 			// TODO: edit post, comment, vote...
 			$('.post[data-id="'+id+'"]').bind({
 				mouseenter: function(){
-					if (!marker.data('isRoot')){
-						marker.setIcon({
-							url: locationIcon,
-							width: 46,
-							height: 63
-						});
-					}
+					marker.setIcon({
+						url: postActiveIcon,
+						width: marker.opts.icon.width,
+						height: marker.opts.icon.height
+					});
 					marker.css({zIndex: 100001});
 				},
 				mouseleave: function(){
-					if (!marker.data('isRoot')){
-						marker.setIcon({
-							url: postIcon,
-							width: 46,
-							height: 63
-						});
-					}
+					marker.setIcon({
+						url: marker.data('isRoot')==true ?
+							locationIcon : postIcon,
+						width: marker.opts.icon.width,
+						height: marker.opts.icon.height
+					});
 					marker.css({zIndex: ''});
 				}
 			});
