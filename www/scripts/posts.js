@@ -23,7 +23,6 @@ require(['google.maps','jquery','jquery-ui'], function(){
 });
 
 function renderMap_callback(){
-	updateMapZoom();
 	centerPosition = new google.maps.LatLng(mapCenter[0], mapCenter[1]);
 	mainMap = new google.maps.Map(document.getElementById('map_canvas'), {
 		center: centerPosition,
@@ -137,12 +136,7 @@ function renderMap_callback(){
 			});
 
 			$(window).on('resize', function(){
-				updateMapZoom();
 				mainMap.setZoom(defaultZoom);
-				mainMap.setOptions({
-					minZoom: defaultMinZoom,
-					maxZoom: defaultMaxZoom
-				});
 				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
 				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0), getRadius());
 			});
@@ -737,21 +731,6 @@ function getRadius(){
 		return $('#slider').slider('option', 'value');
 	}
 	return renderRadius;
-}
-
-/**
- * Updates map zoom by window dimension.
- */
-function updateMapZoom(){
-	if (window.innerWidth > 1200){
-		defaultZoom = 15;
-		defaultMinZoom = 14;
-		defaultMaxZoom = 16;
-	} else {
-		defaultZoom = 14;
-		defaultMinZoom = 13;
-		defaultMaxZoom = 15;
-	}
 }
 
 /**
