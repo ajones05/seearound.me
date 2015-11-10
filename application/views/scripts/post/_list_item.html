@@ -32,10 +32,10 @@ if ($image)
 src="<?php echo $this->baseUrl($thumb448x320->path); ?>" />
 </div>
 <?php endif; ?>
-<?php if ($this->post->comment > 3): ?>
-<div><?php echo Application_Model_Comments::viewMoreLabel($this->post->comment - 3); ?></div>
-<?php endif; ?>
 <div class="social_share">
+<?php if ($this->post->comment > 3): ?>
+<a class="view-comments" href="#">View all comments</a>
+<?php endif; ?>
 <a class="email" href="#"><img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" /></a>
 <a class="facebook" href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->post->id); ?>">
 <img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" />

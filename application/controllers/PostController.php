@@ -337,6 +337,75 @@ class PostController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Post comments list action.
+	 *
+	 * @return void
+	 */
+    public function commentsAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = $auth ? (new Application_Model_User)->findById($auth['user_id']) : null;
+
+			$id = $this->_request->getPost('id');
+
+			if (!v::int()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_News::checkId($id, $post, 0))
+			{
+				throw new RuntimeException('Incorrect post ID');
+			}
+
+			$start = $this->_request->getPost('start', 0);
+
+			if (!v::int()->validate($start))
+			{
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
+			}
+
+			$comentsTable = new Application_Model_Comments;
+			$comments = $comentsTable->findAllByNewsId($id, $comentsTable->news_limit, $start);
+
+			$response = array('status' => 1);
+
+			if (count($comments))
+			{
+				foreach ($comments as $comment)
+				{
+					// TODO: remove spaces, new line...
+					$response['data'][] = My_ViewHelper::render('post/_comment', array(
+						'user' => $user,
+						'comment' => $comment,
+						'post' => $post,
+						'limit' => 250
+					));
+				}
+
+				if (($post->comment - ($start + $comentsTable->news_limit)) > 0)
+				{
+					$response['label'] = true;
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			);
+		}
+
+        $this->_helper->json($response);
+	}
+
+	/**
 	 * User location action.
 	 *
 	 * @return void

@@ -192,6 +192,34 @@ function renderMap_callback(){
 				}
 			});
 
+			$('.view-comments', postContainer).click(function(e){
+				e.preventDefault();
+				var target = $(this).hide();
+				ajaxJson({
+					url: baseUrl+'post/comments',
+					data: {
+						id: id,
+						start: $('.post-coment-existing', postContainer).size()
+					},
+					done: function(response){
+						if (!response.data){
+							return true;
+						}
+
+						var commentsContainer = $('.post-coments', postContainer);
+
+						for (var i in response.data){
+							comment_render($(response.data[i]).prependTo(commentsContainer));
+						}
+
+						if (response.label){
+							target.effect('highlight', {}, 500, function(){
+								target.show();
+							});
+						}
+					}
+				});
+			});
 			$('.edit', postContainer).click(function(e){
 				e.preventDefault();
 				alert('Edit post in progress');
@@ -709,19 +737,9 @@ function postItem_findCluester(id){
  * Renders comment.
  */
 function comment_render(comment){
-	var id = comment.attr('data-id'),
-		deleteButton = comment.find('.delete');
+	var id = comment.attr('data-id');
 
-	comment.bind({
-		mouseenter: function(){
-			deleteButton.show();
-		},
-		mouseleave: function(){
-			deleteButton.hide();
-		}
-	});
-
-	deleteButton.click(function(){
+	$('.delete', comment).click(function(){
 		if (!confirm('Are you sure you want to delete?')){
 			return false;
 		}
