@@ -9,7 +9,8 @@ $this->headLink()
 
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
-	->appendScript('var baseUrl=' . json_encode($this->serverUrl() . $this->baseUrl('/')) . ';')
+	->appendScript('var baseUrl=' . json_encode($this->serverUrl() . $this->baseUrl('/')) . ',' .
+			'assetsBaseUrl=' . json_encode($this->serverUrl() . My_Layout::assetUrl('', $this)))
 	->appendFile(My_Layout::assetUrl('bower_components/requirejs/require.js', $this),
 		'text/javascript', array('defer' => 'defer',
 		'data-main' => My_Layout::assetUrl('www/scripts/posts', $this)));

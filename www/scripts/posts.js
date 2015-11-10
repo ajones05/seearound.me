@@ -4,9 +4,9 @@ var mainMap,areaCircle,loadXhr,
 	centerPosition,
 	postLimit=15,defaultRadius=0.8,groupDistance=0.018939,
 	defaultZoom=14,defaultMinZoom=13,defaultMaxZoom=15,
-	locationIcon=baseUrl+'www/images/template/user-location-icon.png',
-	postIcon=baseUrl+'www/images/template/post-icon.png',
-	postActiveIcon=baseUrl+'www/images/template/post-active-icon.png',
+	locationIcon=assetsBaseUrl+'www/images/template/user-location-icon.png',
+	postIcon=assetsBaseUrl+'www/images/template/post-icon.png',
+	postActiveIcon=assetsBaseUrl+'www/images/template/post-active-icon.png',
 	postMarkers={},postMarkersCluster=[],
 	disableScroll=false,markerClick=false;
 
