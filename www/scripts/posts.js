@@ -293,6 +293,9 @@ function renderMap_callback(){
 								target.val('').css({height:''}).attr('disabled', false).blur();
 								var loadMore = $('.post-comments__more', postContainer);
 								comment_render($(response.html).insertBefore(loadMore.size() ? loadMore : $('.post-comment__new', postContainer)));
+							},
+							fail: function(data, textStatus, jqXHR){
+								target.attr('disabled', false);
 							}
 						});
 					}
@@ -922,6 +925,9 @@ function ajaxJson(url, settings){
 	var jqxhr = $.ajax($.extend(settings, {type: 'POST'}))
 		.done(function(data, textStatus, jqXHR){
 			if (typeof data !== 'object' || data.status == 0){
+				if (typeof settings.fail === 'function'){
+					settings.fail(data, textStatus, jqXHR);
+				}
 				alert(typeof data === 'object' ? data.message : ERROR_MESSAGE);
 				return false;
 			}
@@ -929,6 +935,11 @@ function ajaxJson(url, settings){
 			if (typeof settings.done === 'function'){
 				return settings.done(data, textStatus, jqXHR);
 			}
+		}).fail(function(jqXHR, textStatus){
+			if (typeof settings.fail === 'function'){
+				settings.fail({}, textStatus, jqXHR);
+			}
+			alert('Internal server error');
 		});
 
 	return jqxhr;
