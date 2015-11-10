@@ -14,6 +14,7 @@ require.config({
     paths: {
 		'jquery': '../../bower_components/jquery/dist/jquery.min',
 		'jquery-ui': '../../bower_components/jquery-ui/jquery-ui.min',
+		'textarea_autosize': '../../bower_components/textarea-autosize/src/jquery.textarea_autosize',
 		'google.maps': 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&callback=renderMap_callback'
 	}
 });
@@ -40,7 +41,7 @@ function renderMap_callback(){
 
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
 		userPosition = new google.maps.LatLng(userLocation[0], userLocation[1]);
-		require(['jquery','jquery-ui'], function(){
+		require(['jquery','jquery-ui','textarea_autosize'], function(){
 			mainMap.panBy(listMap_centerOffset(), 0);
 
 			areaCircle = new googleMapsAreaCircle({
@@ -191,15 +192,19 @@ function renderMap_callback(){
 					marker.css({zIndex: ''});
 				}
 			});
-
-			$('.view-comments', postContainer).click(function(e){
+			$('.add-comment', postContainer).click(function(e){
 				e.preventDefault();
-				var target = $(this).hide();
+				$('.post-comment__new', postContainer).removeClass('hidden');
+				$(this).remove();
+			});
+			$('.view-comments,.post-comments__more a', postContainer).click(function(e){
+				e.preventDefault();
+				$('.view-comments,.post-comments__more', postContainer).hide();
 				ajaxJson({
 					url: baseUrl+'post/comments',
 					data: {
 						id: id,
-						start: $('.post-coment-existing', postContainer).size()
+						start: $('.post-comment__item', postContainer).size()
 					},
 					done: function(response){
 						if (!response.data){
@@ -213,9 +218,8 @@ function renderMap_callback(){
 						}
 
 						if (response.label){
-							target.effect('highlight', {}, 500, function(){
-								target.show();
-							});
+							$('.view-comments', postContainer).html(response.label).show();
+							$('.post-comments__more', postContainer).show();
 						}
 					}
 				});
@@ -224,9 +228,75 @@ function renderMap_callback(){
 				e.preventDefault();
 				alert('Edit post in progress');
 			});
-			$('.post-coment-existing', postContainer).each(function(){
+			$('.post-comment__item', postContainer).each(function(){
 				comment_render($(this));
 			});
+
+			$('.post-comment__new textarea', postContainer)
+				.textareaAutoSize()
+				.bind('input paste keypress', function(e){
+					var target = $(this);
+					// TODO: render guest action
+					/*
+					if (!isLogin){
+						$('body').css({overflow: 'hidden'});
+
+						$('<div/>', {'class': 'login-dialog'})
+							.append(
+								$('<div/>').append(
+									$('<span/>').text('Please register or log in to do that.')
+								),
+								$('<div/>').append(
+									$('<a/>', {href: baseUrl}).append(
+										$('<input/>', {type: 'button'}).val('OK')
+									)
+								)
+							)
+							.appendTo($('body'))
+							.dialog({
+								modal: true,
+								resizable: false,
+								drag: false,
+								width: 335,
+								height: 105,
+								dialogClass: 'colorbox',
+								beforeClose: function(event, ui){
+									$('body').css({overflow: 'visible'});
+									$(event.target).dialog('destroy').remove();
+								}
+							});
+
+						return false;
+					}
+					*/
+
+					var comment = target.val();
+
+					if ($.trim(comment) === ''){
+						return true;
+					}
+
+					if (comment.indexOf('<') >= 0 || comment.indexOf('>') >= 0){
+						alert('You enter invalid text');
+						target.val(comment.replace('<', '').replace('>', ''));
+						return false;
+					}
+
+					if (keyCode(e) === 13 && !e.shiftKey){
+						target.attr('disabled', true);
+
+						ajaxJson({
+							url: baseUrl+'post/comment',
+							data: {post_id:id,comment:comment},
+							done: function(response){
+								e.preventDefault();
+								target.val('').css({height:''}).attr('disabled', false).blur();
+								var loadMore = $('.post-comments__more', postContainer);
+								comment_render($(response.html).insertBefore(loadMore.size() ? loadMore : $('.post-comment__new', postContainer)));
+							}
+						});
+					}
+				});
 		}
 
 		/**
@@ -737,9 +807,19 @@ function postItem_findCluester(id){
  * Renders comment.
  */
 function comment_render(comment){
-	var id = comment.attr('data-id');
+	var id = comment.attr('data-id'),
+		deleteButton = $('.post-comment__delete', comment);
 
-	$('.delete', comment).click(function(){
+	comment.bind({
+		mouseenter: function(){
+			deleteButton.show();
+		},
+		mouseleave: function(){
+			deleteButton.hide();
+		}
+	});
+
+	deleteButton.click(function(){
 		if (!confirm('Are you sure you want to delete?')){
 			return false;
 		}
@@ -852,4 +932,9 @@ function ajaxJson(url, settings){
 		});
 
 	return jqxhr;
+}
+
+// TODO: require from common js
+function keyCode(event){
+	return event.keyCode || event.which;
 }

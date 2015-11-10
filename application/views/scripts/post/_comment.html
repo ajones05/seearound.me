@@ -3,22 +3,18 @@ $user_id = $this->user ? $this->user->id : null;
 // TODO: refactoring
 $owner = $this->comment->findDependentRowset('Application_Model_User')->current();
 ?>
-<li class="post-coment-existing" data-id="<?php echo $this->comment->id; ?>">
-<a class="owner-image" href="<?php echo $this->baseUrl("home/profile/user/" . $owner->id); ?>">
-<img src="<?php echo $owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
+<div class="post-comment__item" data-id="<?php echo $this->comment->id; ?>">
+<a class="post-comment__item-owner" href="<?php echo $this->baseUrl("home/profile/user/" . $owner->id); ?>">
+<img width="43" height="43" src="<?php echo $owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" alt="<?php echo $owner->Name; ?>" />
 </a>
 <?php if ($user_id == $this->post->user_id || $user_id == $owner->id): ?>
-<div class="delete">
+<div class="post-comment__delete">
 <img width="12" height="12" src="<?php echo $this->baseUrl('www/images/delete-icon12x12.png'); ?>" alt="delete">
 </div>
 <?php endif; ?>
-<ul>
-<li>
-<div>
+<div class="post-comment__body">
 <a href="<?php echo $this->baseUrl("home/profile/user/" . $owner->id); ?>" class="post-coment-user-name"><?php echo $owner->Name; ?>:</a>
 <span><?php echo $this->comment->renderContent(My_ArrayHelper::getProp($this, 'limit', false)); ?></span>
-<p class="post-coment-date"><?php echo My_Time::time_ago($this->comment->created_at, array('short' => true)); ?></p>
+<p class="post-coment__date"><?php echo My_Time::time_ago($this->comment->created_at, array('short' => true)); ?></p>
 </div>
-</li>
-</ul>
-</li>
+</div>

@@ -1,22 +1,16 @@
 <?php
-// TODO: refactoring
-$auth = Zend_Auth::getInstance()->getIdentity();
-$auth_user_id = !empty($auth['user_id']) ? $auth['user_id'] : null;
+$ownerImage = $this->baseUrl('www/images/img-prof40x40.jpg');
 
-$auth_pro_image = $this->baseUrl('www/images/img-prof40x40.jpg');
-
-if ($auth_user_id)
+if ($this->user)
 {
-	$auth_pro_image = Application_Model_User::findById($auth_user_id)->getProfileImage($auth_pro_image);
+	$ownerImage = $this->user->getProfileImage($ownerImage);
 }
 ?>
-<li class="<?php if (!empty($this->hidden)) echo 'hidden'; ?>">
-<ul class="post_coment_new">
-<li class="owner-image">
-<img src="<?php echo $auth_pro_image; ?>" />
-</li>
-<li>
+<div class="post-comment__new<?php if (!empty($this->hidden)) echo ' hidden'; ?>">
+<div class="post-comment__new-owner">
+<img width="43" height="43" src="<?php echo $ownerImage; ?>" alt="<?php echo $this->user ? $this->user->Name : 'owner' ?>" />
+</div>
+<div class="post-comment__new-body">
 <textarea placeholder="Write a Comment..."></textarea>
-</li>
-</ul>
-</li>
+</div>
+</div>

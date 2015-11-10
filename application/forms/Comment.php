@@ -39,7 +39,7 @@ class Application_Form_Comment extends Zend_Form
 			return false;
 		}
 
-		if (strpos($data['comment'], '<') > 0 || strpos($data['comment'], '>') > 0)
+		if (strpos($data['comment'], '<') >= 0 || strpos($data['comment'], '>') >= 0)
 		{
 			return false;
 		}

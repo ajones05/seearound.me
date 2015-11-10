@@ -410,7 +410,7 @@ body {
 .user_avatar img{width: 50px; height: 50px; border-radius: 50px; border:2px solid #cc3333;}
 .post .user_name {
 	color: rgb(204, 51, 0);
-	font: normal 15.17px 'Lato-Regular',sans-serif;
+	font: 15.17px 'Lato-Regular',sans-serif;
 	max-width: 256px;
 	display: inline-block;
 	margin: 13px 0 10px;
@@ -446,17 +446,19 @@ body {
 .post .social_share a.email {
 	float: right;
 }
+.post .social_share a.add-comment,
 .post .social_share a.view-comments,
 .post .social_share a.edit {
 	font: 16px/16px 'Lato-Regular',sans-serif;
 	color: rgb(204, 0, 0);
 }
+.post .social_share a.add-comment,
 .post .social_share a.view-comments {
 	float: left;
 	margin-left: 21px;
 }
 .post .social_share a.edit {
-	margin-right: 30%;
+	margin-right: 20%;
 }
 .post .social_share a.facebook,
 .post .social_share a.email {
@@ -469,46 +471,99 @@ body {
 	margin-right: 10px;
 }
 		.post .social_share a img{width:20px; height: 18px;}
-.post .post-coments{background: #eee; list-style: none;padding: 0; margin: 0;}
-	.post .post-coments ul{list-style: none; margin: 0; padding: 0;}
-.post .post-coments ul li {
-	display: inline-block;
-	max-width: 100%;
-	word-wrap: break-word;
+.post-coments {
+	background: #eee;
 }
-.post .post-coments li .owner-image img {
+.post-comment__item-owner img,
+.post-comment__new-owner img {
 	width: 43px;
 	height: 43px;
 	border-radius: 50px;
-	margin: 6px 8px 6px 12px;
 }
-.post .post-coments li.post-coment-existing .owner-image img {
-	margin: 6px 16px 6px 12px;
+.post-comment__item-owner img {
+	margin: 6px 16px 6px 13px;
 }
-.post .post-coments li.post-coment-existing:hover .delete {
+.post-comment__new-owner img {
+	margin: 10px 6px 6px 13px;
+}
+.post-comment__item,
+.post-comment__new {
+	display: inline-block;
+	width: 100%;
+}
+.post-comments__more {
+	margin-bottom: 10px;	
+}
+.post-comments__more a {
+	margin-left: 27px;
+}
+.post-comment__body {
+	display: inline-block;
+	max-width: 317px;
+	word-wrap: break-word;
+	margin-top: 4px;
+}
+.post-comment__new {
+	border-top: 2px solid #e4e4e4;
+}
+.post-comment__new-owner,
+.post-comment__new-body {
+	float: left;
+}
+.post-comment__new-body {
+	background: url('../images/user-symbol-small.png') no-repeat 0 0px;
+	padding-left: 12px;
+	margin-top: 12px;
+	margin-right: 23px;
+}
+.post-comment__new-body textarea {
+	height: 17px;
+	outline: 0;
+	padding: 10px;
+	resize: none;
+	width: 318px;
+	font-family: 'Lato-LightItalic';
+    background: #fff;
+	color: #7d7d7d;
+	border: none;
+	margin-bottom: 7px;
+	line-height: 17px;
+	overflow-y: hidden;
+}
+.post-comment__new.hidden {
+	display: none;
+}
+.post-comment__item,
+.post-comment__new-body textarea {
+	font-size: 13.65px;
+}
+.post-comment__item {
+	font-family: 'Lato-Regular';
+	min-height: 58px;
+}
+.post-comment__item:first-child {
+	padding-top: 11px;
+}
+.post-comment__item:not(:first-child) {
+	padding-top: 5px;
+}
+.post-comment__item > a {
 	display: block;
+	float: left;
 }
-
-		.post .post_coment_new{border-top:1px solid #e4e4e4;}
-		.post .post-coments>li:last-child{border-top: 1px solid #d8d8d8;}
-	.post .post_coment_new textarea{font-size: 13.65px; height: 25px!important; outline: 0; padding: 6px 10px; resize: none; width: 317px; font-family: 'Lato-LightItalic';
-    background: #fff; color: #7d7d7d; border: none; margin-bottom: 7px;line-height: 25px;}
-    .post .post_coment_new li:nth-child(2){background: url('../images/user-symbol-small.png') no-repeat 0 0px; padding-left: 12px;}
-    .post .post-coment-existing{padding-top: 14px;font-size: 13.65px; font-family: 'Lato-Regular'; clear: both; min-height: 58px;}
-    .post .post-coments .post-coment-existing>ul{display: inline-block;max-width: 317px;}
-    .post .post-coments .post-coment-existing >a{display: block; float: left;}
 .post .post-coments span {
 	color: rgb(51, 51, 51);
 }
-.post .post-coment-date {
+.post-coment__date {
 	color: rgb(204, 0, 0);
 	font: normal 9.1px 'Lato-Regular',sans-serif;
+	margin: 4px 0 0;
 }
 .post .post-coment-user-name {
 	font-family: 'Lato-Regular',sans-serif;
 	color: rgb(204, 0, 0);
 }
-.post .post-coments li .delete {
+.post-comment__delete {
     position: absolute;
     right: 15px;
     cursor: pointer;

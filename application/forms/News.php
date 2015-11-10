@@ -89,7 +89,7 @@ class Application_Form_News extends Zend_Form
 			return false;
 		}
 
-		if (strpos($data['news'], '<') > 0 || strpos($data['news'], '>') > 0)
+		if (strpos($data['news'], '<') >= 0 || strpos($data['news'], '>') >= 0)
 		{
 			return false;
 		}

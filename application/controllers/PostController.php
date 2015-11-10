@@ -369,8 +369,8 @@ class PostController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$comentsTable = new Application_Model_Comments;
-			$comments = $comentsTable->findAllByNewsId($id, $comentsTable->news_limit, $start);
+			$model = new Application_Model_Comments;
+			$comments = $model->findAllByNewsId($id, $model->news_limit, $start);
 
 			$response = array('status' => 1);
 
@@ -387,9 +387,11 @@ class PostController extends Zend_Controller_Action
 					));
 				}
 
-				if (($post->comment - ($start + $comentsTable->news_limit)) > 0)
+				$count = max($post->comment - ($start + $model->news_limit), 0);
+
+				if ($count > 0)
 				{
-					$response['label'] = true;
+					$response['label'] = $model->viewMoreLabel($count);
 				}
 			}
 		}
@@ -403,6 +405,60 @@ class PostController extends Zend_Controller_Action
 		}
 
         $this->_helper->json($response);
+	}
+
+	/**
+	 * Save comment action.
+	 *
+	 * @return void
+	 */
+    public function commentAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$data = $this->_request->getParams();
+
+			if (empty($data['post_id']) || !Application_Model_News::checkId($data['post_id'], $post, 0))
+			{
+				throw new RuntimeException('Incorrect post ID');
+			}
+
+			$form = new Application_Form_Comment;
+
+			if (!$form->isValid($data))
+			{
+				throw new RuntimeException('Validate error', -1);
+			}
+
+			$comment = (new Application_Model_Comments)->save($form, $post, $user);
+
+			$response = array(
+				'status' => 1,
+				// TODO: remove spaces, new line...
+				'html' => My_ViewHelper::render('post/_comment', array(
+					'user' => $user,
+					'comment' => $comment,
+					'post' => $post
+				))
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			);
+		}
+
+		$this->_helper->json($response);
 	}
 
 	/**

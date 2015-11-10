@@ -1,8 +1,10 @@
 <?php
+$commentsLimit = 3;
 $user_id = $this->user ? $this->user->id : null;
 $profileUrl = $this->baseUrl('home/profile/user/' . $this->owner->id);
-$comments = (new Application_Model_Comments)->findAllByNewsId($this->post->id, 3);
-$hide_comments = !$this->post->comment || !My_ArrayHelper::search(array('news_id' => $this->post->id), $comments->toArray(), 1);
+$commentsModel = new Application_Model_Comments;
+$comments = $commentsModel->findAllByNewsId($this->post->id, $commentsLimit);
+$hideComments = !$this->post->comment || !My_ArrayHelper::search(array('news_id' => $this->post->id), $comments->toArray(), 1);
 
 $image = $this->post->findManyToManyRowset('Application_Model_Image', 'Application_Model_NewsImage')->current();
 
@@ -33,8 +35,10 @@ src="<?php echo $this->baseUrl($thumb448x320->path); ?>" />
 </div>
 <?php endif; ?>
 <div class="social_share">
-<?php if ($this->post->comment > 3): ?>
-<a class="view-comments" href="#">View all comments</a>
+<?php if ($hideComments): ?>
+<a class="add-comment" href="#">Comment</a>
+<?php elseif ($this->post->comment > $commentsLimit): ?>
+<a class="view-comments" href="#"><?php echo $commentsModel->viewMoreLabel($this->post->comment - $commentsLimit); ?></a>
 <?php endif; ?>
 <a class="email" href="#"><img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" /></a>
 <a class="facebook" href="<?php echo $this->serverUrl() . $this->baseUrl("info/news/nwid/" . $this->post->id); ?>">
@@ -44,7 +48,7 @@ src="<?php echo $this->baseUrl($thumb448x320->path); ?>" />
 <a class="edit" href="#">Edit Post</a>
 <?php endif; ?>
 </div>
-<ul class="post-coments">
+<div class="post-coments">
 <?php
 if ($this->post->comment)
 {
@@ -58,7 +62,19 @@ if ($this->post->comment)
 		));
 	}
 }
-echo My_ViewHelper::render('post/_comment_new', array('hidden' => $hide_comments));
+if ($this->post->comment > $commentsLimit):
 ?>
-</ul>
+<div class="post-comments__more">
+<a href="#">
+<img width="36" height="7" src="<?php echo $this->baseUrl("www/images/template/comment-read-more.png"); ?>" alt="more" />
+</a>
+</div>
+<?php
+endif;
+echo $this->partial('post/_comment_new.html', array(
+	'user' => $this->user,
+	'hidden' => $hideComments
+));
+?>
+</div>
 </div>
