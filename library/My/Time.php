@@ -8,10 +8,10 @@ class My_Time
 	 * Converts timestamp to time ago.
 	 *
 	 * @param	string $date
-	 * @param	boolean $ago
+	 * @param	array $options
 	 * @return	string
 	 */
-	public static function time_ago($date, $ago = false)
+	public static function time_ago($date, array $options = array())
 	{
 		$now = new DateTime;
 		$date = new DateTime($date);
@@ -24,6 +24,8 @@ class My_Time
 			return 'Just now';
 		}
 
+		$putAgo = My_ArrayHelper::getProp($options, 'ago', false);
+
 		if ($minutes < 60)
 		{
 			$output = $minutes . ' minute';
@@ -33,7 +35,7 @@ class My_Time
 				$output .= 's';
 			}
 
-			if ($ago)
+			if ($putAgo)
 			{
 				$output .= ' ago';
 			}
@@ -54,7 +56,7 @@ class My_Time
 				$output .= 's';
 			}
 
-			if ($ago)
+			if ($putAgo)
 			{
 				$output .= ' ago';
 			}
@@ -62,23 +64,32 @@ class My_Time
 			return $output;
 		}
 
+		$short = My_ArrayHelper::getProp($options, 'short', false);
 		$yesterday = (new DateTime)->modify('-1 day')->setTime(0, 0, 0);
 
 		if ($date > $yesterday)
 		{
-			return 'Yesterday at ' . $date->format('h:ia');
+			return 'Yesterday' . (!$short ? ' at ' . $date->format('h:ia') : '');
 		}
 
-		$interval = $date->diff($now)->format('%a');
-		$output = 'Before ' . $interval . ' day';
-
-		if ($interval != 1)
+		if ($short)
 		{
-			$output .= 's';
+			$interval = $date->diff($now)->format('%a');
+			$output = $interval . ' day';
+
+			if ($interval != 1)
+			{
+				$output .= 's';
+			}
+
+			if ($putAgo)
+			{
+				$output .= ' ago';
+			}
+
+			return $output;
 		}
-
-		$output .= ' at ' . $date->format('h:ia');
-
-		return $output;
+		
+		return $date->format('F j \a\t h:ia');
 	}
 }
