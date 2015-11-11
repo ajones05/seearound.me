@@ -12,15 +12,15 @@ var mainMap,areaCircle,loadXhr,
 
 require.config({
     paths: {
-		'jquery': '../../bower_components/jquery/dist/jquery.min',
-		'jquery-ui': '../../bower_components/jquery-ui/jquery-ui.min',
-		'textarea_autosize': '../../bower_components/textarea-autosize/src/jquery.textarea_autosize',
+		'jquery': assetsBaseUrl+'bower_components/jquery/dist/jquery.min',
+		'jquery-ui': assetsBaseUrl+'bower_components/jquery-ui/jquery-ui.min',
+		'textarea_autosize': assetsBaseUrl+'bower_components/textarea-autosize/src/jquery.textarea_autosize',
 		'google.maps': 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&callback=renderMap_callback'
 	}
 });
 
 require(['google.maps','jquery','jquery-ui'], function(){
-	loadCss('../../bower_components/jquery-ui/themes/base/jquery-ui.min.css');
+	loadCss(assetsBaseUrl+'bower_components/jquery-ui/themes/base/jquery-ui.min.css');
 });
 
 function renderMap_callback(){
