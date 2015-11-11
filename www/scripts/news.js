@@ -418,7 +418,7 @@ function renderComments($comments){
 			if (response && response.status){
 				$('.cmnt', $target).html(response.html);
 			} else {
-				alert(response ? response.error.message : ERROR_MESSAGE);
+				alert(response ? response.message : ERROR_MESSAGE);
 			}
 		});
 	});

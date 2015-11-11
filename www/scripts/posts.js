@@ -857,6 +857,24 @@ function comment_render(comment){
 			}
 		});
 	});
+	
+	$('.moreButton', comment).click(function(e){
+		e.preventDefault();
+
+		if ($(this).attr('disabled')){
+			return false;
+		}
+
+		$(this).attr('disabled', true);
+
+		ajaxJson({
+			url: baseUrl + 'home/read-more-comment',
+			data: {id:id},
+			done: function(response){
+				$('.post-comment__body span', comment).html(response.html);
+			}
+		});
+	});
 }
 
 /**
