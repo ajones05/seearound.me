@@ -192,6 +192,28 @@ function renderMap_callback(){
 					marker.css({zIndex: ''});
 				}
 			});
+			$('.like,.dislike', postContainer).click(function(){
+				var target = $(this),
+					vote = $('.vote', postContainer);
+
+				if (vote.attr('disabled')){
+					return false;
+				}
+
+				vote.attr('disabled', true);
+
+				ajaxJson({
+					url: baseUrl+'home/vote',
+					data: {
+						news_id: id,
+						vote: (target.hasClass('like') ? 1 : -1)
+					},
+					done: function(response){
+						target.addClass('active');
+						$('._3_copy', vote).html(response.vote);
+					}
+				});
+			});
 			$('.add-comment', postContainer).click(function(e){
 				e.preventDefault();
 				$('.post-comment__new', postContainer).removeClass('hidden');

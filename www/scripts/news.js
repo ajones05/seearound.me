@@ -351,7 +351,7 @@ function renderNews($news){
 			dataType: 'json'
 		}).done(function(response){
 			if (!response || !response.status){
-				alert(response ? response.error.message : ERROR_MESSAGE);
+				alert(response ? response.message : ERROR_MESSAGE);
 				return false;
 			}
 
