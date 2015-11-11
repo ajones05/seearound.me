@@ -15,6 +15,7 @@ require.config({
 		'jquery': assetsBaseUrl+'bower_components/jquery/dist/jquery.min',
 		'jquery-ui': assetsBaseUrl+'bower_components/jquery-ui/jquery-ui.min',
 		'textarea_autosize': assetsBaseUrl+'bower_components/textarea-autosize/src/jquery.textarea_autosize',
+		'jquery-validate': assetsBaseUrl+'bower_components/jquery-validation/dist/jquery.validate.min',
 		'facebook-sdk': 'http://connect.facebook.net/en_US/sdk',
 		'google.maps': 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&callback=renderMap_callback'
 	}
@@ -184,7 +185,7 @@ function renderMap_callback(){
 		function postItem_render(id){
 			var marker = postItem_marker(id, postData[id]),
 				postContainer = $('.post[data-id="'+id+'"]');
-			// TODO: edit post, comment, vote...
+			// TODO: edit post
 			postContainer.bind({
 				mouseenter: function(){
 					marker.setIcon({
@@ -227,23 +228,8 @@ function renderMap_callback(){
 				});
 			});
 			$('.post_text .moreButton', postContainer).click(function(e){
-				var target = $(this);
 				e.preventDefault();
-
-				if (target.attr('disabled')){
-					return false;
-				}
-
-				target.attr('disabled', true);
-
-				ajaxJson({
-					url: baseUrl+'home/read-more-news',
-					data: {id:id},
-					done: function(response){
-						$('.post_text', postContainer).html(response.html);
-						target.remove();
-					}
-				});
+				postItem_more(postContainer);
 			});
 			$('.add-comment', postContainer).click(function(e){
 				e.preventDefault();
@@ -281,12 +267,90 @@ function renderMap_callback(){
 				e.preventDefault();
 				alert('Edit post in progress');
 			});
-			$('.facebook', postContainer).click(function(e){
+			$('.social_share .facebook', postContainer).click(function(e){
 				var target = $(this);
 				e.preventDefault();
 				require(['facebook-sdk'], function(){
 					FB.ui({method:'share',href:target.attr('href')});
 				});
+			});
+			$('.social_share .email', postContainer).click(function(e){
+				e.preventDefault();
+				$('body').css({overflow: 'hidden'});
+				$('<div/>').addClass('post__share-email')
+					.append(
+						$('<img/>').attr({
+							width: 48,
+							height: 48,
+							src: assetsBaseUrl+'www/images/mail_send.gif'
+						}),
+						$('<span/>').addClass('title').text('Send Message'),
+						$('<div/>').addClass('content').append(
+							$('<form/>').append(
+								$('<div/>').append(
+									$('<input/>', {
+										type: 'email',
+										name: 'to',
+										placeholder: 'Please enter receiver email address...'
+									})
+								),
+								$('<div/>').append(
+									$('<textarea/>', {
+										name: 'message',
+										placeholder: 'Please enter message...'
+									})
+								),
+								$('<div/>').append(
+									$('<input/>', {type:'submit',value:'Send'}),
+									$('<input/>', {type:'button',value: 'Cancel'})
+										.click(function(){
+											$('.post__share-email').dialog('close');
+										})
+								),
+								$('<input/>', {type:'hidden',name:'news_id'}).val(id)
+							)
+						)
+					)
+					.appendTo($('body'))
+					.dialog({
+						modal: true,
+						resizable: false,
+						drag: false,
+						width: 540,
+						height: 260,
+						dialogClass: 'dialog',
+						beforeClose: function(event, ui){
+							$('body').css({overflow:'visible'});
+							$(event.target).dialog('destroy').remove();
+						},
+						open: function(event, ui){
+							$('form', event.target).submit(function(){
+								return false;
+							});
+							require(['jquery-validate'], function(){
+								$('form', event.target).validate({
+									rules: {
+										to: {required:true,email:true},
+										message: {required:true}
+									},
+									submitHandler: function(form){
+										ajaxJson({
+											url: baseUrl+'info/public-message-email',
+											data: $(form).serialize(),
+											done: function(response){
+												$(event.target).empty().append(
+													$('<div/>').addClass('success').append(
+														$('<img/>', {src: assetsBaseUrl+'www/images/correct.gif'}),
+														$('<span/>').text('Message sent')
+													)
+												);
+											}
+										});
+									}
+								});
+							});
+						}
+					});
 			});
 			$('.post-comment__item', postContainer).each(function(){
 				comment_render($(this));
@@ -319,7 +383,7 @@ function renderMap_callback(){
 								drag: false,
 								width: 335,
 								height: 105,
-								dialogClass: 'colorbox',
+								dialogClass: 'dialog',
 								beforeClose: function(event, ui){
 									$('body').css({overflow: 'visible'});
 									$(event.target).dialog('destroy').remove();
@@ -782,6 +846,9 @@ function postTooltip_render(content, position, event, ui){
 				$(event.target).data('tooltip-content', '');
 				$(event.target).parent().css({zIndex: ''});
 			}, .1));
+		},
+		click: function(){
+			markerClick=true;
 		}
 	});
 
@@ -845,11 +912,29 @@ function postItem_higlight(id){
 
 	var group = postItem_findCluester(id);
 	for (var i in postMarkersCluster[group]){
-		$('.post[data-id="'+postMarkersCluster[group][i]+'"]')
-			.addClass('higlight');
-		// TODO: open read more content
-		// xxx.find('.moreButton').click();
+		postItem_more($('.post[data-id="'+postMarkersCluster[group][i]+'"]')
+			.addClass('higlight'));
 	}
+}
+
+/**
+ * Post item read more handler.
+ */
+function postItem_more(postContainer){
+	var link = $('.post_text .moreButton', postContainer);
+	if (!link.size() || link.attr('disabled')){
+		return false;
+	}
+	link.attr('disabled', true);
+
+	ajaxJson({
+		url: baseUrl+'home/read-more-news',
+		data: {id:postContainer.attr('data-id')},
+		done: function(response){
+			$('.post_text', postContainer).html(response.html);
+			link.remove();
+		}
+	});
 }
 
 /**
