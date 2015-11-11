@@ -1098,34 +1098,34 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect news ID', -1);
 			}
 
+			$offset = $this->_request->getPost('offsetValue', 0);
+
+			if (!My_Validate::digit($offset) || $offset < 0)
+			{
+				throw new RuntimeException('Incorrect offset value', -1);
+			}
+
 			$response = array(
 				'status' => 'SUCCESS',
 				'message' => 'Comments rendred successfully',
 			);
 
-			$page = $this->_request->getPost('offsetValue', 0);
-
-			if (!My_Validate::digit($page) || $page < 0)
-			{
-				throw new RuntimeException('Incorrect offset value', -1);
-			}
-
-			$comments = (new Application_Model_Comments)->findAllByNewsId($news->id, 10, $page);
+			$comments = (new Application_Model_Comments)->findAllByNewsId($news->id, 10, $offset);
 
 			if (count($comments))
 			{
 				foreach ($comments as $comment)
 				{
-					$comment_user = $comment->findDependentRowset('Application_Model_User')->current();
+					$owner = $comment->findDependentRowset('Application_Model_User')->current();
 
 					$response['result'][] = array(
                         'id' => $comment->id,
                         'news_id' => $news->id,
                         'comment' => $comment->comment,
-                        'user_name' => $comment_user->Name,
-                        'user_id' => $comment_user->id,
+                        'user_name' => $owner->Name,
+                        'user_id' => $owner->id,
                         'Profile_image' => $this->view->serverUrl() .
-							$comment_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+							$owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
                         'commTime' => $comment->created_at,
                         'totalComments' => $news->comment
 					);
