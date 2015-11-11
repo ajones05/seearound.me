@@ -912,7 +912,7 @@ function updateNews($news){
 										);
 								} else {
 									$(event.target).unmask();
-									alert(response ? response.error.message : ERROR_MESSAGE);
+									alert(response ? response.message : ERROR_MESSAGE);
 								}
 							}).fail(function(jqXHR, textStatus){
 								$(event.target).unmask();

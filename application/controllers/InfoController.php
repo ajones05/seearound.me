@@ -159,9 +159,8 @@ class InfoController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array(
-					'message' => 'Internal server error'
-				)
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
 			);
 		}
 
