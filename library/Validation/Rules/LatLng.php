@@ -10,11 +10,6 @@ class LatLng extends \Respect\Validation\Rules\AllOf
     {
 		if (!is_array($input))
 		{
-			if (!\Respect\Validation\Validator::string()->regex('/^\d+,\d+$/')->validate($input))
-			{
-				return false;
-			}
-
 			$input = explode(',', $input);
 		}
 
