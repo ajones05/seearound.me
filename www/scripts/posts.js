@@ -15,6 +15,7 @@ require.config({
 		'jquery': assetsBaseUrl+'bower_components/jquery/dist/jquery.min',
 		'jquery-ui': assetsBaseUrl+'bower_components/jquery-ui/jquery-ui.min',
 		'textarea_autosize': assetsBaseUrl+'bower_components/textarea-autosize/src/jquery.textarea_autosize',
+		'facebook-sdk': 'http://connect.facebook.net/en_US/sdk',
 		'google.maps': 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&callback=renderMap_callback'
 	}
 });
@@ -22,6 +23,17 @@ require.config({
 require(['google.maps','jquery','jquery-ui'], function(){
 	loadCss(assetsBaseUrl+'bower_components/jquery-ui/themes/base/jquery-ui.min.css');
 });
+
+window.fbAsyncInit = function(){
+	FB.init({
+		appId: facebook_appId,
+		xfbml: true,
+		cookie: true,
+		version: 'v2.5'
+	});
+};	
+
+require(['facebook-sdk']);
 
 function renderMap_callback(){
 	centerPosition = new google.maps.LatLng(mapCenter[0], mapCenter[1]);
@@ -268,6 +280,13 @@ function renderMap_callback(){
 			$('.edit', postContainer).click(function(e){
 				e.preventDefault();
 				alert('Edit post in progress');
+			});
+			$('.facebook', postContainer).click(function(e){
+				var target = $(this);
+				e.preventDefault();
+				require(['facebook-sdk'], function(){
+					FB.ui({method:'share',href:target.attr('href')});
+				});
 			});
 			$('.post-comment__item', postContainer).each(function(){
 				comment_render($(this));
