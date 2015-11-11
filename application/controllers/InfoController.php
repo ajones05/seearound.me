@@ -77,7 +77,7 @@ class InfoController extends Zend_Controller_Action
 
 			if ($link)
 			{
-				$image = $newsLink->findManyToManyRowset('Application_Model_Image',
+				$image = $link->findManyToManyRowset('Application_Model_Image',
 					'Application_Model_NewsLinkImage')->current();
 
 				if ($image)
