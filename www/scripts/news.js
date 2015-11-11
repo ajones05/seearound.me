@@ -947,7 +947,7 @@ function updateNews($news){
 				$('.post-content', $post).html(response.html);
 				$target.remove();
 			} else if (response){
-				alert(response.error.message);
+				alert(response.message);
 			} else {
 				alert(ERROR_MESSAGE);
 			}

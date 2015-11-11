@@ -214,6 +214,25 @@ function renderMap_callback(){
 					}
 				});
 			});
+			$('.post_text .moreButton', postContainer).click(function(e){
+				var target = $(this);
+				e.preventDefault();
+
+				if (target.attr('disabled')){
+					return false;
+				}
+
+				target.attr('disabled', true);
+
+				ajaxJson({
+					url: baseUrl+'home/read-more-news',
+					data: {id:id},
+					done: function(response){
+						$('.post_text', postContainer).html(response.html);
+						target.remove();
+					}
+				});
+			});
 			$('.add-comment', postContainer).click(function(e){
 				e.preventDefault();
 				$('.post-comment__new', postContainer).removeClass('hidden');

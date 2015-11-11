@@ -915,7 +915,8 @@ class HomeController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 		}
 
