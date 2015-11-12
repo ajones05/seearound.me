@@ -47,9 +47,11 @@ $disableVote = $userVote !== 0 || $this->post->user_id == $this->user->id;
 </div>
 <div class="post_text"><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'limit')); ?></div>
 <?php if ($image != null): ?>
-<div>
-<img onclick="openImage('<?php echo $this->baseUrl($thumb960x960->path); ?>','<?php echo $thumb960x960->width; ?>','<?php echo $thumb960x960->height; ?>');"
-src="<?php echo $this->baseUrl($thumb448x320->path); ?>" />
+<div class="image">
+<img src="<?php echo $this->baseUrl($thumb448x320->path); ?>"
+data-src="<?php echo $this->baseUrl($thumb960x960->path); ?>"
+data-width="<?php echo $thumb960x960->width; ?>"
+data-height="<?php echo $thumb960x960->height; ?>">
 </div>
 <?php endif; ?>
 <div class="social_share">

@@ -429,6 +429,11 @@ body {
 .post .post-coments a {
 	color: rgb(204, 51, 0);
 }
+.post > .image img {
+	width: 100%;
+	cursor: pointer;
+	float: left;
+}
 .post .link-meta .image{margin-left: -70px;}
 .post .social_share {
 	border-top: solid 1px #ddd;

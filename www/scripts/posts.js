@@ -231,6 +231,62 @@ function renderMap_callback(){
 				e.preventDefault();
 				postItem_more(postContainer);
 			});
+			$('> .image img', postContainer).click(function(){
+				var scrollTop = $(window).scrollTop(),
+					offsetTop = $('.posts').offset().top,
+					width = parseFloat($(this).attr('data-width')),
+					height = parseFloat($(this).attr('data-height')),
+					dimensions = postItem_imageDimensions(width, height);
+
+				$('.posts').css({
+					top: -(scrollTop - offsetTop),
+					position: 'fixed'
+				});
+
+				$('<div/>')
+					.append(
+						$('<img/>', {
+							src: $(this).attr('data-src'),
+							width: dimensions[0],
+							height: dimensions[1]
+						}).addClass('post-image')
+					)
+					.appendTo($('body'))
+					.dialog({
+						modal: true,
+						resizable: false,
+						drag: false,
+						width: dimensions[0]+10,
+						height: dimensions[1]+15,
+						dialogClass: 'dialog',
+						open: function(event, ui){
+							disableScroll = true;
+							$('body').css('overflowX', 'auto');
+							$(window).bind('resize.dialog', function(){
+								dimensions = postItem_imageDimensions(width, height);
+								$(event.target)
+									.dialog('option', 'width', dimensions[0]+10)
+									.dialog('option', 'height', dimensions[1]+15)
+									.find('.post-image')
+										.width(dimensions[0])
+										.height(dimensions[1]);
+							});
+							$(this).closest('.ui-dialog').css({zIndex:50001});
+						},
+						beforeClose: function(event, ui){
+							disableScroll = false;
+							$('.posts').css({
+								top: offsetTop,
+								position: 'relative',
+								maxHeight: 'auto'
+							});
+							$('body').css('overflowX', 'hidden');
+							$('html,body').animate({scrollTop: scrollTop}, 0);
+							$(event.target).dialog('destroy').remove();
+							$(window).unbind('resize.dialog');
+						}
+					});
+			});
 			$('.add-comment', postContainer).click(function(e){
 				e.preventDefault();
 				$('.post-comment__new', postContainer).removeClass('hidden');
@@ -949,6 +1005,42 @@ function postItem_findCluester(id){
 		}
 	}
 	return false;
+}
+
+/**
+ * Returns post image dimensions.
+ */
+function postItem_imageDimensions(width, height){
+	var dialogWidth = width,
+		dialogHeight = height,
+		minWidth = 150,
+		minHeight = 150,
+		maxWidth = 980,
+		maxHeight = Math.max($(window).height()-150,540);
+
+	if (dialogWidth < minWidth && dialogHeight < minHeight){
+		var scaleUp = Math.max(
+			(minWidth || dialogWidth) / dialogWidth,
+			(minHeight || dialogHeight) / dialogHeight
+		);
+
+		if (scaleUp > 1){
+			dialogWidth = dialogWidth * scaleUp;
+			dialogHeight = dialogHeight * scaleUp;
+		}
+	} else if (dialogWidth > maxWidth || dialogHeight > maxHeight){
+		var scaleDown = Math.min(
+			(maxWidth || dialogWidth) / dialogWidth,
+			(maxHeight || dialogHeight) / dialogHeight
+		);
+
+		if (scaleDown < 1){
+			dialogWidth = dialogWidth * scaleDown;
+			dialogHeight = dialogHeight * scaleDown;
+		}
+	}
+
+	return [dialogWidth, dialogHeight];
 }
 
 /**
