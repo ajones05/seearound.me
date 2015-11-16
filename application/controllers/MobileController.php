@@ -1229,7 +1229,7 @@ class MobileController extends Zend_Controller_Action
 
             $model = new Application_Model_Voting;
 
-			if ($model->findNewsLikeByUserId($data['id'], $data['user_id']))
+			if ($model->findNewsLikeByUserId($news->id, $user->id))
 			{
 				$response = array(
 					'successalready' => 'registered already',
