@@ -55,6 +55,7 @@ data-height="<?php echo $thumb960x960->height; ?>">
 </div>
 <?php endif; ?>
 <div class="social_share">
+<div class="default-panel">
 <?php if ($hideComments): ?>
 <a class="add-comment" href="#">Comment</a>
 <?php elseif ($this->post->comment > $commentsLimit): ?>
@@ -65,8 +66,9 @@ data-height="<?php echo $thumb960x960->height; ?>">
 <img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" />
 </a>
 <?php if ($user_id == $this->post->user_id): ?>
-<a class="edit" href="#">Edit Post</a>
+<a class="edit">Edit Post</a>
 <?php endif; ?>
+</div>
 </div>
 <div class="post-coments">
 <?php

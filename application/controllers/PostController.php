@@ -142,6 +142,8 @@ class PostController extends Zend_Controller_Action
 			$this->view->headScript()->appendScript(
 				'var mapCenter=' . json_encode($mapCenter) . ',' .
 				'userLocation=' . json_encode($userLocation) . ',' .
+				'userImage=' . json_encode($user->getProfileImage(
+					$this->view->baseUrl('www/images/img-prof40x40.jpg'))) . ',' .
 				'postData=' . json_encode($postData) . ',' .
 				'renderRadius=' . json_encode($radius) . ';'
 			);
@@ -334,6 +336,53 @@ class PostController extends Zend_Controller_Action
 			echo $e instanceof RuntimeException ? $e->getMessage() :
 				'Internal Server Error';
 		}
+	}
+
+	/**
+	 * Edit comment action.
+	 *
+	 * @return void
+	 */
+    public function editAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$post_id = $this->_request->getPost('id');
+
+			if (!(new Application_Model_News)->checkId($post_id, $post, 0))
+			{
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($post_id, true), -1);
+			}
+
+			if ($user->id != $post->user_id)
+			{
+				throw new RuntimeException('You have not access for this action', -1);
+			}
+
+			$response = array(
+				'status' => 1,
+				'html' => $this->view->partial('post/edit.html',
+					array('user' => $user, 'post' => $post))
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			);
+		}
+
+		$this->_helper->json($response);
 	}
 
 	/**

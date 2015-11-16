@@ -186,7 +186,7 @@ function renderNews($news){
 
 												$(dialogEvent.target).dialog('close');
 											} else {
-												alert(response ? response.error.message : ERROR_MESSAGE);
+												alert(response ? response.message : ERROR_MESSAGE);
 												$('#map-canvas', dialogEvent.target).unmask();
 												$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
 											}
@@ -268,7 +268,7 @@ function renderNews($news){
 										$('.news-footer', $target).show();
 										$('.edit-post', $target).attr('disabled', false);
 									} else if (response){
-										alert(response.error.message);
+										alert(response.message);
 										$editButtons.attr('disabled', false);
 									} else {
 										alert(ERROR_MESSAGE);
@@ -282,7 +282,7 @@ function renderNews($news){
 					)
 				);
 			} else if (response){
-				alert(response.error.message);
+				alert(response.message);
 			} else {
 				alert(ERROR_MESSAGE);
 			}

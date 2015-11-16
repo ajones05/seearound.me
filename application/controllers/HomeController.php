@@ -644,7 +644,7 @@ class HomeController extends Zend_Controller_Action
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
     public function getTotalCommentsAction()
@@ -695,7 +695,7 @@ class HomeController extends Zend_Controller_Action
 			);
 		}
 
-        die(Zend_Json_Encoder::encode($response));
+        $this->_helper->json($response);
     }
 
 	/**
@@ -785,11 +785,12 @@ class HomeController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Sorry! we are unable to performe delete action')
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
     }
 
     public function deleteCommentAction()
@@ -830,7 +831,7 @@ class HomeController extends Zend_Controller_Action
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
     }
 
 	/**
@@ -986,22 +987,16 @@ class HomeController extends Zend_Controller_Action
 				)
 			);
 		}
-		catch (RuntimeException $e)
-		{
-			$response = array(
-				'status' => 0,
-				'error' => array('message' => $e->getMessage())
-			);
-		}
 		catch (Exception $e)
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
 	/**
@@ -1045,11 +1040,12 @@ class HomeController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
 	/**
@@ -1097,22 +1093,16 @@ class HomeController extends Zend_Controller_Action
 
 			$response = array('status' => 1);
 		}
-		catch (RuntimeException $e)
-		{
-			$response = array(
-				'status' => 0,
-				'error' => array('message' => $e->getMessage())
-			);
-		}
 		catch (Exception $e)
 		{
 			$response = array(
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
 			);
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
 	/**

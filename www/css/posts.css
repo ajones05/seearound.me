@@ -419,11 +419,15 @@ body {
 	color: rgb(204, 0, 0);
 	font: normal 10px 'Lato-Regular',sans-serif;
 }
-.post .post_text {
+.post .post_text,
+.post .post_text form textarea {
 	color: rgb(51, 51, 51);
 	font: normal 14.37px/19.55px 'Lato-Regular',sans-serif;
+}
+.post .post_text {
 	margin-left: 70px;
 	padding-right: 18px;
+	margin-bottom: 12px;
 }
 .post .post_text a,
 .post .post-coments a {
@@ -442,20 +446,31 @@ body {
     width: 100%;
 	margin-bottom: -5px;
 	display: inline-block;
+	height: 18px;
 }
-.post .social_share a {
-	display: inline-block;
+.post .social_share .edit-panel {
+	text-align: center;
+	padding: 0 10px;
+}
+.post .social_share .edit-panel a:nth-child(1),
+.post .social_share .edit-panel a:nth-child(2) {
+	float: left;
+}
+.post .social_share .edit-panel a:nth-child(2) {
+	margin-left: 20%;
+}
+.post .social_share .edit-panel a:nth-child(3) {
+	float: right;
 }
 .post .social_share a.edit,
 .post .social_share a.facebook,
 .post .social_share a.email {
 	float: right;
 }
-.post .social_share a.add-comment,
-.post .social_share a.view-comments,
-.post .social_share a.edit {
+.post .social_share a {
 	font: 16px/16px 'Lato-Regular',sans-serif;
 	color: rgb(204, 0, 0);
+	cursor: pointer;
 }
 .post .social_share a.add-comment,
 .post .social_share a.view-comments {
@@ -609,6 +624,24 @@ body {
 }
 .vote .icon .dislike.active {
     background: url(../images/dislike-active-red.png)center center no-repeat;
+}
+.post .post_text form {
+	width: 90%;
+}
+.post .post_text form textarea {
+	width: 100%;
+    border: none;
+	resize: none;
+	box-sizing: border-box;
+	min-height: 18px;
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
+	background-color: #fff;
+	outline: none;
+}
+.post_text form textarea:disabled {
+	background-color: #fff;
 }
 .ui-tooltip.postTooltip {
 	position: fixed;
@@ -810,4 +843,86 @@ body {
 }
 .dialog .ui-dialog-titlebar-close > span {
 	display: none !important;
+}
+/**
+ * Edit location dialog.
+ */
+.location-dialog {
+	text-align: center;
+	display: none;
+}
+.location-dialog #map-canvas {
+	height: 416px;
+}
+.location-dialog .panel {
+	text-align: center;
+	padding: 15px 0;
+	display: inline-block;
+}
+.location-dialog .panel input {
+	float: left;
+}
+.location-dialog .panel input[type=button],
+.location-dialog .panel input[type=submit] {
+	border-width: 0;
+}
+.location-dialog .panel input[type=text] {
+	width: 290px;
+	padding: 8px 10px;
+	font: normal 15px Lato-lightItalic;
+	color: #8d8d8d;
+	border: 1px solid #d7d7d7;
+}
+.location-dialog .panel input.save,
+.location-dialog .panel input.cancel {
+	font: normal 17px/17px lato-Bold;
+	color: #fff;
+	background: #4276cd;
+	-webkit-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
+	-moz-box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
+	box-shadow: 0px 5px 18px -3px rgba(121,149,196,1);
+	padding: 8.8px 10px;
+	cursor: pointer;
+	min-width: 140px;
+}
+.location-dialog .panel input.save {
+	margin-left: 50px;
+}
+.location-dialog .panel input.cancel {
+	margin-right: 50px;
+}
+.location-dialog .panel input.save:hover,
+.location-dialog .panel input.cancel:hover {
+	color:#ccc;
+}
+.location-dialog .panel .search {
+	cursor: pointer;
+	float: left;
+	background-image: url('../images/map_search39x36.png');
+	background-repeat: none;
+	width: 39px;
+	height: 36px;
+}
+
+/**
+ * User tooltip.
+ */
+.gm-style-iw .location-dialog__user {
+	min-height: 55px;
+	width: 200px;
+}
+.gm-style-iw .location-dialog__user img {
+	float: left;
+	margin-right: 8px;
+    width: 55px;
+    height: 55px;
+    -moz-border-radius:50px;
+    -webkit-border-radius:50px;
+    border-radius: 50px;
+    -khtml-border-radius: 50px;
+}
+.gm-style-iw .location-dialog__user .address {
+    font: normal 14px Lato-Regular;
+    color: #8d8d8d;
+	word-wrap: break-word;
 }
