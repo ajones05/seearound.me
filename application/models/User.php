@@ -571,7 +571,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 			if ($user)
 			{
-				$this->update(array('Network_id' => $network_id), 'id=?' . $user->id);
+				$this->update(array('Network_id' => $network_id), 'id=' . $user->id);
 			}
 			else
 			{

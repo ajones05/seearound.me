@@ -2,6 +2,7 @@
 -- Table structure for table `user_data`
 --
 ALTER TABLE `user_data` DROP `Profile_image`;
+ALTER TABLE `user_data` CHANGE `Network_id` `Network_id` VARCHAR(2000) NULL DEFAULT NULL;
 
 --
 -- Table structure for table `address`

@@ -124,7 +124,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$token = $this->_request->getPost('access-token');
+			$token = $this->_request->getPost('token');
 
 			if (trim($token) === '')
 			{
@@ -160,18 +160,11 @@ class MobileController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
-			if ($e instanceof RuntimeException || $e instanceof Facebook\FacebookAuthorizationException)
-			{
-				$message = $e->getMessage();
-			}
-			else
-			{
-				$message = 'Internal Server Error';
-			}
-
 			$response = array(
 				'status' => 'FAILED',
-				'message' => $message
+				'message' => $e instanceof RuntimeException ||
+					$e instanceof Facebook\FacebookAuthorizationException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 		}
 
