@@ -1174,7 +1174,7 @@ function renderEditLocationDialog(callback){
 
 						$(dialogEvent.target).dialog('close');
 					} else {
-						alert(response ? response.error.message : ERROR_MESSAGE);
+						alert(response ? response.message : ERROR_MESSAGE);
 						$('#map-canvas', dialogEvent.target).unmask();
 						$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
 					}

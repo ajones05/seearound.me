@@ -226,6 +226,60 @@ function renderMap_callback(){
 						}
 					});
 			});
+			
+			$('.user-location button').click(function(){
+				var locationButton = $(this).attr('disabled', true);
+				editLocationDialog({
+					mapZoom: 14,
+					markerIcon: assetsBaseUrl+'www/images/icons/icon_1.png',
+					inputPlaceholder: 'Enter address',
+					submitText: 'Use This Address',
+					defaultAddress: user.address,
+					center: centerPosition,
+					infoWindowContent: function(address){
+						return userAddressTooltip(address, user.image);
+					},
+					beforeClose: function(event, ui){
+						locationButton.attr('disabled', false);
+					},
+					submit: function(map, dialogEvent, position, address){
+						var location = [parseFloat(position.lat()),parseFloat(position.lng())];
+
+						if (getDistance(user.location,location) == 0){
+							$(dialogEvent.target).dialog('close');
+							return true;
+						}
+
+						$('html, body').animate({scrollTop: 0}, 0);
+
+						map.setOptions({draggable: false, zoomControl: false});
+
+						ajaxJson({
+							url: baseUrl + 'home/change-address',
+							data: {
+								address: address,
+								latitude: position.lat(),
+								longitude: position.lng()
+							},
+							done: function(response){
+								user.address = address;
+								user.location = location;
+								userPosition = new google.maps.LatLng(location[0],location[1]);
+								centerPosition = position;
+								mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
+								areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),defaultRadius);
+								postList_change();
+								$(dialogEvent.target).dialog('close');
+							},
+							fail: function(jqXHR, textStatus){
+								map.setOptions({draggable: true, zoomControl: true});
+								$('[name=address],[type=submit]', dialogEvent.target)
+									.attr('disabled', false);
+							}
+						});
+					}
+				});
+			});
 		});
 
 		/**
@@ -312,7 +366,6 @@ function renderMap_callback(){
 								},
 								beforeClose: function(event, ui){
 									$('textarea,input', newDialog).attr('disabled', false);
-									$('.pac-container .pac-item').remove();
 								},
 								submit: function(map, dialogEvent, position, address){
 									map.setOptions({draggable: false, zoomControl: false});
@@ -1650,6 +1703,7 @@ function editLocationDialog(options){
 				if (typeof options.beforeClose === 'function'){
 					options.beforeClose(event, ui);
 				}
+				$('.pac-container').remove();
 				$('body').css({overflow: 'visible'});
 				$(event.target).dialog('destroy').remove();
 			},
