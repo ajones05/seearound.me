@@ -17,7 +17,7 @@ require.config({
 		'textarea_autosize': assetsBaseUrl+'bower_components/textarea-autosize/src/jquery.textarea_autosize',
 		'jquery-validate': assetsBaseUrl+'bower_components/jquery-validation/dist/jquery.validate.min',
 		'facebook-sdk': 'http://connect.facebook.net/en_US/sdk',
-		'google.maps': 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&libraries=places&callback=renderMap_callback'
+		'google.maps': 'https://maps.googleapis.com/maps/api/js?v=3&libraries=places&callback=renderMap_callback'
 	}
 });
 
@@ -53,7 +53,7 @@ function renderMap_callback(){
 	});
 
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
-		userPosition = new google.maps.LatLng(userLocation[0], userLocation[1]);
+		userPosition = new google.maps.LatLng(user.location[0], user.location[1]);
 		require(['jquery','jquery-ui','textarea_autosize'], function(){
 			mainMap.panBy(listMap_centerOffset(), 0);
 
@@ -112,6 +112,7 @@ function renderMap_callback(){
 			}
 
 			google.maps.event.addListener(mainMap, 'dragstart', function(){
+				$('.post-new__dialog').remove();
 				$('#map_canvas :data(ui-tooltip)')
 					.tooltip('close')
 					.tooltip('option', 'disabled', true);
@@ -173,11 +174,242 @@ function renderMap_callback(){
 				}
 			});
 
-			$('.post-new').click(function(e){
-				e.preventDefault();
-				$('.post-new-dialog').toggle();
+			$('.post-new img').click(function(){
+				if ($('.post-new__dialog').size()){
+					$('.post-new__dialog').fadeOut(50, function(){
+						$(this).remove();
+					});
+					return true;
+				}
+
+				if (getCookie('newpost')==1){
+					newPost_dialog();
+					return true;
+				}
+
+				$('<div/>')
+					.append(
+						$('<p/>')
+							.html('After you write something and hit "Post" you\'ll be asked to add the location the post relates to.')
+					)
+					.appendTo($('body'))
+					.dialog({
+						modal: true,
+						resizable: false,
+						drag: false,
+						width: 350,
+						dialogClass: 'dialog',
+						buttons:{
+							OK: function(){
+								if ($('#newPost_notify').is(':checked')){
+									setCookie('newpost', 1, 365);
+								}
+								$(this).dialog('close');
+								newPost_dialog();
+							}
+						},
+						open: function(event, ui){
+							$(event.target).parent().find('.ui-dialog-buttonpane').append(
+								$('<div/>')
+									.append(
+										$('<input/>').val(1)
+											.attr({type:'checkbox',id:'newPost_notify',
+												checked:getCookie('newpost')==1}),
+										$('<label/>').attr({for:'newPost_notify'})
+											.text('Don\'t show this message again')
+									)
+									.addClass('post-new__notify')
+							);
+						},
+						beforeClose: function(event, ui){
+							$(event.target).dialog('destroy').remove();
+						}
+					});
 			});
 		});
+
+		/**
+		 * Renders new post dialog.
+		 */
+		function newPost_dialog(){
+			var newDialog = $('<div/>').addClass('post-new__dialog')
+				.append(
+					$('<form/>').addClass('wrapper')
+						.append(
+							$('<div/>').addClass('user')
+								.append($('<img/>')
+									.attr({width:43,height:43,src:user.image}))
+								.append($('<p/>').text(user.name)),
+							$('<div/>').addClass('edit')
+								.append($('<textarea/>')
+									.attr({name:'news',placeholder:'Share something about a location...'})
+									.textareaAutoSize()
+									.bind('input paste keypress', function(){
+										var body = $(this).val();
+										if (/[<>]/.test(body)){
+											$(this).val(body.replace(/[<>]/, ''));
+											return false;
+										}
+									})
+									.focus(function(){
+										var bodyField = $('textarea', newDialog);
+										bodyField.attr('placeholder-data', bodyField.attr('placeholder'))
+											.removeAttr('placeholder');
+									})
+									.blur(function(){
+										var bodyField = $('textarea', newDialog);
+										bodyField.attr('placeholder', bodyField.attr('placeholder-data'))
+											.removeAttr('placeholder-data');
+									})
+								),
+							$('<div/>').addClass('action')
+								.append(
+									$('<img/>')
+										.attr({width:27,height:20,
+											src:assetsBaseUrl+'www/images/icon-camera.png'})
+										.click(function(){
+											$('[type=file]',newDialog).click();
+										}),
+									$('<input/>').hide()
+										.attr({type:'file',name:'image',accept:'image/*',size:'1'})
+										.change(function(){
+											$('.image').remove();
+											$(this).parent().prepend(
+												$('<div/>').addClass('image').html($(this).val()).append(
+													$('<img/>')
+														.attr({width:12,height:12,
+															src:assetsBaseUrl+'www/images/delete-icon12x12.png'})
+														.click(function(){
+															$('.image',newDialog).remove();
+															$('[type=file]',newDialog).val('');
+														})
+												)
+											);
+										}),
+									$('<input/>').attr({type:'submit'}).val('Post')
+								)
+						).submit(function(e){
+							e.preventDefault();
+
+							var bodyField = $('textarea', newDialog);
+							if ($.trim(bodyField.val()) === ''){
+								bodyField.focus();
+								return false;
+							}
+
+							$('textarea,input', newDialog).attr('disabled', true);
+
+							editLocationDialog({
+								mapZoom: 14,
+								markerIcon: assetsBaseUrl+'www/images/icons/icon_1.png',
+								inputPlaceholder: 'Enter address',
+								submitText: 'Post from here',
+								cancelButton: true,
+								defaultAddress: user.address,
+								center: centerPosition,
+								infoWindowContent: function(address){
+									return userAddressTooltip(address, user.image);
+								},
+								beforeClose: function(event, ui){
+									$('textarea,input', newDialog).attr('disabled', false);
+									$('.pac-container .pac-item').remove();
+								},
+								submit: function(map, dialogEvent, position, address){
+									map.setOptions({draggable: false, zoomControl: false});
+
+									if ($.trim(address) !== ''){
+										return newPost_save(position, address);
+									}
+
+									(new google.maps.Geocoder()).geocode({
+										'latLng': position
+									}, function(results, status){
+										if (status == google.maps.GeocoderStatus.OK){
+											return newPost_save(position, results[0].formatted_address);
+										}
+
+										newPost_save(position);
+									});
+								}
+							});
+						})
+				)
+				.appendTo('body')
+				.fadeIn(150);
+			$('textarea', newDialog).focus();
+		}
+
+		/**
+		 * Save post handler.
+		 */
+		function newPost_save(location, address){
+			var form = $('.post-new__dialog form'),
+				image = $('[name=image]', form),
+				reset = (getDistance([centerPosition.lat(),centerPosition.lng()],
+					[location.lat(),location.lng()]) > getRadius()),
+				data = new FormData();
+			data.append('news', $('[name=news]', form).val());
+			data.append('latitude', location.lat());
+			data.append('longitude', location.lng());
+
+			if ($.trim(address)!==''){
+				data.append('address', address);
+			}
+
+			if ($.trim(image.val())!==''){
+				data.append('image', image[0].files[0]);
+			}
+
+			if (reset){
+				data.append('reset', 1);
+			}
+
+			ajaxJson({
+				url: baseUrl+'post/new',
+				data: data,
+				cache: false,
+				contentType: false,
+				processData: false,
+				done: function(response){
+					console.log(response);
+
+					$('html, body').animate({scrollTop: 0}, 0);
+					$('.posts > .empty').remove();
+
+					if (reset){
+						postList_reset();
+						centerPosition = location;
+						mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
+						areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),defaultRadius);
+
+						for (var id in response.data){
+							$('.posts').append(response.data[id][2]);
+						}
+
+						if (Object.size(response.data) >= postLimit){
+							$(window).bind('scroll.load', postList_scrollHandler);
+						}
+					} else {
+						for (var id in response.data){
+							$('.posts').prepend(response.data[id][2]);
+							break;
+						}
+					}
+
+					for (var id in response.data){
+						postData[id]=[response.data[id][0],response.data[id][1]];
+						postItem_render(id);
+					}
+
+					$('.posts').prepend($('<input/>')
+						.attr({type: 'hidden', name: 'new[]'})
+						.val(Object.getKey(response.data,0)));
+
+					$('.location-dialog').dialog('close');
+					$('.post-new__dialog').remove();
+				}
+			});
+		}
 
 		/**
 		 * Renders post item.
@@ -354,7 +586,7 @@ function renderMap_callback(){
 											defaultAddress: $address.val(),
 											center: new google.maps.LatLng($latitude.val(), $longitude.val()),
 											infoWindowContent: function(address){
-												return userAddressTooltip(address, userImage);
+												return userAddressTooltip(address, user.image);
 											},
 											submit: function(map, dialogEvent, position, address){
 												map.setOptions({draggable: false, zoomControl: false});
@@ -410,8 +642,7 @@ function renderMap_callback(){
 												$('.post[data-id="'+id+'"]').remove();
 												postItem_delete(id);
 												delete postData[id];
-												// TODO: remove from new posts
-												// $('#addNewsForm [value=' + news_id + ']').remove();
+												$('.posts input[value='+id+']').remove();
 											},
 											fail: function(data, textStatus, jqXHR){
 												editButtons.attr('disabled', false);
@@ -553,16 +784,16 @@ function renderMap_callback(){
 					var target = $(this),
 						body = target.val();
 
-					if ($.trim(body) === ''){
-						return false;
-					}
-
 					if (/[<>]/.test(body)){
 						target.val(body.replace(/[<>]/, ''));
 						return false;
 					}
 
 					if (keyCode(e) === 13 && !e.shiftKey){
+						if ($.trim(body) === ''){
+							return false;
+						}
+
 						target.attr('disabled', true);
 
 						ajaxJson({
@@ -606,6 +837,7 @@ function renderMap_callback(){
 			var max = 0;
 
 			for (var group in postMarkers){
+				group = parseInt(group);
 				if (group > max){
 					max = group;
 				}
@@ -651,8 +883,17 @@ function renderMap_callback(){
 		 * Change list action.
 		 */
 		function postList_change(){
-			$(window).unbind('scroll.load');
 			$('html, body').animate({scrollTop: '0px'}, 300);
+			postList_reset();
+			postList_load();
+		}
+
+		/**
+		 * Rset posts list action.
+		 */
+		function postList_reset(){
+			$(window).unbind('scroll.load');
+			if (loadXhr) loadXhr.abort();
 			if (!$.isEmptyObject(postMarkers)>0){
 				$('#map_canvas :data(ui-tooltip)').tooltip('destroy');
 				for (var group in postMarkers){
@@ -663,8 +904,7 @@ function renderMap_callback(){
 			postMarkers={};
 			postMarkersCluster={};
 			postList_locationMarker();
-			if (loadXhr) loadXhr.abort();
-			postList_load();
+			$('.posts').html('');
 		}
 
 		/**
@@ -685,16 +925,11 @@ function renderMap_callback(){
 						areaCircle.center.lng()
 					],
 					start: start,
-					// TODO: render
-					// 'new': $('#addNewsForm [name=new\\[\\]]').map(function(){
-						// return $(this).val();
-					// }).get()
+					'new': $('.posts [name=new\\[\\]]').map(function(){
+						return $(this).val();
+					}).get()
 				},
 				done: function(response){
-					if (start == 0){
-						$('.posts').html('');
-					}
-
 					if (response.empty){
 						$('.posts').html(response.empty);
 						return true;
@@ -807,12 +1042,12 @@ function renderMap_callback(){
 		 */
 		function postList_locationMarker(center){
 			var center = [areaCircle.center.lat(),areaCircle.center.lng()];
-			if (getDistance(userLocation, center) <= getRadius()){
-				postItem_marker(0, userLocation, {isRoot:true});
+			if (getDistance(user.location, center) <= getRadius()){
+				postItem_marker(0, user.location, {isRoot:true});
 			} else if (mainMap.getBounds().contains(userPosition)){
 				postMarkers[0] = postList_tooltipmarker({
 					id: 0,
-					position: userLocation,
+					position: user.location,
 					data: {isRoot:true},
 					content: function(content, marker, event, ui){
 						if ($.trim(content) !== ''){
@@ -1105,6 +1340,11 @@ function postItem_delete(id){
 				break;
 			}
 		}
+
+		for (var i in postMarkersCluster[group]){
+			postMarkers[group].data('id', postMarkersCluster[group][i]);
+			break;
+		}
 	}
 }
 
@@ -1288,7 +1528,12 @@ function getRadius(){
  * Returns the distance between two points in meters.
  */
 var getDistance = function(p1, p2){
-	if (p1[0] === p2[0] && p1[1] === p2[1]){
+	p1[0] = parseFloat(p1[0]);
+	p1[1] = parseFloat(p1[1]);
+	p2[0] = parseFloat(p2[0]);
+	p2[1] = parseFloat(p2[1]);
+
+	if (p1[0] == p2[0] && p1[1] == p2[1]){
 		return 0;
 	}
 
@@ -1309,6 +1554,19 @@ Object.size = function(obj){
 		if (obj.hasOwnProperty(key)) size++;
 	}
 	return size;
+};
+
+/**
+ * Returns object key by position.
+ */
+Object.getKey = function(obj, key){
+	var size = 0, __key = 0, i;
+	for (i in obj){
+		if (__key++ == key){
+			return i;
+		}
+	}
+	return null;
 };
 
 /**
@@ -1346,6 +1604,9 @@ function ajaxJson(url, settings){
 				return settings.done(data, textStatus, jqXHR);
 			}
 		}).fail(function(jqXHR, textStatus){
+			if (textStatus === 'abort'){
+				return true;
+			}
 			if (typeof settings.fail === 'function'){
 				settings.fail({}, textStatus, jqXHR);
 			}
@@ -1386,6 +1647,9 @@ function editLocationDialog(options){
 			height: 500,
 			dialogClass: 'dialog',
 			beforeClose: function(event, ui){
+				if (typeof options.beforeClose === 'function'){
+					options.beforeClose(event, ui);
+				}
 				$('body').css({overflow: 'visible'});
 				$(event.target).dialog('destroy').remove();
 			},
@@ -1546,3 +1810,22 @@ function userAddressTooltip(address, image){
 		'<div class="address">' + address + '</div>' +
 	'</div>';
 }
+
+// TODO: move to common js
+function setCookie(name, value, days){
+    var d = new Date();
+    d.setTime(d.getTime() + (days * 86400000));
+    document.cookie = name+'='+value+'; expires='+d.toUTCString();
+} 
+
+// TODO: move to common js
+function getCookie(name){
+    var name = name+'=';
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
+    }
+    return '';
+} 

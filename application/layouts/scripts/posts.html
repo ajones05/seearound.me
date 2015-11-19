@@ -103,20 +103,5 @@ $this->headLink() . $this->headScript(); ?></head>
 	</div>
 	<div class="posts"><?php echo $this->layout()->content; ?></div>
 </div>
-<div class="post-new-dialog" style="display: none;">
-	<div class="wrapper">
-		<div class="user">
-			<img width="43" height="43" src="<?php echo $profileImage; ?>">
-			<p><?php echo ucwords($this->user->Name); ?></p>
-		</div>
-		<div class="edit">
-			<textarea placeholder="Share something about a location..."></textarea>
-		</div>
-		<div class="action">
-			<a href="#"><img width="27" height="20" src="/www/images/icon-camera.png"></a>
-			<a href="#">Post</a>
-		</div>
-	</div>
-</div>
 </body>
 </html>

@@ -202,47 +202,49 @@ body {
 	overflow: hidden;
 }
 .posts,
-.post-new-dialog {
+.post-new__dialog {
     top: 60px;
 	left: 17px;
     width: 435px;
 }
-.post-new-dialog {
+.post-new__dialog {
 	position: fixed;
 	z-index: 3;
 	background-color: #f1f1f1;
 	border-bottom: solid 2px #999;
 	min-height: 97px;
+	display: none;
+	text-align: right;
 }
-.post-new-dialog .wrapper {
+.post-new__dialog .wrapper {
 	padding: 6px 12px 0 13px;
 }
-.post-new-dialog textarea {
+.post-new__dialog textarea {
 	font-size: 13.65px;
 	outline: 0;
-	padding: 6px 10px;
+	padding: 10px 10px 11px;
 	margin: 0;
 	width: 326px;
-	height: 47px;
+	height: 38px;
 	font-family: 'Lato-LightItalic';
 	background: #fff;
 	color: #7d7d7d;
-	line-height: 25px;
+	line-height: 17px;
 	border: none;
 	resize: none;
 	display: block;
 }
-.post-new-dialog .user {
+.post-new__dialog .user {
 	float: left;
 }
-.post-new-dialog .user img {
+.post-new__dialog .user img {
 	width: 43px;
 	height: 43px;
 	border-radius: 50px;
 	margin: 0 5px;
 	display: block;
 }
-.post-new-dialog .user p {
+.post-new__dialog .user p {
 	margin: 0;
 	font-size: 15.17px;
 	color: #cc0000;
@@ -252,31 +254,53 @@ body {
 	overflow: hidden;
 	height: 18px;
 }
-.post-new-dialog .edit {
-	background: url('../images/user-symbol-small.png') no-repeat 0 0px;
+.post-new__dialog .edit {
+    background-image: url('../images/user-symbol-small.png');
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-position: left top 7px;
 	padding-left: 11px;
-	background-position: left center;
 	margin-top: 2px;
     margin-left: 53px;
 }
-.post-new-dialog .action {
-	text-align: right;
+.post-new__dialog .action {
 	margin-top: 4px;
+	display: inline-block;
 }
-.post-new-dialog .action a:first-child {
-	margin-right: 50px;
+.post-new__dialog .action > img,
+.post-new__dialog .image {
+	margin: 0 50px 0 0;
 }
-.post-new-dialog .action a:first-child img {
-	margin: 0;
-}
-.post-new-dialog .action a:nth-child(2) {
+.post-new__dialog .image,
+.post-new__dialog .action input[type=submit] {
 	font-family: 'Lato-Regular';
 	font-size: 18.95px;
-	line-height: 18.95px;
-	display: block;
-	float: right;
+	line-height: 15.95px;
 	color: #cc3333;
-	text-decoration: none;
+}
+.post-new__dialog .action > img,
+.post-new__dialog .action input[type=submit] {
+	cursor: pointer;
+}
+.post-new__dialog .action input[type=submit] {
+	float: right;
+	background: none;
+	border: none;
+	width: 38px;
+	padding: 0;
+}
+.post-new__dialog .image {
+    word-wrap: break-word;
+	float: left;
+	max-width: 160px;
+}
+.post-new__dialog .image img {
+    cursor: pointer;
+    margin-bottom: -2px;
+    margin-left: 10px;
+}
+.post-new__notify {
+	padding: 15px 0;
 }
 .posts .post {
 	background-color: rgb(255,255,255);
@@ -822,7 +846,7 @@ body {
 }
 .dialog.ui-dialog .ui-dialog-content {
 	background-color: #fff !important;
-	margin: 5px;
+	margin: 5px 5px 0;
 	padding: 0 !important;
 	overflow: hidden !important;
 	text-align: center;
@@ -843,6 +867,11 @@ body {
 }
 .dialog .ui-dialog-titlebar-close > span {
 	display: none !important;
+}
+.dialog .ui-dialog-buttonpane {
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 0 !important;
 }
 /**
  * Edit location dialog.

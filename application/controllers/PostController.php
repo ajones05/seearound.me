@@ -141,9 +141,12 @@ class PostController extends Zend_Controller_Action
 			$this->view->posts = $posts;
 			$this->view->headScript()->appendScript(
 				'var mapCenter=' . json_encode($mapCenter) . ',' .
-				'userLocation=' . json_encode($userLocation) . ',' .
-				'userImage=' . json_encode($user->getProfileImage(
-					$this->view->baseUrl('www/images/img-prof40x40.jpg'))) . ',' .
+				'user=' . json_encode(array(
+					'name' => $user->Name,
+					'address' => $user->address(),
+					'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					'location' => $userLocation
+				)) . ',' .
 				'postData=' . json_encode($postData) . ',' .
 				'renderRadius=' . json_encode($radius) . ';'
 			);
@@ -152,6 +155,7 @@ class PostController extends Zend_Controller_Action
 		{
 			if ($this->_request->isXmlHttpRequest())
 			{
+				My_Log::exception($e);
 				$this->_helper->json(array(
 					'status' => 0,
 					'message' => $e instanceof RuntimeException ? $e->getMessage() :
@@ -185,6 +189,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$this->_helper->viewRenderer->setNoRender(true);
 			echo $e instanceof RuntimeException ? $e->getMessage() :
 				'Internal Server Error';
@@ -265,7 +270,10 @@ class PostController extends Zend_Controller_Action
 
 				if (!$result->count())
 				{
-					return $this->__userLocation($user);
+					$this->_helper->viewRenderer->setNoRender(true);
+					echo $this->view->partial('post/user-tooltip.html',
+						array('user' => $user));
+					return true;
 				}
 
 				$post = $result->current();
@@ -332,6 +340,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$this->_helper->viewRenderer->setNoRender(true);
 			echo $e instanceof RuntimeException ? $e->getMessage() :
 				'Internal Server Error';
@@ -339,7 +348,88 @@ class PostController extends Zend_Controller_Action
 	}
 
 	/**
-	 * Edit comment action.
+	 * Add post action.
+	 *
+	 * @return void
+	 */
+	public function newAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$form = new Application_Form_News;
+
+			if (!$form->isValid($this->_request->getParams()))
+			{
+				throw new RuntimeException('Validate error', -1);
+			}
+
+			$data = $form->getValues();
+			$data['user_id'] = $user->id;
+			$post = (new Application_Model_News)->save($data);
+
+			$response = array(
+				'status' => 1,
+				'data' => array(
+					$post->id => array(
+						$post->latitude,
+						$post->longitude,
+						$this->view->partial('post/_list_item.html', array(
+							'post' => $post,
+							'owner' => $user,
+							'user' => $user
+						))
+					)
+				)
+			);
+
+			if ($this->_request->getPost('reset', 0))
+			{
+				$result = (new Application_Model_News)->search(array(
+					'latitude' => $post->latitude,
+					'longitude' => $post->longitude,
+					'radius' => 0.8,
+					'limit' => 14,
+					'exclude_id' => array($post->id)
+				), $user);
+
+				foreach ($result as $post)
+				{
+					$owner = $post->findDependentRowset('Application_Model_User')->current();
+					$response['data'][$post->id] = array(
+						$post->latitude,
+						$post->longitude,
+						$this->view->partial('post/_list_item.html', array(
+							'post' => $post,
+							'owner' => $post->findDependentRowset('Application_Model_User')->current(),
+							'user' => $user,
+							'limit' => 350
+						))
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			My_Log::exception($e);
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			);
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Edit post action.
 	 *
 	 * @return void
 	 */
@@ -375,6 +465,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = array(
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
@@ -446,6 +537,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = array(
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
@@ -500,6 +592,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = array(
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
@@ -508,16 +601,5 @@ class PostController extends Zend_Controller_Action
 		}
 
 		$this->_helper->json($response);
-	}
-
-	/**
-	 * User location action.
-	 *
-	 * @return void
-	 */
-	protected function __userLocation($user)
-	{
-		$this->_helper->viewRenderer->setNoRender(true);
-		echo My_ViewHelper::render('post/user-tooltip.html', array('user' => $user));
 	}
 }
