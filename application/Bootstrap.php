@@ -99,6 +99,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 	protected function _initLog()
 	{
+		$options = $this->getOption('resources');
+		$logger = Zend_Log::factory($options['log']);
+		$logger->addPriority('exception', 8);
+		Zend_Registry::set('logger', $logger);
+
+		// TODO: refactoring
 		$log_path = ROOT_PATH . '/log';
 		is_dir($log_path) || mkdir($log_path, 0700);
 		$log = $log_path . '/bootstrap_log_' . date('Y-m-d') . '.log';
