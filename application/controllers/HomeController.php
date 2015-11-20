@@ -879,8 +879,21 @@ class HomeController extends Zend_Controller_Action
 				$userLike->canceled = 1;
 				$userLike->save();
 
-				$news->vote = max(0, $news->vote - $userLike->vote);
-				$news->save();
+				if ($news->vote == 0)
+				{
+					$lastVote = $model->findLastByNewsId($news->id, $userLike->vote);
+
+					if ($lastVote && $lastVote->vote)
+					{
+						$news->vote = $lastVote->vote;
+						$news->save();
+					}
+				}
+				else
+				{
+					$news->vote = max(0, $news->vote - $userLike->vote);
+					$news->save();
+				}
 			}
 
 			if (!$userLike || $userLike->vote != $vote)

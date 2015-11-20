@@ -50,4 +50,36 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 
 		return $result;
 	}
+
+	/**
+	 * Returns last vote by news ID.
+	 *
+	 * @param	integer	$news_id
+	 * @param	mixed	$exclude
+	 * @return	string
+	 */
+	public function findLastByNewsId($news_id, $exclude = null)
+	{
+		$query = $this->select()
+			->where('canceled=0')
+			->where('news_id=?', $news_id)
+			->order('id DESC');
+
+		if ($exclude != null)
+		{
+			if (!is_array($exclude))
+			{
+				$exclude = array($exclude);
+			}
+
+			foreach ($exclude as $id)
+			{
+				$query->where('id<>?', $id);
+			}
+		}
+
+		$result = $this->fetchRow($query);
+
+		return $result;
+	}
 }
