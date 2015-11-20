@@ -1,4 +1,5 @@
 <?php
+use Respect\Validation\Validator as v;
 
 class HomeController extends Zend_Controller_Action
 {
@@ -861,21 +862,31 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('You can not vote your own post', -1);
 			}
 
-			$votingTable = new Application_Model_Voting;
-
-            if ($votingTable->findNewsLikeByUserId($news->id, $user->id))
-			{
-				throw new RuntimeException('Alredy voted', -1);
-            }
-
 			$vote = $this->_request->getPost('vote');
 
-			if ($vote != 1 && $vote != -1)
+			if (!v::int()->oneOf(v::equals(-1),v::equals(1))->validate($vote))
 			{
-				throw new RuntimeException('Incorrect vote value', -1);
+				throw new RuntimeException('Incorrect vote value: ' .
+					var_export($vote, true), -1);
 			}
 
-			$votingTable->saveVotingData($vote, $user->id, $news);
+			$model = new Application_Model_Voting;
+			$userLike = $model->findNewsLikeByUserId($news->id, $user->id);
+
+			if ($userLike)
+			{
+				$userLike->updated_at = (new DateTime)->format(My_Time::$mysqlFormat);
+				$userLike->canceled = 1;
+				$userLike->save();
+
+				$news->vote = max(0, $news->vote - $userLike->vote);
+				$news->save();
+			}
+
+			if (!$userLike || $userLike->vote != $vote)
+			{
+				$model->saveVotingData($vote, $user->id, $news);
+			}
 
 			$response = array(
 				'status' => 1,

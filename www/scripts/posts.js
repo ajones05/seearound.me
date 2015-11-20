@@ -506,8 +506,16 @@ function renderMap_callback(){
 						vote: (target.hasClass('like') ? 1 : -1)
 					},
 					done: function(response){
-						target.addClass('active');
+						var setVote = !target.hasClass('active');
+						$('.like,.dislike', postContainer).removeClass('active');
+						if (setVote){
+							target.addClass('active');
+						}
 						$('._3_copy', vote).html(response.vote);
+						vote.attr('disabled', false);
+					},
+					fail: function(){
+						vote.attr('disabled', false);
 					}
 				});
 			});

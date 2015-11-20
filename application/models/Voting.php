@@ -5,7 +5,7 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 	/**
 	 * @var	string
 	 */
-    protected $_name = 'votings';
+	protected $_name = 'votings';
 
 	/**
 	 * Saves voting data.
@@ -43,6 +43,7 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 	{
         $result = $this->fetchRow(
 			$this->select()
+				->where('canceled=0')
                 ->where('user_id=?', $user_id)
                 ->where('news_id=?', $news_id)
 		);

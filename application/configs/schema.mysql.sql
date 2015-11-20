@@ -199,8 +199,10 @@ ALTER TABLE `votings` DROP `comments_count`;
 ALTER TABLE `votings` DROP `type`;
 ALTER TABLE `votings` DROP `news_count`;
 ALTER TABLE `votings` ADD `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `news_id`;
+ALTER TABLE `votings` ADD `updated_at` TIMESTAMP NULL DEFAULT NULL AFTER `created_at`;
 ALTER TABLE `votings` ADD `vote` TINYINT NOT NULL DEFAULT '1' AFTER `id`;
 ALTER TABLE `votings` CHANGE `vote` `vote` TINYINT(4) NOT NULL;
+ALTER TABLE `votings` ADD `canceled` TINYINT NOT NULL DEFAULT '0';
 
 --
 -- Table structure for table `facebook_temp_users`

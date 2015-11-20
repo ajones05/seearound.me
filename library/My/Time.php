@@ -5,6 +5,11 @@
 class My_Time
 {
 	/**
+	 * @var	string
+	 */
+	public static $mysqlFormat = 'Y-m-d H:i:s';
+
+	/**
 	 * Converts timestamp to time ago.
 	 *
 	 * @param	string $date

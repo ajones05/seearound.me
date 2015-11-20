@@ -26,11 +26,9 @@ if (!$this->is_new && $this->user &&
 
 	if ($result)
 	{
-		$userVote = intval($result->vote);
+		$userVote = $result->vote;
 	}
 }
-
-$disableVote = $userVote !== 0 || $this->post->user_id == $this->user->id;
 ?>
 <div class="post" data-id="<?php echo $this->post->id; ?>">
 <a href="<?php echo $profileUrl; ?>" class="user_avatar">
@@ -38,11 +36,11 @@ $disableVote = $userVote !== 0 || $this->post->user_id == $this->user->id;
 </a>
 <a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($this->owner->Name); ?></a>
 <a href="<?php echo $this->baseUrl('info/news/nwid/' . $this->post->id); ?>" class="post-time"><?php echo My_Time::time_ago($this->post->created_date, array('ago' => true, 'short' => true)); ?></a>
-<div class="vote"<?php if ($disableVote): ?> disabled<?php endif; ?>>
+<div class="vote"<?php if ($this->post->user_id == $this->user->id): ?> disabled<?php endif; ?>>
 <div class="_3_copy"><?php echo $this->post->vote; ?></div>
 <div class="icon">
-<div class="like<?php if ($userVote === 1): ?> active<?php endif; ?>"></div>
-<div class="dislike<?php if ($userVote === -1): ?> active<?php endif; ?>"></div>
+<div class="like<?php if ($userVote == 1): ?> active<?php endif; ?>"></div>
+<div class="dislike<?php if ($userVote == -1): ?> active<?php endif; ?>"></div>
 </div>
 </div>
 <div class="post_text"><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'limit')); ?></div>

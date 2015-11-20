@@ -1,5 +1,5 @@
 <?php
-require_once ROOT_PATH . '/vendor/autoload.php';
+use Respect\Validation\Validator as v;
 
 /**
  * Mobile API class.
@@ -907,6 +907,7 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as $row)
 				{
 					$owner = $row->findDependentRowset('Application_Model_User')->current();
+					$userLike = $votingTable->findNewsLikeByUserId($row->id, $user->id);
 
 					$data = array(
 						'id' => $row->id,
@@ -924,7 +925,7 @@ class MobileController extends Zend_Controller_Action
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $row->comment,
 						'news_count' => $row->vote,
-						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id) ? 'Yes' : 'No',
+						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
 						'Name' => $owner->Name,
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
@@ -1026,6 +1027,7 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as $row)
 				{
 					$owner = $row->findDependentRowset('Application_Model_User')->current();
+					$userLike = $votingTable->findNewsLikeByUserId($row->id, $user->id);
 
 					$data = array(
 						'id' => $row->id,
@@ -1043,7 +1045,7 @@ class MobileController extends Zend_Controller_Action
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $row->comment,
 						'news_count' => $row->vote,
-						'isLikedByUser' => $votingTable->findNewsLikeByUserId($row->id, $user->id) ? 'Yes' : 'No',
+						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
 						'Name' => $owner->Name,
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
@@ -1203,52 +1205,67 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
-			{
-				throw new RuntimeException('Incorrect news ID', -1);
-			}
-
 			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
 			{
 				throw new RuntimeException('Incorrect user ID', -1);
 			}
 
-			$vote = $this->_request->getPost('vote');
-
-			if ($vote != 1 && $vote != -1)
+			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
 			{
-				throw new RuntimeException('Incorrect vote value', -1);
+				throw new RuntimeException('Incorrect news ID', -1);
 			}
 
-            $model = new Application_Model_Voting;
-
-			if ($model->findNewsLikeByUserId($news->id, $user->id))
+			if ($news->user_id == $user->id)
 			{
-				$response = array(
-					'successalready' => 'registered already',
-					'noofvotes_1' => $news->vote
-				);
+				throw new RuntimeException('You can not vote your own post', -1);
+			}
+
+			$vote = $this->_request->getPost('vote');
+
+			if (!v::int()->oneOf(v::equals(-1),v::equals(1))->validate($vote))
+			{
+				throw new RuntimeException('Incorrect vote value: ' .
+					var_export($vote, true), -1);
+			}
+
+			$model = new Application_Model_Voting;
+			$userLike = $model->findNewsLikeByUserId($news->id, $user->id);
+
+			if ($userLike)
+			{
+				$userLike->updated_at = (new DateTime)->format(My_Time::$mysqlFormat);
+				$userLike->canceled = 1;
+				$userLike->save();
+
+				$news->vote = max(0, $news->vote - $userLike->vote);
+				$news->save();
+			}
+
+			if (!$userLike || $userLike->vote != $vote)
+			{
+				$model->saveVotingData($vote, $user->id, $news);
 			}
 			else
 			{
-				$model->saveVotingData($vote, $user->id, $news);
-
-				$response = array(
-					'news' => array(
-						'id' => $news->id,
-						'news_count' => $news->vote,
-						'isLikedByUser' => 'Yes'
-					),
-					'success' => 'voted successfully',
-					'noofvotes_2' => $news->vote
-				);
+				$vote = 0;
 			}
+
+			$response = array(
+				'news' => array(
+					'id' => $news->id,
+					'news_count' => $news->vote,
+					'isLikedByUser' => $vote
+				),
+				'success' => 'voted successfully',
+				'noofvotes_2' => $news->vote
+			);
         }
 		catch (Exception $e)
 		{
 			$response = array(
 				'resonfailed' => 'Sorry unable to vote',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 		}
 
