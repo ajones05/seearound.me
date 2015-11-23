@@ -1258,20 +1258,8 @@ class MobileController extends Zend_Controller_Action
 			{
 				$model->saveVotingData($vote, $user->id, $news);
 			}
-			else
-			{
-				$vote = 0;
-			}
 
-			$response = array(
-				'news' => array(
-					'id' => $news->id,
-					'news_count' => $news->vote,
-					'isLikedByUser' => $vote
-				),
-				'success' => 'voted successfully',
-				'noofvotes_2' => $news->vote
-			);
+			$response = array('success' => 'voted successfully');
         }
 		catch (Exception $e)
 		{
