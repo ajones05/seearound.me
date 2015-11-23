@@ -1,6 +1,7 @@
 <?php
 $config = Zend_Registry::get('config_global');
 $profileImage = $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
+$searchKeywords = My_ArrayHelper::getProp($this->search, 'keywords');
 
 My_Layout::renderFavicon($this);
 
@@ -36,8 +37,8 @@ $this->headLink() . $this->headScript(); ?></head>
 	<div class="post-search">
 		<form id="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
 			<div class="keywords">
-				<input type="text" name="keywords" value="<?php echo $this->search['keywords']; ?>" placeholder="Search Posts..." />
-				<?php if (trim($this->search['keywords']) !== ''): ?>
+				<input type="text" name="keywords" value="<?php echo $searchKeywords; ?>" placeholder="Search Posts..." />
+				<?php if (trim($searchKeywords) !== ''): ?>
 				<img class="clear" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/close14x14.png'); ?>" alt="clear">
 				<?php else: ?>
 				<img class="search" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/search14x14.png'); ?>" alt="search">

@@ -81,6 +81,18 @@ class PostController extends Zend_Controller_Action
 					var_export($filter, true));
 			}
 
+			$search = array();
+
+			if (trim($keywords) !== '')
+			{
+				$search['keywords'] = $keywords;
+			}
+
+			if (trim($filter) !== '')
+			{
+				$search['filter'] = $filter;
+			}
+
 			$userLocation = $user->location();
 
 			$mapCenter = $point ? explode(',', $point) :
@@ -139,10 +151,7 @@ class PostController extends Zend_Controller_Action
 
 			$this->view->user = $user;
 			$this->view->posts = $posts;
-			$this->view->search = array(
-				'keywords' => $keywords,
-				'filter' => $filter
-			);
+			$this->view->search = $search;
 			$this->view->headScript()->appendScript(
 				'var mapCenter=' . json_encode($mapCenter) . ',' .
 				'user=' . json_encode(array(
@@ -151,6 +160,7 @@ class PostController extends Zend_Controller_Action
 					'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					'location' => $userLocation
 				)) . ',' .
+				'search=' . json_encode($search, JSON_FORCE_OBJECT) . ',' .
 				'postData=' . json_encode($postData) . ',' .
 				'renderRadius=' . json_encode($radius) . ';'
 			);

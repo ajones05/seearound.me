@@ -1007,8 +1007,8 @@ function renderMap_callback(){
 				url: baseUrl+'post/list',
 				data: {
 					radius: getRadius(),
-					keywords: $('#postSearch [name=keywords]').val(),
-					filter: $('#postSearch [name=filter]').val(),
+					keywords: search.keywords,
+					filter: search.filter,
 					center: [
 						areaCircle.center.lat(),
 						areaCircle.center.lng()
@@ -1375,8 +1375,8 @@ function postTooltip_content(id, position, event, ui){
 			id: id,
 			lat: position.lat(),
 			lng: position.lng(),
-			keywords: $('#postSearch [name=keywords]').val(),
-			filter: $('#postSearch [name=filter]').val(),
+			keywords: search.keywords,
+			filter: search.filter,
 			readmore: 1
 		},
 		type: 'POST',
