@@ -114,12 +114,11 @@ body {
 	padding-top: 7px;
 	padding-bottom: 3px;
 }
-.post-search input[type=image] {
-    height: 14px;
-    width: 14px;
+.post-search .keywords img {
 	position: absolute;
 	right: 11px;
 	top: 8px;
+	cursor: pointer;
 }
 .post-search .keywords {
 	position: relative;

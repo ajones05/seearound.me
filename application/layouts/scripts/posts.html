@@ -36,8 +36,12 @@ $this->headLink() . $this->headScript(); ?></head>
 	<div class="post-search">
 		<form id="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
 			<div class="keywords">
-				<input type="text" name="keywords" placeholder="Search Posts..." />
-				<input type="image" src="<?php echo $this->baseUrl('www/images/template/search14x14.png'); ?>" alt="search" />
+				<input type="text" name="keywords" value="<?php echo $this->search['keywords']; ?>" placeholder="Search Posts..." />
+				<?php if (trim($this->search['keywords']) !== ''): ?>
+				<img class="clear" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/close14x14.png'); ?>" alt="clear">
+				<?php else: ?>
+				<img class="search" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/search14x14.png'); ?>" alt="search">
+				<?php endif; ?>
 			</div>
 			<div class="filter">
 				<select name="filter" style="display: none;">

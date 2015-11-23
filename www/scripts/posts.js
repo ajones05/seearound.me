@@ -226,7 +226,35 @@ function renderMap_callback(){
 						}
 					});
 			});
-			
+
+			var searchForm = $('#postSearch'),
+				searchKeywords = $('[name=keywords]', searchForm),
+				searchFilter = $('[name=filter]', searchForm).change(function(){
+					searchForm.submit();
+				});
+
+			searchForm.submit(function(){
+				if ($.trim(searchKeywords.val()) === ''){
+					searchKeywords.attr('disabled', true);
+				}
+				if ($.trim(searchFilter.val()) === ''){
+					searchFilter.attr('disabled', true);
+				}
+			});
+
+			$('.search', searchForm).click(function(){
+				if ($.trim(searchKeywords.val()) === ''){
+					searchKeywords.focus();
+					return false;
+				}
+				searchForm.submit();
+			});
+
+			$('.clear', searchForm).click(function(){
+				searchKeywords.val('');
+				searchForm.submit();
+			});
+
 			$('.user-location button').click(function(){
 				var locationButton = $(this).attr('disabled', true);
 				editLocationDialog({

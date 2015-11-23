@@ -139,6 +139,10 @@ class PostController extends Zend_Controller_Action
 
 			$this->view->user = $user;
 			$this->view->posts = $posts;
+			$this->view->search = array(
+				'keywords' => $keywords,
+				'filter' => $filter
+			);
 			$this->view->headScript()->appendScript(
 				'var mapCenter=' . json_encode($mapCenter) . ',' .
 				'user=' . json_encode(array(
