@@ -7,7 +7,7 @@ $(function(){
 			appId: facebook_appId,
 			xfbml: true,
 			cookie: true,
-			version: 'v2.1'
+			version: 'v2.5'
 		});
 	};
 
@@ -40,24 +40,9 @@ $(function(){
 	});
 
 	if (isLogin){
+		// TODO: next execution after complete current ajax request
         notification();
         setInterval('notification()', 120000);
-
-		$('#logoutLi a').click(function(e){
-			var url = $(this).attr('href');
-
-			e.preventDefault();
-
-			FB.getLoginStatus(function(response){
-				if (response.authResponse){
-					FB.logout(function(){
-						window.location.href = url;
-					});
-				} else {
-					window.location.href = url;
-				}
-			}); 
-		});
 
 		$('#myProfLink').click(function(e){
 			e.preventDefault();
@@ -91,17 +76,12 @@ $(function(){
 			e.preventDefault();
 
 			var url = $(this).attr('href');
-			
+
 			FB.login(function(response){
-				if (response.authResponse){
-					FB.api('/me', function(response){
-						if (response.email){
-							window.location.href = url;
-						} else {
-							alert('Email not activated');
-						}
-					});
+				if (response.status !== 'connected'){
+					return false;
 				}
+				window.location.href = url;
 			},{scope: 'email'});
 		});
 
