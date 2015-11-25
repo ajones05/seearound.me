@@ -864,7 +864,7 @@ class HomeController extends Zend_Controller_Action
 
 			$vote = $this->_request->getPost('vote');
 
-			if (!v::int()->oneOf(v::equals(-1),v::equals(1))->validate($vote))
+			if (!v::intVal()->oneOf(v::equals(-1),v::equals(1))->validate($vote))
 			{
 				throw new RuntimeException('Incorrect vote value: ' .
 					var_export($vote, true), -1);

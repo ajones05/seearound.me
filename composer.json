@@ -2,6 +2,6 @@
 	"require": {
 		"geoip2/geoip2": "dev-master",
 		"facebook/php-sdk-v4" : "4.0.*",
-		"respect/validation" : "0.9.*"
+		"respect/validation" : "1.*"
 	}
 }

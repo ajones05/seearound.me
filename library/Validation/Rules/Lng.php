@@ -13,8 +13,9 @@ namespace Validation\Rules;
  */
 class Lng extends \Respect\Validation\Rules\Numeric
 {
-    public function __construct()
+    public function validate($input)
     {
-        parent::__construct(new \Respect\Validation\Rules\Between(-90, 90));
+        return parent::validate($input) &&
+			(new \Respect\Validation\Rules\Between(-180, 180))->validate($input);
     }
 }

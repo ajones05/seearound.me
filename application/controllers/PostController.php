@@ -35,7 +35,7 @@ class PostController extends Zend_Controller_Action
 
 			$start = $this->_request->getPost('start', 0);
 
-			if (!v::int()->validate($start))
+			if (!v::intVal()->validate($start))
 			{
 				throw new RuntimeException('Incorrect start value: ' .
 					var_export($start, true));
@@ -43,7 +43,7 @@ class PostController extends Zend_Controller_Action
 
 			$point = $this->_request->getParam('point');
 
-			if (!v::string()->latlng()->addOr(v::nullValue())->validate($point))
+			if (!v::optional(v::stringType()->latlng())->validate($point))
 			{
 				throw new RuntimeException('Incorrect point value: ' .
 					var_export($point, true));
@@ -51,7 +51,7 @@ class PostController extends Zend_Controller_Action
 
 			$center = $this->_request->getParam('center');
 
-			if (!v::arr()->latlng()->addOr(v::nullValue())->validate($center))
+			if (!v::optional(v::arrayType()->latlng())->validate($center))
 			{
 				throw new RuntimeException('Incorrect center value: ' .
 					var_export($center, true));
@@ -59,7 +59,7 @@ class PostController extends Zend_Controller_Action
 
 			$radius = $this->_request->getParam('radius', 0.8);
 
-			if (!v::float()->validate($radius) || $radius < 0.5 || $radius > 1.5)
+			if (!v::floatVal()->validate($radius) || $radius < 0.5 || $radius > 1.5)
 			{
 				throw new RuntimeException('Incorrect radius value: ' .
 					var_export($radius, true));
@@ -67,7 +67,7 @@ class PostController extends Zend_Controller_Action
 
 			$keywords = $this->_request->getParam('keywords');
 
-			if (!v::string()->addOr(v::nullValue())->validate($keywords))
+			if (!v::optional(v::stringType())->validate($keywords))
 			{
 				throw new RuntimeException('Incorrect keywords value: ' .
 					var_export($keywords, true));
@@ -75,7 +75,7 @@ class PostController extends Zend_Controller_Action
 
 			$filter = $this->_request->getParam('filter');
 
-			if (!v::string()->addOr(v::nullValue())->validate($filter))
+			if (!v::optional(v::intVal())->validate($filter))
 			{
 				throw new RuntimeException('Incorrect filter value: ' .
 					var_export($filter, true));
@@ -91,6 +91,13 @@ class PostController extends Zend_Controller_Action
 			if (trim($filter) !== '')
 			{
 				$search['filter'] = $filter;
+			}
+
+			$searchForm = new Application_Form_PostSearch;
+
+			if (!$searchForm->isValid($search))
+			{
+				throw new RuntimeException('Validate error');
 			}
 
 			$userLocation = $user->location();
@@ -151,7 +158,7 @@ class PostController extends Zend_Controller_Action
 
 			$this->view->user = $user;
 			$this->view->posts = $posts;
-			$this->view->search = $search;
+			$this->view->searchForm = $searchForm;
 			$this->view->headScript()->appendScript(
 				'var mapCenter=' . json_encode($mapCenter) . ',' .
 				'user=' . json_encode(array(
@@ -230,7 +237,7 @@ class PostController extends Zend_Controller_Action
 
 			$lat = $this->_request->getPost('lat');
 
-			if (!v::string()->lat()->validate($lat))
+			if (!v::stringType()->lat()->validate($lat))
 			{
 				throw new RuntimeException('Incorrect latitude value: ' .
 					var_export($lat, true));
@@ -238,7 +245,7 @@ class PostController extends Zend_Controller_Action
 
 			$lng = $this->_request->getPost('lng');
 
-			if (!v::string()->lng()->validate($lng))
+			if (!v::stringType()->lng()->validate($lng))
 			{
 				throw new RuntimeException('Incorrect longitude value: ' .
 					var_export($lng, true));
@@ -246,7 +253,7 @@ class PostController extends Zend_Controller_Action
 
 			$keywords = $this->_request->getPost('keywords');
 
-			if (!v::string()->addOr(v::nullValue())->validate($keywords))
+			if (!v::optional(v::stringType())->validate($keywords))
 			{
 				throw new RuntimeException('Incorrect keuwords value: ' .
 					var_export($keywords, true));
@@ -254,10 +261,29 @@ class PostController extends Zend_Controller_Action
 
 			$filter = $this->_request->getPost('filter');
 
-			if (!v::string()->addOr(v::nullValue())->validate($filter))
+			if (!v::optional(v::intVal())->validate($filter))
 			{
 				throw new RuntimeException('Incorrect filter value: ' .
 					var_export($filter, true));
+			}
+
+			$search = array();
+
+			if (trim($keywords) !== '')
+			{
+				$search['keywords'] = $keywords;
+			}
+
+			if (trim($filter) !== '')
+			{
+				$search['filter'] = $filter;
+			}
+
+			$searchForm = new Application_Form_PostSearch;
+
+			if (!$searchForm->isValid($search))
+			{
+				throw new RuntimeException('Validate error');
 			}
 
 			$model = new Application_Model_News;
@@ -504,7 +530,7 @@ class PostController extends Zend_Controller_Action
 
 			$id = $this->_request->getPost('id');
 
-			if (!v::int()->validate($id))
+			if (!v::intVal()->validate($id))
 			{
 				throw new RuntimeException('Incorrect post value: ' .
 					var_export($id, true));
@@ -517,7 +543,7 @@ class PostController extends Zend_Controller_Action
 
 			$start = $this->_request->getPost('start', 0);
 
-			if (!v::int()->validate($start))
+			if (!v::intVal()->validate($start))
 			{
 				throw new RuntimeException('Incorrect start value: ' .
 					var_export($start, true));

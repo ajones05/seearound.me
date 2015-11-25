@@ -1,7 +1,6 @@
 <?php
 $config = Zend_Registry::get('config_global');
 $profileImage = $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
-$searchKeywords = My_ArrayHelper::getProp($this->search, 'keywords');
 
 My_Layout::renderFavicon($this);
 
@@ -32,34 +31,29 @@ $this->headLink() . $this->headScript(); ?></head>
 	</div>
 	<div class="post-new">
 		<img width="29" height="26" src="<?php echo $this->baseUrl('www/images/template/new-post.png'); ?>" alt="new" />
-		
 	</div>
 	<div class="post-search">
 		<form id="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
 			<div class="keywords">
-				<input type="text" name="keywords" value="<?php echo $searchKeywords; ?>" placeholder="Search Posts..." />
-				<?php if (trim($searchKeywords) !== ''): ?>
+				<?php echo $this->searchForm->keywords; ?>
+				<?php if (trim($this->searchForm->keywords->getValue()) !== ''): ?>
 				<img class="clear" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/close14x14.png'); ?>" alt="clear">
 				<?php else: ?>
 				<img class="search" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/search14x14.png'); ?>" alt="search">
 				<?php endif; ?>
 			</div>
 			<div class="filter">
-				<select name="filter" style="display: none;">
-					<option value="">View all posts</option>
-					<option value="0">Mine Only</option>
-					<option value="1">My Interests</option>
-					<option value="2">Following</option>
-				</select>
-				<?php /* http://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_dropdown-menu&stacked=h */ ?>
 				<div class="dropdown">
-					<button type="button">View all posts <span class="caret"></span></button>
+					<button type="button">
+						<span><?php echo $this->searchForm->filter->getMultiOption($this->searchForm->filter->getValue()); ?></span>
+						<span class="caret"></span>
+					</button>
 					<ul class="dropdown-menu">
-						<li><a href="#">View all posts</a></li>
-						<li><a href="#">Mine Only</a></li>
-						<li><a href="#">My Interests</a></li>
-						<li><a href="#">Following</a></li>
+						<?php foreach ($this->searchForm->filter->getMultiOptions() as $label): ?>
+						<li><a href="#"><?php echo $label; ?></a></li>
+						<?php endforeach; ?>
 					</ul>
+					<?php echo $this->searchForm->filter; ?>
 				</div>
 			</div>
 		</form>

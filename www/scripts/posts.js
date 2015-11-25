@@ -231,7 +231,12 @@ function renderMap_callback(){
 				searchKeywords = $('[name=keywords]', searchForm),
 				searchFilter = $('[name=filter]', searchForm).change(function(){
 					searchForm.submit();
-				});
+				}),
+				closeFilter = function(){
+					$('.dropdown .caret').removeClass('up');
+					$('.dropdown ul').hide();
+					$(document).unbind('click.closeFilter');
+				};
 
 			searchForm.submit(function(){
 				if ($.trim(searchKeywords.val()) === ''){
@@ -253,6 +258,28 @@ function renderMap_callback(){
 			$('.clear', searchForm).click(function(){
 				searchKeywords.val('');
 				searchForm.submit();
+			});
+
+			$('.dropdown button', searchForm).click(function(){
+				$(this).find('.caret').toggleClass('up');
+				$(this).parent().find('.dropdown-menu').toggle();
+
+				$(document).bind('click.closeFilter', function(e){
+					if (!$(e.target).parents().hasClass('dropdown')){
+						closeFilter();
+					}
+				});
+			});
+
+			$('.dropdown a', searchForm).click(function(e){
+				e.preventDefault();
+				var dropdown = $(this).closest('.dropdown'),
+					option = $('option', dropdown)
+						.eq($(this).index('#postSearch .dropdown a'))
+						.prop('selected', true)
+						.change();
+				$('button span:first-child', dropdown).text(option.text());
+				closeFilter();
 			});
 
 			$('.user-location button').click(function(){
