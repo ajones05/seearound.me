@@ -44,7 +44,7 @@ $this->headLink() . $this->headScript(); ?></head>
 			</div>
 			<div class="filter">
 				<div class="dropdown">
-					<button type="button">
+					<button class="dropdown-toggle" type="button">
 						<span><?php echo $this->searchForm->filter->getMultiOption($this->searchForm->filter->getValue()); ?></span>
 						<span class="caret"></span>
 					</button>
@@ -60,22 +60,29 @@ $this->headLink() . $this->headScript(); ?></head>
 	</div>
 	<div class="main-menu">
 		<ul>
-			<li>
-				<a href="#">
-					<span class="community"></span><span class="text">Community</span>
+			<li class="dropdown community">
+				<a class="dropdown-toggle" href="#">
+					<span class="icon"></span><span class="text">Community</span>
 				</a>
+				<ul class="dropdown-menu">
+					<li class="load"><span>Loading...</span></li>
+					<li><a href="<?php echo $this->baseUrl('contacts/friends-list'); ?>">See all</a></li>
+				</ul>
 			</li>
 			<li>
 				<a href="<?php echo $this->baseUrl('message'); ?>">
 					<span class="message"></span><span class="text">Messages</span>
 				</a>
 			</li>
-			<li>
-				<a href="#">
+			<li class="dropdown profile">
+				<a class="dropdown-toggle" href="#">
 					<?php // TODO: thumbnail 24x24 ?>
-					<img class="profile" width="24" height="24" src="<?php echo $profileImage; ?>" alt="profile" />
-					<span class="text">Profile</span>
+					<img class="profile" width="24" height="24" src="<?php echo $profileImage; ?>" alt="profile">Profile
 				</a>
+				<ul class="dropdown-menu">
+					<li><a href="<?php echo $this->baseUrl('home/profile'); ?>">Profile</a></li>
+					<li><a href="<?php echo $this->baseUrl('home/logout'); ?>">Logout</a></li>
+				</ul>
 			</li>
 		</ul>
 	</div>

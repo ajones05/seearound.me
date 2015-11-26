@@ -25,16 +25,16 @@ require(['google.maps','jquery','jquery-ui'], function(){
 	loadCss(assetsBaseUrl+'bower_components/jquery-ui/themes/base/jquery-ui.min.css');
 });
 
-window.fbAsyncInit = function(){
-	FB.init({
-		appId: facebook_appId,
-		xfbml: true,
-		cookie: true,
-		version: 'v2.5'
-	});
-};	
-
-require(['facebook-sdk']);
+require(['facebook-sdk'], function(){
+	window.fbAsyncInit = function(){
+		FB.init({
+			appId: facebook_appId,
+			xfbml: true,
+			cookie: true,
+			version: 'v2.5'
+		});
+	};
+});
 
 function renderMap_callback(){
 	centerPosition = new google.maps.LatLng(mapCenter[0], mapCenter[1]);
@@ -231,12 +231,7 @@ function renderMap_callback(){
 				searchKeywords = $('[name=keywords]', searchForm),
 				searchFilter = $('[name=filter]', searchForm).change(function(){
 					searchForm.submit();
-				}),
-				closeFilter = function(){
-					$('.dropdown .caret').removeClass('up');
-					$('.dropdown ul').hide();
-					$(document).unbind('click.closeFilter');
-				};
+				});
 
 			searchForm.submit(function(){
 				if ($.trim(searchKeywords.val()) === ''){
@@ -260,15 +255,25 @@ function renderMap_callback(){
 				searchForm.submit();
 			});
 
-			$('.dropdown button', searchForm).click(function(){
-				$(this).find('.caret').toggleClass('up');
-				$(this).parent().find('.dropdown-menu').toggle();
+			$(document).click(function(e){
+				if(e.button == 2){
+					return true;
+				}
+				$('.dropdown-menu').hide();
+				$('.dropdown-toggle .caret.up').removeClass('up');
+			});
 
-				$(document).bind('click.closeFilter', function(e){
-					if (!$(e.target).parents().hasClass('dropdown')){
-						closeFilter();
-					}
-				});
+			$('.dropdown-toggle').click(function(e){
+				e.preventDefault();
+				e.stopPropagation();
+				$('.dropdown-menu')
+					.not($(this).parent().find('.dropdown-menu').toggle())
+					.hide()
+					.parent().find('.dropdown-toggle .caret.up').removeClass('up');
+			});
+
+			$('.dropdown-toggle', searchForm).click(function(){
+				$(this).find('.caret').toggleClass('up');
 			});
 
 			$('.dropdown a', searchForm).click(function(e){
@@ -279,7 +284,43 @@ function renderMap_callback(){
 						.prop('selected', true)
 						.change();
 				$('button span:first-child', dropdown).text(option.text());
-				closeFilter();
+			});
+
+			$('.community .dropdown-toggle').click(function(){
+				var dropdown = $(this).parent();
+
+				if (!$('.dropdown-menu', dropdown).is(':visible')){
+					return true;
+				}
+
+				$('.load', dropdown).show();
+				$('.empty,.community-row', dropdown).remove();
+
+				ajaxJson({
+					url: baseUrl+'contacts/requests',
+					done: function(response){
+						var load = $('.load', dropdown).hide();
+						if (!response.data){
+							load.after($('<li/>').addClass('empty')
+								.append($('<span/>').text('No new followers')));
+							return true;
+						}
+						for (var x in response.data){
+							load.after($('<li/>').addClass('community-row').append(
+								$('<a/>', {href: response.data[x].link}).append(
+									$('<div/>').addClass('thumb').append(
+										$('<img/>').attr({
+											src: response.data[x].image,
+											width: 40,
+											height: 40
+										})
+									),
+									$('<div/>').addClass('name').html(response.data[x].name + ' is<br/>following you')
+								)
+							));
+						}
+					}
+				});
 			});
 
 			$('.user-location button').click(function(){
@@ -1712,7 +1753,7 @@ function ajaxJson(url, settings){
 				if (typeof settings.fail === 'function'){
 					settings.fail(data, textStatus, jqXHR);
 				}
-				alert(typeof data === 'object' ? data.message : ERROR_MESSAGE);
+				alert(typeof data === 'object' ? data.message : 'Internal server error');
 				return false;
 			}
 

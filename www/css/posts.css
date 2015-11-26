@@ -134,6 +134,9 @@ body {
 	width: 149px;
 	position: relative;
 }
+.dropdown {
+	position: relative;
+}
 .dropdown button {
 	background: none;
 	border: 0;
@@ -142,7 +145,8 @@ body {
 	cursor: pointer;
 }
 .dropdown button,
-.dropdown a {
+.dropdown a,
+.dropdown-menu > li > span {
 	font-size: 13.43px;
 	font-family: 'Lato-Regular';
 	color:#666;
@@ -179,7 +183,8 @@ body {
 	-webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
 		box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
 }
-.dropdown-menu li a {
+.dropdown-menu li a,
+.dropdown-menu > li > span {
     clear: both;
     color: #333;
     display: block;
@@ -203,16 +208,19 @@ body {
   background-color: #337ab7;
   outline: 0;
 }
+.dropdown.profile .dropdown-menu {
+	 width: 90px;
+}
 .main-menu {
 	float: right;
 	padding-top: 20px;
 }
-.main-menu ul {
+.main-menu > ul {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
-.main-menu li {
+.main-menu > ul > li {
 	float: left;
 	margin-left: 15px;
 }
@@ -230,7 +238,7 @@ body {
 	float: left;
 }
 .main-menu .message,
-.main-menu .community {
+.main-menu .community .icon {
     display: inline-block;
     vertical-align: middle;
 }
@@ -239,10 +247,20 @@ body {
 	width: 22px;
     height: 16px;
 }
-.main-menu .community {
+.main-menu .community .icon {
     background: url('../images/template/community.png') no-repeat;
 	width: 24px;
     height: 20px;
+}
+.main-menu .community .dropdown-menu {
+    width: 220px;
+}
+.community-row .thumb {
+	margin-right: 10px;
+	float: left;
+}
+.community-row .name {
+	white-space: normal;
 }
 .container {
 	position: relative;
