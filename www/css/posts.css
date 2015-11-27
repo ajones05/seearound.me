@@ -366,12 +366,16 @@ body {
 .post-new__dialog .image {
     word-wrap: break-word;
 	float: left;
-	max-width: 160px;
+	width: 180px;
+	margin-bottom: 10px;
+	position: relative;
 }
 .post-new__dialog .image img {
     cursor: pointer;
-    margin-bottom: -2px;
     margin-left: 10px;
+    position: absolute;
+    top: 50%;
+	margin-top: -4px;
 }
 .post-new__notify {
 	padding: 15px 0;
