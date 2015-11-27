@@ -1,7 +1,4 @@
-var mainMap,areaCircle,loadXhr,
-	// TODO: update on change user location
-	userPosition,
-	centerPosition,
+var mainMap,areaCircle,loadXhr,userPosition,centerPosition,
 	postLimit=15,defaultRadius=0.8,groupDistance=0.018939,
 	defaultZoom=14,defaultMinZoom=13,defaultMaxZoom=15,
 	locationIcon=assetsBaseUrl+'www/images/template/user-location-icon.png',
