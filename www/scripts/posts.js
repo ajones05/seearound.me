@@ -112,7 +112,6 @@ require(['facebook-sdk'], function(){
 function renderMap_callback(){
 	centerPosition = new google.maps.LatLng(mapCenter[0], mapCenter[1]);
 	mainMap = new google.maps.Map(document.getElementById('map_canvas'), {
-		center: centerPosition,
 		zoom: defaultZoom,
 		minZoom: defaultMinZoom,
 		maxZoom: defaultMaxZoom,
@@ -128,11 +127,11 @@ function renderMap_callback(){
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
 		userPosition = new google.maps.LatLng(user.location[0], user.location[1]);
 		require(['jquery','jquery-ui','textarea_autosize'], function(){
-			mainMap.panBy(listMap_centerOffset(), 0);
+			mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
 
 			areaCircle = new googleMapsAreaCircle({
 				map: mainMap,
-				center: centerPosition,
+				center: offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),
 				radius: getRadius()
 			});
 
