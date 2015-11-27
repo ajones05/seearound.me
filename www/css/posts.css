@@ -237,12 +237,12 @@ body {
     height: 24px;
 	float: left;
 }
-.main-menu .message,
+.main-menu .message .icon,
 .main-menu .community .icon {
     display: inline-block;
     vertical-align: middle;
 }
-.main-menu .message {
+.main-menu .message .icon {
     background: url('../images/template/message22x16.png') no-repeat;
 	width: 22px;
     height: 16px;
@@ -254,6 +254,10 @@ body {
 }
 .main-menu .community .dropdown-menu {
     width: 220px;
+}
+.main-menu .count {
+    font-size: 12px;
+    position: absolute;
 }
 .community-row .thumb {
 	margin-right: 10px;

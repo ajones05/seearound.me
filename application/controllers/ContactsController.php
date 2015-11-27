@@ -556,12 +556,17 @@ class ContactsController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
-			$response = array(
-				'status' => 0,
-				'error' => $e instanceof RuntimeException ?
-					array('code' => $e->getCode(), 'message' => $e->getMessage()) :
-					array('message' => 'Internal Server Error')
-			);
+			$response = array('status' => 0);
+
+			if ($e instanceof RuntimeException)
+			{
+				$response['code'] = $e->getCode();
+				$response['message'] = $e->getMessage();
+			}
+			else
+			{
+				$response['message'] = 'Internal Server Error';
+			}
 		}
 
 		$this->_helper->json($response);

@@ -21,6 +21,82 @@ require.config({
 	}
 });
 
+require(['jquery'], function(){
+	var notification = function(){
+		ajaxJson({
+			url: baseUrl+'contacts/friends-notification',
+			done: function(response){
+				var menu = $('.main-menu');
+				$('.community .count', menu).html(response.friends > 0 ? response.friends : '');
+				$('.message .count', menu).html(response.messages > 0 ? response.messages : '');
+				setTimeout(notification, 3600);
+			},
+			fail: function(data, textStatus, jqXHR){
+				if (data && data.code == 401){
+					window.location.href = baseUrl;
+					return false;
+				}
+			}
+		});
+	};
+
+	notification();
+
+	$('.dropdown-toggle').click(function(e){
+		e.preventDefault();
+		e.stopPropagation();
+		$('.dropdown-menu')
+			.not($(this).parent().find('.dropdown-menu').toggle())
+			.hide()
+			.parent().find('.dropdown-toggle .caret.up').removeClass('up');
+	});
+
+	$(document).click(function(e){
+		if (e.button == 2){
+			return true;
+		}
+		$('.dropdown-menu').hide();
+		$('.dropdown-toggle .caret.up').removeClass('up');
+	});
+
+	$('.community .dropdown-toggle').click(function(){
+		var dropdown = $(this).parent();
+
+		if (!$('.dropdown-menu', dropdown).is(':visible')){
+			return true;
+		}
+
+		$('.load', dropdown).show();
+		$('.empty,.community-row', dropdown).remove();
+
+		ajaxJson({
+			url: baseUrl+'contacts/requests',
+			done: function(response){
+				var load = $('.load', dropdown).hide();
+				if (!response.data){
+					load.after($('<li/>').addClass('empty')
+						.append($('<span/>').text('No new followers')));
+					return true;
+				}
+				for (var x in response.data){
+					load.after($('<li/>').addClass('community-row').append(
+						$('<a/>', {href: response.data[x].link}).append(
+							$('<div/>').addClass('thumb').append(
+								$('<img/>').attr({
+									src: response.data[x].image,
+									width: 40,
+									height: 40
+								})
+							),
+							$('<div/>').addClass('name').html(response.data[x].name + ' is<br/>following you')
+						)
+					));
+				}
+			}
+		});
+	});
+});
+
 require(['google.maps','jquery','jquery-ui'], function(){
 	loadCss(assetsBaseUrl+'bower_components/jquery-ui/themes/base/jquery-ui.min.css');
 });
@@ -255,23 +331,6 @@ function renderMap_callback(){
 				searchForm.submit();
 			});
 
-			$(document).click(function(e){
-				if(e.button == 2){
-					return true;
-				}
-				$('.dropdown-menu').hide();
-				$('.dropdown-toggle .caret.up').removeClass('up');
-			});
-
-			$('.dropdown-toggle').click(function(e){
-				e.preventDefault();
-				e.stopPropagation();
-				$('.dropdown-menu')
-					.not($(this).parent().find('.dropdown-menu').toggle())
-					.hide()
-					.parent().find('.dropdown-toggle .caret.up').removeClass('up');
-			});
-
 			$('.dropdown-toggle', searchForm).click(function(){
 				$(this).find('.caret').toggleClass('up');
 			});
@@ -284,43 +343,6 @@ function renderMap_callback(){
 						.prop('selected', true)
 						.change();
 				$('button span:first-child', dropdown).text(option.text());
-			});
-
-			$('.community .dropdown-toggle').click(function(){
-				var dropdown = $(this).parent();
-
-				if (!$('.dropdown-menu', dropdown).is(':visible')){
-					return true;
-				}
-
-				$('.load', dropdown).show();
-				$('.empty,.community-row', dropdown).remove();
-
-				ajaxJson({
-					url: baseUrl+'contacts/requests',
-					done: function(response){
-						var load = $('.load', dropdown).hide();
-						if (!response.data){
-							load.after($('<li/>').addClass('empty')
-								.append($('<span/>').text('No new followers')));
-							return true;
-						}
-						for (var x in response.data){
-							load.after($('<li/>').addClass('community-row').append(
-								$('<a/>', {href: response.data[x].link}).append(
-									$('<div/>').addClass('thumb').append(
-										$('<img/>').attr({
-											src: response.data[x].image,
-											width: 40,
-											height: 40
-										})
-									),
-									$('<div/>').addClass('name').html(response.data[x].name + ' is<br/>following you')
-								)
-							));
-						}
-					}
-				});
 			});
 
 			$('.user-location button').click(function(){

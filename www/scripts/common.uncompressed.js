@@ -288,12 +288,12 @@ function notification(){
 				$("#msgTotal").hide();
 			}
 		} else {
-			if (response && response.error.code == 401){
+			if (response && response.code == 401){
 				window.location.href = baseUrl;
 				return false;
 			}
 
-			alert(response ? response.error.message : ERROR_MESSAGE);
+			alert(response ? response.message : ERROR_MESSAGE);
 		}
 	});
 }

@@ -62,16 +62,16 @@ $this->headLink() . $this->headScript(); ?></head>
 		<ul>
 			<li class="dropdown community">
 				<a class="dropdown-toggle" href="#">
-					<span class="icon"></span><span class="text">Community</span>
+					<span class="icon"></span><span class="text">Community</span><span class="count"></span>
 				</a>
 				<ul class="dropdown-menu">
 					<li class="load"><span>Loading...</span></li>
 					<li><a href="<?php echo $this->baseUrl('contacts/friends-list'); ?>">See all</a></li>
 				</ul>
 			</li>
-			<li>
+			<li class="message">
 				<a href="<?php echo $this->baseUrl('message'); ?>">
-					<span class="message"></span><span class="text">Messages</span>
+					<span class="icon"></span><span class="text">Messages</span><span class="count"></span>
 				</a>
 			</li>
 			<li class="dropdown profile">
