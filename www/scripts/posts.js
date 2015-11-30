@@ -381,7 +381,7 @@ function renderMap_callback(){
 								userPosition = new google.maps.LatLng(location[0],location[1]);
 								centerPosition = position;
 								mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
-								areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),defaultRadius);
+								areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),getRadius());
 								postList_change();
 								$(dialogEvent.target).dialog('close');
 							},
@@ -547,7 +547,7 @@ function renderMap_callback(){
 						postList_reset();
 						centerPosition = location;
 						mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
-						areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),defaultRadius);
+						areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),getRadius());
 
 						for (var id in response.data){
 							$('.posts').append(response.data[id][2]);
