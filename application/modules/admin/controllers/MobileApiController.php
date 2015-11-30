@@ -46,4 +46,15 @@ class Admin_MobileApiController extends Zend_Controller_Action
 		$this->view->headScript()
 			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
     }
+
+	/**
+	 * Retrieve message conversation action.
+	 *
+	 * @return void
+	 */
+    public function conversationMessageAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
 }

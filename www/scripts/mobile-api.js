@@ -13,15 +13,15 @@ $(function(){
 			form.after($('<div/>').addClass('panel panel-default').append(
 				$('<div/>').addClass('panel-heading').text('#' + (++requestCount) + ' - ' + form.attr('action')),
 				$('<div/>').addClass('panel-body').append(
-					$('<pre/>').text(JSON.stringify(form.serializeObject())),
-					$('<pre/>').text(JSON.stringify(response))
+					$('<pre/>').text(JSON.stringify(form.serializeObject(), null, 4)),
+					$('<pre/>').text(JSON.stringify(response, null, 4))
 				)
 			));
 		}).fail(function(jqXHR, textStatus){
 			form.after($('<div/>').addClass('panel panel-default').append(
 				$('<div/>').addClass('panel-heading').text('#' + (++requestCount) + ' - ' + form.attr('action')),
 				$('<div/>').addClass('panel-body').append(
-					$('<pre/>').text(JSON.stringify(form.serializeObject())),
+					$('<pre/>').text(JSON.stringify(form.serializeObject(), null, 4)),
 					$('<pre/>').text(textStatus)
 				)
 			));

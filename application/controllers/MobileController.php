@@ -583,9 +583,10 @@ class MobileController extends Zend_Controller_Action
 
 			$start = $this->_request->getPost('start', 0);
 
-			if (!My_Validate::digit($start) || $start < 0)
+			if (!v::optional(v::intVal())->validate($start))
 			{
-				throw new RuntimeException('Incorrect start value', -1);
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
 			$response = array(
@@ -596,10 +597,10 @@ class MobileController extends Zend_Controller_Action
 			$model = new Application_Model_Message;
 			$messages = $model->fetchAll(
 				$model->publicSelect()
-					->where('message.receiver_id =?',  $user->id)
-					->where('message.sender_id =?', $other_user->id)
-					->orWhere('message.receiver_id =?',  $other_user->id)
-					->where('message.sender_id =?', $user->id)
+					->where('(message.receiver_id=?',  $user->id)
+					->where('message.sender_id=?)', $other_user->id)
+					->orWhere('(message.receiver_id=?',  $other_user->id)
+					->where('message.sender_id=?)', $user->id)
 					->order('updated ASC')
 					->limit(100, $start)
 			);
@@ -631,6 +632,89 @@ class MobileController extends Zend_Controller_Action
 			$response = array(
 				'status' => 'FAILED',
 				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Conversation messages list action.
+	 * 
+	 * @return	void
+	 */
+	public function conversationMessageAction()
+	{
+		try
+		{
+			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$message_id = $this->_request->getPost('id');
+
+			if (!(new Application_Model_Message)->checkId($message_id, $conversation))
+			{
+				throw new RuntimeException('Incorrect conversation ID', -1);
+			}
+
+			if ($user->id != $conversation->receiver_id && $user->id != $conversation->sender_id)
+			{
+				throw new RuntimeException('You have no permissions to access this action', -1);
+			}
+
+			$start = $this->_request->getPost('start', 0);
+
+			if (!v::optional(v::intVal())->validate($start))
+			{
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
+			}
+
+			$model = new Application_Model_MessageReply;
+
+			$response = array(
+				'status' => 'SUCCESS',
+				'total' => $model->getCountByMessageId($conversation->id)
+			);
+
+			$messages = $model->findAllByMessageId($conversation->id, 10, $start);
+
+			if (count($messages))
+			{
+				foreach ($messages as $message)
+				{
+					$sender = $message->findDependentRowset('Application_Model_User', 'ReplySender')->current();
+					$receiver = $message->findDependentRowset('Application_Model_User', 'ReplyReceiver')->current();
+
+					$response['result'][] = array(
+						'id' => $message->id,
+						'message' => $message->reply_text,
+						'created' => $message->created,
+						'sender_id' => $sender->id,
+						'sender_name' => $sender->Name,
+						'sender_email' => $sender->Email_id,
+						'sender_image' => $this->view->serverUrl() .
+							$sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						'receiver_id' => $receiver->id,
+						'receiver_name' => $receiver->Name,
+						'receiver_email' => $receiver->Email_id,
+						'receiver_image' => $this->view->serverUrl() .
+							$receiver->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+						'receiver_read' => $message->receiver_read
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 		}
 

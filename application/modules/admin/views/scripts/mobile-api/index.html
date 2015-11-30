@@ -1,4 +1,8 @@
 <h1>Mobile API</h1>
+<ol class="breadcrumb">
+	<li><a href="<?php echo $this->baseUrl('/home'); ?>">Home</a></li>
+	<li class="active">Mobile Api</li>
+</ol>
 <div class="list-group">
 	<p class="list-group-item active">Authentication</p>
 	<a href="#" class="list-group-item disabled">mobile/index</a>
@@ -16,7 +20,12 @@
 	<a href="<?php echo $this->baseUrl('admin/mobile-api/message-conversation'); ?>"
 		class="list-group-item">
 		<h4 class = "list-group-item-heading">mobile/message-conversation</h4>
-		<p class = "list-group-item-text">TODO: add description</p>
+		<p class = "list-group-item-text">Message conversations list between two users</p>
+	</a>
+	<a href="<?php echo $this->baseUrl('admin/mobile-api/conversation-message'); ?>"
+		class="list-group-item">
+		<h4 class = "list-group-item-heading">mobile/conversation-message</h4>
+		<p class = "list-group-item-text">Conversations messages list</p>
 	</a>
 	<a href="#" class="list-group-item disabled">mobile/viewed</a>
 	<a href="#" class="list-group-item disabled">mobile/unreadmessages</a>

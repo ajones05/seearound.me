@@ -2,14 +2,14 @@
 <ol class="breadcrumb">
 	<li><a href="<?php echo $this->baseUrl('/home'); ?>">Home</a></li>
 	<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile Api</a></li>
-	<li class="active">message-conversation</li>
+	<li class="active">conversation-message</li>
 </ol>
 <div class="well">
-<p>Message conversations list between two users</p>
-<a href="https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilemessage-conversation">
-https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilemessage-conversation</a>
+<p>Conversations messages list</p>
+<a href="https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileconversation-message">
+https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileconversation-message</a>
 </div>
-<form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/message-conversation'); ?>" method="post">
+<form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/conversation-message'); ?>" method="post">
 	<div class="form-group">
 		<label class="control-label col-sm-2" for="user_id">User ID:</label>
 		<div class="col-sm-10">
@@ -19,11 +19,11 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilemessag
 		</div>
 	</div>
 	<div class="form-group">
-		<label class="control-label col-sm-2" for="other_user_id">Other User ID:</label>
+		<label class="control-label col-sm-2" for="id">Conversation ID:</label>
 		<div class="col-sm-10">
-			<input type="text" name="other_user_id" class="form-control"
-				id="other_user_id" placeholder="Enter other user ID"
-				value="<?php echo $this->request->getParam('other_user_id'); ?>">
+			<input type="text" name="id" class="form-control"
+				id="id" placeholder="Enter conversation ID"
+				value="<?php echo $this->request->getParam('id'); ?>">
 		</div>
 	</div>
 	<div class="form-group">
