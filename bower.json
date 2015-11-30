@@ -9,6 +9,7 @@
 		"textarea-autosize": "latest",
 		"jquery.scrollTo": "latest",
 		"requirejs": "*",
-		"requirejs-plugins": "*"
+		"requirejs-plugins": "*",
+		"bootstrap": "3.3.6"
 	}
 }
