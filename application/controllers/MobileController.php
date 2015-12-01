@@ -1052,37 +1052,44 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
-				throw new RuntimeException('Incorrect user id', -1);
+				throw new RuntimeException('Incorrect user id: ' .
+					var_export($user_id, true));
 			}
 
 			$latitude = $this->_request->getPost('latitude');
 
-			if (!is_numeric($latitude) || !My_Validate::latitude($latitude))
+			if (!v::stringType()->lat()->validate($latitude))
 			{
-				throw new RuntimeException('Incorrect latitude value', -1);
+				throw new RuntimeException('Incorrect latitude value: ' .
+					var_export($latitude, true));
 			}
 
 			$longitude = $this->_request->getPost('longitude');
 
-			if (!is_numeric($longitude) || !My_Validate::longitude($longitude))
+			if (!v::stringType()->lng()->validate($longitude))
 			{
-				throw new RuntimeException('Incorrect longitude value', -1);
+				throw new RuntimeException('Incorrect longitude value: ' .
+					var_export($longitude, true));
 			}
 
 			$radius = $this->_request->getPost('radious', 0.8);
 
-			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
+			if (!v::floatVal()->between(0.5, 1.5)->validate($radius))
 			{
-				throw new RuntimeException('Incorrect radius value', -1);
+				throw new RuntimeException('Incorrect radius value: ' .
+					var_export($radius, true));
 			}
 
 			$start = $this->_request->getPost('fromPage', 0);
 
-			if (!My_Validate::digit($start) || $start < 0)
+			if (!v::optional(v::intVal())->min(0)->validate($start))
 			{
-				throw new RuntimeException('Incorrect start value', -1);
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
 			$response = array();
