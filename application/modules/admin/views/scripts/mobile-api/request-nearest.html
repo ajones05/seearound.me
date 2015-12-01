@@ -1,0 +1,58 @@
+<h2>mobile/request-nearest</h2>
+<ol class="breadcrumb">
+	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Home</a></li>
+	<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile Api</a></li>
+	<li class="active">request-nearest</li>
+</ol>
+<div class="well">
+<p>Posts list without search parameters</p>
+<a href="https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilerequest-nearest">
+https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilerequest-nearest</a>
+</div>
+<form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/request-nearest'); ?>" method="post">
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="userId">User ID [userId]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="userId" class="form-control"
+				id="userId" placeholder="Enter user ID"
+				value="<?php echo $this->request->getParam('userId'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="latitude">Latitude [latitude]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="latitude" class="form-control"
+				id="latitude" placeholder="Enter center latitude"
+				value="<?php echo $this->request->getParam('latitude'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="longitude">Longitude [longitude]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="longitude" class="form-control"
+				id="longitude" placeholder="Enter center longitude"
+				value="<?php echo $this->request->getParam('longitude'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="radious">Radius [radious]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="radious" class="form-control"
+				id="radious" placeholder="Enter radius"
+				value="<?php echo $this->request->getParam('radious'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="fromPage">Start [fromPage]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="fromPage" class="form-control"
+				id="fromPage" placeholder="Enter rows start"
+				value="<?php echo $this->request->getParam('fromPage'); ?>">
+		</div>
+	</div>
+	<div class="form-group">        
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="btn btn-default">Submit</button>
+		</div>
+	</div>
+</form>
