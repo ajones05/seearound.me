@@ -1,19 +1,21 @@
 $(function(){
 	var requestCount = 0;
 	$('form').submit(function(e){
-		var form = $(this);
+		var form = $(this),
+			data = $('form :input').filter(function(index, element){
+				return $.trim($(element).val()) !== '';
+			});
+
 		e.preventDefault();
 		$.ajax({
 			url: form.attr('action'),
 			method: form.attr('method'),
-			data: form.serialize(),
-			beforeSend: function(){
-			}
+			data: data.serialize()
 		}).done(function(response){
 			form.after($('<div/>').addClass('panel panel-default').append(
 				$('<div/>').addClass('panel-heading').text('#' + (++requestCount) + ' - ' + form.attr('action')),
 				$('<div/>').addClass('panel-body').append(
-					$('<pre/>').text(JSON.stringify(form.serializeObject(), null, 4)),
+					$('<pre/>').text(JSON.stringify(data.serializeObject(), null, 4)),
 					$('<pre/>').text(JSON.stringify(response, null, 4))
 				)
 			));
@@ -21,7 +23,7 @@ $(function(){
 			form.after($('<div/>').addClass('panel panel-default').append(
 				$('<div/>').addClass('panel-heading').text('#' + (++requestCount) + ' - ' + form.attr('action')),
 				$('<div/>').addClass('panel-body').append(
-					$('<pre/>').text(JSON.stringify(form.serializeObject(), null, 4)),
+					$('<pre/>').text(JSON.stringify(data.serializeObject(), null, 4)),
 					$('<pre/>').text(textStatus)
 				)
 			));
