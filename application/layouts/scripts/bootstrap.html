@@ -18,6 +18,8 @@ $this->headScript()
 	->appendFile(My_Layout::assetUrl('bower_components/bootstrap/dist/js/bootstrap.js', $this));
 
 $this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
+
+$isAdmin = $this->user ? $this->user->is_admin === 'true' : false;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,6 +49,15 @@ $this->headLink() . $this->headScript(); ?></head>
         </form>
     </div>
 	<ul class="nav navbar-nav navbar-right">
+		<?php if ($isAdmin): ?>
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin<b class="caret"></b></a>
+			<ul class="dropdown-menu">
+				<li><a href="<?php echo $this->baseUrl('admin'); ?>">Statistic</a></li>
+				<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile API</a></li>
+			</ul>
+		</li>
+		<?php endif; ?>
 		<li class="dropdown">
 			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Community<b class="caret"></b></a>
 			<ul class="dropdown-menu">
