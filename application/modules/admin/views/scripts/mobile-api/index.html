@@ -34,7 +34,11 @@
 	<p class="list-group-item active">Posts</p>
 	<a href="#" class="list-group-item disabled">mobile/addimobinews</a>
 	<a href="#" class="list-group-item disabled">mobile/get-total-comments</a>
-	<a href="#" class="list-group-item disabled">mobile/myposts</a>
+	<a href="<?php echo $this->baseUrl('admin/mobile-api/myposts'); ?>"
+		class="list-group-item">
+		<h4 class = "list-group-item-heading">mobile/myposts</h4>
+		<p class = "list-group-item-text">Posts list with search parameters</p>
+	</a>
 	<a href="#" class="list-group-item disabled">mobile/post-comment</a>
 	<a href="#" class="list-group-item disabled">mobile/post-like</a>
 	<a href="#" class="list-group-item disabled">mobile/request-nearest</a>
