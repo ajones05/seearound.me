@@ -23,7 +23,9 @@ class Admin_IndexController extends Zend_Controller_Action
             $this->_redirect($this->view->baseUrl('/'));
         }
 
-		$this->view->layout()->setLayout('page');
+		$this->view->layout()->setLayout('bootstrap');
+		$this->view->request = $this->_request;
+		$this->view->user = $this->user;
     }
 
 	/**

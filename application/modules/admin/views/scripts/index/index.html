@@ -1,18 +1,20 @@
-<div class="admin">
-	<h1>Statistic Dashboard</h1>
-	<div class="row">
-		<p>total number of users currently logged in: <b><?php echo $this->currentlyLoggedIn->count; ?></b></p>
-	</div>
-	<div class="row">
-		<h2>In past 24 hrs, number of:</h2>
-		<p>users logged in: <b><?php echo $this->pastDayLoggedIn->count; ?></b></p>
-		<p>posts: <b><?php echo $this->pastDayNews->count; ?></b></p>
-		<p>comments: <b><?php echo $this->pastDayComments->count; ?></b></p>
-	</div>
-	<div class="row">
-		<h2>In past week:</h2>
-		<p>users logged in: <b><?php echo $this->pastWeekLoggedIn->count; ?></b></p>
-		<p>posts: <b><?php echo $this->pastWeekNews->count; ?></b></p>
-		<p>comments: <b><?php echo $this->pastWeekComments->count; ?></b></p>
-	</div>
-</div>
+<h1>Statistic Dashboard</h1>
+<ol class="breadcrumb">
+<li>Admin</li>
+</ol>
+<ul class="list-group">
+<li class="list-group-item"><span class="badge"><?php echo $this->currentlyLoggedIn->count; ?></span>
+Total number of users currently logged in</li>
+</ul>
+<ul class="list-group">
+<li class="list-group-item active">In past 24 hrs</li>
+<li class="list-group-item"><span class="badge"><?php echo $this->pastDayLoggedIn->count; ?></span> Users logged in</li>
+<li class="list-group-item"><span class="badge"><?php echo $this->pastDayNews->count; ?></span> Posts</li>
+<li class="list-group-item"><span class="badge"><?php echo $this->pastDayComments->count; ?></span> Comments</li>
+</ul>
+<ul class="list-group">
+<li class="list-group-item active">In past week</li>
+<li class="list-group-item"><span class="badge"><?php echo $this->pastWeekLoggedIn->count; ?></span> Users logged in</li>
+<li class="list-group-item"><span class="badge"><?php echo $this->pastWeekNews->count; ?></span> Posts</li>
+<li class="list-group-item"><span class="badge"><?php echo $this->pastWeekComments->count; ?></span> Comments</li>
+</ul>
