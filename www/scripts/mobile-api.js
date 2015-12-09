@@ -1,6 +1,5 @@
 $(function(){
-	var requestCount = 0;
-	$('form').submit(function(e){
+	var requestCount = 0, apiForm = $('.container form').submit(function(e){
 		var form = $(this),
 			data = $('form :input').filter(function(index, element){
 				return $.trim($(element).val()) !== '';
@@ -29,6 +28,13 @@ $(function(){
 			));
 		});
 	});
+
+	var url = decodeURIComponent(window.location);
+
+	if ($.inArray('submit', url.split('/'))){
+		apiForm.submit();
+	}
+
 	$.fn.serializeObject = function(){
 		var o = {};
 		var a = this.serializeArray();
