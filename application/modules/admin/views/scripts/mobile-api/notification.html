@@ -1,0 +1,40 @@
+<h2>mobile/notification</h2>
+<ol class="breadcrumb">
+	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
+	<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile Api</a></li>
+	<li class="active">notification</li>
+</ol>
+<div class="well">
+<p>User notifications list</p>
+<ul>
+<li>another user likes my post</li>
+<li>another user comments on my post</li>
+<li>new follower</li>
+<li>new message</li>
+</ul>
+<a href="https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilenotification">
+https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilenotification</a>
+</div>
+<form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/notification'); ?>" method="post">
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="user_id">User ID [user_id]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="user_id" class="form-control"
+				id="user_id" placeholder="Enter user ID"
+				value="<?php echo $this->request->getParam('user_id'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="start">Start [start]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="start" class="form-control"
+				id="start" placeholder="Enter rows start"
+				value="<?php echo $this->request->getParam('start'); ?>">
+		</div>
+	</div>
+	<div class="form-group">        
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="btn btn-default">Submit</button>
+		</div>
+	</div>
+</form>
