@@ -1374,6 +1374,139 @@ class MobileController extends Zend_Controller_Action
 	}
 
 	/**
+	 * List user notifications action.
+	 *
+	 * @return void
+	 */
+	public function notificationAction()
+	{
+		try
+		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user id: ' .
+					var_export($user_id, true));
+			}
+
+			$start = $this->_request->getPost('start', 0);
+
+			if (!v::optional(v::intVal())->min(0)->validate($start))
+			{
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
+			}
+
+			$response = array('status' => 'SUCCESS');
+
+			$db = Zend_Db_Table::getDefaultAdapter();
+			$defaultImage = Zend_Registry::get('config_global')->user->default_image;
+			$thumbJoin = '(it.image_id=IFNULL(ui.image_id,' . $defaultImage . ') AND ' .
+					'it.thumb_width=320 AND it.thumb_height=320)';
+
+			$select1 = $db->select();
+			$select1->from(array('f' => 'friends'), array(
+				'f.id',
+				'type' => new Zend_Db_Expr('"friend"'),
+				'fl.created_at',
+				'user_name' => 'u.Name',
+				'user_image' => 'it.path',
+				'message' => new Zend_Db_Expr('"Lorem ipsumament, elit. ' .
+					'Nulla sit ame torem amet, elit. Nulla sit amet"'),
+			));
+			$select1->where('f.reciever_id=? AND f.status=1 AND f.notify=0', $user->id);
+			$select1->joinLeft(array('fl' => 'friend_log'),
+				'fl.friend_id=f.id AND fl.status_id=f.status', '');
+			$select1->joinLeft(array('u' => 'user_data'), 'u.id=fl.user_id', '');
+			$select1->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
+			$select1->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
+
+			$select2 = $db->select();
+			$select2->from(array('m' => 'message'), array(
+				'm.id',
+				'type' => new Zend_Db_Expr('"message"'),
+				'created_at' => 'm.created',
+				'user_name' => 'u.Name',
+				'user_image' => 'it.path',
+				'message' => new Zend_Db_Expr('"Lorem ipsumament, elit. ' .
+					'Nulla sit ame torem amet, elit. Nulla sit amet"'),
+			));
+			$select2->where('m.is_deleted="false"');
+			$select2->where('(m.receiver_id=? AND m.reciever_read="false"', $user->id);
+			$select2->orWhere('m.reply_to=? AND m.sender_read="false")', $user->id);
+			$select2->joinLeft(array('u' => 'user_data'), 'u.id=m.sender_id', '');
+			$select2->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
+			$select2->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
+
+			$select3 = $db->select();
+			$select3->from(array('n' => 'news'), array(
+				'v.id',
+				'type' => new Zend_Db_Expr('"vote"'),
+				'v.created_at',
+				'user_name' => 'u.Name',
+				'user_image' => 'it.path',
+				'message' => new Zend_Db_Expr('"Lorem ipsumament, elit. ' .
+					'Nulla sit ame torem amet, elit. Nulla sit amet"'),
+			));
+			$select3->where('n.isdeleted=0 AND n.user_id=?', $user->id);
+			$select3->joinLeft(array('v' => 'votings'), 'v.news_id=n.id', '');
+			$select3->where('v.canceled=0 AND v.is_read=0');
+			$select3->joinLeft(array('u' => 'user_data'), 'u.id=v.user_id', '');
+			$select3->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
+			$select3->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
+
+			$select4 = $db->select();
+			$select4->from(array('n' => 'news'), array(
+				'c.id',
+				'type' => new Zend_Db_Expr('"comment"'),
+				'c.created_at',
+				'user_name' => 'u.Name',
+				'user_image' => 'it.path',
+				'message' => new Zend_Db_Expr('"Lorem ipsumament, elit. ' .
+					'Nulla sit ame torem amet, elit. Nulla sit amet"'),
+			));
+			$select4->where('n.isdeleted=0 AND n.user_id=?', $user->id);
+			$select4->joinLeft(array('c' => 'comments'), 'c.news_id=n.id', '');
+			$select4->where('c.isdeleted=0 AND c.is_read=0 AND c.user_id<>?', $user->id);
+			$select4->joinLeft(array('u' => 'user_data'), 'u.id=c.user_id', '');
+			$select4->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
+			$select4->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
+
+			$select = $db->select()
+				->union(array($select1, $select2, $select3, $select4),
+					Zend_Db_Select::SQL_UNION_ALL)
+				->order('created_at DESC')
+				->limit(10, $start);
+
+			$result = $db->fetchAll($select);
+
+			if (count($result))
+			{
+				foreach ($result as &$row)
+				{
+					$row['user_image'] = $this->view->serverUrl() .
+						'/' . $row['user_image'];
+				}
+
+				$response['result'] = $result;
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * Writes to log rurrent request and response
 	 *
 	 * @param	string	$response

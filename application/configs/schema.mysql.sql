@@ -23,7 +23,8 @@ ALTER TABLE `comments` CHANGE `created_at` `created_at` TIMESTAMP NOT NULL DEFAU
 ALTER TABLE `comments` CHANGE `isdeleted` `isdeleted` INT(2) NOT NULL DEFAULT '0';
 ALTER TABLE `comments` CHANGE `comment` `comment` VARCHAR(65535) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
 ALTER TABLE `comments` ADD FOREIGN KEY `comments_fk_2`(`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE;
-ALTER TABLE `comments` ADD `notify` TINYINT NOT NULL DEFAULT '0' AFTER `updated_at`; 
+ALTER TABLE `comments` ADD `notify` TINYINT NOT NULL DEFAULT '0' AFTER `updated_at`;
+ALTER TABLE `comments` ADD `is_read` BIT NOT NULL DEFAULT 0 AFTER `notify`;
 
 --
 -- Table structure for table `friends`
@@ -203,6 +204,7 @@ ALTER TABLE `votings` ADD `updated_at` TIMESTAMP NULL DEFAULT NULL AFTER `create
 ALTER TABLE `votings` ADD `vote` TINYINT NOT NULL DEFAULT '1' AFTER `id`;
 ALTER TABLE `votings` CHANGE `vote` `vote` TINYINT(4) NOT NULL;
 ALTER TABLE `votings` ADD `canceled` TINYINT NOT NULL DEFAULT '0';
+ALTER TABLE `votings` ADD `is_read` BIT NOT NULL DEFAULT 0;
 
 --
 -- Table structure for table `facebook_temp_users`
