@@ -31,7 +31,7 @@ $(function(){
 
 	var url = decodeURIComponent(window.location);
 
-	if ($.inArray('submit', url.split('/'))){
+	if ($.inArray('submit', url.split('/')) > 0){
 		apiForm.submit();
 	}
 
