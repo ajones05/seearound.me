@@ -38,6 +38,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * Send message action.
+	 *
+	 * @return void
+	 */
+    public function sendmessageAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Retrieve message conversation action.
 	 *
 	 * @return void
@@ -49,7 +60,7 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
-	 * Retrieve message conversation action.
+	 * Conversation messages list action.
 	 *
 	 * @return void
 	 */
@@ -60,7 +71,7 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
-	 * Retrieve message conversation action.
+	 * Posts list action.
 	 *
 	 * @return void
 	 */
@@ -71,7 +82,7 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
-	 * Retrieve message conversation action.
+	 * Posts list action.
 	 *
 	 * @return void
 	 */
