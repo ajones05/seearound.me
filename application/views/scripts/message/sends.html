@@ -3,24 +3,13 @@
 </h3>
 <?php if (count($this->paginator) > 0): ?>
 <div class="inboxSec">
-	<?php
-	foreach($this->paginator as $inboxData):
-		$receiver = $inboxData->findDependentRowset('Application_Model_User', 'Receiver')->current();
-
-		$higlight = '';
-
-		if ($inboxData->sender_id == $this->user->id && $inboxData->sender_read == "false" ||
-			$inboxData->receiver_id == $this->user->id && $inboxData->reciever_read == "false")
-		{
-			$higlight .= ' highLight';
-		}
-	?>
+	<?php foreach($this->paginator as $message): ?>
 	<ul>
-        <li id="row_<?php echo $inboxData->id; ?>" class="message-list<?php echo $higlight; ?>">
+        <li id="row_<?php echo $message->id; ?>" class="message-list<?php if ($message->is_read) echo ' highLight'; ?>">
 			<div>
-				<span class="subject"><?php echo $inboxData->subject; ?></span>
-				<span class="name">(<?php echo $receiver->Name; ?>)</span>
-				<span class="dateTime"><?php echo date('F j \a\t h:ia', strtotime($inboxData->created)); ?></span>
+				<span class="subject"><?php echo $message->subject; ?></span>
+				<span class="name">(<?php echo $message->user_name; ?>)</span>
+				<span class="dateTime"><?php echo date('F j \a\t h:ia', strtotime($message->created_at)); ?></span>
 				<div class="clr"></div>
 			</div>
         </li>

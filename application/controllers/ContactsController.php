@@ -536,22 +536,18 @@ class ContactsController extends Zend_Controller_Action
 				$response['friends'] = $friends;
 			}
 
-			$messageModel = new Application_Model_Message;
+			$messageModel = new Application_Model_ConversationMessage;
 
 			$result = $messageModel->fetchRow(
-				$messageModel->publicSelect()
-					->from($messageModel, array('count(*) as result_count'))
-					->where('receiver_id =?', $user->id)
-					->where('reciever_read =?', 'false')
-					->orWhere('(reply_to =?', $user->id)
-					->where('sender_read =?)', 'false')
+				$messageModel->select()
+					->from($messageModel, array('count' => 'count(*)'))
+					->where('is_read=?', 0)
+					->where('to_id=?', $user->id)
 			);
 
-			$messages = $result ? $result->result_count : 0;
-
-			if ($messages > 0)
+			if ($result->count > 0)
 			{
-				$response['messages'] = $messages;
+				$response['messages'] = $result->count;
 			}
 		}
 		catch (Exception $e)

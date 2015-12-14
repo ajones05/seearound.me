@@ -25,6 +25,7 @@ ALTER TABLE `comments` CHANGE `comment` `comment` VARCHAR(65535) CHARACTER SET u
 ALTER TABLE `comments` ADD FOREIGN KEY `comments_fk_2`(`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE;
 ALTER TABLE `comments` ADD `notify` TINYINT NOT NULL DEFAULT '0' AFTER `updated_at`;
 ALTER TABLE `comments` ADD `is_read` BIT NOT NULL DEFAULT 0 AFTER `notify`;
+ALTER TABLE `comments` CHANGE `is_read` `is_read` TINYINT(1) NOT NULL DEFAULT '0';
 
 --
 -- Table structure for table `friends`
@@ -67,27 +68,6 @@ ALTER TABLE `login_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCE
 ALTER TABLE `login_status` CHANGE `login_time` `login_time` TIMESTAMP NULL DEFAULT NULL;
 ALTER TABLE `login_status` CHANGE `logout_time` `logout_time` TIMESTAMP NULL DEFAULT NULL;
 ALTER TABLE `login_status` ADD `visit_time` TIMESTAMP NULL DEFAULT NULL AFTER `logout_time`;
-
---
--- Table structure for table `message`
---
-ALTER TABLE `message` ENGINE = InnoDB;
-ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_2`(`receiver_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `message` ADD FOREIGN KEY `user_data_fk_3`(`reply_to`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `message` CHANGE `sender_id` `sender_id` INT(11) NOT NULL;
-ALTER TABLE `message` CHANGE `receiver_id` `receiver_id` INT(11) NOT NULL;
-ALTER TABLE `message` CHANGE `subject` `subject` VARCHAR(250) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
-ALTER TABLE `message` CHANGE `message` `message` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
-
---
--- Table structure for table `message_reply`
---
-ALTER TABLE `message_reply` ENGINE = InnoDB;
-ALTER TABLE `message_reply` ADD FOREIGN KEY `message_reply_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `message_reply` ADD FOREIGN KEY `message_reply_fk_2`(`receiver_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `message_reply` ADD FOREIGN KEY `message_reply_fk_3`(`message_id`) REFERENCES `message`(`id`) ON DELETE CASCADE;
-ALTER TABLE `message_reply` CHANGE `reply_text` `reply_text` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 
 --
 -- Table structure for table `news`
@@ -205,6 +185,7 @@ ALTER TABLE `votings` ADD `vote` TINYINT NOT NULL DEFAULT '1' AFTER `id`;
 ALTER TABLE `votings` CHANGE `vote` `vote` TINYINT(4) NOT NULL;
 ALTER TABLE `votings` ADD `canceled` TINYINT NOT NULL DEFAULT '0';
 ALTER TABLE `votings` ADD `is_read` BIT NOT NULL DEFAULT 0;
+ALTER TABLE `votings` CHANGE `is_read` `is_read` TINYINT(1) NOT NULL DEFAULT '0';
 
 --
 -- Table structure for table `facebook_temp_users`
@@ -229,4 +210,38 @@ CREATE TABLE `comment_user_notify` (
 	PRIMARY KEY (`id`),
 	FOREIGN KEY `comment_user_notify_ibfk_1`(`comment_id`) REFERENCES `comments`(`id`) ON DELETE CASCADE,
 	FOREIGN KEY `comment_user_notify_ibfk_2`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+--
+-- Table structure for table `conversation`
+--
+CREATE TABLE `conversation` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`from_id` INT(11) NOT NULL,
+	`to_id` INT(11) NOT NULL,
+	`subject` VARCHAR(250) NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`status` TINYINT(1) NOT NULL,
+	PRIMARY KEY (`id`),
+	FOREIGN KEY (`from_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE,
+	FOREIGN KEY (`to_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+--
+-- Table structure for table `conversation_message`
+--
+CREATE TABLE `conversation_message` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`conversation_id` INT(11) NOT NULL,
+	`from_id` INT(11) NOT NULL,
+	`to_id` INT(11) NOT NULL,
+	`body` VARCHAR(250) NULL,
+	`is_read` TINYINT(1) NOT NULL,
+	`is_first` TINYINT(1) NOT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`status` TINYINT(1) NOT NULL,
+	PRIMARY KEY (`id`),
+	FOREIGN KEY (`conversation_id`) REFERENCES `conversation`(`id`) ON DELETE CASCADE,
+	FOREIGN KEY (`from_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE,
+	FOREIGN KEY (`to_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;

@@ -3,37 +3,24 @@
 </h3>
 <?php if (count($this->paginator) > 0): ?>
 <div class="inboxSec">
-	<?php
-	foreach($this->paginator as $inboxData):
-		$sender = $inboxData->findDependentRowset('Application_Model_User', 'Sender')->current();
-
-		$higlight = '';
-
-		if ($inboxData->sender_id == $this->user->id && $inboxData->sender_read == "false" ||
-			$inboxData->receiver_id == $this->user->id && $inboxData->reciever_read == "false")
-		{
-			$higlight .= ' highLight';
-		}
-
-		$icon = $inboxData->reciever_read == "true" ? "message_checked.png" : "message_check.png";
-	?>
+	<?php foreach($this->paginator as $message): ?>
 	<ul>
-		<li id="row_<?php echo $inboxData->id; ?>" class="message-list<?php echo $higlight; ?>">
+		<li id="row_<?php echo $message->id; ?>" class="message-list<?php if (!$message->is_read) echo ' highLight'; ?>">
 			<div class="main-message-wrapper">
 				<div class="message-frist">
-					<img src="<?php echo $sender->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
+					<img src="<?php echo $this->baseUrl($message->user_image); ?>" />
 				</div>
 				<div class="message-second">
-					<span class="name"><?php echo $sender->Name; ?></span>
+					<span class="name"><?php echo $message->user_name; ?></span>
 					<div>
-						<span class="messageSubject"><?php echo $inboxData->subject; ?></span>
+						<span class="messageSubject"><?php echo $message->subject; ?></span>
 						<span>-</span>
-						<span class="messageBody"><?php echo $inboxData->message; ?></span>
+						<span class="messageBody"><?php echo $message->body; ?></span>
 					</div>
 				</div>
 				<div class="message-third">
-					<span class="dateTime"><?php echo date('F j \a\t h:ia', strtotime($inboxData->created)); ?></span>
-					<img src="<?php echo $this->baseUrl("www/images/" . $icon); ?>" />
+					<span class="dateTime"><?php echo date('F j \a\t h:ia', strtotime($message->created_at)); ?></span>
+					<img src="<?php echo $this->baseUrl('www/images/' . ($message->is_read ? 'message_checked.png' : 'message_check.png')); ?>" />
                 </div>
 				<div class="clr"></div>
 			</div>

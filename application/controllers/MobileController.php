@@ -363,14 +363,30 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('sender_id'), $user))
+			$sender_id = $this->_request->getPost('sender_id');
+
+			if (!v::intVal()->validate($sender_id))
+			{
+				throw new RuntimeException('Incorrect sender ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_User::checkId($sender_id, $user))
 			{
 				throw new RuntimeException('Incorrect sender ID', -1);
 			}
 
-			if (!Application_Model_User::checkId($this->_request->getPost('reciever_id'), $receiver))
+			$receiver_id = $this->_request->getPost('reciever_id');
+
+			if (!v::intVal()->validate($receiver_id))
 			{
-				throw new RuntimeException('Incorrect reciever ID', -1);
+				throw new RuntimeException('Incorrect receiver ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			{
+				throw new RuntimeException('Incorrect receiver ID', -1);
 			}
 
 			$form = new Application_Form_Message;
@@ -381,21 +397,31 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$data = $form->getValues();
-			$data['sender_id'] = $user->id;
-			$data['receiver_id'] = $receiver->id;
 
-			$message = (new Application_Model_Message)->save($data);
+			$conversation = (new Application_Model_Conversation)->save(array(
+				'from_id' => $user->id,
+				'to_id' => $receiver->id,
+				'subject' => $data['subject']
+			));
+
+			$message = (new Application_Model_ConversationMessage)->save(array(
+				'conversation_id' => $conversation->id,
+				'from_id' => $user->id,
+				'to_id' => $receiver->id,
+				'body' => $data['message'],
+				'is_first' => 1
+			));
 
 			My_Email::send(
 				array($receiver->Name => $receiver->Email_id),
-				$message->subject,
+				$data['subject'],
 				array(
 					'template' => 'message-notification',
 					'assign' => array(
 						'sender' => $user,
 						'receiver' => $receiver,
-						'subject' => $message->subject,
-						'message' => $message->message
+						'subject' => $data['subject'],
+						'message' => $data['message']
 					)
 				)
 			);
@@ -404,8 +430,8 @@ class MobileController extends Zend_Controller_Action
 				'status' => "SUCCESS",
 				'message' => "Message Send Successfully",
 				'result' => array(
-					'id' => $message->id,
-					'created' => $message->created
+					'id' => $conversation->id,
+					'created' => $conversation->created_at
 				)
 			);
 		}
@@ -431,25 +457,55 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user ID', -1);
 			}
 
 			$start = $this->_request->getPost('start', 0);
 
-			if (!My_Validate::digit($start) || $start < 0)
+			if (!v::optional(v::intVal())->validate($start))
 			{
-				throw new RuntimeException('Incorrect start value', -1);
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
-			$model = new Application_Model_Message;
-
-			$messages = $model->fetchAll(
-				$model->publicSelect()
-					->where('message.receiver_id =?', $user->id)
-					->order('updated DESC')
-					->limit(100, $start)
+			$config = Zend_Registry::get('config_global');
+			$model = new Application_Model_Conversation;
+			$messages = $model->fetchAll($model->select()
+				->setIntegrityCheck(false)
+				->from(array('c' => 'conversation'), array(
+					'c.id',
+					'c.subject',
+					'cm1.body',
+					'cm1.created_at',
+					'user_id' => 'u.id',
+					'user_name' => 'u.Name',
+					'user_email' => 'u.Email_id',
+					'user_image' => 'it.path',
+					'is_read' => 'IFNULL(cm3.is_read,1)'
+				))
+				->where('c.to_id=?', $user->id)
+				->joinLeft(array('cm1' => 'conversation_message'), '(cm1.conversation_id=c.id AND ' .
+					'cm1.is_first=1)', '')
+				->joinLeft(array('cm3' => 'conversation_message'), '(cm3.conversation_id=c.id AND ' .
+					'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
+				->joinLeft(array('u' => 'user_data'), 'u.id=c.from_id', '')
+				->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '')
+				->joinLeft(array('it' => 'image_thumb'), '(it.image_id=IFNULL(ui.image_id,' .
+					$config->user->default_image . ') AND ' .
+					'it.thumb_width=320 AND it.thumb_height=320)', '')
+				->group('c.id')
+				->order('c.created_at DESC')
+				->limit(100, $start)
 			);
 
 			$response = array(
@@ -461,19 +517,17 @@ class MobileController extends Zend_Controller_Action
 			{
 				foreach ($messages as $message)
 				{
-					$user = $message->findDependentRowset('Application_Model_User', 'Receiver')->current();
-
 					$response['result'][] = array(
 						'id' => $message->id,
-						'sender_id' => $message->sender_id,
+						'sender_id' => $message->user_id,
 						'subject' => $message->subject,
-						'message' => $message->message,
-						'created' => $message->created,
-						'updated' => $message->updated,
-						'reciever_read' => $message->reciever_read,
-						'Name' => $user->Name,
-						'Email_id' => $user->Email_id,
-						'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+						'message' => $message->body,
+						'created' => $message->created_at,
+						'reciever_read' => $message->is_read,
+						'Name' => $message->user_name,
+						'Email_id' => $message->user_email,
+						'Profile_image' => $this->view->serverUrl() .
+							$this->view->baseUrl($message->user_image)
 					);
 				}
 			}
@@ -482,7 +536,8 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 		}
 
@@ -500,16 +555,25 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
 			$start = $this->_request->getPost('start', 0);
 
-			if (!My_Validate::digit($start) || $start < 0)
+			if (!v::optional(v::intVal())->validate($start))
 			{
-				throw new RuntimeException('Incorrect start value', -1);
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
 			$response = array(
@@ -517,34 +581,51 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'Message list Send Successfully'
 			);
 
-			$model = new Application_Model_Message;
-
-			$messages = $model->fetchAll(
-				$model->publicSelect()
-					->where('receiver_id =?', $user->id)
-					->where('reciever_read =?', 'false')
-					->order('updated DESC')
-					->limit(100, $start)
+			$config = Zend_Registry::get('config_global');
+			$model = new Application_Model_Conversation;
+			$messages = $model->fetchAll($model->select()
+				->setIntegrityCheck(false)
+				->from(array('c' => 'conversation'), array(
+					'c.id',
+					'c.subject',
+					'cm1.body',
+					'cm1.created_at',
+					'user_id' => 'u.id',
+					'user_name' => 'u.Name',
+					'user_email' => 'u.Email_id',
+					'user_image' => 'it.path'
+				))
+				->where('c.to_id=?', $user->id)
+				->joinLeft(array('cm1' => 'conversation_message'), '(cm1.conversation_id=c.id AND ' .
+					'cm1.is_first=1)', '')
+				->joinLeft(array('cm3' => 'conversation_message'), '(cm3.conversation_id=c.id AND ' .
+					'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
+				->where('cm3.id IS NOT NULL')
+				->joinLeft(array('u' => 'user_data'), 'u.id=c.from_id', '')
+				->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '')
+				->joinLeft(array('it' => 'image_thumb'), '(it.image_id=IFNULL(ui.image_id,' .
+					$config->user->default_image . ') AND ' .
+					'it.thumb_width=320 AND it.thumb_height=320)', '')
+				->group('c.id')
+				->order('c.created_at DESC')
+				->limit(100, $start)
 			);
 
 			if (count($messages))
 			{
 				foreach ($messages as $message)
 				{
-					$sender = $message->findDependentRowset('Application_Model_User', 'Sender')->current();
-
 					$response['result'][] = array(
 						'id' => $message->id,
-						'sender_id' => $message->sender_id,
+						'sender_id' => $message->user_id,
 						'subject' => $message->subject,
-						'message' => $message->message,
-						'created' => $message->created,
-						'updated' => $message->updated,
-						'reciever_read' => $message->reciever_read,
-						'Name' => $sender->Name,
-						'Email_id' => $sender->Email_id,
+						'message' => $message->body,
+						'created' => $message->created_at,
+						'reciever_read' => 0,
+						'Name' => $message->user_name,
+						'Email_id' => $message->user_email,
 						'Profile_image' => $this->view->serverUrl() .
-							$sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+							$this->view->baseUrl($message->user_image)
 					);
 				}
 			}
@@ -553,7 +634,8 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 		}
 
@@ -571,12 +653,28 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			if (!Application_Model_User::checkId($this->_request->getPost('other_user_id'), $other_user))
+			$other_user_id = $this->_request->getPost('other_user_id');
+
+			if (!v::intVal()->validate($other_user_id))
+			{
+				throw new RuntimeException('Incorrect other user ID value: ' .
+					var_export($other_user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($other_user_id, $other_user))
 			{
 				throw new RuntimeException('Incorrect other user ID', -1);
 			}
@@ -594,35 +692,54 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'Inbox Message between two user rendered Successfully'
 			);
 
-			$model = new Application_Model_Message;
-			$messages = $model->fetchAll(
-				$model->publicSelect()
-					->where('(message.receiver_id=?',  $user->id)
-					->where('message.sender_id=?)', $other_user->id)
-					->orWhere('(message.receiver_id=?',  $other_user->id)
-					->where('message.sender_id=?)', $user->id)
-					->order('updated ASC')
-					->limit(100, $start)
+			$config = Zend_Registry::get('config_global');
+			$model = new Application_Model_Conversation;
+			$messages = $model->fetchAll($model->select()
+				->setIntegrityCheck(false)
+				->from(array('c' => 'conversation'), array(
+					'c.id',
+					'c.subject',
+					'cm1.body',
+					'cm1.created_at',
+					'user_id' => 'u.id',
+					'user_name' => 'u.Name',
+					'user_email' => 'u.Email_id',
+					'user_image' => 'it.path',
+					'is_read' => 'IFNULL(cm3.is_read,1)'
+				))
+				->where('(c.to_id=?',  $user->id)
+				->where('c.from_id=?)', $other_user->id)
+				->orWhere('(c.to_id=?',  $other_user->id)
+				->where('c.from_id=?)', $user->id)
+				->joinLeft(array('cm1' => 'conversation_message'), '(cm1.conversation_id=c.id AND ' .
+					'cm1.is_first=1)', '')
+				->joinLeft(array('cm3' => 'conversation_message'), '(cm3.conversation_id=c.id AND ' .
+					'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
+				->joinLeft(array('u' => 'user_data'), 'u.id=c.from_id', '')
+				->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '')
+				->joinLeft(array('it' => 'image_thumb'), '(it.image_id=IFNULL(ui.image_id,' .
+					$config->user->default_image . ') AND ' .
+					'it.thumb_width=320 AND it.thumb_height=320)', '')
+				->group('c.id')
+				->order('c.created_at DESC')
+				->limit(100, $start)
 			);
 
 			if (count($messages))
 			{
 				foreach ($messages as $message)
 				{
-					$sender = $message->findDependentRowset('Application_Model_User', 'Sender')->current();
-
 					$response['result'][] = array(
 						'id' => $message->id,
-						'sender_id' => $message->sender_id,
+						'sender_id' => $message->user_id,
 						'subject' => $message->subject,
-						'message' => $message->message,
-						'created' => $message->created,
-						'updated' => $message->updated,
-						'reciever_read' => $message->reciever_read,
-						'Name' => $sender->Name,
-						'Email_id' => $sender->Email_id,
+						'message' => $message->body,
+						'created' => $message->created_at,
+						'reciever_read' => $message->is_read,
+						'Name' => $message->user_name,
+						'Email_id' => $message->user_email,
 						'Profile_image' => $this->view->serverUrl() .
-							$sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+							$this->view->baseUrl($message->user_image)
 					);
 				}
 			}
@@ -631,7 +748,8 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 		}
 
@@ -649,19 +767,35 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$message_id = $this->_request->getPost('id');
+			$id = $this->_request->getPost('id');
 
-			if (!(new Application_Model_Message)->checkId($message_id, $conversation))
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect ID value: ' .
+					var_export($id, true));
+			}
+
+			$conversationModel = new Application_Model_Conversation;
+
+			if (!$conversationModel->checkId($id, $conversation))
 			{
 				throw new RuntimeException('Incorrect conversation ID', -1);
 			}
 
-			if ($user->id != $conversation->receiver_id && $user->id != $conversation->sender_id)
+			if ($user->id != $conversation->to_id && $user->id != $conversation->from_id)
 			{
 				throw new RuntimeException('You have no permissions to access this action', -1);
 			}
@@ -674,39 +808,85 @@ class MobileController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$model = new Application_Model_MessageReply;
-
-			$response = array(
-				'status' => 'SUCCESS',
-				'total' => $model->getCountByMessageId($conversation->id)
+			$config = Zend_Registry::get('config_global');
+			$messageModel = new Application_Model_ConversationMessage;
+			$messages = $messageModel->fetchAll($messageModel->select()
+				->setIntegrityCheck(false)
+				->from(array('cm' => 'conversation_message'), array(
+					'cm.id',
+					'cm.to_id',
+					'cm.body',
+					'cm.is_read',
+					'cm.created_at',
+					'sender_id' => 'su.id',
+					'sender_name' => 'su.Name',
+					'sender_email' => 'su.Email_id',
+					'sender_image' => 'sit.path',
+					'receiver_id' => 'ru.id',
+					'receiver_name' => 'ru.Name',
+					'receiver_email' => 'ru.Email_id',
+					'receiver_image' => 'rit.path',
+				))
+				->where('cm.conversation_id=?', $conversation->id)
+				->where('cm.is_first<>1')
+				->joinLeft(array('su' => 'user_data'), 'su.id=cm.from_id', '')
+				->joinLeft(array('sui' => 'user_image'), 'sui.user_id=su.id', '')
+				->joinLeft(array('sit' => 'image_thumb'), '(sit.image_id=IFNULL(sui.image_id,' .
+					$config->user->default_image . ') AND ' .
+					'sit.thumb_width=320 AND sit.thumb_height=320)', '')
+				->joinLeft(array('ru' => 'user_data'), 'ru.id=cm.to_id', '')
+				->joinLeft(array('rui' => 'user_image'), 'rui.user_id=ru.id', '')
+				->joinLeft(array('rit' => 'image_thumb'), '(rit.image_id=IFNULL(rui.image_id,' .
+					$config->user->default_image . ') AND ' .
+					'rit.thumb_width=320 AND rit.thumb_height=320)', '')
+				->order('cm.created_at DESC')
+				->limit(10, $start)
 			);
 
-			$messages = $model->findAllByMessageId($conversation->id, 10, $start);
+			$response = array('status' => 'SUCCESS');
+			$updateCondition = array();
 
-			if (count($messages))
+			if ($conversation->to_id == $user->id)
+			{
+				$updateCondition[] = '(conversation_id=' . $conversation->id .
+					' AND is_first=1)';
+			}
+
+			if ($messages->count())
 			{
 				foreach ($messages as $message)
 				{
-					$sender = $message->findDependentRowset('Application_Model_User', 'ReplySender')->current();
-					$receiver = $message->findDependentRowset('Application_Model_User', 'ReplyReceiver')->current();
+					$message->sender_image = $this->view->serverUrl() .
+							$this->view->baseUrl($message->sender_image);
 
 					$response['result'][] = array(
 						'id' => $message->id,
-						'message' => $message->reply_text,
-						'created' => $message->created,
-						'sender_id' => $sender->id,
-						'sender_name' => $sender->Name,
-						'sender_email' => $sender->Email_id,
+						'body' => $message->body,
+						'created_at' => $message->created_at,
+						'sender_id' => $message->sender_id,
+						'sender_name' => $message->sender_name,
+						'sender_email' => $message->sender_email,
 						'sender_image' => $this->view->serverUrl() .
-							$sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-						'receiver_id' => $receiver->id,
-						'receiver_name' => $receiver->Name,
-						'receiver_email' => $receiver->Email_id,
+							$this->view->baseUrl($message->sender_image),
+						'receiver_id' => $message->receiver_id,
+						'receiver_name' => $message->receiver_name,
+						'receiver_email' => $message->receiver_email,
 						'receiver_image' => $this->view->serverUrl() .
-							$receiver->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-						'receiver_read' => $message->receiver_read
+							$this->view->baseUrl($message->receiver_image),
+						'is_read' => $message->is_read
 					);
+
+					if ($message->to_id == $user->id)
+					{
+						$updateCondition[] = 'id=' . $message->id;
+					}
 				}
+			}
+
+			if (count($updateCondition))
+			{
+				$messageModel->update(array('is_read' => 1),
+					implode(' OR ', $updateCondition));
 			}
 		}
 		catch (Exception $e)
@@ -732,38 +912,65 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$ids = explode(",", $this->_request->getPost('post_id'));
+			$post_id = $this->_request->getPost('post_id');
 
-			$model = new Application_Model_Message;
+			if (!v::stringType()->validate($post_id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($post_id, true));
+			}
+
+			$ids = explode(',', $post_id);
+
+			if (!count($ids))
+			{
+				throw new RuntimeException('Post ID cannot be blank');
+			}
+
+			$conversationIds = array();
+			$conversationModel = new Application_Model_Conversation;
 
 			foreach ($ids as $id)
 			{
-				$message = $model->findByID($id);
+				$conversation = $conversationModel->findByID($id);
 
-				if (!$message)
+				if (!$conversation)
 				{
-					throw new RuntimeException('Incorrect message ID: ' . var_export($id, true), -1);
+					throw new RuntimeException('Incorrect conversation ID: ' .
+						var_export($id, true), -1);
 				}
 
 				switch ($user->id)
 				{
-					case $message->receiver_id:
-						$message->reciever_read = 'true';
+					case $conversation->from_id:
 						break;
-					case $message->sender_id:
-						$message->sender_read = 'true';
+					case $conversation->to_id:
+						$conversationIds[] = $conversation->id;
 						break;
 					default:
 						throw new RuntimeException('You are not authorized to access this action', -1);
 				}
+			}
 
-				$message->save();
-            }
+			if (count($conversationIds))
+			{
+				$messageModel = new Application_Model_ConversationMessage;
+				$messageModel->update(array('is_read' => 1),
+					'is_first=1 AND conversation_id IN (' . implode(',', $conversationIds) . ')');
+			}
 
 			$response = array(
 				'status' => 'SUCCESS',
@@ -774,7 +981,8 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 		}
 

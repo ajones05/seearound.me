@@ -139,7 +139,7 @@ function renderReplyMessage(data){
 		$('<div/>').addClass('clr')
 	)
 
-	if (user_id == data.receiver_id && data.receiver_read == 'false'){
+	if (user_id == data.receiver_id && data.receiver_read == 0){
 		message.addClass('unread');
 	}
 
