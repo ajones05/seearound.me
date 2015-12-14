@@ -1,4 +1,4 @@
-<h2>mobile/message-conversation</h2>
+<h2>mobile/conversation-message</h2>
 <ol class="breadcrumb">
 	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
 	<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile Api</a></li>
@@ -11,7 +11,7 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileconver
 </div>
 <form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/conversation-message'); ?>" method="post">
 	<div class="form-group">
-		<label class="control-label col-sm-2" for="user_id">User ID:</label>
+		<label class="control-label col-sm-2" for="user_id">User ID [user_id]:</label>
 		<div class="col-sm-10">
 			<input type="text" name="user_id" class="form-control"
 				id="user_id" placeholder="Enter user ID"
@@ -19,7 +19,7 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileconver
 		</div>
 	</div>
 	<div class="form-group">
-		<label class="control-label col-sm-2" for="id">Conversation ID:</label>
+		<label class="control-label col-sm-2" for="id">Conversation ID [id]:</label>
 		<div class="col-sm-10">
 			<input type="text" name="id" class="form-control"
 				id="id" placeholder="Enter conversation ID"
@@ -27,7 +27,7 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileconver
 		</div>
 	</div>
 	<div class="form-group">
-		<label class="control-label col-sm-2" for="start">Start:</label>
+		<label class="control-label col-sm-2" for="start">Start [start]:</label>
 		<div class="col-sm-10">
 			<input type="text" name="start" class="form-control"
 				id="start" placeholder="Enter rows start"
