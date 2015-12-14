@@ -36,7 +36,11 @@
 		<p class = "list-group-item-text">Conversations messages list</p>
 	</a>
 	<a href="#" class="list-group-item disabled">mobile/viewed</a>
-	<a href="#" class="list-group-item disabled">mobile/unreadmessages</a>
+	<a href="<?php echo $this->baseUrl('admin/mobile-api/unreadmessages'); ?>"
+		class="list-group-item">
+		<h4 class = "list-group-item-heading">mobile/unreadmessages</h4>
+		<p class = "list-group-item-text">Unread conversations messages list</p>
+	</a>
 </div>
 <div class="list-group">
 	<p class="list-group-item active">Posts</p>
