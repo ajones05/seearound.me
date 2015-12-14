@@ -82,6 +82,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * Set conversation read status action.
+	 *
+	 * @return void
+	 */
+    public function viewedAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Unread conversation messages list action.
 	 *
 	 * @return void
