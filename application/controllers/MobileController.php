@@ -1681,6 +1681,8 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($result))
 			{
+				$typeId = array();
+
 				foreach ($result as &$row)
 				{
 					$row['user_image'] = $this->view->serverUrl() .
@@ -1703,9 +1705,35 @@ class MobileController extends Zend_Controller_Action
 								' commented on your post';
 							break;
 					}
+
+					$typeId[$row['type']][] = $row['id'];
 				}
 
 				$response['result'] = $result;
+
+				if (!empty($typeId['friend']))
+				{
+					$db->update('friends', array('notify' => 1),
+						'id IN(' . implode(',', $typeId['friend']) . ')');
+				}
+
+				if (!empty($typeId['message']))
+				{
+					$db->update('conversation_message', array('is_read' => 1),
+						'id IN(' . implode(',', $typeId['message']) . ')');
+				}
+
+				if (!empty($typeId['vote']))
+				{
+					$db->update('votings', array('is_read' => 1),
+						'id IN(' . implode(',', $typeId['vote']) . ')');
+				}
+
+				if (!empty($typeId['comment']))
+				{
+					$db->update('comments', array('is_read' => 1),
+						'id IN(' . implode(',', $typeId['comment']) . ')');
+				}
 			}
 		}
 		catch (Exception $e)
