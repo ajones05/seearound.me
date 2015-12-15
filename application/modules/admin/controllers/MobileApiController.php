@@ -104,6 +104,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * Messages list action.
+	 *
+	 * @return void
+	 */
+    public function messagesAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Posts list action.
 	 *
 	 * @return void

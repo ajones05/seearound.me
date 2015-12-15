@@ -856,9 +856,6 @@ class MobileController extends Zend_Controller_Action
 			{
 				foreach ($messages as $message)
 				{
-					$message->sender_image = $this->view->serverUrl() .
-							$this->view->baseUrl($message->sender_image);
-
 					$response['result'][] = array(
 						'id' => $message->id,
 						'body' => $message->body,
@@ -991,6 +988,113 @@ class MobileController extends Zend_Controller_Action
 		$this->_helper->json($response);
 	}
 
+	/**
+	 * Messages list action.
+	 * 
+	 * @return	void
+	 */
+	public function messagesAction()
+	{
+		try
+		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			$start = $this->_request->getPost('start', 0);
+
+			if (!v::optional(v::intVal())->validate($start))
+			{
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$config = Zend_Registry::get('config_global');
+			$messageModel = new Application_Model_ConversationMessage;
+			$messages = $messageModel->fetchAll($messageModel->select()
+				->setIntegrityCheck(false)
+				->from(array('cm' => 'conversation_message'), array(
+					'cm.id',
+					'c.subject',
+					'cm.body',
+					'cm.is_read',
+					'cm.created_at',
+					'sender_id' => 'su.id',
+					'sender_name' => 'su.Name',
+					'sender_email' => 'su.Email_id',
+					'sender_image' => 'sit.path',
+					'receiver_id' => 'ru.id',
+					'receiver_name' => 'ru.Name',
+					'receiver_email' => 'ru.Email_id',
+					'receiver_image' => 'rit.path',
+				))
+				->joinLeft(array('c' => 'conversation'), 'c.id=cm.conversation_id', '')
+				->where('(c.from_id=?', $user->id)
+				->orWhere('c.to_id=?)', $user->id)
+				->joinLeft(array('su' => 'user_data'), 'su.id=cm.from_id', '')
+				->joinLeft(array('sui' => 'user_image'), 'sui.user_id=su.id', '')
+				->joinLeft(array('sit' => 'image_thumb'), '(sit.image_id=IFNULL(sui.image_id,' .
+					$config->user->default_image . ') AND ' .
+					'sit.thumb_width=320 AND sit.thumb_height=320)', '')
+				->joinLeft(array('ru' => 'user_data'), 'ru.id=cm.to_id', '')
+				->joinLeft(array('rui' => 'user_image'), 'rui.user_id=ru.id', '')
+				->joinLeft(array('rit' => 'image_thumb'), '(rit.image_id=IFNULL(rui.image_id,' .
+					$config->user->default_image . ') AND ' .
+					'rit.thumb_width=320 AND rit.thumb_height=320)', '')
+				->group('cm.id')
+				->order('cm.created_at DESC')
+				->limit(10, $start)
+			);
+
+			$response = array('status' => 'SUCCESS');
+
+			if ($messages->count())
+			{
+				foreach ($messages as $message)
+				{
+					$response['result'][] = array(
+						'id' => $message->id,
+						'subject' => $message->subject,
+						'body' => $message->body,
+						'is_read' => $message->is_read,
+						'created_at' => $message->created_at,
+						'sender_id' => $message->sender_id,
+						'sender_name' => $message->sender_name,
+						'sender_email' => $message->sender_email,
+						'sender_image' => $this->view->serverUrl() .
+							$this->view->baseUrl($message->sender_image),
+						'receiver_id' => $message->receiver_id,
+						'receiver_name' => $message->receiver_name,
+						'receiver_email' => $message->receiver_email,
+						'receiver_image' => $this->view->serverUrl() .
+							$this->view->baseUrl($message->receiver_image)
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+	
 	/**
 	 * Add news action.
 	 * 
