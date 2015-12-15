@@ -1005,17 +1005,30 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$other_user_id = $this->_request->getPost('other_user_id');
+
+			if (!v::intVal()->validate($other_user_id))
+			{
+				throw new RuntimeException('Incorrect other user ID value: ' .
+					var_export($other_user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($other_user_id, $other_user))
+			{
+				throw new RuntimeException('Incorrect other user ID', -1);
+			}
+
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
 			{
 				throw new RuntimeException('Incorrect start value: ' .
 					var_export($start, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
 			$config = Zend_Registry::get('config_global');
@@ -1038,8 +1051,10 @@ class MobileController extends Zend_Controller_Action
 					'receiver_image' => 'rit.path',
 				))
 				->joinLeft(array('c' => 'conversation'), 'c.id=cm.conversation_id', '')
-				->where('(c.from_id=?', $user->id)
-				->orWhere('c.to_id=?)', $user->id)
+				->where('(c.to_id=?',  $user->id)
+				->where('c.from_id=?)', $other_user->id)
+				->orWhere('(c.to_id=?',  $other_user->id)
+				->where('c.from_id=?)', $user->id)
 				->joinLeft(array('su' => 'user_data'), 'su.id=cm.from_id', '')
 				->joinLeft(array('sui' => 'user_image'), 'sui.user_id=su.id', '')
 				->joinLeft(array('sit' => 'image_thumb'), '(sit.image_id=IFNULL(sui.image_id,' .
