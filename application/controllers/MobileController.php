@@ -1619,9 +1619,7 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"friend"'),
 				'fl.created_at',
 				'user_name' => 'u.Name',
-				'user_image' => 'it.path',
-				'message' => new Zend_Db_Expr('"Lorem ipsumament, elit. ' .
-					'Nulla sit ame torem amet, elit. Nulla sit amet"'),
+				'user_image' => 'it.path'
 			));
 			$select1->where('f.reciever_id=? AND f.status=1 AND f.notify=0', $user->id);
 			$select1->joinLeft(array('fl' => 'friend_log'),
@@ -1636,9 +1634,7 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"message"'),
 				'cm.created_at',
 				'user_name' => 'u.Name',
-				'user_image' => 'it.path',
-				'message' => new Zend_Db_Expr('"Lorem ipsumament, elit. ' .
-					'Nulla sit ame torem amet, elit. Nulla sit amet"'),
+				'user_image' => 'it.path'
 			));
 			$select2->where('cm.to_id=? AND cm.is_read=0', $user->id);
 			$select2->joinLeft(array('u' => 'user_data'), 'u.id=cm.from_id', '');
@@ -1651,9 +1647,7 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"vote"'),
 				'v.created_at',
 				'user_name' => 'u.Name',
-				'user_image' => 'it.path',
-				'message' => new Zend_Db_Expr('"Lorem ipsumament, elit. ' .
-					'Nulla sit ame torem amet, elit. Nulla sit amet"'),
+				'user_image' => 'it.path'
 			));
 			$select3->where('n.isdeleted=0 AND n.user_id=?', $user->id);
 			$select3->joinLeft(array('v' => 'votings'), 'v.news_id=n.id', '');
@@ -1668,9 +1662,7 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"comment"'),
 				'c.created_at',
 				'user_name' => 'u.Name',
-				'user_image' => 'it.path',
-				'message' => new Zend_Db_Expr('"Lorem ipsumament, elit. ' .
-					'Nulla sit ame torem amet, elit. Nulla sit amet"'),
+				'user_image' => 'it.path'
 			));
 			$select4->where('n.isdeleted=0 AND n.user_id=?', $user->id);
 			$select4->joinLeft(array('c' => 'comments'), 'c.news_id=n.id', '');
@@ -1693,6 +1685,24 @@ class MobileController extends Zend_Controller_Action
 				{
 					$row['user_image'] = $this->view->serverUrl() .
 						'/' . $row['user_image'];
+
+					switch ($row['type'])
+					{
+						case 'friend':
+							$row['message'] = $row['user_name'] .
+								' started following you';
+						case 'message':
+							$row['message'] = $row['user_name'] .
+								' sent you a new message';
+							break;
+						case 'vote':
+							$row['message'] = $row['user_name'] .
+								' liked your post';
+						case 'comment':
+							$row['message'] = $row['user_name'] .
+								' commented on your post';
+							break;
+					}
 				}
 
 				$response['result'] = $result;
