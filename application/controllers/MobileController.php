@@ -1631,19 +1631,17 @@ class MobileController extends Zend_Controller_Action
 			$select1->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
 
 			$select2 = $db->select();
-			$select2->from(array('m' => 'message'), array(
-				'm.id',
+			$select2->from(array('cm' => 'conversation_message'), array(
+				'cm.id',
 				'type' => new Zend_Db_Expr('"message"'),
-				'created_at' => 'm.created',
+				'cm.created_at',
 				'user_name' => 'u.Name',
 				'user_image' => 'it.path',
 				'message' => new Zend_Db_Expr('"Lorem ipsumament, elit. ' .
 					'Nulla sit ame torem amet, elit. Nulla sit amet"'),
 			));
-			$select2->where('m.is_deleted="false"');
-			$select2->where('(m.receiver_id=? AND m.reciever_read="false"', $user->id);
-			$select2->orWhere('m.reply_to=? AND m.sender_read="false")', $user->id);
-			$select2->joinLeft(array('u' => 'user_data'), 'u.id=m.sender_id', '');
+			$select2->where('cm.to_id=? AND cm.is_read=0', $user->id);
+			$select2->joinLeft(array('u' => 'user_data'), 'u.id=cm.from_id', '');
 			$select2->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
 			$select2->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
 
@@ -1704,7 +1702,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ?
+				'message' => true || $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			);
 		}
