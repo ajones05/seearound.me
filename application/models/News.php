@@ -170,8 +170,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		{
 			switch ($filter)
 			{
+				case '0':
+					$query->where('news.user_id=?', $user->id);
+					break;
 				case '1':
-				case 'interest':
 					$interests = $user->parseInterests();
 
 					if (count($interests))
@@ -187,12 +189,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					}
 
 					break;
-				case '0':
-				case 'myconnection':
-					$query->where('news.user_id =?', $user->id);
-					break;
 				case '2':
-				case 'friends':
 					$query->where('news.user_id<>?', $user->id);
 					$query->joinLeft(array('f1' => 'friends'), 'f1.sender_id=' . $user->id, '');
 					$query->joinLeft(array('f2' => 'friends'), 'f2.reciever_id=' . $user->id, '');
