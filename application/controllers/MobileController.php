@@ -1269,52 +1269,39 @@ class MobileController extends Zend_Controller_Action
 		{
 			$user_id = $this->_request->getPost('userId');
 
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
 			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user id: ' .
 					var_export($user_id, true));
 			}
 
-			$latitude = $this->_request->getPost('latitude');
+			$searchForm = new Application_Form_PostSearch;
+			$searchParameters = [
+				'latitude' => $this->_request->getPost('latitude'),
+				'longitude' => $this->_request->getPost('longitude'),
+				'radius' => $this->_request->getPost('radious', 1),
+				'start' => $this->_request->getPost('fromPage', 0)
+			];
 
-			if (!v::stringType()->lat()->validate($latitude))
+			if (!$searchForm->validateSearch($searchParameters))
 			{
-				throw new RuntimeException('Incorrect latitude value: ' .
-					var_export($latitude, true));
+				throw new RuntimeException(
+					implode("\n", $searchForm->getErrorMessages()));
 			}
 
-			$longitude = $this->_request->getPost('longitude');
+			$response = [
+				'status' => 'SUCCESS',
+				'message' => 'Nearest point data rendered successfully'
+			];
 
-			if (!v::stringType()->lng()->validate($longitude))
-			{
-				throw new RuntimeException('Incorrect longitude value: ' .
-					var_export($longitude, true));
-			}
-
-			$radius = $this->_request->getPost('radious', 1);
-
-			if (!v::floatVal()->between(0.5, 1.5)->validate($radius))
-			{
-				throw new RuntimeException('Incorrect radius value: ' .
-					var_export($radius, true));
-			}
-
-			$start = $this->_request->getPost('fromPage', 0);
-
-			if (!v::optional(v::intVal())->min(0)->validate($start))
-			{
-				throw new RuntimeException('Incorrect start value: ' .
-					var_export($start, true));
-			}
-
-			$response = array();
-
-			$result = (new Application_Model_News)->search(array(
-				'latitude' => $latitude,
-				'longitude' => $longitude,
-				'radius' => $radius,
-				'limit' => 15,
-				'start' => $start
+			$result = (new Application_Model_News)->search(array_merge(
+				$searchParameters, ['limit' => 15]
 			), $user);
 
 			if (count($result))
@@ -1360,9 +1347,6 @@ class MobileController extends Zend_Controller_Action
 					$response['result'][] = $data;
 				}
 			}
-
-			$response['status'] = 'SUCCESS';
-			$response['message'] = 'Nearest point data rendered successfully';
 		}
 		catch (Exception $e)
 		{
@@ -1388,60 +1372,43 @@ class MobileController extends Zend_Controller_Action
 		{
 			$user_id = $this->_request->getPost('user_id');
 
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
 			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user id: ' .
 					var_export($user_id, true));
 			}
 
-			$latitude = $this->_request->getPost('latitude');
+			$searchForm = new Application_Form_PostSearch;
+			$searchParameters = [
+				'latitude' => $this->_request->getPost('latitude'),
+				'longitude' => $this->_request->getPost('longitude'),
+				'radius' => $this->_request->getPost('radious', 0.8),
+				'keywords' => $this->_request->getPost('searchText'),
+				'filter' => $this->_request->getPost('filter'),
+				'start' => $this->_request->getPost('start', 0)
+			];
 
-			if (!v::stringType()->lat()->validate($latitude))
+			if (!$searchForm->validateSearch($searchParameters))
 			{
-				throw new RuntimeException('Incorrect latitude value: ' .
-					var_export($latitude, true));
-			}
-
-			$longitude = $this->_request->getPost('longitude');
-
-			if (!v::stringType()->lng()->validate($longitude))
-			{
-				throw new RuntimeException('Incorrect longitude value: ' .
-					var_export($longitude, true));
-			}
-
-			$radius = $this->_request->getPost('radious', 0.8);
-
-			if (!v::floatVal()->between(0.5, 1.5)->validate($radius))
-			{
-				throw new RuntimeException('Incorrect radius value: ' .
-					var_export($radius, true));
-			}
-
-			$start = $this->_request->getPost('fromPage', 0);
-
-			if (!v::optional(v::intVal())->min(0)->validate($start))
-			{
-				throw new RuntimeException('Incorrect start value: ' .
-					var_export($start, true));
+				throw new RuntimeException(
+					implode("\n", $searchForm->getErrorMessages()));
 			}
 
 			$response = array();
-			$filter = strtolower($this->_request->getPost('filter'));
 
-			if ($filter == 'interest')
+			if ($searchParameters['filter'] == 1)
 			{
 				$response['interest'] = count($user->parseInterests());
 			}
 
-			$result = (new Application_Model_News)->search(array(
-				'keywords' => $this->_request->getPost('searchText'),
-				'latitude' => $latitude,
-				'longitude' => $longitude,
-				'radius' => $radius,
-				'limit' => 15,
-				'start' => $start,
-				'filter' => $filter
+			$result = (new Application_Model_News)->search(array_merge(
+				$searchParameters, ['limit' => 15]
 			), $user);
 
 			if (count($result))
@@ -1495,7 +1462,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				'message' => true || $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
 			);
 		}
 
@@ -1898,7 +1865,7 @@ class MobileController extends Zend_Controller_Action
 
 			foreach ($field_errors as $validator => $error)
 			{
-				$_errors[] = $error;
+				$_errors[] = ltrim($error, '- ');
 			}
 
 			$errors[] = '"' . $field . '" - ' . implode(', ', $_errors);

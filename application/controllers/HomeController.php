@@ -439,50 +439,43 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$latitude = $this->_request->getPost('latitude');
+			$new = $this->_request->getPost('new', []);
 
-			if (My_Validate::emptyString($latitude) || !My_Validate::latitude($latitude))
+			if (!v::optional(v::arrayVal())->validate($new))
 			{
-				throw new RuntimeException('Incorrect latitude value', -1);
-			}
-
-			$longitude = $this->_request->getPost('longitude');
-
-			if (My_Validate::emptyString($longitude) || !My_Validate::longitude($longitude))
-			{
-				throw new RuntimeException('Incorrect longitude value', -1);
-			}
-
-			$radius = $this->_request->getPost('radius', 0.8);
-
-			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
-			{
-				throw new RuntimeException('Incorrect radius value', -1);
-			}
-
-			$start = $this->_request->getPost('start', 0);
-
-			if (!My_Validate::digit($start) || $start < 0)
-			{
-				throw new RuntimeException('Incorrect start value', -1);
+				throw new RuntimeException('Incorrect new value');
 			}
 
 			$point = $this->_request->getPost('point', 0);
 
-			if ($point)
+			if (!v::optional(v::intVal())->validate($point))
 			{
-				$radius = 0.018939;
+				throw new RuntimeException('Incorrect point value');
 			}
 
-			$result = (new Application_Model_News)->search(array(
+			$searchForm = new Application_Form_PostSearch;
+			$searchParameters = [
+				'latitude' => $this->_request->getPost('latitude'),
+				'longitude' => $this->_request->getPost('longitude'),
+				'radius' => $this->_request->getPost('radius', 0.8),
 				'keywords' => $this->_request->getPost('keywords'),
-				'latitude' => $latitude,
-				'longitude' => $longitude,
-				'radius' => $radius,
-				'limit' => 15,
-				'start' => $start,
-				'exclude_id' => $this->_request->getPost('new', array()),
-				'filter' => strtolower($this->_request->getPost('filter'))
+				'filter' => $this->_request->getPost('filter'),
+				'start' => $this->_request->getPost('start', 0)
+			];
+
+			if (!$searchForm->validateSearch($searchParameters))
+			{
+				throw new RuntimeException(
+					implode("\n", $searchForm->getErrorMessages()));
+			}
+
+			if ($point)
+			{
+				$searchParameters['radius'] = 0.018939;
+			}
+
+			$result = (new Application_Model_News)->search(array_merge(
+				$searchParameters, ['limit' => 15, 'exclude_id' => $new]
 			), $user);
 
 			$response = array('status' => 1);
@@ -543,34 +536,23 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$latitude = $this->_request->getPost('latitude');
-
-			if (My_Validate::emptyString($latitude) || !My_Validate::latitude($latitude))
-			{
-				throw new RuntimeException('Incorrect latitude value', -1);
-			}
-
-			$longitude = $this->_request->getPost('longitude');
-
-			if (My_Validate::emptyString($longitude) || !My_Validate::longitude($longitude))
-			{
-				throw new RuntimeException('Incorrect longitude value', -1);
-			}
-
-			$radius = $this->_request->getPost('radius', 0.8);
-
-			if (!is_numeric($radius) || $radius < 0.5 || $radius > 1.5)
-			{
-				throw new RuntimeException('Incorrect radius value', -1);
-			}
-
-			$result = (new Application_Model_News)->search(array(
+			$searchForm = new Application_Form_PostSearch;
+			$searchParameters = [
+				'latitude' => $this->_request->getPost('latitude'),
+				'longitude' => $this->_request->getPost('longitude'),
+				'radius' => $this->_request->getPost('radius', 0.8),
 				'keywords' => $this->_request->getPost('keywords'),
-				'latitude' => $latitude,
-				'longitude' => $longitude,
-				'radius' => $radius,
-				'limit' => 100,
-				'filter' => 'friends'
+			];
+
+			if (!$searchForm->validateSearch($searchParameters))
+			{
+				throw new RuntimeException(
+					implode("\n", $searchForm->getErrorMessages()));
+			}
+
+			$result = (new Application_Model_News)->search(array_merge(
+				$searchParameters,
+				['filter' => 2, 'start' => 0, 'limit' => 15]
 			), $user);
 
 			$response = array('status' => 1);
