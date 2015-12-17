@@ -33,6 +33,13 @@ class PostController extends Zend_Controller_Action
 				$this->_redirect($this->view->baseUrl('/'));
 			}
 
+			$new = $this->_request->getPost('new', []);
+
+			if (!v::optional(v::arrayVal())->validate($new))
+			{
+				throw new RuntimeException('Incorrect new value');
+			}
+
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::intVal()->validate($start))
@@ -112,7 +119,8 @@ class PostController extends Zend_Controller_Action
 				'longitude' => $mapCenter[1],
 				'radius' => $point ? 0.018939 : $radius,
 				'limit' => 15,
-				'start' => $start
+				'start' => $start,
+				'exclude_id' => $new
 			), $user);
 
 			$postData = array();
