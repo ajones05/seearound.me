@@ -133,7 +133,8 @@ class PostController extends Zend_Controller_Action
 				{
 					foreach ($posts as $post)
 					{
-						$postData[$post->id] = array(
+						$postData[] = array(
+							$post->id,
 							$post->latitude,
 							$post->longitude,
 							// TODO: remove spaces, new line...

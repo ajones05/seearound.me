@@ -538,8 +538,6 @@ function renderMap_callback(){
 				contentType: false,
 				processData: false,
 				done: function(response){
-					console.log(response);
-
 					$('html, body').animate({scrollTop: 0}, 0);
 					$('.posts > .empty').remove();
 
@@ -1110,9 +1108,13 @@ function renderMap_callback(){
 						return true;
 					}
 
-					for (var id in response.data){
-						postData[id]=[response.data[id][0],response.data[id][1]];
-						$('.posts').append(response.data[id][2]);
+					for (var i in response.data){
+						var id = response.data[i][0],
+							latitude = response.data[i][1],
+							longitude = response.data[i][2],
+							body = response.data[i][3];
+						postData[id]=[latitude,longitude];
+						$('.posts').append(body);
 						postItem_render(id);
 					}
 
