@@ -139,11 +139,11 @@ function renderMap_callback(){
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
 		userPosition = new google.maps.LatLng(user.location[0], user.location[1]);
 		require(['jquery','jquery-ui','textarea_autosize'], function(){
-			mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
+			mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffsetX(true),listMap_centerOffsetY(true)));
 
 			areaCircle = new googleMapsAreaCircle({
 				map: mainMap,
-				center: offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),
+				center: offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()),
 				radius: getRadius()
 			});
 
@@ -175,8 +175,8 @@ function renderMap_callback(){
 					return true;
 				}
 				centerPosition = userPosition;
-				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
-				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0), getRadius());
+				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffsetX(true),listMap_centerOffsetY(true)));
+				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()), getRadius());
 				postList_change();
 			});
 
@@ -212,8 +212,8 @@ function renderMap_callback(){
 						[centerPosition.lat(),centerPosition.lng()]) <= 0){
 						return true;
 					}
-					centerPosition = offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0);
-					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0), getRadius());
+					centerPosition = offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY());
+					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()), getRadius());
 					postList_change();
 				});
 			});
@@ -223,8 +223,8 @@ function renderMap_callback(){
 					.tooltip('close')
 					.tooltip('option', 'disabled', true)
 					.tooltip('option', 'disabled', false);
-				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
-				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0), getRadius());
+				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffsetX(true),listMap_centerOffsetY(true)));
+				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()), getRadius());
 			});
 
 			$(document).click(function(){
@@ -236,8 +236,8 @@ function renderMap_callback(){
 
 			$(window).on('resize', function(){
 				mainMap.setZoom(defaultZoom);
-				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
-				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0), getRadius());
+				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffsetX(true),listMap_centerOffsetY(true)));
+				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()), getRadius());
 			});
 
 			$(window).on('resize scroll', function(){
@@ -392,8 +392,8 @@ function renderMap_callback(){
 								user.location = location;
 								userPosition = new google.maps.LatLng(location[0],location[1]);
 								centerPosition = position;
-								mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
-								areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),getRadius());
+								mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffsetX(true),listMap_centerOffsetY(true)));
+								areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()),getRadius());
 								postList_change();
 								$(dialogEvent.target).dialog('close');
 							},
@@ -556,8 +556,8 @@ function renderMap_callback(){
 					if (reset){
 						postList_reset();
 						centerPosition = location;
-						mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
-						areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0),getRadius());
+						mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffsetX(true),listMap_centerOffsetY(true)));
+						areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()),getRadius());
 
 						for (var id in response.data){
 							$('.posts').append(response.data[id][2]);
@@ -784,8 +784,8 @@ function renderMap_callback(){
 															postItem_marker(id, postData[id]);
 														} else {
 															centerPosition = position;
-															mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffset(true),0));
-															areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffset(),0), getRadius());
+															mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffsetX(true),listMap_centerOffsetY(true)));
+															areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()), getRadius());
 															postList_change();
 														}
 														$(dialogEvent.target).dialog('close');
@@ -1665,12 +1665,23 @@ function comment_render(comment){
 }
 
 /**
- * Returns map center offcet.
+ * Returns map center offset.
  */
-function listMap_centerOffset(reverse){
+function listMap_centerOffsetX(reverse){
 	var postsWidth=$('.posts').outerWidth()+16,
 		windowWidth=$(window).width(),
 		offset=(windowWidth-postsWidth)/2-windowWidth/2;
+	if (reverse) offset*=-1;
+	return offset;
+}
+
+/**
+ * Returns map center offset Y.
+ */
+function listMap_centerOffsetY(reverse){
+	var containerHeight=$('.map-container').outerHeight(),
+		footerHeight=$('.footer').outerHeight(),
+		offset=(containerHeight-footerHeight)/2 - containerHeight/2;
 	if (reverse) offset*=-1;
 	return offset;
 }
@@ -1781,7 +1792,7 @@ function ajaxJson(url, settings){
 				return settings.done(data, textStatus, jqXHR);
 			}
 		}).fail(function(jqXHR, textStatus){
-			if (textStatus === 'abort'){
+			if (jqXHR.readyState == 0 || jqXHR.status == 0){
 				return true;
 			}
 			if (typeof settings.fail === 'function'){
