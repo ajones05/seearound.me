@@ -1,9 +1,21 @@
 var mainMap,areaCircle,loadXhr,userPosition,centerPosition,
 	postLimit=15,defaultRadius=0.8,groupDistance=0.018939,
 	defaultZoom=14,defaultMinZoom=13,defaultMaxZoom=15,
-	locationIcon=assetsBaseUrl+'www/images/template/user-location-icon.png',
-	postIcon=assetsBaseUrl+'www/images/template/post-icon.png',
-	postActiveIcon=assetsBaseUrl+'www/images/template/post-active-icon.png',
+	locationIcon={
+		url: assetsBaseUrl+'www/images/template/user-location-icon34x49.png',
+		width: 34,
+		height: 49
+	},
+	postIcon={
+		url: assetsBaseUrl+'www/images/template/post-icon35x50.png',
+		width: 35,
+		height: 50
+	},
+	postActiveIcon={
+		url: assetsBaseUrl+'www/images/template/post-active-icon35x51.png',
+		width: 35,
+		height: 51
+	},
 	postMarkers={},postMarkersCluster={},
 	disableScroll=false,markerClick=false;
 
@@ -584,20 +596,12 @@ function renderMap_callback(){
 				postContainer = $('.post[data-id="'+id+'"]');
 			postContainer.bind({
 				mouseenter: function(){
-					marker.setIcon({
-						url: postActiveIcon,
-						width: marker.opts.icon.width,
-						height: marker.opts.icon.height
-					});
+					marker.setIcon(postActiveIcon);
 					marker.css({zIndex: 100001});
 				},
 				mouseleave: function(){
-					marker.setIcon({
-						url: marker.data('isRoot')==true ?
-							locationIcon : postIcon,
-						width: marker.opts.icon.width,
-						height: marker.opts.icon.height
-					});
+					marker.setIcon(marker.data('isRoot')==true ?
+						locationIcon : postIcon);
 					marker.css({zIndex: ''});
 				}
 			});
@@ -1133,11 +1137,7 @@ function renderMap_callback(){
 					parseFloat(options.position[0]),
 					parseFloat(options.position[1])
 				),
-				icon: {
-					url: options.data.isRoot==true ? locationIcon : postIcon,
-					width: 46,
-					height: 63
-				},
+				icon: options.data.isRoot==true ? locationIcon : postIcon,
 				data: options.data,
 				addClass: options.data.isRoot===true ?'rootMarker':''
 			});
