@@ -33,7 +33,7 @@ $this->headLink() . $this->headScript(); ?></head>
 		<img width="29" height="26" src="<?php echo $this->baseUrl('www/images/template/new-post.png'); ?>" alt="new" />
 	</div>
 	<div class="post-search">
-		<form id="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
+		<form class="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
 			<div class="keywords">
 				<?php echo $this->searchForm->keywords; ?>
 				<?php if (trim($this->searchForm->keywords->getValue()) !== ''): ?>
@@ -59,7 +59,33 @@ $this->headLink() . $this->headScript(); ?></head>
 		</form>
 	</div>
 	<div class="main-menu">
+		<a id="menu-button"></a>
 		<ul>
+			<li class="search">
+				<form class="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
+					<div class="keywords">
+						<?php echo $this->searchForm->keywords; ?>
+						<?php if (trim($this->searchForm->keywords->getValue()) !== ''): ?>
+						<img class="clear" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/close14x14.png'); ?>" alt="clear">
+						<?php else: ?>
+						<img class="search" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/search14x14.png'); ?>" alt="search">
+						<?php endif; ?>
+					</div>
+					<div class="filter">
+						<div class="dropdown">
+							<a class="dropdown-toggle" href="#">
+								<span><?php echo $this->searchForm->filter->getMultiOption($this->searchForm->filter->getValue()); ?></span>
+							</a>
+							<ul class="dropdown-menu">
+								<?php foreach ($this->searchForm->filter->getMultiOptions() as $label): ?>
+								<li><a href="#"><?php echo $label; ?></a></li>
+								<?php endforeach; ?>
+							</ul>
+							<?php echo $this->searchForm->filter; ?>
+						</div>
+					</div>
+				</form>
+			</li>
 			<li class="dropdown community">
 				<a class="dropdown-toggle" href="#">
 					<span class="icon"></span><span class="text">Community</span><span class="count"></span>
@@ -88,7 +114,7 @@ $this->headLink() . $this->headScript(); ?></head>
 	</div>
 </div>
 <div class="container">
-	<div class="footer">
+	<div class="footer" style="display: none">
 		<div class="map-radius">
 			<div class="radius">Radius</div>
 			<div id="slider" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
@@ -98,11 +124,11 @@ $this->headLink() . $this->headScript(); ?></head>
 		<div class="user-location">
 			<button>Change Location</button>
 		</div>
-		<div class="about-info">
-			<a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
-			<a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
-			<span>Copyright <?php echo date('Y'); ?> SeeAround.me</span>
-		</div>
+<ul class="about-info">
+<li><a href="<?php echo $this->url(array(), 'about'); ?>">About</a></li>
+<li><a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a></li>
+<li><span>Copyright <?php echo date('Y'); ?> SeeAround.me</span></li>
+</ul>
 	</div>
 	<div class="map-container">
 		<div id="map_canvas"></div>
