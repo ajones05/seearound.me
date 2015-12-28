@@ -540,6 +540,12 @@ body {
 	color: rgb(51, 51, 51);
 	font: normal 14.37px/19.55px 'Lato-Regular',sans-serif;
 }
+.link-meta a.title {
+	font-size: 18px;
+}
+.link-meta .description {
+	font-size: 12px
+}
 .post .post_text {
 	margin-left: 70px;
 	padding-right: 18px;
