@@ -22,79 +22,66 @@ class My_Time
 		$date = new DateTime($date);
 		$diff = $now->getTimestamp() - $date->getTimestamp();
 
-		$minutes = round($diff / 60);
+		$minute = round($diff / 60);
 
-		if ($minutes < 1)
+		if ($minute < 1)
 		{
 			return 'Just now';
 		}
 
-		$putAgo = My_ArrayHelper::getProp($options, 'ago', false);
-
-		if ($minutes < 60)
-		{
-			$output = $minutes . ' minute';
-
-			if ($minutes != 1)
-			{
-				$output .= 's';
-			}
-
-			if ($putAgo)
-			{
-				$output .= ' ago';
-			}
-
-			return $output;
-		}
-
 		$today = (new DateTime)->setTime(0, 0, 0);
 
-		if ($date > $today)
+		if ($minute >= 60 && $date <= $today)
 		{
-			$hours = round($diff / 3600);
+			$yesterday = (new DateTime)->modify('-1 day')->setTime(0, 0, 0);
 
-			$output = $hours . ' hour';
-
-			if ($hours != 1)
+			if ($date > $yesterday)
 			{
-				$output .= 's';
+				return 'Yesterday';
 			}
-
-			if ($putAgo)
-			{
-				$output .= ' ago';
-			}
-
-			return $output;
 		}
 
-		$short = My_ArrayHelper::getProp($options, 'short', false);
-		$yesterday = (new DateTime)->modify('-1 day')->setTime(0, 0, 0);
+		$day = $date->diff($now)->format('%a');
 
-		if ($date > $yesterday)
+		switch (true)
 		{
-			return 'Yesterday' . (!$short ? ' at ' . $date->format('h:ia') : '');
+			case $minute < 60:
+				$interval = $minute;
+				$label = 'minute';
+				break;
+			case $date > $today:
+				$interval = round($diff / 3600);
+				$label = 'hour';
+				break;
+			case $day < 7:
+				$interval = $day;
+				$label = 'day';
+				break;
+			case $day < 28:
+				$interval = round($day / 7);
+				$label = 'week';
+				break;
+			case $day < 365:
+				$interval = $date->diff($now)->format('%m');
+				$label = 'month';
+				break;
+			default:
+				$interval = $date->diff($now)->format('%y');
+				$label = 'year';
 		}
 
-		if ($short)
+		$output = $interval . ' ' . $label;
+
+		if ($interval > 1)
 		{
-			$interval = $date->diff($now)->format('%a');
-			$output = $interval . ' day';
-
-			if ($interval != 1)
-			{
-				$output .= 's';
-			}
-
-			if ($putAgo)
-			{
-				$output .= ' ago';
-			}
-
-			return $output;
+			$output .= 's';
 		}
-		
-		return $date->format('F j \a\t h:ia');
+
+		if (My_ArrayHelper::getProp($options, 'ago', false))
+		{
+			$output .= ' ago';
+		}
+
+		return $output;
 	}
 }

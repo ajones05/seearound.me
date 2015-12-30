@@ -15,6 +15,6 @@ $owner = $this->comment->findDependentRowset('Application_Model_User')->current(
 <div class="post-comment__body">
 <a href="<?php echo $this->baseUrl("home/profile/user/" . $owner->id); ?>" class="post-coment-user-name"><?php echo $owner->Name; ?>:</a>
 <span><?php echo $this->comment->renderContent(My_ArrayHelper::getProp($this, 'limit', false)); ?></span>
-<p class="post-coment__date"><?php echo My_Time::time_ago($this->comment->created_at, array('short' => true)); ?></p>
+<p class="post-coment__date"><?php echo My_Time::time_ago($this->comment->created_at); ?></p>
 </div>
 </div>
