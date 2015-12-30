@@ -426,7 +426,8 @@ class PostController extends Zend_Controller_Action
 			$response = array(
 				'status' => 1,
 				'data' => array(
-					$post->id => array(
+					array(
+						$post->id,
 						$post->latitude,
 						$post->longitude,
 						$this->view->partial('post/_list_item.html', array(
@@ -451,7 +452,8 @@ class PostController extends Zend_Controller_Action
 				foreach ($result as $post)
 				{
 					$owner = $post->findDependentRowset('Application_Model_User')->current();
-					$response['data'][$post->id] = array(
+					$response['data'][] = array(
+						$post->id,
 						$post->latitude,
 						$post->longitude,
 						$this->view->partial('post/_list_item.html', array(

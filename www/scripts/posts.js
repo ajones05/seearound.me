@@ -580,28 +580,29 @@ function renderMap_callback(){
 						mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffsetX(true),listMap_centerOffsetY(true)));
 						areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()),getRadius());
 
-						for (var id in response.data){
-							$('.posts').append(response.data[id][2]);
+						for (var i in response.data){
+							$('.posts').append(response.data[i][3]);
 						}
 
 						if (Object.size(response.data) >= postLimit){
 							$(window).bind('scroll.load', postList_scrollHandler);
 						}
 					} else {
-						for (var id in response.data){
-							$('.posts').prepend(response.data[id][2]);
+						for (var i in response.data){
+							$('.posts').prepend(response.data[i][3]);
 							break;
 						}
 					}
 
-					for (var id in response.data){
-						postData[id]=[response.data[id][0],response.data[id][1]];
+					for (var i in response.data){
+						var id = response.data[i][0];
+						postData[id]=[response.data[i][1],response.data[i][2]];
 						postItem_render(id);
 					}
 
 					$('.posts').prepend($('<input/>')
 						.attr({type: 'hidden', name: 'new[]'})
-						.val(Object.getKey(response.data,0)));
+						.val(response.data[0][0]));
 
 					$('.location-dialog').dialog('close');
 					$('.post-new__dialog').remove();
