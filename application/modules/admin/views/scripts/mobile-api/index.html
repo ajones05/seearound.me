@@ -61,7 +61,11 @@
 		<p class = "list-group-item-text">Posts list with search parameters</p>
 	</a>
 	<a href="#" class="list-group-item disabled">mobile/post-comment</a>
-	<a href="#" class="list-group-item disabled">mobile/post-like</a>
+	<a href="<?php echo $this->baseUrl('admin/mobile-api/post-like'); ?>"
+		class="list-group-item">
+		<h4 class = "list-group-item-heading">mobile/post-like</h4>
+		<p class = "list-group-item-text">Posts like</p>
+	</a>
 	<a href="<?php echo $this->baseUrl('admin/mobile-api/request-nearest'); ?>"
 		class="list-group-item">
 		<h4 class = "list-group-item-heading">mobile/request-nearest</h4>
