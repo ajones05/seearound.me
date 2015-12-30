@@ -32,54 +32,41 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
     }
 
 	/**
-	 * Checks if news is liked by user.
+	 * Returns vote row by user ID and post ID.
 	 *
-	 * @param	integer	$news_id
-	 * @param	integer	$user_id
-	 *
-	 * @return	string
+	 * @param	integer $post
+	 * @param	integer $user
+	 * @return	mixed Zend_Db_Table_Abstract on success, otherwise NULL
 	 */
-	public function findNewsLikeByUserId($news_id, $user_id)
-	{
-        $result = $this->fetchRow(
-			$this->select()
-				->where('canceled=0')
-                ->where('user_id=?', $user_id)
-                ->where('news_id=?', $news_id)
-		);
-
-		return $result;
-	}
-
-	/**
-	 * Returns last vote by news ID.
-	 *
-	 * @param	integer	$news_id
-	 * @param	mixed	$exclude
-	 * @return	string
-	 */
-	public function findLastByNewsId($news_id, $exclude = null)
+	public function findVote($post_id, $user_id = null)
 	{
 		$query = $this->select()
 			->where('canceled=0')
-			->where('news_id=?', $news_id)
+			->where('news_id=?', $post_id)
 			->order('id DESC');
 
-		if ($exclude != null)
+		if ($user_id)
 		{
-			if (!is_array($exclude))
-			{
-				$exclude = array($exclude);
-			}
-
-			foreach ($exclude as $id)
-			{
-				$query->where('id<>?', $id);
-			}
+			$query->where('user_id=?', $user_id);
 		}
 
-		$result = $this->fetchRow($query);
+		return $this->fetchRow($query);
+	}
 
-		return $result;
+	/**
+	 * Checks if user can vote post.
+	 *
+	 * @param	Application_Model_UserRow $user
+	 * @param	Application_Model_NewsRow $post
+	 * @return	boolean
+	 */
+	public function canVote($user, $post)
+	{
+		if (!$user)
+		{
+			return false;
+		}
+
+		return $user->is_admin ? true : $user->id != $post->user_id;
 	}
 }

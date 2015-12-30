@@ -368,7 +368,7 @@ class MobileController extends Zend_Controller_Action
 			if (!v::intVal()->validate($sender_id))
 			{
 				throw new RuntimeException('Incorrect sender ID value: ' .
-					var_export($id, true));
+					var_export($sender_id, true));
 			}
 
 			if (!Application_Model_User::checkId($sender_id, $user))
@@ -381,7 +381,7 @@ class MobileController extends Zend_Controller_Action
 			if (!v::intVal()->validate($receiver_id))
 			{
 				throw new RuntimeException('Incorrect receiver ID value: ' .
-					var_export($id, true));
+					var_export($receiver_id, true));
 			}
 
 			if (!Application_Model_User::checkId($receiver_id, $receiver))
@@ -1312,7 +1312,7 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as $row)
 				{
 					$owner = $row->findDependentRowset('Application_Model_User')->current();
-					$userLike = $votingTable->findNewsLikeByUserId($row->id, $user->id);
+					$userLike = $votingTable->findVote($row->id, $user->id);
 
 					$data = array(
 						'id' => $row->id,
@@ -1419,7 +1419,7 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as $row)
 				{
 					$owner = $row->findDependentRowset('Application_Model_User')->current();
-					$userLike = $votingTable->findNewsLikeByUserId($row->id, $user->id);
+					$userLike = $votingTable->findVote($row->id, $user->id);
 
 					$data = array(
 						'id' => $row->id,
@@ -1597,19 +1597,30 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user ID', -1);
 			}
 
-			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
+			$id = $this->_request->getPost('news_id');
+
+			if (!v::intVal()->validate($id))
 			{
-				throw new RuntimeException('Incorrect news ID', -1);
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
 			}
 
-			if ($news->user_id == $user->id)
+			if (!Application_Model_News::checkId($id, $post, 0))
 			{
-				throw new RuntimeException('You can not vote your own post', -1);
+				throw new RuntimeException('Incorrect post ID', -1);
 			}
 
 			$vote = $this->_request->getPost('vote');
@@ -1621,37 +1632,52 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$model = new Application_Model_Voting;
-			$userLike = $model->findNewsLikeByUserId($news->id, $user->id);
 
-			if ($userLike)
+			if (!$model->canVote($user, $post))
 			{
-				$userLike->updated_at = (new DateTime)->format(My_Time::$mysqlFormat);
-				$userLike->canceled = 1;
-				$userLike->save();
+				throw new RuntimeException('You cannot vote this post', -1);
+			}
 
-				if ($news->vote == 0)
+			$userVote = $model->findVote($post->id, $user->id);
+
+			if (!$user->is_admin && $userVote)
+			{
+				$userVote->updated_at = (new DateTime)->format(My_Time::$mysqlFormat);
+				$userVote->canceled = 1;
+				$userVote->save();
+
+				if ($post->vote == 0)
 				{
-					$lastVote = $model->findLastByNewsId($news->id, $userLike->vote);
+					$lastVote = $model->findVote($post->id);
 
 					if ($lastVote && $lastVote->vote)
 					{
-						$news->vote = $lastVote->vote;
-						$news->save();
+						$post->vote = $lastVote->vote;
+						$post->save();
 					}
 				}
 				else
 				{
-					$news->vote = max(0, $news->vote - $userLike->vote);
-					$news->save();
+					$post->vote = max(0, $post->vote - $userVote->vote);
+					$post->save();
 				}
 			}
 
-			if (!$userLike || $userLike->vote != $vote)
+			if ($user->is_admin || !$userVote || $userVote->vote != $vote)
 			{
-				$model->saveVotingData($vote, $user->id, $news);
+				$model->saveVotingData($vote, $user->id, $post);
+				$activeVote = $vote;
+			}
+			else
+			{
+				$activeVote = 0;
 			}
 
-			$response = array('success' => 'voted successfully');
+			$response = array(
+				'success' => 'voted successfully',
+				'vote' => $post->vote,
+				'active' => $activeVote
+			);
         }
 		catch (Exception $e)
 		{

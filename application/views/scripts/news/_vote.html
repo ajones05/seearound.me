@@ -1,22 +1,22 @@
 <?php
-$user_vote = 0;
+$userVote = 0;
+$voteModel = new Application_Model_Voting;
+$canVote = $voteModel->canVote($this->user, $this->news);
 
-if (!$this->is_new)
+if ($canVote && !$this->is_new)
 {
-	$result = (new Application_Model_Voting)->findNewsLikeByUserId($this->news->id, $this->user->id);
+	$vote = $voteModel->findVote($this->news->id, $this->user->id);
 
-	if ($result)
+	if ($vote)
 	{
-		$user_vote = intval($result->vote);
+		$userVote = $vote->vote;
 	}
 }
-
-$disabled = $user_vote !== 0 || $this->news->user_id == $this->user->id;
 ?>
 <div class="vote">
 	<div class="_3_copy"><?php echo $this->news->vote; ?></div>
 	<div class="icon">
-		<div class="like<?php if ($user_vote === 1): ?> active<?php endif; ?>"<?php if ($disabled): ?> disabled<?php endif; ?>></div>
-		<div class="dislike<?php if ($user_vote === -1): ?> active<?php endif; ?>"<?php if ($disabled): ?> disabled<?php endif; ?>></div>
+		<div class="like<?php if ($userVote == 1): ?> active<?php endif; ?>"<?php if (!$canVote): ?> disabled<?php endif; ?>></div>
+		<div class="dislike<?php if ($userVote == -1): ?> active<?php endif; ?>"<?php if (!$canVote): ?> disabled<?php endif; ?>></div>
 	</div>
 </div>

@@ -643,12 +643,16 @@ function renderMap_callback(){
 						vote: (target.hasClass('like') ? 1 : -1)
 					},
 					done: function(response){
-						var setVote = !target.hasClass('active');
 						$('.like,.dislike', postContainer).removeClass('active');
-						if (setVote){
-							target.addClass('active');
-						}
 						$('._3_copy', vote).html(response.vote);
+						switch (response.active){
+							case '-1':
+								$('.dislike', postContainer).addClass('active');
+								break;
+							case '1':
+								$('.like', postContainer).addClass('active');
+								break;
+						}
 						vote.attr('disabled', false);
 					},
 					fail: function(){

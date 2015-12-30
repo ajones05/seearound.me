@@ -834,14 +834,17 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
+			$id = $this->_request->getPost('news_id');
+
+			if (!v::intVal()->validate($id))
 			{
-				throw new RuntimeException('Incorrect news ID', -1);
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
 			}
 
-			if ($news->user_id == $user->id)
+			if (!Application_Model_News::checkId($id, $post, 0))
 			{
-				throw new RuntimeException('You can not vote your own post', -1);
+				throw new RuntimeException('Incorrect post ID', -1);
 			}
 
 			$vote = $this->_request->getPost('vote');
@@ -853,39 +856,51 @@ class HomeController extends Zend_Controller_Action
 			}
 
 			$model = new Application_Model_Voting;
-			$userLike = $model->findNewsLikeByUserId($news->id, $user->id);
 
-			if ($userLike)
+			if (!$model->canVote($user, $post))
 			{
-				$userLike->updated_at = (new DateTime)->format(My_Time::$mysqlFormat);
-				$userLike->canceled = 1;
-				$userLike->save();
+				throw new RuntimeException('You cannot vote this post', -1);
+			}
 
-				if ($news->vote == 0)
+			$userVote = $model->findVote($post->id, $user->id);
+
+			if (!$user->is_admin && $userVote)
+			{
+				$userVote->updated_at = (new DateTime)->format(My_Time::$mysqlFormat);
+				$userVote->canceled = 1;
+				$userVote->save();
+
+				if ($post->vote == 0)
 				{
-					$lastVote = $model->findLastByNewsId($news->id, $userLike->vote);
+					$lastVote = $model->findVote($post->id);
 
 					if ($lastVote && $lastVote->vote)
 					{
-						$news->vote = $lastVote->vote;
-						$news->save();
+						$post->vote = $lastVote->vote;
+						$post->save();
 					}
 				}
 				else
 				{
-					$news->vote = max(0, $news->vote - $userLike->vote);
-					$news->save();
+					$post->vote = max(0, $post->vote - $userVote->vote);
+					$post->save();
 				}
 			}
 
-			if (!$userLike || $userLike->vote != $vote)
+			if ($user->is_admin || !$userVote || $userVote->vote != $vote)
 			{
-				$model->saveVotingData($vote, $user->id, $news);
+				$model->saveVotingData($vote, $user->id, $post);
+				$activeVote = $vote;
+			}
+			else
+			{
+				$activeVote = 0;
 			}
 
 			$response = array(
 				'status' => 1,
-				'vote' => $news->vote
+				'vote' => $post->vote,
+				'active' => $activeVote
 			);
 		}
 		catch (Exception $e)

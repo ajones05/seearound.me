@@ -16,17 +16,17 @@ if ($image)
 }
 
 $userVote = 0;
+$voteModel = new Application_Model_Voting;
+$canVote = $voteModel->canVote($this->user, $this->post);
 
-if (!$this->is_new && $this->user &&
-	$this->user->id !== $this->post->user_id)
+if ($canVote && !$this->is_new)
 {
 	// TODO: merge with post query
-	$result = (new Application_Model_Voting)
-		->findNewsLikeByUserId($this->post->id, $this->user->id);
+	$vote = $voteModel->findVote($this->post->id, $this->user->id);
 
-	if ($result)
+	if ($vote)
 	{
-		$userVote = $result->vote;
+		$userVote = $vote->vote;
 	}
 }
 ?>
@@ -36,7 +36,7 @@ if (!$this->is_new && $this->user &&
 </a>
 <a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($this->owner->Name); ?></a>
 <a href="<?php echo $this->baseUrl('info/news/nwid/' . $this->post->id); ?>" class="post-time"><?php echo My_Time::time_ago($this->post->created_date, array('ago' => true, 'short' => true)); ?></a>
-<div class="vote"<?php if ($this->post->user_id == $this->user->id): ?> disabled<?php endif; ?>>
+<div class="vote"<?php if (!$canVote): ?> disabled<?php endif; ?>>
 <div class="_3_copy"><?php echo $this->post->vote; ?></div>
 <div class="icon">
 <div class="like<?php if ($userVote == 1): ?> active<?php endif; ?>"></div>

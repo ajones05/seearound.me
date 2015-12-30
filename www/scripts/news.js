@@ -354,9 +354,18 @@ function renderNews($news){
 				alert(response ? response.message : ERROR_MESSAGE);
 				return false;
 			}
-
-			$self.addClass('active');
+			$('.vote .icon > div', $target)
+				.removeClass('active')
+				.attr('disabled', false);
 			$('.vote ._3_copy', $target).html(response.vote);
+			switch (response.active){
+				case '-1':
+					$('.dislike', $target).addClass('active');
+					break;
+				case '1':
+					$('.like', $target).addClass('active');
+					break;
+			}
 		});
 	});
 }
