@@ -3,6 +3,7 @@
 --
 ALTER TABLE `user_data` DROP `Profile_image`;
 ALTER TABLE `user_data` CHANGE `Network_id` `Network_id` VARCHAR(2000) NULL DEFAULT NULL;
+ALTER TABLE `user_data` CHANGE `is_admin` `is_admin` TINYINT(1) NOT NULL DEFAULT '0';
 
 --
 -- Table structure for table `address`

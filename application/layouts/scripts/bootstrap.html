@@ -19,7 +19,7 @@ $this->headScript()
 
 $this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
 
-$isAdmin = $this->user ? $this->user->is_admin === 'true' : false;
+$isAdmin = $this->user ? $this->user->is_admin : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">

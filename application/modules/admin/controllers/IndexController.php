@@ -18,7 +18,7 @@ class Admin_IndexController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-        if ($this->user->is_admin == 'false')
+        if (!$this->user->is_admin)
 		{
             $this->_redirect($this->view->baseUrl('/'));
         }

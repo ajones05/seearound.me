@@ -10,7 +10,7 @@ class AdminsController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-        if ($user->is_admin == 'false') {
+        if (!$user->is_admin) {
             $this->_redirect($this->view->baseUrl('/'));
         }
 
