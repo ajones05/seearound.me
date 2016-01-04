@@ -1,5 +1,5 @@
 var mainMap,areaCircle,loadXhr,userPosition,centerPosition,
-	renderRadius,defaultZoom,
+	renderRadius=0.8,defaultZoom,
 	postLimit=15,groupDistance=0.018939,
 	defaultMinZoom=13,defaultMaxZoom=15,
 	locationIcon={
@@ -137,7 +137,6 @@ function footer_resizeHandler(){
 }
 function renderMap_callback(){
 	defaultZoom=listMap_zoom();
-	renderRadius=listMap_radius();
 	centerPosition = new google.maps.LatLng(search.latitude,search.longitude);
 	mainMap = new google.maps.Map(document.getElementById('map_canvas'), {
 		zoom: defaultZoom,
@@ -150,11 +149,6 @@ function renderMap_callback(){
 			featureType: 'poi',
 			stylers: [{visibility: 'off'}]
 		}]
-	});
-
-	$(window).on('resize', function(){
-		defaultZoom=listMap_zoom();
-		mainMap.setZoom(defaultZoom);
 	});
 
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
@@ -259,6 +253,7 @@ function renderMap_callback(){
 			});
 
 			$(window).on('resize', function(){
+				defaultZoom=listMap_zoom();
 				mainMap.setZoom(defaultZoom);
 				mainMap.setCenter(offsetCenter(mainMap,centerPosition,listMap_centerOffsetX(true),listMap_centerOffsetY(true)));
 				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()), getRadius());
@@ -1747,14 +1742,7 @@ function listMap_centerOffsetY(reverse){
  * Returns map zoom (depends of screen resolution)
  */
 function listMap_zoom(){
-	return $(window).width() > 1366 ? 15 : 14;
-}
-
-/**
- * Returns map visible area radius (depends of screen resolution)
- */
-function listMap_radius(){
-	return $(window).width() > 1366 ? 1 : 0.8;
+	return window.innerWidth > 1400 ? 15 : 14;
 }
 
 /**
