@@ -31,11 +31,6 @@ require.config({
 });
 
 require(['jquery'], function(){
-	$(window).on('resize', function(){
-		console.log($(window).width(), $(document).width());
-	});
-	console.log($(window).width(), $(document).width());
-
     $('#menu-button').click(function(){
 		$(this).next('ul').toggle();
     });
@@ -224,11 +219,6 @@ function renderMap_callback(){
 					.tooltip('option', 'disabled', false);
 				google.maps.event.clearListeners(mainMap, 'idle');
 				google.maps.event.addListenerOnce(mainMap, 'idle', function(){
-					var newCenter = mainMap.getCenter();
-					if (getDistance([newCenter.lat(),newCenter.lng()],
-						[centerPosition.lat(),centerPosition.lng()]) <= 0){
-						return true;
-					}
 					centerPosition = offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY());
 					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),listMap_centerOffsetX(),listMap_centerOffsetY()), getRadius());
 					postList_change();
@@ -1374,18 +1364,28 @@ function renderMap_callback(){
 	 */
 	function googleMapsAreaCircle(options){
 		this.setValues(options);
+		this.background = this.drawCircle(this.center, 1000, 1);
 		this.makeCircle();
 		return this;
 	};
 	googleMapsAreaCircle.prototype = new google.maps.OverlayView;
 	googleMapsAreaCircle.prototype.draw = function(){}
 	googleMapsAreaCircle.prototype.makeCircle = function(){
-		this.polyArea = new google.maps.Polygon({
+		this.polyArea = this.drawPolygon([this.background,
+			this.drawCircle(this.center, this.radius, -1)]);
+	}
+	googleMapsAreaCircle.prototype.changeCenter = function(center,radius){
+		var background = this.drawPolygon([this.background]);
+		this.polyArea.setMap(null);
+		this.center = center;
+		this.radius = radius;
+		this.makeCircle();
+		background.setMap(null);
+	}
+	googleMapsAreaCircle.prototype.drawPolygon = function(paths){
+		var polygon = new google.maps.Polygon({
 			map: this.map,
-			paths: [
-				this.drawCircle(this.center, 1000, 1),
-				this.drawCircle(this.center, this.radius, -1)
-			],
+			paths: paths,
 			strokeColor: '#0000FF',
 			strokeOpacity: 0.1,
 			strokeWeight: 0.1,
@@ -1393,12 +1393,8 @@ function renderMap_callback(){
 			fillOpacity: 0.3,
 			draggable: false
 		});
-	}
-	googleMapsAreaCircle.prototype.changeCenter = function(center,radius){
-		this.polyArea.setMap(null);
-		this.center = center;
-		this.radius = radius;
-		this.makeCircle();
+
+		return polygon;
 	}
 	googleMapsAreaCircle.prototype.drawCircle = function(point, userRadius, dir){
 		var d2r = Math.PI / 180;
@@ -1407,7 +1403,7 @@ function renderMap_callback(){
 		var points = 32;
 		var rlat = (userRadius / earthsradius) * r2d;
 		var rlng = rlat / Math.cos(point.lat() * d2r);
-		var extp = new Array(); 
+		var extp = [];
 
 		if (dir == 1){
 			var start = 0;
@@ -1726,7 +1722,7 @@ function offsetCenter(map,latlng,offsetx,offsety){
 		worldCoordinateCenter.y + pixelOffset.y
 	);
 
-	return map.getProjection().fromPointToLatLng(worldCoordinateNewCenter);;
+	return map.getProjection().fromPointToLatLng(worldCoordinateNewCenter);
 }
 
 /**
