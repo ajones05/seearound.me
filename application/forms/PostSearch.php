@@ -52,7 +52,8 @@ class Application_Form_PostSearch extends Zend_Form
 
 		try
 		{
-			v::stringType()->lat()->assert($data['latitude']);
+			v::stringType()->lat()
+				->assert(My_ArrayHelper::getProp($data, 'latitude'));
 		}
 		catch (ValidationException $exception)
 		{
@@ -63,7 +64,8 @@ class Application_Form_PostSearch extends Zend_Form
 
 		try
 		{
-			v::stringType()->lng()->assert($data['longitude']);
+			v::stringType()->lng()
+				->assert(My_ArrayHelper::getProp($data, 'longitude'));
 		}
 		catch (ValidationException $exception)
 		{
@@ -74,7 +76,8 @@ class Application_Form_PostSearch extends Zend_Form
 
 		try
 		{
-			v::floatVal()->between(0.5, 1.5)->assert($data['radius']);
+			v::optional(v::floatVal()->between(0.5, 1.5))
+				->assert(My_ArrayHelper::getProp($data, 'radius'));
 		}
 		catch (ValidationException $exception)
 		{
@@ -85,8 +88,8 @@ class Application_Form_PostSearch extends Zend_Form
 
 		try
 		{
-			v::optional(v::intVal())->min(0)->assert(
-				My_ArrayHelper::getProp($data, 'start'));
+			v::optional(v::intVal())->min(0)
+				->assert(My_ArrayHelper::getProp($data, 'start'));
 		}
 		catch (ValidationException $exception)
 		{
@@ -95,10 +98,12 @@ class Application_Form_PostSearch extends Zend_Form
 				$exception->getMessage());
 		}
 
+		$keywords = My_ArrayHelper::getProp($data, 'keywords');
+
 		try
 		{
-			v::optional(v::stringType())->assert(
-				My_ArrayHelper::getProp($data, 'keywords'));
+			v::optional(v::stringType())->assert($keywords);
+			$this->getElement('keywords')->setValue($keywords);
 		}
 		catch (ValidationException $exception)
 		{

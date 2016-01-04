@@ -1,6 +1,7 @@
 var mainMap,areaCircle,loadXhr,userPosition,centerPosition,
-	postLimit=15,defaultRadius=0.8,groupDistance=0.018939,
-	defaultZoom=14,defaultMinZoom=13,defaultMaxZoom=15,
+	renderRadius,defaultZoom,
+	postLimit=15,groupDistance=0.018939,
+	defaultMinZoom=13,defaultMaxZoom=15,
 	locationIcon={
 		url: assetsBaseUrl+'www/images/template/user-location-icon34x49.png',
 		width: 34,
@@ -16,6 +17,7 @@ var mainMap,areaCircle,loadXhr,userPosition,centerPosition,
 		width: 35,
 		height: 51
 	},
+	postData=postData||[],
 	postMarkers={},postMarkersCluster={},
 	disableScroll=false,markerClick=false;
 
@@ -134,7 +136,9 @@ function footer_resizeHandler(){
 	$('.footer').width(footerWidth-2).show();
 }
 function renderMap_callback(){
-	centerPosition = new google.maps.LatLng(mapCenter[0], mapCenter[1]);
+	defaultZoom=listMap_zoom();
+	renderRadius=listMap_radius();
+	centerPosition = new google.maps.LatLng(search.latitude,search.longitude);
 	mainMap = new google.maps.Map(document.getElementById('map_canvas'), {
 		zoom: defaultZoom,
 		minZoom: defaultMinZoom,
@@ -146,6 +150,11 @@ function renderMap_callback(){
 			featureType: 'poi',
 			stylers: [{visibility: 'off'}]
 		}]
+	});
+
+	$(window).on('resize', function(){
+		defaultZoom=listMap_zoom();
+		mainMap.setZoom(defaultZoom);
 	});
 
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
@@ -180,10 +189,13 @@ function renderMap_callback(){
 				.append($('<img/>', {src: '/www/images/template/my_location.png'}).attr({width: 20, height: 18})).get(0);
 
 			google.maps.event.addDomListener(controlUImyLocation, 'click', function(){
+				var isPoint = typeof search.point !== 'undefined';
+				delete search.point;
 				mainMap.setZoom(defaultZoom);
 				if (getDistance([userPosition.lat(),userPosition.lng()],
 					[centerPosition.lat(),centerPosition.lng()]) <= 0){
 					$('html, body').animate({scrollTop: '0px'}, 300);
+					if (isPoint) postList_change();
 					return true;
 				}
 				centerPosition = userPosition;
@@ -197,14 +209,18 @@ function renderMap_callback(){
 					.append(controlUIzoomIn, controlUIzoomOut, controlUImyLocation)[0]
 			);
 
-			postList_locationMarker(mapCenter);
+			postList_locationMarker([search.latitude,search.longitude]);
 
-			for (var id in postData){
-				postItem_render(id);
-			}
+			if (typeof search.point === 'undefined'){
+				postList_load();
+			} else {
+				for (var id in postData){
+					postItem_render(id);
+				}
 
-			if (Object.size(postData) >= postLimit){
-				$(window).bind('scroll.load', postList_scrollHandler).scroll();
+				if (Object.size(postData) >= postLimit){
+					$(window).bind('scroll.load', postList_scrollHandler).scroll();
+				}
 			}
 
 			google.maps.event.addListener(mainMap, 'dragstart', function(){
@@ -212,6 +228,7 @@ function renderMap_callback(){
 				$('#map_canvas :data(ui-tooltip)')
 					.tooltip('close')
 					.tooltip('option', 'disabled', true);
+				delete search.point;
 			});
 
 			google.maps.event.addListener(mainMap, 'dragend', function(){
@@ -1109,15 +1126,14 @@ function renderMap_callback(){
 			var position = areaCircle.center;
 
 			loadXhr = ajaxJson({
-				url: baseUrl+'post/list',
+				url: baseUrl+'post/load',
 				data: {
 					radius: getRadius(),
 					keywords: search.keywords,
 					filter: search.filter,
-					center: [
-						areaCircle.center.lat(),
-						areaCircle.center.lng()
-					],
+					point: search.point,
+					latitude: areaCircle.center.lat(),
+					longitude: areaCircle.center.lng(),
 					start: start,
 					'new': $('.posts [name=new\\[\\]]').map(function(){
 						return $(this).val();
@@ -1480,21 +1496,39 @@ function postTooltip_content(id, position, event, ui){
 	!$(event.target).data('tooltip-ajax') ||
 		$(event.target).data('tooltip-ajax').abort();
 
+	var url, postTooltip, data = {};
+
+	if (!search.point || getDistance([position.lat(),position.lng()],
+		[search.latitude,search.longitude])<=groupDistance){
+		data.id=id;
+		data.latitude=position.lat();
+		data.longitude=position.lng();
+		data.keywords=search.keywords;
+		data.filter=search.filter;
+		data.point=search.point;
+		data.readmore=1;
+		url=baseUrl+'post/tooltip';
+		postTooltip = true;
+	} else {
+		url=baseUrl+'post/user-tooltip';
+		postTooltip = false;
+	}
+
 	$(event.target).data('tooltip-ajax', $.ajax({
-		url: baseUrl + 'post/tooltip',
-		data: {
-			id: id,
-			lat: position.lat(),
-			lng: position.lng(),
-			keywords: search.keywords,
-			filter: search.filter,
-			readmore: 1
-		},
+		url: url,
+		data: data,
 		type: 'POST',
 		dataType: 'html'
 	}).done(function(response){
 		$(event.target).data('tooltip-content', response);
-		postTooltip_render(response, position, event, ui);
+
+		if (postTooltip){
+			postTooltip_render(response, position, event, ui);
+			return true;
+		}
+
+		$('.ui-tooltip-content', ui.tooltip).html(response);
+		ui.tooltip.position($(event.target).tooltip('option', 'position'));
 	}));
 }
 
@@ -1707,6 +1741,20 @@ function listMap_centerOffsetY(reverse){
 		offset=(containerHeight-footerHeight)/2 - containerHeight/2;
 	if (reverse) offset*=-1;
 	return offset;
+}
+
+/**
+ * Returns map zoom (depends of screen resolution)
+ */
+function listMap_zoom(){
+	return $(window).width() > 1366 ? 15 : 14;
+}
+
+/**
+ * Returns map visible area radius (depends of screen resolution)
+ */
+function listMap_radius(){
+	return $(window).width() > 1366 ? 1 : 0.8;
 }
 
 /**

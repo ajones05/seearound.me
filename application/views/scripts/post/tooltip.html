@@ -14,7 +14,7 @@ $prev = My_ArrayHelper::getProp($this, 'prev');
 </div>
 <div class="tooltip-footer">
 <?php if ($prev || $next): ?>
-<a href="<?php echo $this->baseUrl('post/list/point/' . $this->position); ?>">More details</a>
+<a href="<?php echo $this->baseUrl('post/list/center/' . $this->position . '/point/1'); ?>">More details</a>
 <?php else: ?>
 <a href="<?php echo $this->baseUrl('info/news/nwid/' . $this->post->id); ?>">More details</a>
 <?php endif; ?>
