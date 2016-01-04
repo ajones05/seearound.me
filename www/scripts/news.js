@@ -66,7 +66,7 @@ function renderNews($news){
 				}).done(function(response){
 					if (response && response.status){
 						e.preventDefault();
-						$commentField.val('').height(38).attr('disabled', false).blur();
+						$commentField.val('').height(38).attr('disabled', false).focus();
 						renderComments($(response.html).insertBefore($commentField.closest('.cmntList-last')));
 						$('.commentLoading', $news).hide();
 					} else if (response){

@@ -1008,6 +1008,7 @@ function renderMap_callback(){
 								var loadMore = $('.post-comments__more', postContainer);
 								comment_render($(response.html).insertBefore(loadMore.size() ?
 									loadMore : $('.post-comment__new', postContainer)));
+								target.focus();
 							},
 							fail: function(data, textStatus, jqXHR){
 								target.attr('disabled', false);
