@@ -1,20 +1,31 @@
 $(function(){
 	var requestCount = 0, apiForm = $('.container form').submit(function(e){
 		var form = $(this),
-			data = $('form :input').filter(function(index, element){
-				return $.trim($(element).val()) !== '';
-			});
-
+			outputData = {},
+			data = new FormData();
 		e.preventDefault();
+
+		$('form :input').each(function(){
+			var value = $(this).val(),
+				name = $(this).attr('name');
+			if ($.trim(value) !== ''){
+				data.append(name, $(this).attr('type') == 'file' ?
+					$(this)[0].files[0] : value);
+				outputData[name] = value;
+			}
+		});
+
 		$.ajax({
 			url: form.attr('action'),
 			method: form.attr('method'),
-			data: data.serialize()
+			data: data,
+			contentType: false,
+			processData: false
 		}).done(function(response){
 			form.after($('<div/>').addClass('panel panel-default').append(
 				$('<div/>').addClass('panel-heading').text('#' + (++requestCount) + ' - ' + form.attr('action')),
 				$('<div/>').addClass('panel-body').append(
-					$('<pre/>').text(JSON.stringify(data.serializeObject(), null, 4)),
+					$('<pre/>').text(JSON.stringify(outputData, null, 4)),
 					$('<pre/>').text(JSON.stringify(response, null, 4))
 				)
 			));
@@ -22,7 +33,7 @@ $(function(){
 			form.after($('<div/>').addClass('panel panel-default').append(
 				$('<div/>').addClass('panel-heading').text('#' + (++requestCount) + ' - ' + form.attr('action')),
 				$('<div/>').addClass('panel-body').append(
-					$('<pre/>').text(JSON.stringify(data.serializeObject(), null, 4)),
+					$('<pre/>').text(JSON.stringify(outputData, null, 4)),
 					$('<pre/>').text(textStatus)
 				)
 			));
@@ -34,20 +45,4 @@ $(function(){
 	if ($.inArray('submit', url.split('/')) > 0){
 		apiForm.submit();
 	}
-
-	$.fn.serializeObject = function(){
-		var o = {};
-		var a = this.serializeArray();
-		$.each(a, function(){
-			if (o[this.name] !== undefined){
-				if (!o[this.name].push) {
-					o[this.name] = [o[this.name]];
-				}
-				o[this.name].push(this.value || '');
-			} else {
-				o[this.name] = this.value || '';
-			}
-		});
-		return o;
-	};
 });
