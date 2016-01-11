@@ -53,7 +53,11 @@
 </div>
 <div class="list-group">
 	<p class="list-group-item active">Posts</p>
-	<a href="#" class="list-group-item disabled">mobile/addimobinews</a>
+	<a href="<?php echo $this->baseUrl('admin/mobile-api/addimobinews'); ?>"
+		class="list-group-item">
+		<h4 class="list-group-item-heading">mobile/addimobinews</h4>
+		<p class="list-group-item-text">Add new post</p>
+	</a>
 	<a href="#" class="list-group-item disabled">mobile/get-total-comments</a>
 	<a href="<?php echo $this->baseUrl('admin/mobile-api/myposts'); ?>"
 		class="list-group-item">
