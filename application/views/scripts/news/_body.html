@@ -21,7 +21,6 @@ $profileLink = $this->baseUrl("home/profile/user/" . $this->owner->id);
 			</li>
 			<li>
 				<div class="post-top">
-					<?php if ($this->user->id != null): ?>
 					<a class="title" href="<?php echo $profileLink; ?>"><?php echo ucfirst($this->owner->Name); ?></a>
 					<a class="post-date" href="<?php echo $this->baseUrl('info/news/nwid/' . $this->item->id); ?>"><?php echo date('F j \a\t h:ia', $created_date); ?></a>
 					<?php
@@ -31,7 +30,6 @@ $profileLink = $this->baseUrl("home/profile/user/" . $this->owner->id);
 						'is_new' => $this->is_new
 					));
 					?>
-					<?php endif; ?>
 				</div>
 				<div class="post-bottom">
 					<div class="post-content"><?php echo $this->item->renderContent(My_ArrayHelper::getProp($this, 'length')); ?></div>
