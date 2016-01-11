@@ -1,7 +1,7 @@
 <?php
 $userVote = 0;
 $voteModel = new Application_Model_Voting;
-$canVote = $voteModel->canVote($this->user, $this->news);
+$canVote = $this->user->id ? $voteModel->canVote($this->user, $this->news) : false;
 
 if ($canVote && !$this->is_new)
 {
