@@ -274,7 +274,6 @@ body {
 	position: relative;
 }
 .posts {
-    overflow-y: auto;
     position: relative;
 	z-index: 2;
 	overflow: hidden;
