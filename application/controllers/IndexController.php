@@ -19,10 +19,7 @@ class IndexController extends Zend_Controller_Action {
 	 */
 	public function indexAction()
 	{
-		$userAgent = $this->getInvokeArg('bootstrap')->getResource('useragent');
-		$userAgent->getDevice();
-
-		if ($userAgent->getBrowserType() === 'mobile')
+		if ((new Mobile_Detect)->isMobile())
 		{
 			$this->view->layout()->setLayout('mobile');
 			$this->_helper->viewRenderer->setViewSuffix('mobile.html');
