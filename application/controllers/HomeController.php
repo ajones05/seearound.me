@@ -504,7 +504,7 @@ class HomeController extends Zend_Controller_Action
 					);
 				}
 			}
-			elseif ($start == 0)
+			elseif ($searchParameters['start'] == 0)
 			{
 				$response['result'] = My_ViewHelper::render('news/empty.html');
 			}
