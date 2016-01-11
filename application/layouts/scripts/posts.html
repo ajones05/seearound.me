@@ -34,14 +34,7 @@ $this->headLink() . $this->headScript(); ?></head>
 	</div>
 	<div class="post-search">
 		<form class="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
-			<div class="keywords">
-				<?php echo $this->searchForm->keywords; ?>
-				<?php if (trim($this->searchForm->keywords->getValue()) !== ''): ?>
-				<img class="clear" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/close14x14.png'); ?>" alt="clear">
-				<?php else: ?>
-				<img class="search" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/search14x14.png'); ?>" alt="search">
-				<?php endif; ?>
-			</div>
+			<div class="keywords"><?php echo $this->searchForm->keywords; ?></div>
 			<div class="filter">
 				<div class="dropdown">
 					<button class="dropdown-toggle" type="button">
@@ -63,14 +56,7 @@ $this->headLink() . $this->headScript(); ?></head>
 		<ul>
 			<li class="search">
 				<form class="postSearch" action="<?php echo $this->baseUrl('post/list'); ?>" method="GET">
-					<div class="keywords">
-						<?php echo $this->searchForm->keywords; ?>
-						<?php if (trim($this->searchForm->keywords->getValue()) !== ''): ?>
-						<img class="clear" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/close14x14.png'); ?>" alt="clear">
-						<?php else: ?>
-						<img class="search" width="14" height="14" src="<?php echo $this->baseUrl('www/images/template/search14x14.png'); ?>" alt="search">
-						<?php endif; ?>
-					</div>
+					<div class="keywords"><?php echo $this->searchForm->keywords; ?></div>
 					<div class="filter">
 						<div class="dropdown">
 							<a class="dropdown-toggle" href="#">

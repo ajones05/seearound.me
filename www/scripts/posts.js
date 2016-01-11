@@ -330,35 +330,33 @@ function renderMap_callback(){
 					});
 			});
 
-			$('.postSearch').submit(function(){
-				var keywords = $(this).find('[name=keywords]'),
-					filter = $(this).find('[name=filter]');
-				if ($.trim(keywords.val()) === ''){
-					keywords.attr('disabled', true);
+			$('form.postSearch').each(function(){
+				var form = $(this);
+				if ($.trim($('[name=keywords]', form).val()) !== ''){
+					postSearch_clearButton(form);
+				} else {
+					postSearch_searchButton(form);
 				}
-				if ($.trim(filter.val()) === ''){
-					filter.attr('disabled', true);
+			});
+
+			$('.postSearch input').keydown(function(e){
+				if (e.keyCode == 13){
+					e.preventDefault();
+					var form = $(this).closest('form');
+					postSearch_submit(form);
+					return false;
 				}
+			});
+
+			$('.postSearch').submit(function(e){
+				e.preventDefault();
+				search.keywords=$(this).find('[name=keywords]').val();
+				search.filter=$(this).find('[name=filter]').val();
+				postList_change();
 			});
 
 			$('.postSearch [name=filter]').change(function(){
 				$(this).closest('form').submit();
-			});
-
-			$('.postSearch .search').click(function(){
-				var form = $(this).closest('form'),
-					keywords = form.find('[name=keywords]');
-				if ($.trim(keywords.val()) === ''){
-					keywords.focus();
-					return false;
-				}
-				form.submit();
-			});
-
-			$('.postSearch .clear').click(function(){
-				var form = $(this).closest('form');
-				form.find('[name=keywords]').val('');
-				form.submit();
 			});
 
 			$('.postSearch .dropdown-toggle').click(function(){
@@ -366,14 +364,13 @@ function renderMap_callback(){
 			});
 
 			$('.postSearch .dropdown-menu a').click(function(e){
+				var dropdown = $(this).closest('.dropdown'),
+					text = $(this).text();
 				e.preventDefault();
-				var form = $(this).closest('.postSearch');
-					dropdown = $(this).closest('.dropdown'),
-					option = $('option', dropdown)
-						.eq(form.find('.dropdown-menu a').index(this))
-						.prop('selected', true)
-						.change();
-				$('button span:first-child', dropdown).text(option.text());
+				$('option', dropdown).filter(function(){
+					return $(this).text() == text; 
+				}).prop('selected', true).change();
+				$('.dropdown-toggle span:first-child', dropdown).text(text);
 			});
 
 			$('.user-location button').click(function(){
@@ -1769,6 +1766,60 @@ function getRadius(){
 		return $('#slider').slider('option', 'value');
 	}
 	return renderRadius;
+}
+
+/**
+ * Submit search form handler.
+ */
+function postSearch_submit(form){
+	var keywords = $('[name=keywords]', form);
+
+	if ($.trim(keywords.val()) === ''){
+		keywords.focus();
+		return false;
+	}
+
+	form.submit();
+
+	$('.search', form).remove();
+	postSearch_clearButton(form);
+}
+
+/**
+ * Submit search form button.
+ */
+function postSearch_searchButton(form){
+	$('.keywords', form).append($('<img/>').addClass('search')
+		.click(function(){
+			postSearch_submit(form);
+		})
+		.attr({
+			width: 14,
+			height: 14,
+			src: assetsBaseUrl+'www/images/template/search14x14.png',
+			alt: 'search'
+		})
+	);
+}
+
+/**
+ * Clear search form button.
+ */
+function postSearch_clearButton(form){
+	$('.keywords', form).append($('<img/>').addClass('clear')
+		.attr({
+			width: 14,
+			height: 14,
+			src: assetsBaseUrl+'www/images/template/close14x14.png',
+			alt: 'clear'
+		})
+		.click(function(){
+			$('[name=keywords]', form).val('');
+			form.submit();
+			$(this).remove();
+			postSearch_searchButton(form);
+		})
+	);
 }
 
 /**
