@@ -40,6 +40,31 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	{
 		$router = Zend_Controller_Front::getInstance()->getRouter();
 
+		if (count(Zend_Auth::getInstance()->getIdentity()))
+		{
+			$router->addRoute(
+				'/',
+				new Zend_Controller_Router_Route(
+					'/',
+					array(
+						'controller' => 'post',
+						'action' => 'list'
+					)
+				)
+			);
+
+			$router->addRoute(
+				'center',
+				new Zend_Controller_Router_Route(
+					'center/:center',
+					array(
+						'controller' => 'post',
+						'action' => 'list'
+					)
+				)
+			);
+		}
+
 		$router->addRoute(
 			'about',
 			new Zend_Controller_Router_Route(

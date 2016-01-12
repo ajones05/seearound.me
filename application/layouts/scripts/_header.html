@@ -12,9 +12,9 @@ $request = Zend_Controller_Front::getInstance()->getRequest();
 				</a>
 			</li>
 			<li class="midCol">
-				<form id="searchNews" action="<?php echo $this->baseUrl("home"); ?>" method="GET">
+				<form id="searchNews" action="<?php echo $this->baseUrl('/'); ?>" method="GET">
 					<span class="sIcn">
-						<input type="text" name="sv" value="<?php echo $request->getParam('sv', null); ?>" placeholder="Search posts..." />
+						<input type="text" name="keywords" value="<?php echo $request->getParam('keywords', null); ?>" placeholder="Search posts..." />
 						<img class="search" src="<?php echo $this->baseUrl("www/images/icn-search.png"); ?>" />
 					</span>
 				</form>

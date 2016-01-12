@@ -208,7 +208,7 @@ $(function(){
 
 	$('#searchNews').submit(function(e){
 		var $form = $(this),
-			$searchInput = $('[name=sv]', $form),
+			$searchInput = $('[name=keywords]', $form),
 			$searchIcon = $('.search', $form);
 
 		e.preventDefault();
@@ -238,7 +238,7 @@ $(function(){
 		});
 	});
 
-	if ($.trim($('#searchNews [name=sv]').val()) !== ''){
+	if ($.trim($('#searchNews [name=keywords]').val()) !== ''){
 		$('#searchNews').submit();
 	} else {
 		loadNews(0);

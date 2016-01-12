@@ -226,7 +226,7 @@ function renderNews($news){
 
 											$('#addNewsForm [value=' + news_id + ']').remove();
 										} else {
-											window.location = baseUrl + 'home';
+											window.location = baseUrl;
 										}
 									} else {
 										alert('Sorry! we are unable to performe delete action');
@@ -743,7 +743,7 @@ function loadNews(start, callback){
 
 	var data = {
 		radius: getRadius(),
-		keywords: $('#searchNews [name=sv]').val(),
+		keywords: $('#searchNews [name=keywords]').val(),
 		filter: $('#filter_type').val(),
 		start: start,
 		'new': $('#addNewsForm [name=new\\[\\]]').map(function(){

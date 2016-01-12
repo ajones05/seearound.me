@@ -1,15 +1,25 @@
 <?php
-
-require_once ROOT_PATH . '/vendor/autoload.php';
-
-class IndexController extends Zend_Controller_Action {
-
+/**
+ * Index controller class.
+ * Handles index actions.
+ */
+class IndexController extends Zend_Controller_Action
+{
+    /**
+     * Initialize object
+     *
+     * Called from {@link __construct()} as final step of object instantiation.
+     *
+     * @return void
+     */
 	public function init()
 	{
 		if (count(Zend_Auth::getInstance()->getIdentity()) > 0)
 		{
-			$this->_redirect($this->view->baseUrl("home"));
+			$this->_redirect($this->view->baseUrl('/'));
 		}
+
+		parent::init();
 	}
 
 	/**
@@ -82,7 +92,7 @@ class IndexController extends Zend_Controller_Action {
 							Zend_Session::rememberMe();
 						}
 
-						$this->_redirect($this->view->baseUrl('home'));
+						$this->_redirect($this->view->baseUrl('/'));
 					}
 					else
 					{
@@ -125,7 +135,7 @@ class IndexController extends Zend_Controller_Action {
 						"login_id" => $login_id
 					));
 
-					$this->_redirect($this->view->baseUrl("home/index"));
+					$this->_redirect($this->view->baseUrl('/'));
 				}
 				else
 				{
@@ -184,7 +194,7 @@ class IndexController extends Zend_Controller_Action {
 			'login_id' => $login_id
 		));
 
-		$this->_redirect($this->view->baseUrl('home'));
+		$this->_redirect($this->view->baseUrl('/'));
 	}
 
 	/**

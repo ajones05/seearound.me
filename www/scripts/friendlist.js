@@ -102,7 +102,7 @@ $(function(){
 
 	$('#searchNews').submit(function(e){
 		var $form = $(this),
-			$searchInput = $('[name=sv]', $form),
+			$searchInput = $('[name=keywords]', $form),
 			$searchIcon = $('.search', $form);
 
 		e.preventDefault();
@@ -204,7 +204,7 @@ function loadFriendNews(callback){
 	$.ajax({
 		url: baseUrl + 'home/load-friend-news',
 		data: {
-			keywords: $('#searchNews [name=sv]').val(),
+			keywords: $('#searchNews [name=keywords]').val(),
 			latitude: newsMap.getCenter().lat(),
 			longitude: newsMap.getCenter().lng(),
 			radius: getRadius()
