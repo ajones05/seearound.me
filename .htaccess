@@ -8,7 +8,7 @@ RewriteRule ^assets-[0-9a-zA-Z.]+/(.*\.(gif|jpe?g|png|ico|css|js|swf|woff|woff2|
 # favicon
 RewriteRule ^favicon\.ico$ /www/images/favicon/favicon.ico [L]
 
-RewriteCond %{REQUEST_FILENAME} -s [OR]
+RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^.*$ - [NC,L]
