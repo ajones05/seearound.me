@@ -273,16 +273,29 @@ body {
 .container {
 	position: relative;
 }
+.posts-container {
+	z-index: 2;
+}
+.posts-container,
 .posts {
     position: relative;
-	z-index: 2;
-	overflow: hidden;
 }
-.posts,
+.posts-container,
 .post-new__dialog {
     top: 60px;
 	left: 17px;
     width: 435px;
+}
+body.touch {
+	overflow: hidden;
+}
+body.touch .posts-container {
+	overflow: hidden;
+}
+body.touch .posts {
+	overflow-y: scroll;
+	width: 452px;
+	height: 424px;
 }
 .post-new__dialog {
 	position: fixed;
@@ -559,7 +572,12 @@ body {
 	cursor: pointer;
 	float: left;
 }
-.post .link-meta .image{margin-left: -70px;}
+.post .link-meta .image {
+	margin-left: -70px;
+}
+.post .link-meta img {
+	max-width: 435px;
+}
 .post .social_share {
 	border-top: solid 1px #ddd;
 	border-bottom: solid 1px #ddd;

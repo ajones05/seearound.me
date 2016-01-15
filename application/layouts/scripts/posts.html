@@ -17,12 +17,21 @@ $this->headScript()
 		'data-main' => My_Layout::assetUrl('www/scripts/posts', $this)));
 
 $this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
+
+$bodyAttributes = '';
+
+$userAgent = new Mobile_Detect;
+
+if ($userAgent->isMobile() || $userAgent->isTablet())
+{
+	$bodyAttributes = ' class="touch"';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head><?php echo $this->headTitle() . $this->headMeta() .
 $this->headLink() . $this->headScript(); ?></head>
-<body>
+<body<?php echo $bodyAttributes; ?>>
 <div class="navbar">
 	<div class="logo">
 		<a href="<?php echo $this->baseUrl('/'); ?>">
@@ -119,7 +128,9 @@ $this->headLink() . $this->headScript(); ?></head>
 	<div class="map-container">
 		<div id="map_canvas"></div>
 	</div>
-	<div class="posts"><?php echo $this->layout()->content; ?></div>
+<div class="posts-container">
+<div class="posts"><?php echo $this->layout()->content; ?></div>
+</div>
 </div>
 </body>
 </html>

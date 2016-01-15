@@ -19,7 +19,7 @@ var mainMap,areaCircle,loadXhr,userPosition,centerPosition,
 	},
 	postData=postData||[],
 	postMarkers={},postMarkersCluster={},
-	disableScroll=false,markerClick=false;
+	disableScroll=false,markerClick=false,isTouch=false;
 
 require.config({
     paths: {
@@ -33,12 +33,16 @@ require.config({
 });
 
 require(['jquery'], function(){
+	if ($('body').hasClass('touch')){
+		isTouch = true;
+	}
+
     $('#menu-button').click(function(){
 		$(this).next('ul').toggle();
     });
 
-	$(window).on('resize', footer_resizeHandler);
-	footer_resizeHandler();
+	$(window).on('resize', resizeHandler);
+	resizeHandler();
 
 	var notification = function(){
 		ajaxJson({
@@ -129,11 +133,16 @@ require(['facebook-sdk'], function(){
 		});
 	};
 });
-function footer_resizeHandler(){
-	var postsWidth=$('.posts').outerWidth()+16,
+function resizeHandler(){
+	var postsWidth=$('.posts-container').outerWidth()+16,
 		windowWidth=$(window).width(),
 		footerWidth=windowWidth-postsWidth;
 	$('.footer').width(footerWidth-2).show();
+
+	if ($('body').hasClass('touch')){
+		var postsList = $('.posts');
+		postsList.height($(window).height()-postsList.offset().top);
+	}
 }
 function renderMap_callback(){
 	defaultZoom=listMap_zoom();
@@ -213,7 +222,7 @@ function renderMap_callback(){
 				}
 
 				if (Object.size(postData) >= postLimit){
-					$(window).bind('scroll.load', postList_scrollHandler).scroll();
+					postList_scrollHandler(true);
 				}
 			}
 
@@ -584,7 +593,7 @@ function renderMap_callback(){
 						}
 
 						if (Object.size(response.data) >= postLimit){
-							$(window).bind('scroll.load', postList_scrollHandler);
+							postList_scrollHandler();
 						}
 					} else {
 						for (var i in response.data){
@@ -671,7 +680,7 @@ function renderMap_callback(){
 					height = parseFloat($(this).attr('data-height')),
 					dimensions = postItem_imageDimensions(width, height);
 
-				$('.posts').css({
+				$('.posts-container').css({
 					top: -(scrollTop - offsetTop),
 					position: 'fixed'
 				});
@@ -708,7 +717,7 @@ function renderMap_callback(){
 						},
 						beforeClose: function(event, ui){
 							disableScroll = false;
-							$('.posts').css({
+							$('.posts-container').css({
 								top: offsetTop,
 								position: 'relative',
 								maxHeight: 'auto'
@@ -1094,7 +1103,7 @@ function renderMap_callback(){
 		 * Rset posts list action.
 		 */
 		function postList_reset(){
-			$(window).unbind('scroll.load');
+			$(isTouch ? '.posts' : window).unbind('scroll.load');
 			if (loadXhr) loadXhr.abort();
 			if (!$.isEmptyObject(postMarkers)>0){
 				$('#map_canvas :data(ui-tooltip)').tooltip('destroy');
@@ -1147,7 +1156,7 @@ function renderMap_callback(){
 					}
 
 					if (Object.size(response.data) >= postLimit){
-						$(window).bind('scroll.load', postList_scrollHandler).scroll();
+						postList_scrollHandler(true);
 					}
 				}
 			})
@@ -1227,14 +1236,23 @@ function renderMap_callback(){
 		/**
 		 * Load posts on window scroll action.
 		 */
-		function postList_scrollHandler(){
-			if (disableScroll){
-				return false;
-			}
+		function postList_scrollHandler(scroll){
+			var target = $(isTouch ? '.posts' : window).bind('scroll.load', function(){
+				if (disableScroll){
+					return false;
+				}
 
-			if ($(window).scrollTop() + $(window).height() > $(document).height() - $(window).height() * 0.7){
-				$(window).unbind('scroll.load');
-				postList_load(Object.size(postData));
+				var scrollTop = $(this).scrollTop()+$(this).height(),
+					scrollHeight = isTouch ? this.scrollHeight : $(document).height();
+
+				if (scrollTop > scrollHeight * 0.7){
+					$(this).unbind('scroll.load');
+					postList_load(Object.size(postData));
+				}
+			});
+
+			if (scroll == true){
+				target.scroll();
 			}
 		}
 
@@ -1716,7 +1734,7 @@ function comment_render(comment){
  * Returns map center offset.
  */
 function listMap_centerOffsetX(reverse){
-	var postsWidth=$('.posts').outerWidth()+16,
+	var postsWidth=$('.posts-container').outerWidth()+16,
 		windowWidth=$(window).width(),
 		offset=(windowWidth-postsWidth)/2-windowWidth/2;
 	if (reverse) offset*=-1;
