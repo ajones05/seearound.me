@@ -1003,11 +1003,10 @@ function renderMap_callback(){
 							data: {post_id:id,comment:body},
 							done: function(response){
 								e.preventDefault();
-								target.val('').css({height:''}).attr('disabled', false).blur();
+								target.val('').css({height:''}).attr('disabled', false).focus();
 								var loadMore = $('.post-comments__more', postContainer);
 								comment_render($(response.html).insertBefore(loadMore.size() ?
 									loadMore : $('.post-comment__new', postContainer)));
-								target.focus();
 							},
 							fail: function(data, textStatus, jqXHR){
 								target.attr('disabled', false);
