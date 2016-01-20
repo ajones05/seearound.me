@@ -1,6 +1,18 @@
 <?php
 $auth = Zend_Auth::getInstance()->getIdentity();
 $request = Zend_Controller_Front::getInstance()->getRequest();
+
+$error = isset($this->login_form) ? true : false;
+
+if ($error)
+{
+	$errorMsg = array();
+
+	foreach($this->login_form->getMessages() as $message)
+	{
+		$errorMsg[] = is_array($message) ? implode('<br>', $message) : $message;
+	}
+}
 ?>
 <div class="uprBar">
 	<?php if (Application_Model_User::checkId($auth['user_id'], $user)): ?>
@@ -69,9 +81,9 @@ $request = Zend_Controller_Front::getInstance()->getRequest();
 		</a>
 		<form id="loginForm" action="<?php echo $this->baseUrl('login'); ?>" method="POST" class="loginForm">
 			<ul>
-				<?php if (isset($this->login_form)): ?>
+				<?php if ($error): ?>
 				<li>
-					<span id="loginError" class="loginerror"><?php echo implode('<br/>', $this->login_form->getMessages()); ?></span>
+					<span id="loginError" class="loginerror"><?php echo implode('<br>', $errorMsg); ?></span>
 				</li>
 				<?php endif; ?>
 				<li>
