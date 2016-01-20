@@ -22,7 +22,7 @@ $profileLink = $this->baseUrl("home/profile/user/" . $this->owner->id);
 			<li>
 				<div class="post-top">
 					<a class="title" href="<?php echo $profileLink; ?>"><?php echo ucfirst($this->owner->Name); ?></a>
-					<a class="post-date" href="<?php echo $this->baseUrl('info/news/nwid/' . $this->item->id); ?>"><?php echo date('F j \a\t h:ia', $created_date); ?></a>
+					<a class="post-date" href="<?php echo $this->baseUrl('post/' . $this->item->id); ?>"><?php echo date('F j \a\t h:ia', $created_date); ?></a>
 					<?php
 					echo My_ViewHelper::render('news/_vote.html', array(
 						'user' => $this->user,

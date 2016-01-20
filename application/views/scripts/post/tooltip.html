@@ -13,10 +13,10 @@ $prev = My_ArrayHelper::getProp($this, 'prev');
 <?php endif; ?>
 </div>
 <div class="tooltip-footer">
-<?php if ($prev || $next): ?>
+<?php if (!$this->point && ($prev || $next)): ?>
 <a href="<?php echo $this->baseUrl('center/' . $this->position . '?point=1'); ?>">More details</a>
 <?php else: ?>
-<a href="<?php echo $this->baseUrl('info/news/nwid/' . $this->post->id); ?>">More details</a>
+<a href="<?php echo $this->baseUrl('post/' . $this->post->id); ?>">More details</a>
 <?php endif; ?>
 <?php if ($prev): ?>
 <a class="prev" data-id="<?php echo $prev->id; ?>" href="#">&lt;</a>

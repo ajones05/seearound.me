@@ -8,6 +8,116 @@ use Respect\Validation\Validator as v;
 class PostController extends Zend_Controller_Action
 {
 	/**
+	 * Post details action.
+	 *
+	 * @return void
+	 */
+	public function viewAction()
+	{
+		$auth = Zend_Auth::getInstance()->getIdentity();
+		$user = $auth ? (new Application_Model_User)->findById($auth['user_id']) : null;
+
+		$id = $this->_request->getParam('id');
+
+		if (!v::intVal()->validate($id))
+		{
+			throw new RuntimeException('Incorrect ID value: ' .
+				var_export($id, true));
+		}
+
+		// TODO: load link
+		// TODO: load user details
+		if (!Application_Model_News::checkId($id, $post, 0))
+        {
+			throw new RuntimeException('Incorrect post ID: ' .
+				var_export($id, true));
+        }
+
+		$owner = $post->findDependentRowset('Application_Model_User')->current();
+
+		$headScript = 'var opts=' . json_encode(['latitude' => $post->latitude,
+			'longitude' => $post->longitude], JSON_FORCE_OBJECT) . ',' .
+			'owner=' . json_encode([
+				'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+			]) . ',' .
+			'post=' . json_encode([
+				'id'=>$post->id,
+				'lat'=>$post->latitude,
+				'lng'=>$post->longitude,
+				'address'=>$post->Address
+			]);
+
+		if ($user)
+		{
+			$headScript .= ',user=' . json_encode([
+				'name' => $user->Name,
+				'address' => $user->address(),
+				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+			]);
+		}
+
+		$this->view->user = $user;
+		$this->view->post = $post;
+		$this->view->owner = $owner;
+		$this->view->searchForm = new Application_Form_PostSearch;;
+		$this->view->headScript()->appendScript($headScript . ';');
+		$this->view->doctype('XHTML1_RDFA');
+		$this->view->headMeta()
+			->setProperty('og:url', $this->view->serverUrl() . $this->view->baseUrl('post/' . $post->id))
+			->setProperty('og:title', 'SeeAround.me')
+			->setProperty('og:description', My_StringHelper::stringLimit($post->news, 155, '...'));
+
+		$image = $post->findManyToManyRowset('Application_Model_Image',
+			'Application_Model_NewsImage')->current();
+
+		if ($image)
+		{
+			$thumb = $image->findThumb([320, 320]);
+		}
+		else
+		{
+			$link = $post->findDependentRowset('Application_Model_NewsLink')->current();
+
+			if ($link)
+			{
+				$image = $link->findManyToManyRowset('Application_Model_Image',
+					'Application_Model_NewsLinkImage')->current();
+
+				if ($image)
+				{
+					$thumb = $image->findThumb([448, 320]);
+				}
+			}
+
+			if (!$image)
+			{
+				$image = $owner->findManyToManyRowset('Application_Model_Image',
+					'Application_Model_UserImage')->current();
+
+				if ($image)
+				{
+					$thumb = $image->findThumb([320, 320]);
+				}
+			}
+		}
+
+		if (!$image)
+		{
+			$config = Zend_Registry::get('config_global');
+			$image = (new Application_Model_Image)
+				->find($config->user->default_image)->current();
+			$thumb = $image->findThumb([320, 320]);
+		}
+
+		$this->view->headMeta($this->view->serverUrl() .
+			$this->view->baseUrl($thumb->path), 'og:image', 'property')
+			->setProperty('og:image:width', $thumb->width)
+			->setProperty('og:image:height', $thumb->height);
+
+		$this->view->layout()->setLayout('posts');
+	}
+
+	/**
 	 * Posts list action.
 	 *
 	 * @return void
@@ -67,8 +177,7 @@ class PostController extends Zend_Controller_Action
 
 				foreach ($posts as $post)
 				{
-					$data[] = [
-						$post->id,
+					$data[$post->id] = [
 						$post->latitude,
 						$post->longitude,
 						My_ViewHelper::render('post/_list_item', [
@@ -92,6 +201,7 @@ class PostController extends Zend_Controller_Action
 			$this->_helper->viewRenderer->setNoRender(true);
 		}
 
+		$this->view->isList = true;
 		$this->view->user = $user;
 		$this->view->searchForm = $searchForm;
 		$this->view->headScript()->appendScript(
@@ -101,7 +211,8 @@ class PostController extends Zend_Controller_Action
 				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 				'location' => $userLocation
 			]) . ',' .
-			'search=' . json_encode($searchParameters, JSON_FORCE_OBJECT)
+			'isList=true' . ',' .
+			'opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) . ';'
 		);
 
 		$this->view->layout()->setLayout('posts');
@@ -254,6 +365,14 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
+			$point = $this->_request->getParam('point');
+
+			if (!v::optional(v::equals(1))->validate($point))
+			{
+				throw new RuntimeException('Incorrect point value: ' .
+					var_export($point, true));
+			}
+
 			$searchForm = new Application_Form_PostSearch;
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
@@ -347,6 +466,7 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$this->view->post = $post;
+			$this->view->point = $point;
 			$this->view->owner = $post->findDependentRowset('Application_Model_User')->current();
 			$this->view->position = $searchParameters['latitude'] . ',' . $searchParameters['longitude'];
 			$this->view->readmore = $this->_request->getPost('readmore', 0);

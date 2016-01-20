@@ -91,13 +91,22 @@ body {
 	float: left;
 	padding-top: 13px;
 }
+#login input[type=email],
+#login input[type=password]{
+	padding: 7px 3px;
+}
+#login input[type=email],
+#login input[type=password],
 .post-search .dropdown,
 .post-search input[type=text] {
-	border-style: solid;
-	border-width: 2px;
-	border-color: rgb(216,216,216);
+	border: 2px solid rgb(216,216,216);
 	background-color: rgb(255,255,255);
 }
+#login input.error {
+	border-color: red;
+}
+#login input[type=email],
+#login input[type=password],
 .post-search input[type=text],
 .main-menu .keywords input[type=text] {
 	font-size: 13.43px;
@@ -106,8 +115,11 @@ body {
 	font-style: italic;
 	line-height: 1.2;
 	text-align: left;
-	width: 254px;
 	height: 17px;
+}
+.post-search input[type=text],
+.main-menu .keywords input[type=text] {
+	width: 254px;
 	padding-left: 10px;
 	padding-right: 10px;
 	padding-top: 7px;
@@ -297,6 +309,14 @@ body.touch .posts {
 	width: 452px;
 	height: 424px;
 }
+#login {
+	margin-top: -10px;
+}
+#login input[type=submit] {
+	height: 35px;
+	cursor: pointer;
+	width: 65px;
+}
 .post-new__dialog {
 	position: fixed;
 	z-index: 3;
@@ -361,6 +381,7 @@ body.touch .posts {
 .post-new__dialog .image {
 	margin: 0 50px 0 0;
 }
+#login input[type=submit],
 .post-new__dialog .image,
 .post-new__dialog .action input[type=submit] {
 	font-family: 'Lato-Regular';
@@ -372,10 +393,13 @@ body.touch .posts {
 .post-new__dialog .action input[type=submit] {
 	cursor: pointer;
 }
+#login input[type=submit],
 .post-new__dialog .action input[type=submit] {
-	float: right;
 	background: none;
 	border: none;
+}
+.post-new__dialog .action input[type=submit] {
+	float: right;
 	width: 38px;
 	padding: 0;
 }
@@ -452,6 +476,7 @@ body.touch .posts {
 	height: 25px;
 }
 .footer {
+	display: none;
 	height: 28px;
 	background-color: rgb(255,255,255);
 	position: fixed;
@@ -1051,11 +1076,11 @@ body.touch .posts {
 /**
  * User tooltip.
  */
-.gm-style-iw .location-dialog__user {
+.location-dialog__user {
 	min-height: 55px;
 	width: 200px;
 }
-.gm-style-iw .location-dialog__user img {
+.location-dialog__user img {
 	float: left;
 	margin-right: 8px;
     width: 55px;
@@ -1065,7 +1090,7 @@ body.touch .posts {
     border-radius: 50px;
     -khtml-border-radius: 50px;
 }
-.gm-style-iw .location-dialog__user .address {
+.location-dialog__user .address {
     font: normal 14px Lato-Regular;
     color: #8d8d8d;
 	word-wrap: break-word;
@@ -1076,6 +1101,16 @@ body.touch .posts {
 }
 .main-menu #menu-button {
   display: none;
+}
+#login ul {
+	list-style: none;
+	padding: 0;
+}
+#login ul li {
+	float: left;
+}
+#login ul li:nth-child(2) {
+	padding-left: 10px;
 }
 
 @media all and (max-width: 1100px),
@@ -1111,6 +1146,9 @@ only screen and (min-resolution: 2dppx) and (max-width: 1024px) {
 		height: 3px;
 		border-top: 2px solid #000000;
 		border-bottom: 2px solid #000000;
+	}
+	.main-menu > ul.open {
+		display: block;
 	}
 	.main-menu .dropdown-menu {
 		width: 100% !important;
@@ -1160,6 +1198,17 @@ only screen and (min-resolution: 2dppx) and (max-width: 1024px) {
 	.main-menu .keywords img {
 		right: 20px;
 		top: 15px;
+	}
+	#login {
+		margin-top: 0;
+	}
+	#login ul {
+		list-style: none;
+		padding: 10px;
+	}
+	#login ul li:nth-child(2) {
+		padding-left: 0;
+		padding-top: 10px;
 	}
 }
 @media (max-width: 420px) {

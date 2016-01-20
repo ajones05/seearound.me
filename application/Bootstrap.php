@@ -66,6 +66,18 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		}
 
 		$router->addRoute(
+			'post',
+			new Zend_Controller_Router_Route(
+				'post/:id',
+				array(
+					'controller' => 'post',
+					'action' => 'view'
+				),
+				array('id' => '\d+')
+			)
+		);
+
+		$router->addRoute(
 			'about',
 			new Zend_Controller_Router_Route(
 				'about',

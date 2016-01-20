@@ -1019,7 +1019,7 @@ function renderListingMarker(news, readmore){
 			'<div class="tooltip-footer">';
 
 			if (getMarkerPosition(newsMarker.opts.data.id)[1].length == 1){
-				tooltip += '<a href="' + baseUrl + 'info/news/nwid/' + newsMarker.opts.data.id + '">More details</a>';
+				tooltip += '<a href="' + baseUrl + 'post/' + newsMarker.opts.data.id + '">More details</a>';
 			} else {
 				tooltip += '<a href="' + baseUrl + 'home/index/point/' + newsMarker.opts.data.latitude + ',' + newsMarker.opts.data.longitude + '">More details</a>';
 			}
