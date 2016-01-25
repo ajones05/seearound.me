@@ -339,7 +339,7 @@ class HomeController extends Zend_Controller_Action
 
 		$addressModel = new Application_Model_Address;
 		$profileAddress = $profile->findDependentRowset('Application_Model_Address')->current();
-		$addressFormat = $addressModel->format($profileAddress->toArray());
+		$addressFormat = $addressModel->format($profileAddress->toArray(), ['street' => false]);
 		$this->view->addressFormat = $addressFormat;
 
 		$config = Zend_Registry::get('config_global');

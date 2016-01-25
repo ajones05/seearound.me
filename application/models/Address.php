@@ -29,21 +29,25 @@ class Application_Model_Address extends Zend_Db_Table_Abstract
 	 * @param	mixed $address
 	 * @return	string
 	 */
-	public static function format($address)
+	public static function format($address, array $options=['street'=>true])
 	{
 		$output = '';
-		$street = trim(My_ArrayHelper::getProp($address, 'street_name'));
 
-		if ($street !== '')
+		if (!empty($options['street']))
 		{
-			$number = trim(My_ArrayHelper::getProp($address, 'street_number'));
+			$street = trim(My_ArrayHelper::getProp($address, 'street_name'));
 
-			if ($number !== '')
+			if ($street !== '')
 			{
-				$output .= $number . ' ';
-			}
+				$number = trim(My_ArrayHelper::getProp($address, 'street_number'));
 
-			$output .= $street;
+				if ($number !== '')
+				{
+					$output .= $number . ' ';
+				}
+
+				$output .= $street;
+			}
 		}
 
 		$city = trim(My_ArrayHelper::getProp($address, 'city'));
