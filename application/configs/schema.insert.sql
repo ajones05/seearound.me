@@ -1,4 +1,10 @@
 --
+-- Insert data for table `address`
+--
+INSERT INTO `address` (`id`, `user_id`, `address`, `latitude`, `longitude`, `street_name`, `street_number`, `city`, `state`, `country`, `zip`)
+	VALUES ('1', NULL, NULL, '37.2718745', '-119.2704153', 'Stump Springs Road', NULL, 'Lakeshore', 'CA', 'USA', '93634');
+
+--
 -- Insert data for table `votings`
 --
 DELETE FROM `votings` WHERE `news_count` = 0;
