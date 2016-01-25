@@ -38,6 +38,7 @@ class ErrorController extends Zend_Controller_Action
 		{
 			$log->log($errors->exception->getMessage(), $priority);
 			$log->log('Request Parameters: ' . var_export($errors->request->getParams(), true), $priority);
+			$log->log('Request Parameters: ' . var_export($_SERVER, true), $priority);
 		}
 
 		if ($this->getInvokeArg('displayExceptions'))
