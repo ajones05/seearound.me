@@ -67,4 +67,15 @@ class My_StringHelper
 
 		return $string;
 	}
+
+	/**
+	 * Converts empty string to NULL.
+	 *
+	 * @param	string $str
+	 * @return	mixed
+	 */
+	public static function emptyToNull($str)
+	{
+		return trim($str) !== '' ? $str : null;
+	}
 }
