@@ -1,5 +1,5 @@
 $(function(){
-	var userLocation = new google.maps.LatLng(userLatitude, userLongitude),
+	var userLocation = new google.maps.LatLng(profileData.latitude, profileData.longitude),
 		center = typeof point !== 'undefined' ? new google.maps.LatLng(point[0], point[1]) :
 			(typeof mapCenter !== 'undefined' ? new google.maps.LatLng(mapCenter[0], mapCenter[1]) : userLocation);
 
@@ -141,16 +141,16 @@ $(function(){
 			inputPlaceholder: 'Enter address',
 			submitText: 'Post from here',
 			cancelButton: true,
-			defaultAddress: userAddress,
+			defaultAddress: profileData.address,
 			center: newsMap.getCenter(),
 			infoWindowContent: function(address){
 				return userAddressTooltip(address, imagePath);
 			},
-			submit: function(dialogEvent, position, address){
+			submit: function(dialogEvent, position, place){
 				$(dialogEvent.target).closest('.ui-dialog').mask('Loading...');
 
-				if ($.trim(address) !== ''){
-					return addPost(position, address);
+				if (place){
+					return addPost(position, place.formatted_address);
 				}
 
 				(new google.maps.Geocoder()).geocode({

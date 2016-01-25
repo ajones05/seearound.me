@@ -10,6 +10,16 @@ ALTER TABLE `user_data` CHANGE `is_admin` `is_admin` TINYINT(1) NOT NULL DEFAULT
 --
 ALTER TABLE `address` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `address` CHANGE `address` `address` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL; 
+ALTER TABLE `address` COLLATE 'utf8_general_ci';
+ALTER TABLE `address` CHANGE `Id` `id` int(10) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `address` CHANGE `latitude` `latitude` double NOT NULL;
+ALTER TABLE `address` CHANGE `longitude` `longitude` double NOT NULL;
+ALTER TABLE `address` ADD `street_name` varchar(255) NULL;
+ALTER TABLE `address` ADD `street_number` varchar(255) NULL AFTER `street_name`;
+ALTER TABLE `address` ADD `city` varchar(255) NULL AFTER `street_number`;
+ALTER TABLE `address` ADD `state` varchar(255) NULL AFTER `city`;
+ALTER TABLE `address` ADD `country` varchar(255) NULL AFTER `state`;
+ALTER TABLE `address` ADD `zip` varchar(255) NULL AFTER `country`;
 
 --
 -- Table structure for table `user_profile`

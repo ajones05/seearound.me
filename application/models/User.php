@@ -70,81 +70,6 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	}
 
 	/**
-	 * Returns user's geolocation latitude.
-	 *
-	 * @return	float
-	 */
-	public function lat()
-	{
-		$address = $this->findDependentRowset('Application_Model_Address')->current();
-
-		if ($address)
-		{
-			return $address->latitude;
-		}
-
-		return My_Ip::geolocation()[0];
-	}
-
-	/**
-	 * Returns user's geolocation longitude.
-	 *
-	 * @return	float
-	 */
-	public function lng()
-	{
-		$address = $this->findDependentRowset('Application_Model_Address')->current();
-
-		if ($address)
-		{
-			return $address->longitude;
-		}
-
-		return My_Ip::geolocation()[1];
-	}
-
-	/**
-	 * Returns user's geolocation.
-	 *
-	 * @return	array
-	 */
-	public function location()
-	{
-		$address = $this->findDependentRowset('Application_Model_Address')->current();
-
-		if ($address)
-		{
-			return array($address->latitude, $address->longitude);
-		}
-
-		return My_Ip::geolocation();
-	}
-
-	/**
-	 * Returns user's address.
-	 *
-	 * @return	string
-	 */
-	public function address()
-	{
-		$address = $this->findDependentRowset('Application_Model_Address')->current();
-
-		if ($address)
-		{
-			return $address->address;
-		}
-
-		// TODO: remove
-		
-		if (!My_Ip::geolocation(false))
-		{
-			return Zend_Registry::get('config_global')->geolocation->address;
-		}
-
-		return '';
-	}
-
-	/**
 	 * Returns user's gender.
 	 *
 	 * @return	mixed
@@ -514,9 +439,14 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		$addressModel = new Application_Model_Address;
 		$addressModel->insert(array(
 			'user_id' => $user->id,
-			'address' => $data["address"],
-			'latitude' => $data["latitude"],
-			'longitude' => $data["longitude"]
+			'latitude' => $data['latitude'],
+			'longitude' => $data['longitude'],
+			'street_name' => My_ArrayHelper::getProp($data, 'street_name'),
+			'street_number' => My_ArrayHelper::getProp($data, 'street_number'),
+			'city' => My_ArrayHelper::getProp($data, 'city'),
+			'state' => My_ArrayHelper::getProp($data, 'state'),
+			'country' => My_ArrayHelper::getProp($data, 'country'),
+			'zip' => My_ArrayHelper::getProp($data, 'zip')
 		));
 
 		return $user;
@@ -624,7 +554,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 				$geolocation = My_Ip::geolocation();
 
-				Application_Model_Address::getInstance()->insert(array(
+				(new Application_Model_Address)->insert(array(
 					'user_id' => $user->id,
 					'latitude' => $geolocation[0],
 					'longitude' => $geolocation[1]
@@ -701,12 +631,18 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 			if (!$address)
 			{
-				$address = (new Application_Model_Address)->createRow(array('user_id' => $user->id));
+				$address = (new Application_Model_Address)
+					->createRow(['user_id' => $user->id]);
 			}
 
-			$address->address = $data['address'];
 			$address->latitude = $data['latitude'];
 			$address->longitude = $data['longitude'];
+			$address->street_name = My_ArrayHelper::getProp($data, 'street_name');
+			$address->street_number = My_ArrayHelper::getProp($data, 'street_number');
+			$address->city = My_ArrayHelper::getProp($data, 'city');
+			$address->state = My_ArrayHelper::getProp($data, 'state');
+			$address->country = My_ArrayHelper::getProp($data, 'country');
+			$address->zip = My_ArrayHelper::getProp($data, 'zip');
 			$address->save();
 
 			$profile = $user->findDependentRowset('Application_Model_UserProfile')->current();

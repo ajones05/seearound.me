@@ -82,6 +82,8 @@ class MobileController extends Zend_Controller_Action
 				$user->updateInviteCount();
 			}
 
+			$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+
 			$response = array(
 				'status' => 'SUCCESS',
 				'message' => 'AUTHENTICATED',
@@ -93,9 +95,9 @@ class MobileController extends Zend_Controller_Action
 					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					'Status' => $user->Status,
 					'Token' => $user->Token,
-					'address' => $user->address(),
-					'latitude' => $user->lat(),
-					'longitude' => $user->lng(),
+					'address' => Application_Model_Address::format($userAddress->toArray()),
+					'latitude' => $userAddress->latitude,
+					'longitude' => $userAddress->longitude,
 					'Activities' => $user->activities(),
 					'Gender' => $user->gender(),
 					'login_id' => $login_id,
@@ -190,13 +192,16 @@ class MobileController extends Zend_Controller_Action
 				$this->_formValidateException($form);
 			}
 
+			$addressForm = new Application_Form_Address;
+
+			if (!$addressForm->isValid($data))
+			{
+				throw new RuntimeException(
+					implode("\n", $addressForm->getErrorMessages()));
+			}
+
 			$user = (new Application_Model_User)->register(
-				array_merge(
-					$form->getValues(),
-					array(
-						'Status' => 'active'
-					)
-				)
+				array_merge($data,['Status' => 'active'])
 			);
 
 			$user->updateToken();
@@ -1228,6 +1233,8 @@ class MobileController extends Zend_Controller_Action
 				throw $e;
 			}
 
+			$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+
 			$response = array(
 				'status' => 'SUCCESS',
 				'message' => 'User profile has been updated successfully',
@@ -1235,9 +1242,9 @@ class MobileController extends Zend_Controller_Action
 					'user_id' => $user->id,
 					'Name' => $data['name'],
 					'Email_id' => $data['email'],
-					'address' => $user->address(),
-					'latitude' => $user->lat(),
-					'longitude' => $user->lng(),
+					'address' => Application_Model_Address::format($userAddress->toArray()),
+					'latitude' => $userAddress->latitude,
+					'longitude' => $userAddress->longitude,
 					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					'Gender' => $data['gender'],
 					'Activities' => $data['activities'],

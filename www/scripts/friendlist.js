@@ -1,5 +1,5 @@
 $(function(){
-	var center = new google.maps.LatLng(userLatitude, userLongitude);
+	var center = new google.maps.LatLng(profileData.latitude, profileData.longitude);
 
 	renderNewsMap({
 		center: center,

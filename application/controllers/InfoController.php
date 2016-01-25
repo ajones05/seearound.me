@@ -39,19 +39,28 @@ class InfoController extends Zend_Controller_Action
 		$this->view->headLink()
 			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
+		$addressModel = new Application_Model_Address;
+		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+		$ownerAddress = $owner->findDependentRowset('Application_Model_Address')->current();
+
 		$this->view->headScript()
-			->appendScript("	var news = " . json_encode(array(
+			->appendScript('var news=' . json_encode([
 				'id' => $news->id,
 				'address' => $news->Address,
 				'news' => $news->news,
 				'latitude' => $news->latitude,
 				'longitude' => $news->longitude,
-			)) . ";\n" .
-			"	var newsOwner = " . json_encode(array(
-				'address' => $owner->address(),
+			]) . ',' .
+			'newsOwner=' . json_encode([
+				'address' => $addressModel->format($ownerAddress->toArray()),
 				'name' => $owner->Name,
 				'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-			)) . ";\n")
+			]) . ',' .
+			'profileData=' . json_encode([
+				'address' => $addressModel->format($userAddress->toArray()),
+				'latitude' => $userAddress->latitude,
+				'longitude' => $userAddress->longitude
+			]) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 			->appendFile(My_Layout::assetUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js', $this->view))
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))

@@ -38,6 +38,7 @@ class IndexController extends Zend_Controller_Action
 		}
 
 		$login_form = new Application_Form_Login;
+		$addressForm = new Application_Form_Address;
 		$reg_form = new Application_Form_Registration;
         $reg_form->addElement(
 			'password',
@@ -102,47 +103,47 @@ class IndexController extends Zend_Controller_Action
 			}
 			else
 			{
-				if ($reg_form->isValid($data))
+				$validAddress = $addressForm->isValid($data);
+				$validProfile = $reg_form->isValid($data);
+
+				if ($validAddress)
 				{
-					$user = (new Application_Model_User)->register(
-						array_merge(
-							$reg_form->getValues(),
-							array(
-								'Conf_code' => My_CommonUtils::generateCode(),
-								'Status' => 'inactive'
-							)
-						)
-					);
-
-					My_Email::send(
-						$user->Email_id,
-						'SeeAround.me Registration',
-						array(
-							'template' => 'registration',
-							'assign' => array('user' => $user)
-						)
-					);
-
-					$login_id = (new Application_Model_Loginstatus)->insert(array(
-						'user_id' => $user->id,
-						'login_time' => $nowTime,
-						'visit_time' => $nowTime,
-						'ip_address' => $_SERVER['REMOTE_ADDR'])
-					);
-
-					Zend_Auth::getInstance()->getStorage()->write(array(
-						"user_id" => $user->id,
-						"login_id" => $login_id
-					));
-
-					$this->_redirect($this->view->baseUrl('/'));
-				}
-				else
-				{
-					if ($reg_form->getErrors('latitude') || $reg_form->getErrors('longitude'))
+					if ($validProfile)
 					{
-						$reg_form->address->addError('Incorrect user location');
+						$user = (new Application_Model_User)->register(array_merge($data,[
+							'Conf_code' => My_CommonUtils::generateCode(),
+							'Status' => 'inactive'
+						]));
+
+						My_Email::send(
+							$user->Email_id,
+							'SeeAround.me Registration',
+							array(
+								'template' => 'registration',
+								'assign' => array('user' => $user)
+							)
+						);
+
+						$login_id = (new Application_Model_Loginstatus)->insert(array(
+							'user_id' => $user->id,
+							'login_time' => $nowTime,
+							'visit_time' => $nowTime,
+							'ip_address' => $_SERVER['REMOTE_ADDR'])
+						);
+
+						Zend_Auth::getInstance()->getStorage()->write(array(
+							"user_id" => $user->id,
+							"login_id" => $login_id
+						));
+
+						$this->_redirect($this->view->baseUrl('/'));
 					}
+
+					$this->view->headScript('script', 'var formData=' . json_encode([
+						'address' => Application_Model_Address::format($data),
+						'latitude' => $addressForm->latitude->getValue(),
+						'longitude' => $addressForm->longitude->getValue()
+					]) . ';');
 				}
 			}
 		}
@@ -150,6 +151,7 @@ class IndexController extends Zend_Controller_Action
 		$this->view->layout()->setLayout('login');
 		$this->view->login_form = $login_form;
 		$this->view->reg_form = $reg_form;
+		$this->view->addressForm = $addressForm;
 
 		$this->view->headScript()
 			->appendScript("	var	geolocation = " . json_encode(My_Ip::geolocation()) . ";\n")

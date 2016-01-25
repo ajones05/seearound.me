@@ -1,3 +1,6 @@
+<?php
+$address = Application_Model_Address::format($this->addressForm->getValues());
+?>
 <div class="loginCopyArea">
     <div class="rightBoxArea">
         <h2>See and Share What's Happening Near You</h2>
@@ -38,11 +41,21 @@
 							<?php echo $this->reg_form->repassword->renderErrors(); ?>
 						</li>
 						<li>
-							<input id="Location" name="address" readonly="true" type="text" placeholder="User Location" value="<?php echo $this->reg_form->address->getValue(); ?>" />
+<input id="Location" name="address" readonly="true" type="text" placeholder="User Location" value="<?php echo $address; ?>">
 							<img class="myLoc" src="<?php echo $this->baseUrl("www/images/icn-location.gif"); ?>" alt="My Location" />
-							<input type="hidden" name="latitude" value="<?php echo $this->reg_form->latitude->getValue(); ?>" />
-							<input type="hidden" name="longitude" value="<?php echo $this->reg_form->longitude->getValue(); ?>" />
-							<?php echo $this->reg_form->address->renderErrors(); ?>
+							<input type="hidden" name="latitude" value="<?php echo $this->addressForm->latitude->getValue(); ?>">
+							<input type="hidden" name="longitude" value="<?php echo $this->addressForm->longitude->getValue(); ?>">
+							<input type="hidden" name="street_name" value="<?php echo $this->addressForm->street_name->getValue(); ?>">
+							<input type="hidden" name="street_number" value="<?php echo $this->addressForm->street_number->getValue(); ?>">
+							<input type="hidden" name="city" value="<?php echo $this->addressForm->city->getValue(); ?>">
+							<input type="hidden" name="state" value="<?php echo $this->addressForm->state->getValue(); ?>">
+							<input type="hidden" name="country" value="<?php echo $this->addressForm->country->getValue(); ?>">
+							<input type="hidden" name="zip" value="<?php echo $this->addressForm->zip->getValue(); ?>">
+<?php if ($this->addressForm->isErrors()): ?>
+<div class="errors">
+<?php echo implode("\n", $this->addressForm->getErrorMessages()); ?>
+</div>
+<?php endif; ?>
 						</li>
 						<li class="clr"></li>
 					</ul>
@@ -59,26 +72,25 @@
 </div>
 <script>
 $(function(){
-	$('#Location, .myLoc').click(function(){
-		var $address = $('#reg_form [name=address]'),
-			locationAddress = $.trim($address.val()),
-			$latitude = $('#reg_form [name=latitude]'),
-			$longitude = $('#reg_form [name=longitude]'),
-			center = $.trim($latitude.val()) != '' && $.trim($longitude.val()) !== '' ?
-				new google.maps.LatLng($latitude.val(), $longitude.val()) :
-				new google.maps.LatLng(geolocation[0], geolocation[1]);
+	var formData = formData||{},
+		form = $('#reg_form')
+		userAddress = formData.address?formData.address:geolocation[2],
+		userPosition = formData.latitude?
+			new google.maps.LatLng(formData.latitude,formData.longitude):
+			new google.maps.LatLng(geolocation[0],geolocation[1]);
 
-		if (locationAddress === ''){
-			locationAddress = geolocation[2];
-		}
+	$('[name=address],.myLoc', form).click(function(){
+		var $address = $('[name=address]', form),
+			$latitude = $('[name=latitude]', form),
+			$longitude = $('[name=longitude]', form);
 
 		editLocationDialog({
 			mapZoom: 10,
 			markerIcon: baseUrl + 'www/images/man.png',
 			inputPlaceholder: 'Enter your Address',
 			submitText: 'Use This Address',
-			defaultAddress: locationAddress,
-			center: center,
+			defaultAddress: userAddress,
+			center: userPosition,
 			infoWindowContent: function(address){
 				if ($.trim(address) === ''){
 					address = '<i>undefined</i>';
@@ -86,10 +98,26 @@ $(function(){
 
 				return '<div class="userLocation"><div>Address:</div><div>' + address + '</div></div>';
 			},
-			submit: function(dialogEvent, position, address){
-				$address.val(address);
+			submit: function(dialogEvent, position, place){
+				var data = {
+					latitude: position.lat(),
+					longitude: position.lng()
+				};
+
+				if (place){
+					data = $.extend(data, parsePlaceAddress(place));
+				}
+
+				$address.val(place?place.formatted_address:'');
 				$latitude.val(position.lat());
 				$longitude.val(position.lng());
+				$('[name=street_name]', form).val(data.street_name?data.street_name:'');
+				$('[name=street_number]', form).val(data.street_number?data.street_number:'');
+				$('[name=city]', form).val(data.city?data.city:'');
+				$('[name=state]', form).val(data.state?data.state:'');
+				$('[name=country]', form).val(data.country?data.country:'');
+				$('[name=zip]', form).val(data.zip?data.zip:'');
+
 				$(dialogEvent.target).dialog('close');
 			}
 		});

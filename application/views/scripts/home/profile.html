@@ -18,7 +18,7 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
 		</div>
 		<div class="profile-describe">
 			<h3 class="name"><?php echo ucfirst($this->profile->Name); ?></h3>
-			<p class="loc"><?php echo ucfirst(My_StringHelper::stringLimit($this->profile->address(), 50, '...')); ?></p>
+			<p class="loc"><?php echo My_StringHelper::stringLimit($this->addressFormat, 50, '...'); ?></p>
 		</div>
 		<div class="clr"></div>
 	</div>
@@ -48,10 +48,10 @@ $karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
         <span><?php echo $this->profile->activities(); ?></span>
 		<div class="clr"></div>
     </li>
-    <?php if ($this->profile->address()): ?>
+    <?php if ($this->addressFormat !== ''): ?>
 	<li>
         <label>Location</label>
-        <span><?php echo $this->profile->address(); ?></span>
+        <span><?php echo $this->addressFormat; ?></span>
 		<div class="clr"></div>
     </li>
     <?php endif; ?>
@@ -117,8 +117,7 @@ function initMap(){
 		zoom: 14,
 		minZoom: 13,
 		maxZoom: 15,
-		center: otherProfile ? new google.maps.LatLng(user_profile.lat, user_profile.lng) :
-			new google.maps.LatLng(userLatitude, userLongitude),
+		center: new google.maps.LatLng(profileData.latitude,profileData.longitude),
         disableDefaultUI: true,
         panControl: false,
     	zoomControl: false,
@@ -137,7 +136,7 @@ function initMap(){
 
 		if (!otherProfile){
 			var infowindow = new google.maps.InfoWindow({
-				content: userAddressTooltip(userAddress, imagePath)
+				content: userAddressTooltip(profileData.address, imagePath)
 			});
 
 			infowindow.open(map, marker);
@@ -146,7 +145,7 @@ function initMap(){
 
 	if (otherProfile){
 		$('.friendAction .message').click(function(){
-			userMessageDialog(user_profile.id);
+			userMessageDialog(profileData.id);
 		});
 	}
 }

@@ -1,44 +1,103 @@
 <?php
-class Application_Model_Address extends Zend_Db_Table_Abstract {
 
- 	protected $_name     = 'address';
-	protected $_primary  = array('Id');
-	protected static $_instance = null;
+/**
+ * This is the model class for table "address".
+ */
+class Application_Model_Address extends Zend_Db_Table_Abstract
+{
+	/**
+	 * The table name.
+	 *
+	 * @var string
+	 */
+	protected $_name = 'address';
 
-    protected $_referenceMap = array(
+	/**
+	 * @var	array
+	 */
+	protected $_referenceMap = array(
 		'User' => array(
 			'columns' => 'user_id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'id'
 		)
-    );
+	);
 
-	public static function getInstance() {
-		if (null === self::$_instance) {
-			self::$_instance = new self();
-		}		
-		return self::$_instance;
+	/**
+	 * Formats address string.
+	 *
+	 * @param	mixed $address
+	 * @return	string
+	 */
+	public static function format($address)
+	{
+		$output = '';
+		$street = trim(My_ArrayHelper::getProp($address, 'street_name'));
+
+		if ($street !== '')
+		{
+			$number = trim(My_ArrayHelper::getProp($address, 'street_number'));
+
+			if ($number !== '')
+			{
+				$output .= $number . ' ';
+			}
+
+			$output .= $street;
+		}
+
+		$city = trim(My_ArrayHelper::getProp($address, 'city'));
+
+		if ($city !== '')
+		{
+			if ($output !== '')
+			{
+				$output .= ', ';
+			}
+
+			$output .= $city;
+		}
+
+		$state = trim(My_ArrayHelper::getProp($address, 'state'));
+
+		if ($state !== '')
+		{
+			if ($output !== '')
+			{
+				$output .= ', ';
+			}
+
+			$output .= $state;
+		}
+
+		$zip = trim(My_ArrayHelper::getProp($address, 'zip'));
+
+		if ($zip !== '')
+		{
+			if ($state !== '')
+			{
+				$output .= ' ';
+			}
+			elseif ($output !== '')
+			{
+				$output .= ', ';
+			}
+
+			$output .= $zip;
+		}
+
+		$country = trim(My_ArrayHelper::getProp($address, 'country'));
+
+		if ($country !== '')
+		{
+			if ($output !== '')
+			{
+				$output .= ', ';
+			}
+
+			$output .= $country;
+		}
+
+		return $output;
 	}
-    
-    public function saveAddress($addressData,$addressRow) {
-        $addressTable = new Application_Model_Address();
-        if($addressRow){
-            $addressRow->setFromArray($addressData);
-        } else {
-        	$auth = Zend_Auth::getInstance()->getStorage()->read();
-        	$addressData['user_id'] = $auth['user_id'];
-            $addressRow = $addressTable->createRow($addressData);
-        }
-        $addressRow->save();
-        return $addressRow;
-    }
-    public function searchRow($field,$valueToSearch) {
-        $addressTable = new Application_Model_Address();
-        $condition = $field." = '".$valueToSearch."'";
-        $select = $addressTable->select()
-            ->where($condition);
-        $addressRow = $addressTable->fetchRow($select);
-        return $addressRow;
-    }
 }
-?>

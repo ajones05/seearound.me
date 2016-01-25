@@ -73,57 +73,6 @@ class Application_Form_Profile extends Zend_Form
 			)
 		);
 
-        $this->addElement(
-			'text',
-			'address',
-			array(
-				'label' => 'Location',
-				'required' => false,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('stringLength', false, array(0, 255))
-				)
-			)
-		);
-
-        $this->addElement(
-			'hidden',
-			'latitude',
-			array(
-				'required' => true,
-				'validators' => array(
-					array('Float'),
-					array(
-						'name' => 'Between',
-						false,
-						array(
-							'min' => -90,
-							'max' => 90,
-						)
-					)
-				)
-			)
-		);
-
-        $this->addElement(
-			'hidden',
-			'longitude',
-			array(
-				'required' => true,
-				'validators' => array(
-					array('Float'),
-					array(
-						'name' => 'Between',
-						false,
-						array(
-							'min' => -180,
-							'max' => 180,
-						)
-					)
-				)
-			)
-		);
-
 		$days = array_map(function($item){
 			return str_pad($item, 2, '0', STR_PAD_LEFT); 
 		}, range(1, 31));

@@ -170,10 +170,11 @@ class ContactsController extends Zend_Controller_Action
 			else
 			{
 				$facebook_user = Application_Model_User::findByNetworkId($network_id);
+				$address = $facebook_user->findDependentRowset('Application_Model_Address')->current();
 
 				if (count($facebook_user) > 0)
 				{
-					$response['address'] = $facebook_user->address();
+					$response['address'] = Application_Model_Address::format($address->toArray());
 
 					$friends = (new Application_Model_Friends)->isFriend($user->id, $facebook_user->id);
 
@@ -349,8 +350,15 @@ class ContactsController extends Zend_Controller_Action
 		$this->view->headLink()
 			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
+		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+
 		$this->view->headScript()
-			->appendScript("	var friends_count = " . $friends_count . ";\n")
+			->appendScript('var friends_count=' . $friends_count . ',' .
+				'profileData=' . json_encode([
+					'address' => Application_Model_Address::format($userAddress->toArray()),
+					'latitude' => $userAddress->latitude,
+					'longitude' => $userAddress->longitude
+				]) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
 			->appendFile(My_Layout::assetUrl('www/scripts/news.js', $this->view))
@@ -396,14 +404,15 @@ class ContactsController extends Zend_Controller_Action
 					$_user = $friend->reciever_id == $user->id ?
 						$friend->findDependentRowset('Application_Model_User', 'FriendSender')->current() :
 						$friend->findDependentRowset('Application_Model_User', 'FriendReceiver')->current();
+					$address = $_user->findDependentRowset('Application_Model_Address')->current();
 
 					$response['friends'][] = array(
 						'id' => $_user->id,
 						'image' => $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 						'name' => $_user->Name,
-						'address' => $_user->address(),
-						'latitude' => $_user->lat(),
-						'longitude' => $_user->lng()
+						'address' => Application_Model_Address::format($address->toArray()),
+						'latitude' => $address->latitude,
+						'longitude' => $address->longitude
 					);
 				}
 			}
@@ -680,11 +689,12 @@ class ContactsController extends Zend_Controller_Action
 			{
 				foreach ($result as $_user)
 				{
+					$address = $_user->findDependentRowset('Application_Model_Address')->current();
 					$response['result'][] = array(
 						'id' => $_user->id,
 						'name' => $_user->Name,
 						'image' => $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-						'address' => $_user->address()
+						'address' => Application_Model_Address::format($address->toArray())
 					);
 				}
 			}

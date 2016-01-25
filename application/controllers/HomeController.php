@@ -67,7 +67,15 @@ class HomeController extends Zend_Controller_Action
 		$this->view->headLink()
 			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
+		$addressModel = new Application_Model_Address;
+		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+
 		$this->view->headScript()
+			->appendScript('var profileData=' . json_encode([
+				'address' => $addressModel->format($userAddress->toArray()),
+				'latitude' => $userAddress->latitude,
+				'longitude' => $userAddress->longitude
+			]) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 			->appendFile(My_Layout::assetUrl('bower_components/jquery.scrollTo/jquery.scrollTo.min.js', $this->view))
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
@@ -105,61 +113,77 @@ class HomeController extends Zend_Controller_Action
     public function editProfileAction()
 	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
+		$userModel = new Application_Model_User;
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		if (!$userModel->checkId($auth['user_id'], $user))
 		{
 			throw new RuntimeException('You are not authorized to access this action', -1);
 		}
 
-		$form = new Application_Form_Profile;
+		$profileForm = new Application_Form_Profile;
+		$addressModel = new Application_Model_Address;
+		$addressForm = new Application_Form_Address;
+		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
 
 		if ($this->_request->isPost())
 		{
 			$data = $this->_request->getPost();
+			$validAddress = $addressForm->isValid($data);
+			$validProfile = $profileForm->isValid($data);
 
-			if ($form->isValid($data))
+			if ($validAddress)
 			{
-				(new Application_Model_User)->updateProfile($user, $form->getValues());
-				$this->_redirect($this->view->baseUrl("home/profile"));
+				if ($validProfile)
+				{
+					$userModel->updateProfile($user, $data);
+					$this->_redirect($this->view->baseUrl("home/profile"));
+				}
+
+				$this->view->headScript('script', 'var formData=' . json_encode([
+					'address' => $addressModel->format($data),
+					'latitude' => $addressForm->latitude->getValue(),
+					'longitude' => $addressForm->longitude->getValue()
+				]) . ';');
 			}
         }
 		else
 		{
-			$form->populate(array(
+			$addressForm->setDefaults($userAddress->toArray());
+			$profileForm->setDefaults([
 				'email' => $user->Email_id,
 				'public_profile' => $user->getPublicProfile(),
 				'name' => $user->Name,
 				'gender' => $user->gender(),
 				'activities' => $user->activities(),
-				'address' => $user->address(),
-				'latitude' => $user->lat(),
-				'longitude' => $user->lng(),
-			));
+				'latitude' => $userAddress->latitude,
+				'longitude' => $userAddress->longitude,
+			]);
 
 			if ($user->Birth_date != null)
 			{
-				$birth_time = strtotime($user->Birth_date);
-
-				$form->populate(array(
-					'birth_day' => date('d', $birth_time),
-					'birth_month' => date('m', $birth_time),
-					'birth_year' => date('Y', $birth_time),
-				));
+				$birthbay = new DateTime($user->Birth_date);
+				$profileForm->setDefaults([
+					'birth_day' => $birthbay->format('d'),
+					'birth_month' => $birthbay->format('m'),
+					'birth_year' => $birthbay->format('Y')
+				]);
 			}
 		}
 
-		if ($form->latitude->getValue() == '' || $form->longitude->getValue() == '')
-		{
-			$geolocation = My_Ip::geolocation();
-			$form->latitude->setValue($geolocation[0]);
-			$form->longitude->setValue($geolocation[1]);
-		}
+		$addressFormat = $addressModel->format($userAddress->toArray());
+		$this->view->addressFormat = $addressFormat;
 
 		$this->view->headScript()
+			->appendScript('var profileData=' . json_encode([
+				'address' => $addressFormat,
+				'latitude' => $userAddress->latitude,
+				'longitude' => $userAddress->longitude
+			]) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
 			->appendFile(My_Layout::assetUrl('/bower_components/jquery-form/jquery.form.js', $this->view));
 
-		$this->view->form = $form;
+		$this->view->profileForm = $profileForm;
+		$this->view->addressForm = $addressForm;
         $this->view->user = $user;
         $this->view->changeLocation = true;
     }
@@ -302,19 +326,6 @@ class HomeController extends Zend_Controller_Action
 
 		$this->view->karma_comments = (new Application_Model_Comments)->getCountByUserId($profile->id);
 
-		if (!$auth || $profile->id != $user->id)
-		{
-			$this->view->headScript()->appendScript('	var user_profile = ' . json_encode(array(
-				'id' => $profile->id,
-				'name' => ucwords($profile->Name),
-				'image' => $profile->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-				'address' => $profile->address(),
-				'lat' => $profile->lat(),
-				'lng' => $profile->lng(),
-				'latestPost' => $latest_post ? $latest_post->news : 'N/A'
-			)) . ';');
-		}
-
 		if ($auth && $user->id != $profile->id)
 		{
 			$isFriend = (new Application_Model_Friends)->isFriend($user, $profile);
@@ -326,9 +337,20 @@ class HomeController extends Zend_Controller_Action
 		$this->view->headLink()
 			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
+		$addressModel = new Application_Model_Address;
+		$profileAddress = $profile->findDependentRowset('Application_Model_Address')->current();
+		$addressFormat = $addressModel->format($profileAddress->toArray());
+		$this->view->addressFormat = $addressFormat;
+
 		$config = Zend_Registry::get('config_global');
 		$this->view->headScript()
-			->appendScript('var reciever_userid=' . json_encode($profile->id) . ';')
+			->appendScript('var reciever_userid=' . json_encode($profile->id) . ',' .
+				'profileData=' . json_encode([
+				'id' => $profile->id,
+				'address' => $addressFormat,
+				'latitude' => $profileAddress->latitude,
+				'longitude' => $profileAddress->longitude
+			]) . ';')
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view));
 
 		My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
@@ -697,35 +719,32 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$address = $this->_request->getPost('address');
+			$form = new Application_Form_Address;
+			$data = $this->_request->getPost();
 
-			$latitude = $this->_request->getPost('latitude');
-
-			if (!is_numeric($latitude) || !My_Validate::latitude($latitude))
+			if (!$form->isValid($data))
 			{
-				throw new RuntimeException('Incorrect latitude value', -1);
+				throw new RuntimeException(
+					implode("\n", $form->getErrorMessages()));
 			}
 
-			$longitude = $this->_request->getPost('longitude');
+			$address = $user->findDependentRowset('Application_Model_Address')->current();
 
-			if (!is_numeric($longitude) || !My_Validate::longitude($longitude))
+			if (!$address)
 			{
-				throw new RuntimeException('Incorrect longitude value', -1);
+				$address = (new Application_Model_Address)
+					->createRow(['user_id' => $user->id]);
 			}
 
-			$user_address = $user->findDependentRowset('Application_Model_Address')->current();
-
-			if (!$user_address)
-			{
-				$user_address = (new Application_Model_Address)->createRow(array(
-					'user_id' => $user->id
-				));
-			}
-
-			$user_address->address = $address;
-			$user_address->latitude = $latitude;
-			$user_address->longitude = $longitude;
-			$user_address->save();
+			$address->latitude = $data['latitude'];
+			$address->longitude = $data['longitude'];
+			$address->street_name = My_ArrayHelper::getProp($data, 'street_name');
+			$address->street_number = My_ArrayHelper::getProp($data, 'street_number');
+			$address->city = My_ArrayHelper::getProp($data, 'city');
+			$address->state = My_ArrayHelper::getProp($data, 'state');
+			$address->country = My_ArrayHelper::getProp($data, 'country');
+			$address->zip = My_ArrayHelper::getProp($data, 'zip');
+			$address->save();
 
 			$response = array('status' => 1);
 		}

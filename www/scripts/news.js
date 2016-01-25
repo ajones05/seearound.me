@@ -132,10 +132,10 @@ function renderNews($news){
 									infoWindowContent: function(address){
 										return userAddressTooltip(address, imagePath);
 									},
-									submit: function(dialogEvent, position, address){
+									submit: function(dialogEvent, position, place){
 										$('#map-canvas', dialogEvent.target).mask('Waiting...');
 
-										$address.val(address);
+										$address.val(place.formatted_address);
 										$latitude.val(position.lat());
 										$longitude.val(position.lng());
 
@@ -697,29 +697,6 @@ function renderNewsMap(options){
 	});
 }
 
-function latlngDistance(firstPoint, secondPoint, unit){
-	var lat1 = firstPoint.lat();
-	var lon1 = firstPoint.lng();
-	var lat2 = secondPoint.lat();
-	var lon2 = secondPoint.lng();
-
-	if (lat1 === lat2 && lon1 === lon2){
-		return 0;
-	}
-
-	var theta = lon1 - lon2;
-	var dist = Math.sin(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) +  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(theta * Math.PI / 180);
-	var miles = (Math.acos(dist) * 180 / Math.PI) * 60 * 1.1515;
-
-	if (unit == "K"){
-		return (miles * 1.609344); 
-	} else if (unit == "N"){
-		return (miles * 0.8684);
-	} else {
-		return miles;
-	}
-}
-
 function higlightNews(newsId){
 	var $target = $('#scrpBox_' + newsId),
 		locationMarkers = getMarkerPosition(newsId);
@@ -1147,23 +1124,28 @@ function renderEditLocationDialog(callback){
 			markerIcon: baseUrl + 'www/images/icons/icon_1.png',
 			inputPlaceholder: 'Enter address',
 			submitText: 'Use This Address',
-			defaultAddress: userAddress,
+			defaultAddress: profileData.address,
 			center: newsMapCircle.center,
 			infoWindowContent: function(address){
 				return userAddressTooltip(address, imagePath);
 			},
-			submit: function(dialogEvent, position, address){
+			submit: function(dialogEvent, position, place){
 				$(window).scrollTo(0);
 
 				$('#map-canvas', dialogEvent.target).mask('Waiting...');
 
+				var data = {
+					latitude: position.lat(),
+					longitude: position.lng()
+				};
+
+				if (place){
+					data = $.extend(data, parsePlaceAddress(place));
+				}
+
 				$.ajax({
 					url: baseUrl + 'home/change-address',
-					data: {
-						address: address,
-						latitude: position.lat(),
-						longitude: position.lng()
-					},
+					data: data,
 					type: 'POST',
 					dataType: 'json',
 					beforeSend: function(jqXHR, settings){
@@ -1171,9 +1153,10 @@ function renderEditLocationDialog(callback){
 					}
 				}).done(function(response){
 					if (response && response.status){
-						userAddress = address;
-						userLatitude = position.lat();
-						userLongitude = position.lng();
+						userAddress = place.formatted_address;
+						profileData.address = place.formatted_address;
+						profileData.latitude = position.lat();
+						profileData.longitude = position.lng();
 
 						newsMap.setCenter(position);
 						newsMapCircle.changeCenter(position, 0.8);

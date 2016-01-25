@@ -1,5 +1,11 @@
 <script type="text/javascript">
 	$(function(){
+		var formData = formData||{},
+			userAddress = formData.address?formData.address:profileData.address,
+			userPosition = formData.latitude?
+				new google.maps.LatLng(formData.latitude,formData.longitude):
+				new google.maps.LatLng(profileData.latitude,profileData.longitude);
+
 		$('#birth_month, #birth_year').change(function(){
 			if ($('#birth_month').val() && $('#birth_year').val()){
 				var count = new Date($('#birth_year').val(), $('#birth_month').val(), 0).getDate();
@@ -18,28 +24,42 @@
 
 		$('#birth_month').change();
 
-		var $address = $('#editProfileForm [name=address]'),
-			$latitude = $('#editProfileForm [name=latitude]'),
-			$longitude = $('#editProfileForm [name=longitude]');
-
 		$("#locationButton, #Location").click(function(){
+			var form = $('#editProfileForm'),
+				$latitude = $('[name=latitude]', form),
+				positionLat = $latitude.val(),
+				$longitude = $('[name=longitude]', form),
+				positionLng = $longitude.val(),
+				isValidLocation = $.trim(positionLat) !== '' &&
+					$.trim(positionLng) !== '';
+
 			editLocationDialog({
 				mapZoom: 14,
 				markerIcon: baseUrl + 'www/images/icons/icon_1.png',
 				inputPlaceholder: 'Enter your Address',
 				submitText: 'Use This Address',
-				defaultAddress: $address.val(),
-				center: new google.maps.LatLng($latitude.val(), $longitude.val()),
+				defaultAddress: userAddress,
+				center:	userPosition,
 				infoWindowContent: function(address){
 					return userAddressTooltip(address, imagePath);
 				},
-				submit: function(dialogEvent, position, address){
-					$address.val(address);
-					$latitude.val(position.lat());
-					$longitude.val(position.lng());
-					map.setCenter(position);
-					marker.setPosition(position);
-					infowindow.setContent(userAddressTooltip(address, imagePath));
+				submit: function(dialogEvent, position, place){
+					if (latlngDistance(position,userPosition) > 0){
+						var data = place?parsePlaceAddress(place):{};
+						userAddress = place.formatted_address;
+						userPosition = position;
+						$latitude.val(position.lat());
+						$longitude.val(position.lng());
+						$('[name=street_name]', form).val(data.street_name?data.street_name:'');
+						$('[name=street_number]', form).val(data.street_number?data.street_number:'');
+						$('[name=city]', form).val(data.city?data.city:'');
+						$('[name=state]', form).val(data.state?data.state:'');
+						$('[name=country]', form).val(data.country?data.country:'');
+						$('[name=zip]', form).val(data.zip?data.zip:'');
+						map.setCenter(position);
+						marker.setPosition(position);
+						infowindow.setContent(userAddressTooltip(place.formatted_address, imagePath));
+					}
 					$(dialogEvent.target).dialog('close');
 				}
 			});
@@ -49,7 +69,7 @@
 			zoom: 14,
 			minZoom: 13,
 			maxZoom: 15,
-			center: new google.maps.LatLng(userLatitude, userLongitude),
+			center: userPosition,
 			disableDefaultUI: true,
 			panControl: false,
 			zoomControl: false,
@@ -58,9 +78,9 @@
 			overviewMapControl: false,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		});
-		
+
 		var marker = new google.maps.Marker({
-			position: map.getCenter(),
+			position: userPosition,
 			icon: baseUrl + 'www/images/icons/icon_1.png'
 		});
 
@@ -116,7 +136,7 @@
 			<a class="hypDecNone" href="<?php echo $this->baseUrl("home/profile"); ?>">
 				<h3 class="name"><?php echo ucfirst($this->user->Name);?></h3>
 			</a>
-			<p class="loc"><?php echo ucfirst(My_StringHelper::stringLimit($this->user->address(), 50, '...')); ?></p>
+			<p class="loc"><?php echo My_StringHelper::stringLimit($this->addressFormat, 50, '...'); ?></p>
 		</div>
 		<div class="clr"></div>
 	</div>
@@ -139,24 +159,28 @@
 	</li>
 	<div class="clr"></div>
 </ul>
+<?php if ($this->addressForm->isErrors()): ?>
+<div class="errors">
+<?php echo implode("\n", $this->addressForm->getErrorMessages()); ?>
+</div>
+<?php endif; ?>
 <form method="post" id="editProfileForm">
+<input type="hidden" name="latitude" value="<?php echo $this->addressForm->latitude->getValue(); ?>">
+<input type="hidden" name="longitude" value="<?php echo $this->addressForm->longitude->getValue(); ?>">
+<input type="hidden" name="street_name" value="<?php echo $this->addressForm->street_name->getValue(); ?>">
+<input type="hidden" name="street_number" value="<?php echo $this->addressForm->street_number->getValue(); ?>">
+<input type="hidden" name="city" value="<?php echo $this->addressForm->city->getValue(); ?>">
+<input type="hidden" name="state" value="<?php echo $this->addressForm->state->getValue(); ?>">
+<input type="hidden" name="country" value="<?php echo $this->addressForm->country->getValue(); ?>">
+<input type="hidden" name="zip" value="<?php echo $this->addressForm->zip->getValue(); ?>">
 	<ul class="editProfInfoForm">
 		<li>
-			<?php echo $this->form->email; ?>
-			<?php echo $this->form->public_profile; ?>
+			<?php echo $this->profileForm->email; ?>
+			<?php echo $this->profileForm->public_profile; ?>
 		</li>
-		<li><?php echo $this->form->name; ?></li>
-		<li><?php echo $this->form->gender; ?></li>
-		<li><?php echo $this->form->activities; ?></li>
-		<li>
-			<?php echo $this->form->address; ?>
-			<dd>
-			<input id="latitude" type="hidden" value="<?php echo $this->form->latitude->getValue(); ?>" name="latitude" />
-			<?php echo $this->form->latitude->renderErrors(); ?>
-			<input id="longitude" type="hidden" value="<?php echo $this->form->longitude->getValue(); ?>" name="longitude" />
-			<?php echo $this->form->longitude->renderErrors(); ?>
-			</dd>
-		</li>
+		<li><?php echo $this->profileForm->name; ?></li>
+		<li><?php echo $this->profileForm->gender; ?></li>
+		<li><?php echo $this->profileForm->activities; ?></li>
 		<li>
 			<dt>
 				<label>Date of Birth</label>
@@ -165,21 +189,21 @@
 				<?php
 				echo $this->formSelect(
 					'birth_month',
-					$this->form->birth_month->getValue(),
-					$this->form->getErrors('birth_month') ? array('class' => 'error') : null,
-					$this->form->birth_month->getMultiOptions()
+					$this->profileForm->birth_month->getValue(),
+					$this->profileForm->getErrors('birth_month') ? array('class' => 'error') : null,
+					$this->profileForm->birth_month->getMultiOptions()
 				);
 				echo $this->formSelect(
 					'birth_day',
-					$this->form->birth_day->getValue(),
-					$this->form->getErrors('birth_day') ? array('class' => 'error') : null,
-					$this->form->birth_day->getMultiOptions()
+					$this->profileForm->birth_day->getValue(),
+					$this->profileForm->getErrors('birth_day') ? array('class' => 'error') : null,
+					$this->profileForm->birth_day->getMultiOptions()
 				);
 				echo $this->formSelect(
 					'birth_year',
-					$this->form->birth_year->getValue(),
-					$this->form->getErrors('birth_year') ? array('class' => 'error') : null,
-					$this->form->birth_year->getMultiOptions()
+					$this->profileForm->birth_year->getValue(),
+					$this->profileForm->getErrors('birth_year') ? array('class' => 'error') : null,
+					$this->profileForm->birth_year->getMultiOptions()
 				);
 				?>
 			</dd>

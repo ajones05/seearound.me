@@ -379,6 +379,7 @@ function editLocationDialog(options){
 					autocomplete = new google.maps.places.Autocomplete($editAddress[0]),
 					geocoder = new google.maps.Geocoder(),
 					renderLocation = true;
+					renderPlace = false;
 
 				var map = new google.maps.Map($map[0], {
 					zoom: options.mapZoom,
@@ -418,7 +419,7 @@ function editLocationDialog(options){
 						return false;
 					}
 
-					renderLocationAddress(place.formatted_address, place.geometry.location);
+					renderLocationAddress(place);
 				});
 
 				$editAddress.on('input', function(){
@@ -446,10 +447,11 @@ function editLocationDialog(options){
 						address: value
 					}, function(results, status){
 						if (status == google.maps.GeocoderStatus.OK){
-							renderLocationAddress(results[0].formatted_address, results[0].geometry.location);
+							renderLocationAddress(results[0]);
 						} else {
 							alert('Sorry! We are unable to find this location.');
 							renderLocation = false;
+							renderPlace = false;
 						}
 
 						$submitField.attr('disabled', false);
@@ -464,7 +466,7 @@ function editLocationDialog(options){
 					}
 
 					$('input', dialogEvent.target).attr('disabled', true);
-					options.submit(dialogEvent, marker.getPosition(), $editAddress.val());
+					options.submit(dialogEvent, marker.getPosition(), renderPlace);
 				});
 
 				$('.cancel', dialogEvent.target).click(function(){
@@ -479,6 +481,9 @@ function editLocationDialog(options){
 
 						if (status == google.maps.GeocoderStatus.OK){
 							address = results[0].formatted_address;
+							renderPlace = results[0];
+						} else {
+							renderPlace = false;
 						}
 
 						infowindow.setContent(options.infoWindowContent(address));
@@ -488,13 +493,16 @@ function editLocationDialog(options){
 					});
 				}
 
-				function renderLocationAddress(address, location){
+				function renderLocationAddress(place){
+					var address = place.formatted_address,
+						location = place.geometry.location;
 					infowindow.setContent(options.infoWindowContent(address));
 					map.setCenter(location);
 					marker.setPosition(location);
 					$editAddress.val(address);
 					setGoogleMapsAutocompleteValue($editAddress, address);
 					renderLocation = true;
+					renderPlace = place;
 				}
 			}
 		});
@@ -522,4 +530,57 @@ function ajaxJson(url, settings){
 		});
 
 	return jqxhr;
+}
+
+Object.size = function(obj){
+	var size = 0, key;
+	for (key in obj){
+		if (obj.hasOwnProperty(key)) size++;
+	}
+	return size;
+};
+
+function parsePlaceAddress(place){
+	var placeData = {}, addressFields = {
+		street_number: 'street_number',
+		route: 'street_name',
+		locality: 'city',
+		administrative_area_level_1: 'state',
+		country: 'country',
+		postal_code: 'zip'
+	};
+
+	for (var i in place.address_components){
+		var component = place.address_components[i],
+			type = component.types[0];
+		if (addressFields[type]){
+			placeData[addressFields[type]] = type==='route'?
+				component.long_name:component.short_name;
+		}
+	}
+
+	return placeData;
+}
+
+function latlngDistance(firstPoint, secondPoint, unit){
+	var lat1 = firstPoint.lat();
+	var lon1 = firstPoint.lng();
+	var lat2 = secondPoint.lat();
+	var lon2 = secondPoint.lng();
+
+	if (lat1 === lat2 && lon1 === lon2){
+		return 0;
+	}
+
+	var theta = lon1 - lon2;
+	var dist = Math.sin(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) +  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(theta * Math.PI / 180);
+	var miles = (Math.acos(dist) * 180 / Math.PI) * 60 * 1.1515;
+
+	if (unit == "K"){
+		return (miles * 1.609344);
+	} else if (unit == "N"){
+		return (miles * 0.8684);
+	} else {
+		return miles;
+	}
 }

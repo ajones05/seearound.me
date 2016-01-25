@@ -20,9 +20,6 @@ $this->headScript()
 		"var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
 		"var facebook_appId = " . json_encode(Zend_Registry::get('config_global')->facebook->app->id) . ";\n" .
 		"var user_id = " . json_encode($auth ? $user->id : '') . ";\n" .
-		"var userLatitude = " . json_encode($auth ? $user->lat() : $geoip[0]) . ";\n" .
-		"var userLongitude = " . json_encode($auth ? $user->lng() : $geoip[1]) . ";\n" .
-		"var userAddress = " . json_encode($auth ? $user->address() : '') . ";\n" .
 		"var userName = " . json_encode($auth ? $user->Name : '') . ";\n" .
 		"var imagePath = " . json_encode($auth ? $user->getProfileImage($image) : $image) . ";\n" .
 		My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700')

@@ -68,55 +68,5 @@ class Application_Form_Registration extends Zend_Form
 				)
 			)
 		);
-
-        $this->addElement(
-			'text',
-			'address',
-			array(
-				'required' => false,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('stringLength', false, array(0, 255))
-				)
-			)
-		);
-
-        $this->addElement(
-			'text',
-			'latitude',
-			array(
-				'required' => true,
-				'validators' => array(
-					array('Float'),
-					array(
-						'name' => 'Between',
-						false,
-						array(
-							'min' => -90,
-							'max' => 90,
-						)
-					)
-				)
-			)
-		);
-
-        $this->addElement(
-			'text',
-			'longitude',
-			array(
-				'required' => true,
-				'validators' => array(
-					array('Float'),
-					array(
-						'name' => 'Between',
-						false,
-						array(
-							'min' => -180,
-							'max' => 180,
-						)
-					)
-				)
-			)
-		);
     }
 }

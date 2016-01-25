@@ -49,9 +49,12 @@ class PostController extends Zend_Controller_Action
 
 		if ($user)
 		{
+			$addressModel = new Application_Model_Address;
+			$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+
 			$headScript .= ',user=' . json_encode([
 				'name' => $user->Name,
-				'address' => $user->address(),
+				'address' => $addressModel->format($userAddress->toArray()),
 				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 			]);
 		}
@@ -148,8 +151,8 @@ class PostController extends Zend_Controller_Action
 				var_export($center, true));
 		}
 
-		$userLocation = $user->location();
-		$center = $center ? explode(',', $center) : $userLocation;
+		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+		$center = $center ? explode(',', $center) : [$userAddress->latitude, $userAddress->longitude];
 
 		$searchForm = new Application_Form_PostSearch;
 		$searchParameters = [
@@ -207,9 +210,9 @@ class PostController extends Zend_Controller_Action
 		$this->view->headScript()->appendScript(
 			'var user=' . json_encode([
 				'name' => $user->Name,
-				'address' => $user->address(),
+				'address' => Application_Model_Address::format($userAddress->toArray()),
 				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-				'location' => $userLocation
+				'location' => [$userAddress->latitude, $userAddress->longitude]
 			]) . ',' .
 			'isList=true' . ',' .
 			'opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) . ';'
