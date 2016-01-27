@@ -38,6 +38,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * Login action.
+	 *
+	 * @return void
+	 */
+    public function indexapiAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Send message action.
 	 *
 	 * @return void
