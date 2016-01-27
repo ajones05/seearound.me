@@ -314,7 +314,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				{
 					foreach ($links as $link)
 					{
-						@unlink(ROOT_PATH . '/uploads/' . $link->link);
+						@unlink(ROOT_PATH_WEB . '/uploads/' . $link->link);
 						$link->delete();
 					}
 				}
@@ -344,10 +344,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				$thumb448x320 = 'thumb448x320/' . $data['image'];
 				$thumb960x960 = 'newsimages/' . $data['image'];
 
-				My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
-					array(320, 320, ROOT_PATH . '/' . $thumb320x320),
-					array(448, 320, ROOT_PATH . '/' . $thumb448x320, 2),
-					array(960, 960, ROOT_PATH . '/' . $thumb960x960)
+				My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
+					array(320, 320, ROOT_PATH_WEB . '/' . $thumb320x320),
+					array(448, 320, ROOT_PATH_WEB . '/' . $thumb448x320, 2),
+					array(960, 960, ROOT_PATH_WEB . '/' . $thumb960x960)
 				));
 
 				$thumbModel = new Application_Model_ImageThumb;
@@ -408,7 +408,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 							do
 							{
 								$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
-								$full_path = ROOT_PATH . '/uploads/' . $name;
+								$full_path = ROOT_PATH_WEB . '/uploads/' . $name;
 							}
 							while (file_exists($full_path));
 
@@ -428,7 +428,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 							{
 								$name = preg_replace('/' . $ext . '$/', My_CommonUtils::$imagetype_extension[$imageType], $name);
 
-								if (!rename($full_path, ROOT_PATH . '/uploads/' . $name))
+								if (!rename($full_path, ROOT_PATH_WEB . '/uploads/' . $name))
 								{
 									throw new Exception('Rename image error: ' . $full_path);
 								}
@@ -469,8 +469,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 						$thumb448x320 = 'thumb448x320/' . $linkImage;
 
-						My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
-							array(448, 320, ROOT_PATH . '/' . $thumb448x320, 2)
+						My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
+							array(448, 320, ROOT_PATH_WEB . '/' . $thumb448x320, 2)
 						), $imageType);
 
 						(new Application_Model_ImageThumb)

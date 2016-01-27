@@ -114,7 +114,7 @@ class Application_Form_News extends Zend_Form
 			do
 			{
 				$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
-				$full_path = ROOT_PATH . '/uploads/' . $name;
+				$full_path = ROOT_PATH_WEB . '/uploads/' . $name;
 			}
 			while (file_exists($full_path));
 

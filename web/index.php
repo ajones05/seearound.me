@@ -1,11 +1,14 @@
 <?php
 // Define path to root directory
-defined('ROOT_PATH') 
-    || define('ROOT_PATH', dirname(__FILE__));
+defined('ROOT_PATH')
+    || define('ROOT_PATH', dirname(dirname(__FILE__)));
+
+defined('ROOT_PATH_WEB') ||
+	define('ROOT_PATH_WEB', ROOT_PATH . '/web');
 
 // Define path to application directory
 defined('APPLICATION_PATH')
-    || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/application'));
+    || define('APPLICATION_PATH', realpath(ROOT_PATH . '/application'));
 
 // Define application environment
 defined('APPLICATION_ENV')

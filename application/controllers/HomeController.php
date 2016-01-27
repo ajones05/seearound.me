@@ -216,7 +216,7 @@ class HomeController extends Zend_Controller_Action
 			do
 			{
 				$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
-				$full_path = ROOT_PATH . '/www/upload/' . $name;
+				$full_path = ROOT_PATH_WEB . '/www/upload/' . $name;
 			}
 			while (file_exists($full_path));
 
@@ -240,8 +240,8 @@ class HomeController extends Zend_Controller_Action
 
 			$thumb320x320 = 'uploads/' . $name;
 
-			My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
-				array(320, 320, ROOT_PATH . '/' . $thumb320x320)
+			My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
+				array(320, 320, ROOT_PATH_WEB . '/' . $thumb320x320)
 			));
 
 			$thumb = (new Application_Model_ImageThumb)

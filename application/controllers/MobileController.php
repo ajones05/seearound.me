@@ -1209,8 +1209,8 @@ class MobileController extends Zend_Controller_Action
 
 					$thumb320x320 = 'uploads/' . $data['image'];
 
-					My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
-						array(320, 320, ROOT_PATH . '/' . $thumb320x320)
+					My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
+						array(320, 320, ROOT_PATH_WEB . '/' . $thumb320x320)
 					));
 
 					(new Application_Model_ImageThumb)

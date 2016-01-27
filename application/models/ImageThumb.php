@@ -11,7 +11,7 @@ class Application_Model_ImageThumbRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function deleteThumb()
 	{
-		if (!@unlink(ROOT_PATH . '/' . $this->path))
+		if (!@unlink(ROOT_PATH_WEB . '/' . $this->path))
 		{
 			throw new Exception('Delete thumb file ' . $this->path . ' error');
 		}
@@ -67,7 +67,7 @@ class Application_Model_ImageThumb extends Zend_Db_Table_Abstract
 		$row = $this->createRow();
 		$row->image_id = $image->id;
 		$row->path = $path;
-		list($row->width, $row->height) = getimagesize(ROOT_PATH . '/' . $path);
+		list($row->width, $row->height) = getimagesize(ROOT_PATH_WEB . '/' . $path);
 		list($row->thumb_width, $row->thumb_height) = $thumb;
 		$row->save(true);
 

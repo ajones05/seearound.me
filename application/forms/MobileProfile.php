@@ -117,7 +117,7 @@ class Application_Form_MobileProfile extends Zend_Form
 			do
 			{
 				$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
-				$full_path = ROOT_PATH . '/www/upload/' . $name;
+				$full_path = ROOT_PATH_WEB . '/www/upload/' . $name;
 			}
 			while (file_exists($full_path));
 

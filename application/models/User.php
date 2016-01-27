@@ -516,7 +516,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 						do
 						{
 							$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
-							$fullPath = ROOT_PATH . '/www/upload/' . $name;
+							$fullPath = ROOT_PATH_WEB . '/www/upload/' . $name;
 						}
 						while (file_exists($fullPath));
 
@@ -534,8 +534,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 						$thumb320x320 = 'uploads/' . $name;
 
-						My_CommonUtils::createThumbs(ROOT_PATH . '/' . $image->path, array(
-							array(320, 320, ROOT_PATH . '/' . $thumb320x320)
+						My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
+							array(320, 320, ROOT_PATH_WEB . '/' . $thumb320x320)
 						));
 
 						(new Application_Model_ImageThumb)
