@@ -56,9 +56,16 @@ class MobileController extends Zend_Controller_Action
 
 			$user = (new Application_Model_User)->findByEmail($email);
 
+			// TODO: password_verify($password, $user->password_hash)
 			if (!$user || $user->Password !== hash('sha256', $password))
 			{
 				throw new RuntimeException('Incorrect user email or password', -1);
+			}
+
+			if (!$user->password_hash)
+			{
+				$user->password_hash = password_hash($password, PASSWORD_BCRYPT);
+				$user->save();
 			}
 
 			if ($user->Status != 'active')

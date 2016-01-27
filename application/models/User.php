@@ -421,6 +421,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'Name' => $data['name'],
 			'Email_id' => $data['email'],
 			'Password' => hash('sha256', $data['password']),
+			'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
 			'Creation_date' => date('Y-m-d H:i'),
 			'Update_date' => date('Y-m-d H:i'),
 			'Conf_code' => My_ArrayHelper::getProp($data, 'Conf_code', ''),

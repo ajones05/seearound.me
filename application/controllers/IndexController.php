@@ -63,9 +63,17 @@ class IndexController extends Zend_Controller_Action
 				if ($login_form->isValid($data))
 				{
 					$user = (new Application_Model_User)->findByEmail($login_form->email->getValue());
+					$password = $login_form->password->getValue();
 
-					if ($user && $user->Password === hash('sha256', $login_form->password->getValue()))
+					// TODO: password_verify($password, $user->password_hash)
+					if ($user && $user->Password === hash('sha256', $password))
 					{
+						if (!$user->password_hash)
+						{
+							$user->password_hash = password_hash($password, PASSWORD_BCRYPT);
+							$user->save();
+						}
+
 						if ($user->Status !== 'active')
 						{
 							$this->_redirect($this->view->baseUrl('index/reg-success/id/' . $user->id));
@@ -342,6 +350,7 @@ class IndexController extends Zend_Controller_Action
                     $insData = array(
 
                         'Password'  => hash('sha256', $password),
+						'password_hash' => password_hash($password, PASSWORD_BCRYPT),
 
                         'Conf_code' => new Zend_Db_Expr("NULL"),
 

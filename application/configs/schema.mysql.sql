@@ -4,6 +4,8 @@
 ALTER TABLE `user_data` DROP `Profile_image`;
 ALTER TABLE `user_data` CHANGE `Network_id` `Network_id` VARCHAR(2000) NULL DEFAULT NULL;
 ALTER TABLE `user_data` CHANGE `is_admin` `is_admin` TINYINT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `user_data` COLLATE 'utf8_general_ci';
+ALTER TABLE `user_data` ADD `password_hash` varchar(255) NULL;
 
 --
 -- Table structure for table `address`
