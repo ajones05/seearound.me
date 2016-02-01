@@ -12,76 +12,214 @@ class My_Time
 	/**
 	 * Converts timestamp to time ago.
 	 *
-	 * @param	string $date
+	 * @param	mixed $date
 	 * @param	array $options
 	 * @return	string
 	 */
-	public static function time_ago($date, array $options = array())
+	public static function time_ago($date, array $options = [])
 	{
+		if (!$date instanceof DateTime)
+		{
+			$date = new DateTime($date);
+		}
+
 		$now = new DateTime;
-		$date = new DateTime($date);
-		$diff = $now->getTimestamp() - $date->getTimestamp();
+		$diff = $now->diff($date);
 
-		$minute = round($diff / 60);
-
-		if ($minute < 1)
+		if (self::isNowDiff($diff))
 		{
 			return 'Just now';
 		}
 
-		$today = (new DateTime)->setTime(0, 0, 0);
+		$diffSeconds = $now->getTimestamp() - $date->getTimestamp();
 
-		if ($minute >= 60 && $date <= $today)
+		if ($diffSeconds / 60 >= 60)
 		{
-			$yesterday = (new DateTime)->modify('-1 day')->setTime(0, 0, 0);
+			$today = (new DateTime)->setTime(0, 0, 0);
 
-			if ($date > $yesterday)
+			if ($date <= $today && $date > $today->modify('-1 day'))
 			{
 				return 'Yesterday';
 			}
 		}
 
-		$day = $date->diff($now)->format('%a');
+		$prefix = !empty($options['ago']) ? ' ago' : '';
+		$minutes = self::minutesInterval($diff);
 
-		switch (true)
+		if ($minutes)
 		{
-			case $minute < 60:
-				$interval = $minute;
-				$label = 'minute';
-				break;
-			case $date > $today:
-				$interval = round($diff / 3600);
-				$label = 'hour';
-				break;
-			case $day < 7:
-				$interval = $day;
-				$label = 'day';
-				break;
-			case $day < 28:
-				$interval = round($day / 7);
-				$label = 'week';
-				break;
-			case $day < 365:
-				$interval = $date->diff($now)->format('%m');
-				$label = 'month';
-				break;
-			default:
-				$interval = $date->diff($now)->format('%y');
-				$label = 'year';
+			return self::constructTimeAgo($minutes, 'minute', $prefix);
 		}
 
-		$output = $interval . ' ' . $label;
+		$hours = self::hoursInterval($diff);
 
-		if ($interval > 1)
+		if ($hours)
 		{
-			$output .= 's';
+			return self::constructTimeAgo($hours, 'hour', $prefix);
 		}
 
-		if (My_ArrayHelper::getProp($options, 'ago', false))
+		$days = self::daysInterval($diff);
+
+		if ($days)
 		{
-			$output .= ' ago';
+			return self::constructTimeAgo($days, 'day', $prefix);
 		}
 
-		return $output;
+		$weeks = self::weeksInterval($diff);
+
+		if ($weeks)
+		{
+			return self::constructTimeAgo($weeks, 'week', $prefix);
+		}
+
+		$months = self::monthsInterval($diff);
+
+		if ($months)
+		{
+			return self::constructTimeAgo($months, 'month', $prefix);
+		}
+
+		$years = self::yearsInterval($diff);
+		return self::constructTimeAgo($years, 'year', $prefix);
+	}
+
+	/**
+	 *  Constructs the actual "time ago" output.
+	 *
+	 *  @param	integer $value
+	 *  @param	string	$interval
+	 *  @param 	prefix	$string
+	 *  @return	string
+	 */
+	public static function constructTimeAgo($value, $interval, $prefix = '')
+	{
+		return $value . ' ' . $interval .
+			My_StringHelper::multiplePrefix($value) . $prefix;
+	}
+
+	/**
+	 * Is date limit by day
+	 * @param DateInterval $diff
+	 * @return bool
+	 */
+	public static function isDailyDiff($diff)
+	{
+		if ($diff->y == 0 && $diff->m == 0 &&
+			($diff->d == 0 || ($diff->d == 1 && $diff->h == 0 && $diff->i == 0)))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Is date limit by hour
+	 * @param DateInterval $diff
+	 * @return bool
+	 */
+	public static function isHourlyDiff($diff)
+	{
+		if (self::isDailyDiff($diff) && $diff->d == 0 &&
+			($diff->h == 0 || ($diff->h == 1 && $diff->i == 0)))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param DateInterval $diff
+	 * @return bool
+	 */
+	public static function isNowDiff(DateInterval $diff)
+	{
+		if (self::isHourlyDiff($diff) && $diff->h == 0 &&
+			$diff->i == 0 && $diff->s <= 59)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Number of minutes related to the interval or false if more.
+	 * @param DateInterval $diff
+	 * @return integer|false
+	 */
+	public static function minutesInterval(DateInterval $diff)
+	{
+		if (self::isHourlyDiff($diff))
+		{
+			return $diff->i;
+		}
+		return false;
+	}
+
+	/**
+	 * Number of hours related to the interval or false if more.
+	 * @param DateInterval $diff
+	 * @return integer|false
+	 */
+	public static function hoursInterval(DateInterval $diff)
+	{
+		if (self::isDailyDiff($diff))
+		{
+			return $diff->h;
+		}
+		return false;
+	}
+
+	/**
+	 * Number of days related to the interval or false if more.
+	 * @param DateInterval $diff
+	 * @return integer|false
+	 */
+	public static function daysInterval(DateInterval $diff)
+	{
+		if ($diff->days <= 6)
+		{
+			return $diff->days;
+		}
+		return false;
+	}
+
+	/**
+	 * Get Number of weeks
+	 * @param DateInterval $diff
+	 * @return integer|false
+	 */
+	public static function weeksInterval(DateInterval $diff)
+	{
+		if ($diff->days < 30)
+		{
+			return (int) floor($diff->days / 7);
+		}
+		return false;
+	}
+
+	/**
+	 * Get Number of months
+	 * @param DateInterval $diff
+	 * @return integer|false
+	 */
+	public static function monthsInterval(DateInterval $diff)
+	{
+		if ($diff->days >= 365)
+		{
+			return false;
+		}
+
+		$x = (int) ceil($diff->days / 30.417);
+		return $x === 0 ? 1 : $x;
+	}
+
+	/**
+	 * Get Number of years
+	 * @param DateInterval $diff
+	 * @return integer|false
+	 */
+	public static function yearsInterval(DateInterval $diff)
+	{
+		return (int) ceil($diff->days / 365);
 	}
 }

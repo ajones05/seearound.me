@@ -78,4 +78,15 @@ class My_StringHelper
 	{
 		return trim($str) !== '' ? $str : null;
 	}
+
+	/**
+	 * Returns multiple prefix.
+	 *
+	 * @param	value $value
+	 * @return	string
+	 */
+	public static function multiplePrefix($value, $multiple = 's', $single = '')
+	{
+		return (string)$value === '1' ? $single : $multiple;
+	}
 }
