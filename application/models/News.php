@@ -1,4 +1,5 @@
 <?php
+use Embed\Embed;
 
 class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 {
@@ -359,25 +360,31 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			{
 				foreach ($matches[0] as $link)
 				{
-					$meta = My_CommonUtils::getLinkMeta($link);
-
-					if (!count($meta))
+					try
+					{
+						$info = Embed::create($link);
+					}
+					catch (Exception $e)
 					{
 						continue;
 					}
 
-					$title = My_ArrayHelper::getProp($meta, 'property.og:title', My_ArrayHelper::getProp($meta, 'title'));
+					$html = $info->getProvider('html');
+					$newsLink = (new Application_Model_NewsLink)->createRow(array(
+						'news_id' => $news->id,
+						'link' => $link,
+						'title' => $info->getTitle(),
+						'description' => $info->getDescription(),
+						'author' => $html->bag->get('author')
+					));
+					$newsLink->save(true);
 
-					if (trim($title) === '')
+					$opengraph = $info->getProvider('opengraph');
+					$images = $opengraph->bag->get('images');
+
+					if ($images)
 					{
-						continue;
-					}
-
-					$image = My_ArrayHelper::getProp($meta, 'property.og:image',
-						My_ArrayHelper::getProp($meta, 'link.rel.image_src'));
-
-					if ($image != null)
-					{
+						$image = $images[0];
 						$parseImageUrl = parse_url($image);
 
 						if (empty($parseImageUrl['host']))
@@ -434,47 +441,29 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 								}
 							}
 
-							$meta['property']['og:image'] = $name;
+							$image = (new Application_Model_Image)->save('uploads/' . $name);
+
+							(new Application_Model_NewsLinkImage)->insert(array(
+								'news_link_id' => $newsLink->id,
+								'image_id' => $image->id
+							));
+
+							$thumb448x320 = 'thumb448x320/' . $name;
+
+							My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
+								array(448, 320, ROOT_PATH_WEB . '/' . $thumb448x320, 2)
+							), $imageType);
+
+							(new Application_Model_ImageThumb)
+								->save($thumb448x320, $image, array(448, 320));
 						}
 						catch (Exception $e)
 						{
-							$meta['property']['og:image'] = null;
-
 							if ($full_path != null)
 							{
 								@unlink($full_path);
 							}
 						}
-					}
-
-					$newsLink = (new Application_Model_NewsLink)->createRow(array(
-						'news_id' => $news->id,
-						'link' => $link,
-						'title' => $title,
-						'description' => My_ArrayHelper::getProp($meta, 'property.og:description',
-							My_ArrayHelper::getProp($meta, 'name.description')),
-						'author' => My_ArrayHelper::getProp($meta, 'name.author')
-					));
-					$newsLink->save(true);
-
-					// TODO: refactoring
-					if (($linkImage = My_ArrayHelper::getProp($meta, 'property.og:image')) != null)
-					{
-						$image = (new Application_Model_Image)->save('uploads/' . $linkImage);
-
-						(new Application_Model_NewsLinkImage)->insert(array(
-							'news_link_id' => $newsLink->id,
-							'image_id' => $image->id
-						));
-
-						$thumb448x320 = 'thumb448x320/' . $linkImage;
-
-						My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
-							array(448, 320, ROOT_PATH_WEB . '/' . $thumb448x320, 2)
-						), $imageType);
-
-						(new Application_Model_ImageThumb)
-							->save($thumb448x320, $image, array(448, 320));
 					}
 
 					break;
