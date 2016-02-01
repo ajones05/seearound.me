@@ -900,7 +900,8 @@ function postItem_renderContent(id, postContainer){
 
 		$('.add-comment', postContainer).click(function(e){
 			e.preventDefault();
-			$('.post-comment__new', postContainer).removeClass('hidden');
+			$('.post-comment__new', postContainer).removeClass('hidden')
+				.find('textarea').focus();
 			$(this).remove();
 		});
 
