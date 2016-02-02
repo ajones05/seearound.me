@@ -149,7 +149,7 @@ function showFriendRequest(thisone){
 
 			$("#ddMyConnList").append('<a class="friend" href="'+baseUrl+'contacts/friends-list">See all</a>');
 		} else {
-			alert(response ? response.error.message : ERROR_MESSAGE);
+			alert(response ? response.message : ERROR_MESSAGE);
 			$("#ddMyConnList").hide();
 		}
 	}).fail(function(jqXHR, textStatus){
