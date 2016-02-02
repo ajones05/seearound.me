@@ -151,16 +151,32 @@ class PostController extends Zend_Controller_Action
 				var_export($center, true));
 		}
 
-		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
-		$center = $center ? explode(',', $center) : [$userAddress->latitude, $userAddress->longitude];
-
 		$searchForm = new Application_Form_PostSearch;
+		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+		$userData = new Zend_Session_Namespace('data');
+		$isValidData = $searchForm->validateSearch((array) $userData->getIterator());
+
+		if ($center)
+		{
+			$center = explode(',', $center);
+		}
+		else
+		{
+			$center = $isValidData ? [$userData->latitude, $userData->longitude] :
+				[$userAddress->latitude, $userAddress->longitude];
+		}
+
 		$searchParameters = [
 			'latitude' => $center[0],
 			'longitude' => $center[1],
 			'keywords' => $this->_request->getParam('keywords'),
 			'filter' => $this->_request->getParam('filter'),
 		];
+
+		if ($isValidData && isset($userData->radius))
+		{
+			$searchParameters['radius'] = $userData->radius;
+		}
 
 		if (!$searchForm->validateSearch($searchParameters))
 		{
@@ -270,13 +286,9 @@ class PostController extends Zend_Controller_Action
 					implode('<br>', $searchForm->getErrorMessages()));
 			}
 
-			if ($point)
-			{
-				$searchParameters['radius'] = 0.018939;
-			}
-
 			$result = (new Application_Model_News)->search(array_merge(
-				$searchParameters, ['limit' => 15, 'exclude_id' => $new]
+				$searchParameters, ['limit' => 15, 'exclude_id' => $new,
+					'radius' => $point ? 0.018939 : $searchParameters['radius']]
 			), $user);
 
 			$response = ['status' => 1];
@@ -306,6 +318,11 @@ class PostController extends Zend_Controller_Action
 			{
 				$response['empty'] = My_ViewHelper::render('post/_list_empty');
 			}
+
+			$userData = new Zend_Session_Namespace('data');
+			$userData->radius = $searchParameters['radius'];
+			$userData->latitude = $searchParameters['latitude'];
+			$userData->longitude = $searchParameters['longitude'];
 		}
 		catch (Exception $e)
 		{

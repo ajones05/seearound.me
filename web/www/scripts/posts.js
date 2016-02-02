@@ -2,7 +2,7 @@ var isList=isList||false,isLogin=isLogin||false,isTouch=false,
 mainMap,centerPosition,areaCircle,googleMapsCustomMarker,googleMapsAreaCircle,
 userPosition,loadXhr,
 postData=postData||[],postMarkers={},postMarkersCluster={},
-defaultMinZoom=13,defaultMaxZoom=15,renderRadius=0.8,
+defaultMinZoom=13,defaultMaxZoom=15,renderRadius=opts.radius?opts.radius:0.8,
 defaultZoom=mapZoom(),postLimit=15,groupDistance=0.018939,
 disableScroll=false,markerClick=false,
 postIcon={
