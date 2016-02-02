@@ -58,13 +58,12 @@ data-height="<?php echo $thumb960x960->height; ?>">
 <?php endif; ?>
 <div class="social_share">
 <div class="default-panel">
-<?php if ($this->user != null && $hideComments): ?>
+<?php if ($hideComments): ?>
 <a class="add-comment" href="#">Comment</a>
 <?php elseif ($this->post->comment > $commentsLimit): ?>
 <a class="view-comments" href="#"><?php echo $commentsModel->viewMoreLabel($this->post->comment - $commentsLimit); ?></a>
-<?php endif; if ($this->user): ?>
-<a class="email" href="#"><img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" /></a>
 <?php endif; ?>
+<a class="email" href="#"><img src="<?php echo $this->baseUrl("www/images/email.png"); ?>" /></a>
 <a class="facebook" href="<?php echo $this->serverUrl() . $link; ?>">
 <img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>" />
 </a>

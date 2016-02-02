@@ -3,6 +3,11 @@ $config = Zend_Registry::get('config_global');
 
 My_Layout::renderFavicon($this);
 
+// TODO: thumbnail 24x24
+$defaultImage = $this->baseUrl('www/images/img-prof40x40.jpg');
+$profileImage = $this->user ? $this->user->getProfileImage($defaultImage) :
+	$defaultImage;
+
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('www/css/posts.css', $this));
 
@@ -48,7 +53,6 @@ $this->headLink() . $this->headScript(); ?></head>
 		<img width="29" height="26" src="<?php echo $this->baseUrl('www/images/template/new-post.png'); ?>" alt="new" />
 	</div>
 	<?php endif; ?>
-<?php if ($this->user): ?>
 	<div class="post-search">
 		<form class="postSearch" action="<?php echo $this->baseUrl('/'); ?>" method="GET">
 			<div class="keywords"><?php echo $this->searchForm->keywords; ?></div>
@@ -70,7 +74,6 @@ $this->headLink() . $this->headScript(); ?></head>
 			<?php endif; ?>
 		</form>
 	</div>
-<?php endif; ?>
 	<div class="main-menu">
 		<a id="menu-button"></a>
 		<ul>
@@ -93,12 +96,7 @@ $this->headLink() . $this->headScript(); ?></head>
 					</div>
 				</form>
 			</li>
-<?php
-endif;
-if ($this->user):
-	// TODO: thumbnail 24x24
-	$profileImage = $this->user->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg'));
-?>
+<?php endif; ?>
 			<li class="dropdown community">
 				<a class="dropdown-toggle" href="#">
 					<span class="icon"></span><span class="text">Community</span><span class="count"></span>
@@ -122,17 +120,6 @@ if ($this->user):
 					<li><a href="<?php echo $this->baseUrl('home/logout'); ?>">Logout</a></li>
 				</ul>
 			</li>
-<?php else: ?>
-<li>
-<form id="login" action="<?php echo $this->baseUrl('login'); ?>" method="post">
-<ul>
-<li><input type="email" name="email"></li>
-<li><input type="password" name="password"></li>
-<li><input type="submit" value="Login"></li>
-</ul>
-</form>
-</li>
-<?php endif; ?>
 		</ul>
 	</div>
 </div>

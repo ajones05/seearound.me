@@ -91,22 +91,11 @@ body {
 	float: left;
 	padding-top: 13px;
 }
-#login input[type=email],
-#login input[type=password]{
-	padding: 7px 3px;
-}
-#login input[type=email],
-#login input[type=password],
 .post-search .dropdown,
 .post-search input[type=text] {
 	border: 2px solid rgb(216,216,216);
 	background-color: rgb(255,255,255);
 }
-#login input.error {
-	border-color: red;
-}
-#login input[type=email],
-#login input[type=password],
 .post-search input[type=text],
 .main-menu .keywords input[type=text] {
 	font-size: 13.43px;
@@ -309,14 +298,6 @@ body.touch .posts {
 	width: 452px;
 	height: 424px;
 }
-#login {
-	margin-top: -10px;
-}
-#login input[type=submit] {
-	height: 35px;
-	cursor: pointer;
-	width: 65px;
-}
 .post-new__dialog {
 	position: fixed;
 	z-index: 3;
@@ -381,7 +362,6 @@ body.touch .posts {
 .post-new__dialog .image {
 	margin: 0 50px 0 0;
 }
-#login input[type=submit],
 .post-new__dialog .image,
 .post-new__dialog .action input[type=submit] {
 	font-family: 'Lato-Regular';
@@ -393,7 +373,6 @@ body.touch .posts {
 .post-new__dialog .action input[type=submit] {
 	cursor: pointer;
 }
-#login input[type=submit],
 .post-new__dialog .action input[type=submit] {
 	background: none;
 	border: none;
@@ -1102,16 +1081,6 @@ body.touch .posts {
 .main-menu #menu-button {
   display: none;
 }
-#login ul {
-	list-style: none;
-	padding: 0;
-}
-#login ul li {
-	float: left;
-}
-#login ul li:nth-child(2) {
-	padding-left: 10px;
-}
 
 @media all and (max-width: 1100px),
 only screen and (-webkit-min-device-pixel-ratio: 2) and (max-width: 1024px),
@@ -1198,17 +1167,6 @@ only screen and (min-resolution: 2dppx) and (max-width: 1024px) {
 	.main-menu .keywords img {
 		right: 20px;
 		top: 15px;
-	}
-	#login {
-		margin-top: 0;
-	}
-	#login ul {
-		list-style: none;
-		padding: 10px;
-	}
-	#login ul li:nth-child(2) {
-		padding-left: 0;
-		padding-top: 10px;
 	}
 }
 @media (max-width: 420px) {

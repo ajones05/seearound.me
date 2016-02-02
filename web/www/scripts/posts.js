@@ -4,7 +4,7 @@ userPosition,loadXhr,
 postData=postData||[],postMarkers={},postMarkersCluster={},
 defaultMinZoom=13,defaultMaxZoom=15,renderRadius=0.8,
 defaultZoom=mapZoom(),postLimit=15,groupDistance=0.018939,
-disableScroll=false,markerClick=false,isTouch=false,
+disableScroll=false,markerClick=false,
 postIcon={
 	url: assetsBaseUrl+'www/images/template/post-icon35x50.png',
 	width: 35, height: 50
@@ -58,80 +58,73 @@ require(['jquery'], function(){
 			};
 
 			notification();
-		} else {
-			require(['jquery-validate'], function(){
-				$('#login').validate({
-					errorPlacement: function(error, element){},
-					rules: {
-						email: {
-							required: true,
-							email: true
-						},
-						password: {
-							required: true
-						}
-					}
-				});
-			});
 		}
 
 		$('#menu-button').click(function(){
 			$(this).next('ul').toggleClass('open');
 		});
 
-		$('.dropdown-toggle').click(function(e){
-			e.preventDefault();
-			e.stopPropagation();
-			$('.dropdown-menu')
-				.not($(this).parent().find('.dropdown-menu').toggle())
-				.hide()
-				.parent().find('.dropdown-toggle .caret.up').removeClass('up');
-		});
-
-		$(document).click(function(e){
-			if (e.button == 2){
-				return true;
-			}
-			$('.dropdown-menu').hide();
-			$('.dropdown-toggle .caret.up').removeClass('up');
-		});
-
-		$('.community .dropdown-toggle').click(function(){
-			var dropdown = $(this).parent();
-
-			if (!$('.dropdown-menu', dropdown).is(':visible')){
-				return true;
-			}
-
-			$('.load', dropdown).show();
-			$('.empty,.community-row', dropdown).remove();
-
-			ajaxJson({
-				url: baseUrl+'contacts/requests',
-				done: function(response){
-					var load = $('.load', dropdown).hide();
-					if (!response.data){
-						load.after($('<li/>').addClass('empty')
-							.append($('<span/>').text('No new followers')));
-						return true;
-					}
-					for (var x in response.data){
-						load.after($('<li/>').addClass('community-row').append(
-							$('<a/>', {href: response.data[x].link}).append(
-								$('<div/>').addClass('thumb').append(
-									$('<img/>').attr({
-										src: response.data[x].image,
-										width: 40,
-										height: 40
-									})
-								),
-								$('<div/>').addClass('name').html(response.data[x].name + ' is<br/>following you')
-							)
-						));
-					}
-				}
+		if (isLogin){
+			$('.dropdown-toggle').click(function(e){
+				e.preventDefault();
+				e.stopPropagation();
+				$('.dropdown-menu')
+					.not($(this).parent().find('.dropdown-menu').toggle())
+					.hide()
+					.parent().find('.dropdown-toggle .caret.up').removeClass('up');
 			});
-		});
+
+			$(document).click(function(e){
+				if (e.button == 2){
+					return true;
+				}
+				$('.dropdown-menu').hide();
+				$('.dropdown-toggle .caret.up').removeClass('up');
+			});
+
+			$('.community .dropdown-toggle').click(function(){
+				var dropdown = $(this).parent();
+
+				if (!$('.dropdown-menu', dropdown).is(':visible')){
+					return true;
+				}
+
+				$('.load', dropdown).show();
+				$('.empty,.community-row', dropdown).remove();
+
+				ajaxJson({
+					url: baseUrl+'contacts/requests',
+					done: function(response){
+						var load = $('.load', dropdown).hide();
+						if (!response.data){
+							load.after($('<li/>').addClass('empty')
+								.append($('<span/>').text('No new followers')));
+							return true;
+						}
+						for (var x in response.data){
+							load.after($('<li/>').addClass('community-row').append(
+								$('<a/>', {href: response.data[x].link}).append(
+									$('<div/>').addClass('thumb').append(
+										$('<img/>').attr({
+											src: response.data[x].image,
+											width: 40,
+											height: 40
+										})
+									),
+									$('<div/>').addClass('name').html(response.data[x].name + ' is<br/>following you')
+								)
+							));
+						}
+					}
+				});
+			});
+		} else {
+			$('.main-menu a').click(function(e){
+				e.preventDefault();
+				e.stopPropagation();
+				guestAction();
+			});
+		}
 	});
 });
 require(['facebook-sdk'], function(){
@@ -168,9 +161,12 @@ function renderView_callback(){
 			require(['textarea_autosize']);
 			$(function(){
 				if (!isList){
-					if (isLogin){
-						postSearch_searchButton($('form.postSearch'));
-					}
+					var searchForm = $('form.postSearch').submit(function(e){
+						e.preventDefault();
+						guestAction();
+					});
+
+					postSearch_searchButton(searchForm);
 
 					postMarkers[0] = postList_tooltipmarker({
 						map: mainMap,
@@ -708,6 +704,9 @@ function getRadius(){
 function postSearch_searchButton(form){
 	$('.keywords', form).append($('<img/>').addClass('search')
 		.click(function(){
+			if (!isLogin){
+				return guestAction();
+			}
 			postSearch_submit(form);
 		})
 		.attr({
@@ -862,128 +861,136 @@ function postItem_imageDimensions(width, height){
 }
 
 function postItem_renderContent(id, postContainer){
-	if (isLogin){
-		$('.like,.dislike', postContainer).click(function(){
-			var target = $(this),
-				vote = $('.vote', postContainer);
+	$('.like,.dislike', postContainer).click(function(){
+		var target = $(this),
+			vote = $('.vote', postContainer);
 
-			if (vote.attr('disabled')){
-				return false;
-			}
+		if (!isLogin){
+			return guestAction();
+		}
 
-			vote.attr('disabled', true);
+		if (vote.attr('disabled')){
+			return false;
+		}
 
-			ajaxJson({
-				url: baseUrl+'home/vote',
-				data: {
-					news_id: id,
-					vote: (target.hasClass('like') ? 1 : -1)
-				},
-				done: function(response){
-					$('.like,.dislike', postContainer).removeClass('active');
-					$('._3_copy', vote).html(response.vote);
-					switch (response.active){
-						case '-1':
-							$('.dislike', postContainer).addClass('active');
-							break;
-						case '1':
-							$('.like', postContainer).addClass('active');
-							break;
-					}
-					vote.attr('disabled', false);
-				},
-				fail: function(){
-					vote.attr('disabled', false);
+		vote.attr('disabled', true);
+
+		ajaxJson({
+			url: baseUrl+'home/vote',
+			data: {
+				news_id: id,
+				vote: (target.hasClass('like') ? 1 : -1)
+			},
+			done: function(response){
+				$('.like,.dislike', postContainer).removeClass('active');
+				$('._3_copy', vote).html(response.vote);
+				switch (response.active){
+					case '-1':
+						$('.dislike', postContainer).addClass('active');
+						break;
+					case '1':
+						$('.like', postContainer).addClass('active');
+						break;
 				}
-			});
+				vote.attr('disabled', false);
+			},
+			fail: function(){
+				vote.attr('disabled', false);
+			}
 		});
+	});
 
-		$('.add-comment', postContainer).click(function(e){
-			e.preventDefault();
-			$('.post-comment__new', postContainer).removeClass('hidden')
-				.find('textarea').focus();
-			$(this).remove();
-		});
+	$('.add-comment', postContainer).click(function(e){
+		e.preventDefault();
+		if (!isLogin){
+			return guestAction();
+		}
+		$('.post-comment__new', postContainer).removeClass('hidden')
+			.find('textarea').focus();
+		$(this).remove();
+	});
 
-		$('.social_share .email', postContainer).click(function(e){
-			e.preventDefault();
-			$('body').css({overflow: 'hidden'});
-			$('<div/>').addClass('post__share-email')
-				.append(
-					$('<img/>').attr({
-						width: 48,
-						height: 48,
-						src: assetsBaseUrl+'www/images/mail_send.gif'
-					}),
-					$('<span/>').addClass('title').text('Send Message'),
-					$('<div/>').addClass('content').append(
-						$('<form/>').append(
-							$('<div/>').append(
-								$('<input/>', {
-									type: 'email',
-									name: 'to',
-									placeholder: 'Please enter receiver email address...'
+	$('.social_share .email', postContainer).click(function(e){
+		e.preventDefault();
+		if (!isLogin){
+			return guestAction();
+		}
+		$('body').css({overflow: 'hidden'});
+		$('<div/>').addClass('post__share-email')
+			.append(
+				$('<img/>').attr({
+					width: 48,
+					height: 48,
+					src: assetsBaseUrl+'www/images/mail_send.gif'
+				}),
+				$('<span/>').addClass('title').text('Send Message'),
+				$('<div/>').addClass('content').append(
+					$('<form/>').append(
+						$('<div/>').append(
+							$('<input/>', {
+								type: 'email',
+								name: 'to',
+								placeholder: 'Please enter receiver email address...'
+							})
+						),
+						$('<div/>').append(
+							$('<textarea/>', {
+								name: 'message',
+								placeholder: 'Please enter message...'
+							})
+						),
+						$('<div/>').append(
+							$('<input/>', {type:'submit',value:'Send'}),
+							$('<input/>', {type:'button',value: 'Cancel'})
+								.click(function(){
+									$('.post__share-email').dialog('close');
 								})
-							),
-							$('<div/>').append(
-								$('<textarea/>', {
-									name: 'message',
-									placeholder: 'Please enter message...'
-								})
-							),
-							$('<div/>').append(
-								$('<input/>', {type:'submit',value:'Send'}),
-								$('<input/>', {type:'button',value: 'Cancel'})
-									.click(function(){
-										$('.post__share-email').dialog('close');
-									})
-							),
-							$('<input/>', {type:'hidden',name:'news_id'}).val(id)
-						)
+						),
+						$('<input/>', {type:'hidden',name:'news_id'}).val(id)
 					)
 				)
-				.appendTo($('body'))
-				.dialog({
-					modal: true,
-					resizable: false,
-					drag: false,
-					width: 540,
-					height: 260,
-					dialogClass: 'dialog',
-					beforeClose: function(event, ui){
-						$('body').css({overflow:'visible'});
-						$(event.target).dialog('destroy').remove();
-					},
-					open: function(event, ui){
-						$('form', event.target).submit(function(){
-							return false;
+			)
+			.appendTo($('body'))
+			.dialog({
+				modal: true,
+				resizable: false,
+				drag: false,
+				width: 540,
+				height: 260,
+				dialogClass: 'dialog',
+				beforeClose: function(event, ui){
+					$('body').css({overflow:'visible'});
+					$(event.target).dialog('destroy').remove();
+				},
+				open: function(event, ui){
+					$('form', event.target).submit(function(){
+						return false;
+					});
+					require(['jquery-validate'], function(){
+						$('form', event.target).validate({
+							rules: {
+								to: {required:true,email:true},
+								message: {required:true}
+							},
+							submitHandler: function(form){
+								ajaxJson({
+									url: baseUrl+'info/public-message-email',
+									data: $(form).serialize(),
+									done: function(response){
+										$(event.target).empty().append(
+											$('<div/>').addClass('success').append(
+												$('<img/>', {src: assetsBaseUrl+'www/images/correct.gif'}),
+												$('<span/>').text('Message sent')
+											)
+										);
+									}
+								});
+							}
 						});
-						require(['jquery-validate'], function(){
-							$('form', event.target).validate({
-								rules: {
-									to: {required:true,email:true},
-									message: {required:true}
-								},
-								submitHandler: function(form){
-									ajaxJson({
-										url: baseUrl+'info/public-message-email',
-										data: $(form).serialize(),
-										done: function(response){
-											$(event.target).empty().append(
-												$('<div/>').addClass('success').append(
-													$('<img/>', {src: assetsBaseUrl+'www/images/correct.gif'}),
-													$('<span/>').text('Message sent')
-												)
-											);
-										}
-									});
-								}
-							});
-						});
-					}
-				});
-		});
-	}
+					});
+				}
+			});
+	});
 
 	$('> .image img', postContainer).click(function(){
 		var scrollTop = $(window).scrollTop(),
@@ -1252,9 +1259,7 @@ function postItem_renderContent(id, postContainer){
 	var input = $('.post-comment__new textarea', postContainer)
 		.bind('input paste keypress', function(e){
 			if (!isLogin){
-				alert('Please register or log in to do that.');
-				window.location.href = baseUrl;
-				return false;
+				return guestAction();
 			}
 
 			var target = $(this),
@@ -2050,6 +2055,13 @@ function postItem_findCluester(id){
 				return group;
 			}
 		}
+	}
+	return false;
+}
+
+function guestAction(){
+	if (confirm('You are not logged in. Click OK to log in or sign up.')){
+		window.location.href = baseUrl;
 	}
 	return false;
 }
