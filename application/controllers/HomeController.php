@@ -105,6 +105,7 @@ class HomeController extends Zend_Controller_Action
 			}
 
 			$auth->clearIdentity();
+			Zend_Session::forgetMe();
 		}
 
 		$this->_redirect($this->view->baseUrl('/'));

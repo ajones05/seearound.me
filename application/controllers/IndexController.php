@@ -96,10 +96,8 @@ class IndexController extends Zend_Controller_Action
 							$user->updateInviteCount();
 						}
 
-						if ($login_form->remember->getValue())
-						{
-							Zend_Session::rememberMe();
-						}
+						$remember = $login_form->remember->getValue();
+						Zend_Session::rememberMe($remember ? 0 : 604800);
 
 						$this->_redirect($this->view->baseUrl('/'));
 					}
