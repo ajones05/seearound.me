@@ -184,6 +184,11 @@ function renderView_callback(){
 					var postContainer = $('.post[data-id='+post.id+']');
 					postItem_renderContent(post.id,postContainer);
 
+					$('a.user_avatar[href=#],a.user_name[href=#]').click(function(e){
+						e.preventDefault();
+						guestAction();
+					});
+
 					return true;
 				}
 
@@ -1303,29 +1308,37 @@ function comment_render(comment){
 	var id = comment.attr('data-id'),
 		deleteButton = $('.post-comment__delete', comment);
 
-	comment.bind({
-		mouseenter: function(){
-			deleteButton.show();
-		},
-		mouseleave: function(){
-			deleteButton.hide();
-		}
-	});
-
-	deleteButton.click(function(){
-		if (!confirm('Are you sure you want to delete?')){
-			return false;
-		}
-
-		ajaxJson({
-			url: baseUrl+'home/delete-comment',
-			data: {id:id},
-			done: function(response){
-				comment.remove();
+	if (isLogin){
+		comment.bind({
+			mouseenter: function(){
+				deleteButton.show();
+			},
+			mouseleave: function(){
+				deleteButton.hide();
 			}
 		});
-	});
-	
+
+		deleteButton.click(function(){
+			if (!confirm('Are you sure you want to delete?')){
+				return false;
+			}
+
+			ajaxJson({
+				url: baseUrl+'home/delete-comment',
+				data: {id:id},
+				done: function(response){
+					comment.remove();
+				}
+			});
+		});
+	} else {
+		$('a.post-comment__item-owner[href=#],'+
+			'a.post-coment-user-name[href=#]', comment).click(function(e){
+			e.preventDefault();
+			guestAction();
+		});
+	}
+
 	$('.moreButton', comment).click(function(e){
 		e.preventDefault();
 

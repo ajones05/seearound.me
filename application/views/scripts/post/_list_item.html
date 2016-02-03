@@ -1,7 +1,8 @@
 <?php
 $commentsLimit = 3;
 $user_id = $this->user ? $this->user->id : null;
-$profileUrl = $this->baseUrl('home/profile/user/' . $this->owner->id);
+$profileUrl = $this->user ?
+	$this->baseUrl('home/profile/user/' . $this->owner->id) : '#';
 $commentsModel = new Application_Model_Comments;
 $comments = $commentsModel->findAllByNewsId($this->post->id, $commentsLimit);
 $hideComments = !$this->post->comment || !My_ArrayHelper::search(array('news_id' => $this->post->id), $comments->toArray(), 1);
