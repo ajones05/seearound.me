@@ -28,13 +28,21 @@ $this->headScript()
 		'data-main' => My_Layout::assetUrl('www/scripts/posts', $this)));
 
 $this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
-$bodyAttributes = '';
+
+$addClass = $this->addClass ?: [];
 
 $userAgent = new Mobile_Detect;
 
 if ($userAgent->isMobile() || $userAgent->isTablet())
 {
-	$bodyAttributes = ' class="touch"';
+	$addClass[] = 'touch';
+}
+
+$bodyAttributes = '';
+
+if (count($addClass))
+{
+	$bodyAttributes = ' class="' . implode(' ', $addClass) . '"';
 }
 ?>
 <!DOCTYPE html>

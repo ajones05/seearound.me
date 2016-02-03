@@ -647,7 +647,7 @@ function resizeHandler(){
 	$('.footer').width(footerWidth-2).show();
 
 	if (isTouch){
-		var postsList = $('.posts');
+		var postsList = $('.posts-container .posts');
 		postsList.height($(window).height()-postsList.offset().top);
 	}
 }
@@ -999,7 +999,7 @@ function postItem_renderContent(id, postContainer){
 
 	$('> .image img', postContainer).click(function(){
 		var scrollTop = $(window).scrollTop(),
-			offsetTop = $('.posts').offset().top,
+			offsetTop = $('.posts-container .posts').offset().top,
 			width = parseFloat($(this).attr('data-width')),
 			height = parseFloat($(this).attr('data-height')),
 			dimensions = postItem_imageDimensions(width, height);
@@ -1213,7 +1213,7 @@ function postItem_renderContent(id, postContainer){
 										$('.post[data-id="'+id+'"]').remove();
 										postItem_delete(id);
 										delete postData[id];
-										$('.posts input[value='+id+']').remove();
+										$('.posts-container .posts input[value='+id+']').remove();
 									},
 									fail: function(data, textStatus, jqXHR){
 										editButtons.attr('disabled', false);
@@ -1698,7 +1698,7 @@ function newPost_save(location, address){
 		processData: false,
 		done: function(response){
 			$('html, body').animate({scrollTop: 0}, 0);
-			$('.posts > .empty').remove();
+			$('.posts-container .posts > .empty').remove();
 
 			if (reset){
 				postList_reset();
@@ -1707,7 +1707,7 @@ function newPost_save(location, address){
 				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),getRadius());
 
 				for (var i in response.data){
-					$('.posts').append(response.data[i][3]);
+					$('.posts-container .posts').append(response.data[i][3]);
 				}
 
 				if (Object.size(response.data) >= postLimit){
@@ -1715,7 +1715,7 @@ function newPost_save(location, address){
 				}
 			} else {
 				for (var i in response.data){
-					$('.posts').prepend(response.data[i][3]);
+					$('.posts-container .posts').prepend(response.data[i][3]);
 					break;
 				}
 			}
@@ -1726,7 +1726,7 @@ function newPost_save(location, address){
 				postItem_render(id);
 			}
 
-			$('.posts').prepend($('<input/>')
+			$('.posts-container .posts').prepend($('<input/>')
 				.attr({type: 'hidden', name: 'new[]'})
 				.val(response.data[0][0]));
 
@@ -1747,7 +1747,7 @@ function postList_change(){
 }
 
 function postList_reset(){
-	$(isTouch ? '.posts' : window).unbind('scroll.load');
+	$(isTouch ? '.posts-container .posts' : window).unbind('scroll.load');
 	if (loadXhr) loadXhr.abort();
 	if (!$.isEmptyObject(postMarkers)>0){
 		$('#map_canvas :data(ui-tooltip)').tooltip('destroy');
@@ -1759,7 +1759,7 @@ function postList_reset(){
 	postMarkers={};
 	postMarkersCluster={};
 	postList_locationMarker();
-	$('.posts').html('');
+	$('.posts-container .posts').html('');
 }
 
 function postList_load(start){
@@ -1776,13 +1776,13 @@ function postList_load(start){
 			latitude: areaCircle.center.lat(),
 			longitude: areaCircle.center.lng(),
 			start: start,
-			'new': $('.posts [name=new\\[\\]]').map(function(){
+			'new': $('.posts-container .posts [name=new\\[\\]]').map(function(){
 				return $(this).val();
 			}).get()
 		},
 		done: function(response){
 			if (response.empty){
-				$('.posts').html(response.empty);
+				$('.posts-container .posts').html(response.empty);
 				return true;
 			}
 
@@ -1792,7 +1792,7 @@ function postList_load(start){
 					longitude = response.data[i][2],
 					body = response.data[i][3];
 				postData[id]=[latitude,longitude];
-				$('.posts').append(body);
+				$('.posts-container .posts').append(body);
 				postItem_render(id);
 			}
 
@@ -2008,7 +2008,7 @@ function postItem_marker(id, location, data){
 }
 
 function postList_scrollHandler(scroll){
-	var target = $(isTouch ? '.posts' : window).bind('scroll.load', function(){
+	var target = $(isTouch ? '.posts-container .posts' : window).bind('scroll.load', function(){
 		if (disableScroll){
 			return false;
 		}

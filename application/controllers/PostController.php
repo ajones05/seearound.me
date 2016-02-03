@@ -117,6 +117,7 @@ class PostController extends Zend_Controller_Action
 			->setProperty('og:image:width', $thumb->width)
 			->setProperty('og:image:height', $thumb->height);
 
+		$this->view->addClass = ['post'];
 		$this->view->layout()->setLayout('posts');
 	}
 
@@ -234,6 +235,7 @@ class PostController extends Zend_Controller_Action
 			'opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) . ';'
 		);
 
+		$this->view->addClass = ['posts'];
 		$this->view->layout()->setLayout('posts');
 	}
 
