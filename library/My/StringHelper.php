@@ -19,11 +19,13 @@ class My_StringHelper
 	 */
 	public static function stringLimit($text, $limit, $dots = "")
 	{
-		$count = mb_strlen($text, 'UTF-8');
+		$encoding = 'UTF-8';
+		$count = mb_strlen($text, $encoding);
 
 		if ($count > $limit)
 		{
-			$text = substr(trim($text, '.'), 0, $limit - mb_strlen($dots, 'UTF-8')) . $dots;
+			$text = mb_substr(trim($text, '.'), 0,
+				$limit - mb_strlen($dots, $encoding), $encoding) . $dots;
 		}
 
 		return $text;
