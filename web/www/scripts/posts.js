@@ -2091,11 +2091,12 @@ function ajaxJson(url, settings){
 
 	var jqxhr = $.ajax($.extend(settings, {type: 'POST'}))
 		.done(function(data, textStatus, jqXHR){
-			if (typeof data !== 'object' || data.status == 0){
+			var isObject = typeof data === 'object';
+			if (!isObject || data.status == 0){
 				if (typeof settings.fail === 'function'){
 					settings.fail(data, textStatus, jqXHR);
 				}
-				alert(typeof data === 'object' ? data.message : 'Internal server error');
+				alert(isObject ? data.message : 'Internal server error');
 				return false;
 			}
 
