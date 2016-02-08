@@ -13,7 +13,8 @@ RewriteRule ^post\/view\/(.*)$ /post/$1 [R=301,L]
 RewriteRule ^post\/list\/?(.*)$ /$1 [R=301,L]
 RewriteRule ^info/news/nwid/(.+)$ /post/$1 [R=301,L]
 
-RewriteCond %{REQUEST_URI} /(robots.txt|sitemap.xml) [OR]
+RewriteCond %{REQUEST_URI} ^/(robots.txt|sitemap.xml) [OR]
+RewriteCond %{REQUEST_URI} ^/assets-[0-9a-zA-Z.]+\/.+ [OR]
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d
