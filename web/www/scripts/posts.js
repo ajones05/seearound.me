@@ -252,9 +252,7 @@ function renderView_callback(){
 
 				postList_locationMarker([opts.latitude,opts.longitude]);
 
-				if (typeof opts.point === 'undefined'){
-					postList_load();
-				} else {
+				if (Object.size(postData)){
 					for (var id in postData){
 						postItem_render(id);
 					}

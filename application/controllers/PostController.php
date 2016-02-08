@@ -185,45 +185,43 @@ class PostController extends Zend_Controller_Action
 				implode('<br>', $searchForm->getErrorMessages()));
 		}
 
-		if ($point)
+		$posts = (new Application_Model_News)->search(array_merge(
+			$searchParameters,
+			['limit' => 15, 'radius' => $point ? 0.018939 : $searchParameters['radius']]
+		), $user);
+
+		if (count($posts))
 		{
-			$posts = (new Application_Model_News)->search(array_merge(
-				$searchParameters, ['limit' => 15, 'radius' => 0.018939]
-			), $user);
+			$data = [];
 
-			if (count($posts))
+			foreach ($posts as $post)
 			{
-				$data = [];
-
-				foreach ($posts as $post)
-				{
-					$data[$post->id] = [
-						$post->latitude,
-						$post->longitude,
-						My_ViewHelper::render('post/_list_item', [
-							'post' => $post,
-							'owner' => $post->findDependentRowset('Application_Model_User')->current(),
-							'user' => $user,
-							'limit' => 350
-						]
-					)];
-				}
-
-				$this->view->posts = $posts;
-				$this->view->headScript()->appendScript('var postData=' .
-					json_encode($data) . ';');
+				$data[$post->id] = [
+					$post->latitude,
+					$post->longitude,
+					My_ViewHelper::render('post/_list_item', [
+						'post' => $post,
+						'owner' => $post->findDependentRowset('Application_Model_User')->current(),
+						'user' => $user,
+						'limit' => 350
+					]
+				)];
 			}
 
-			$searchParameters['point'] = 1;
-		}
-		else
-		{
-			$this->_helper->viewRenderer->setNoRender(true);
+			$this->view->posts = $posts;
+			$this->view->headScript()->appendScript('var postData=' .
+				json_encode($data) . ';');
 		}
 
 		$this->view->isList = true;
 		$this->view->user = $user;
 		$this->view->searchForm = $searchForm;
+
+		if ($point)
+		{
+			$searchParameters['point'] = 1;
+		}
+
 		$this->view->headScript()->appendScript(
 			'var user=' . json_encode([
 				'name' => $user->Name,
