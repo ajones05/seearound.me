@@ -187,7 +187,7 @@ class PostController extends Zend_Controller_Action
 
 		$posts = (new Application_Model_News)->search(array_merge(
 			$searchParameters,
-			['limit' => 15, 'radius' => $point ? 0.018939 : $searchParameters['radius']]
+			['limit' => 15, 'radius' => $point ? 0.018939 : 0.8]
 		), $user);
 
 		if (count($posts))
