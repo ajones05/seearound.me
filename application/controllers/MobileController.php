@@ -1343,7 +1343,7 @@ class MobileController extends Zend_Controller_Action
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $row->comment,
-						'news_count' => $row->vote,
+						'vote' => $row->vote,
 						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
 						'Name' => $owner->Name,
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
@@ -1450,7 +1450,7 @@ class MobileController extends Zend_Controller_Action
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $row->comment,
-						'news_count' => $row->vote,
+						'vote' => $row->vote,
 						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
 						'Name' => $owner->Name,
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
