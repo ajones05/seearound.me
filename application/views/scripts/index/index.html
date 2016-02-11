@@ -13,10 +13,8 @@ $address = Application_Model_Address::format($this->addressForm->getValues());
 
            <div class="fbImageMw">
                 <span>Register Here or</span>
-				<a id="facebookLogin" href="<?php echo $this->baseUrl("index/fb-login"); ?>">
-					<img style="cursor: pointer;" src="<?php echo $this->baseUrl("www/images/signupFacebookButton.png"); ?>" alt="Sign Up" />
-					<div class="clr"></div>
-				</a>
+				<img id="facebookLogin" style="cursor: pointer;" src="<?php echo $this->baseUrl("www/images/signupFacebookButton.png"); ?>" alt="Sign Up" />
+				<div class="clr"></div>
            </div>
            <p class="fbtext">
                 *We´ll never post to facebook without your permission

@@ -72,16 +72,12 @@ $(function(){
 			$('#searchNews').submit();
 		});
 	} else {
-		$('#facebookLogin').click(function(e){
-			e.preventDefault();
-
-			var url = $(this).attr('href');
-
+		$('#facebookLogin').click(function(){
 			FB.login(function(response){
 				if (response.status !== 'connected'){
 					return false;
 				}
-				window.location.href = url;
+				window.location.href=baseUrl+'index/fb-login';
 			},{scope: 'email'});
 		});
 
