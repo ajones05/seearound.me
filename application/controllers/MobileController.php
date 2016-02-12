@@ -1780,7 +1780,7 @@ class MobileController extends Zend_Controller_Action
 			));
 			$select3->where('n.isdeleted=0 AND n.user_id=?', $user->id);
 			$select3->joinLeft(array('v' => 'votings'), 'v.news_id=n.id', '');
-			$select3->where('v.canceled=0 AND v.is_read=0');
+			$select3->where('v.canceled=0 AND v.is_read=0 AND v.user_id<>?', $user->id);
 			$select3->joinLeft(array('u' => 'user_data'), 'u.id=v.user_id', '');
 			$select3->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
 			$select3->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
