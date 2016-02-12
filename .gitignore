@@ -6,6 +6,8 @@
 !/web/uploads/index.html
 /web/www/upload/*
 !/web/www/upload/index.html
+/web/thumb24x24/*
+/web/thumb50x50/*
 /log/*
 /vendor/*
 /includes/*

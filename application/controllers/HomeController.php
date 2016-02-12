@@ -208,12 +208,12 @@ class HomeController extends Zend_Controller_Action
 				array('Count', false, 1)
 			));
 
-			if (!$upload->isValid('ImageFile'))
+			if (!$upload->isValid('image'))
 			{
 				throw new RuntimeException(implode('. ', $upload->getMessages()), -1);
 			}
 
-			$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('ImageFile')];
+			$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
 
 			do
 			{
@@ -230,7 +230,13 @@ class HomeController extends Zend_Controller_Action
 
 			if ($currentImage)
 			{
-				$currentImage->deleteImage();
+				try
+				{
+					$currentImage->deleteImage();
+				}
+				catch (Exception $e)
+				{
+				}
 			}
 
 			$image = (new Application_Model_Image)->save('www/upload/' . $name);
@@ -240,26 +246,33 @@ class HomeController extends Zend_Controller_Action
 				'image_id' => $image->id
 			));
 
+			$thumb50x50 = 'thumb50x50/' . $name;
+			$thumb24x24 = 'thumb24x24/' . $name;
 			$thumb320x320 = 'uploads/' . $name;
 
-			My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
-				array(320, 320, ROOT_PATH_WEB . '/' . $thumb320x320)
-			));
+			My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, [
+				[24, 24, ROOT_PATH_WEB . '/' . $thumb24x24],
+				[50, 50, ROOT_PATH_WEB . '/' . $thumb50x50],
+				[320, 320, ROOT_PATH_WEB . '/' . $thumb320x320]
+			]);
 
-			$thumb = (new Application_Model_ImageThumb)
-				->save($thumb320x320, $image, array(320, 320));
+			$thumbModel = new Application_Model_ImageThumb;
+			$thumbModel->save($thumb24x24, $image, [24, 24]);
+			$thumb = $thumbModel->save($thumb50x50, $image, [50, 50]);
+			$thumbModel->save($thumb320x320, $image, [320, 320]);
 
-			$response = array(
+			$response = [
 				'status' => 1,
 				'url' => $this->view->baseUrl($thumb->path)
-			);
+			];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
-			);
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			];
 		}
 
         $this->_helper->json($response);

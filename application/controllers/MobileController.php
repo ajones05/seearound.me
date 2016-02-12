@@ -1200,6 +1200,17 @@ class MobileController extends Zend_Controller_Action
 
 				if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
 				{
+					$currentImage = $user->findManyToManyRowset('Application_Model_Image',
+						'Application_Model_UserImage');
+
+					if ($currentImage->count())
+					{
+						foreach ($currentImage as $image)
+						{
+							$image->deleteImage();
+						}
+					}
+
 					$image = (new Application_Model_Image)->save('www/upload/' . $data['image']);
 
 					(new Application_Model_UserImage)->insert(array(
@@ -1207,17 +1218,29 @@ class MobileController extends Zend_Controller_Action
 						'image_id' => $image->id
 					));
 
+					$thumb50x50 = 'thumb50x50/' . $data['image'];
+					$thumb24x24 = 'thumb24x24/' . $data['image'];
 					$thumb320x320 = 'uploads/' . $data['image'];
 
-					My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
-						array(320, 320, ROOT_PATH_WEB . '/' . $thumb320x320)
-					));
+					My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, [
+						[24, 24, ROOT_PATH_WEB . '/' . $thumb24x24],
+						[50, 50, ROOT_PATH_WEB . '/' . $thumb50x50],
+						[320, 320, ROOT_PATH_WEB . '/' . $thumb320x320]
+					]);
 
-					(new Application_Model_ImageThumb)
-						->save($thumb320x320, $image, array(320, 320));
+					$thumbModel = new Application_Model_ImageThumb;
+					$thumbModel->save($thumb24x24, $image, [24, 24]);
+					$thumbModel->save($thumb50x50, $image, [50, 50]);
+					$thumb = $thumbModel->save($thumb320x320, $image, [320, 320]);
+					$profileImage = $this->view->baseUrl($thumb->path);
+				}
+				else
+				{
+					$profileImage = $user->getProfileImage(
+						$this->view->baseUrl('www/images/img-prof40x40.jpg'));
 				}
 
-				$model->update($user_data, $model->getDefaultAdapter()->quoteInto('id =?', $user->id));
+				$model->update($user_data, 'id=' . $user->id);
 
 				$profile = $user->findDependentRowset('Application_Model_UserProfile')->current();
 
@@ -1252,7 +1275,7 @@ class MobileController extends Zend_Controller_Action
 					'address' => Application_Model_Address::format($userAddress->toArray()),
 					'latitude' => $userAddress->latitude,
 					'longitude' => $userAddress->longitude,
-					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					'Profile_image' => $this->view->serverUrl() . $profileImage,
 					'Gender' => $data['gender'],
 					'Activities' => $data['activities'],
 					'Birth_date' => $data['birth_date']
