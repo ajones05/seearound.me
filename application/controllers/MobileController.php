@@ -1744,6 +1744,7 @@ class MobileController extends Zend_Controller_Action
 				'f.id',
 				'type' => new Zend_Db_Expr('"friend"'),
 				'fl.created_at',
+				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image' => 'it.path'
 			));
@@ -1759,6 +1760,7 @@ class MobileController extends Zend_Controller_Action
 				'cm.id',
 				'type' => new Zend_Db_Expr('"message"'),
 				'cm.created_at',
+				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image' => 'it.path'
 			));
@@ -1772,6 +1774,7 @@ class MobileController extends Zend_Controller_Action
 				'v.id',
 				'type' => new Zend_Db_Expr('"vote"'),
 				'v.created_at',
+				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image' => 'it.path'
 			));
@@ -1787,6 +1790,7 @@ class MobileController extends Zend_Controller_Action
 				'c.id',
 				'type' => new Zend_Db_Expr('"comment"'),
 				'c.created_at',
+				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image' => 'it.path'
 			));
