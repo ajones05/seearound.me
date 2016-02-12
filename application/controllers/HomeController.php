@@ -181,8 +181,7 @@ class HomeController extends Zend_Controller_Action
 				'latitude' => $userAddress->latitude,
 				'longitude' => $userAddress->longitude
 			]) . ';')
-			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
-			->appendFile(My_Layout::assetUrl('/bower_components/jquery-form/jquery.form.js', $this->view));
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places');
 
 		$this->view->profileForm = $profileForm;
 		$this->view->addressForm = $addressForm;

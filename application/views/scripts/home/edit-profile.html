@@ -95,22 +95,32 @@
 
 		setHeight('.eqlCH');
 
-		$('#imageButton').click(function() {
+		$('#imageButton').click(function(e){
+			e.preventDefault();
 			$('#ImageFile').trigger('click');
 		});
 
 		$('#ImageFile').change(function(){
-			$(".proImgChange").toggle();
-			$("#imageform").ajaxForm({
-				success: function(response){
-					$(".proImgChange").toggle();
-					if (!response || !response.status){
-						alert(response ? response.error.message : ERROR_MESSAGE);
-						return false;
-					}
-					$("#image_upload_field").html('<img src="' + response.url + '" class="imgProf"/>');
+			if ($.trim($(this).val())===''){
+				return false;
+			}
+
+			$('.proImgChange').show();
+
+			var data = new FormData();
+			data.append('image', $(this)[0].files[0]);
+
+			ajaxJson({
+				url: baseUrl+'home/image-upload',
+				data: data,
+				cache: false,
+				contentType: false,
+				processData: false,
+				done: function(response){
+					$('.proImgChange').hide();
+					$('.imgProf').attr('src', response.url);
 				}
-			}).submit();
+			});
 		});
 
 		$("#imageSection").mouseover(function(){
@@ -145,11 +155,11 @@
 	<li class="txtBold">Profile Picture</li>
 	<li>
 		<div style="height: 1px; width: 1px;"> 
-			<form enctype='multipart/form-data' action='<?php echo $this->baseUrl("home/image-upload"); ?>' id='imageform' method='POST'>
+			<form>
 				<input style="height: 0px; width: 1px;background-color: white;color: white;" type='file' id='ImageFile' name='ImageFile' accept='image/*'/>                
 			</form>
 		</div>
-		<a id="imageButton" href="javascript:void(0);" class="btnBlue">Choose New File </a>
+		<a id="imageButton" href="#" class="btnBlue">Choose New File</a>
 	</li>
 	<li>
 		<img src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>" class="proImgChange" />
