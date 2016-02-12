@@ -74,6 +74,11 @@ class Application_Model_Image extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
 	protected $_referenceMap = array(
+		'Thumbs' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_ImageThumb',
+			'refColumns' => 'image_id'
+		),
 		'UserImage' => array(
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_UserImage',
