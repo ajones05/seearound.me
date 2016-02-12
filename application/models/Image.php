@@ -28,7 +28,12 @@ class Application_Model_ImageRow extends Zend_Db_Table_Row_Abstract
 	{
 		if (!@unlink(ROOT_PATH_WEB . '/' . $this->path))
 		{
-			throw new Exception('Delete file ' . $this->path . ' error');
+			$log = Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('Log');
+
+			if ($log)
+			{
+				$log->log('Delete image file ' . $this->path . ' error: ' . error_get_last(), Zend_Log::ERR);
+			}
 		}
 
 		$thumbs = $this->findDependentRowset('Application_Model_ImageThumb');

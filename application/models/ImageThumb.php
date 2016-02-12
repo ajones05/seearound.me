@@ -13,7 +13,12 @@ class Application_Model_ImageThumbRow extends Zend_Db_Table_Row_Abstract
 	{
 		if (!@unlink(ROOT_PATH_WEB . '/' . $this->path))
 		{
-			throw new Exception('Delete thumb file ' . $this->path . ' error');
+			$log = Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('Log');
+
+			if ($log)
+			{
+				$log->log('Delete thumb file ' . $this->path . ' error: ' . error_get_last(), Zend_Log::ERR);
+			}
 		}
 
 		return parent::delete();
