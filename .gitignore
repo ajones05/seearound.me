@@ -7,7 +7,7 @@
 /web/www/upload/*
 !/web/www/upload/index.html
 /web/thumb24x24/*
-/web/thumb50x50/*
+/web/thumb55x55/*
 /log/*
 /vendor/*
 /includes/*

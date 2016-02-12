@@ -532,19 +532,19 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 							'image_id' => $image->id
 						));
 
-						$thumb50x50 = 'thumb50x50/' . $name;
+						$thumb55x55 = 'thumb55x55/' . $name;
 						$thumb24x24 = 'thumb24x24/' . $name;
 						$thumb320x320 = 'uploads/' . $name;
 
 						My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, [
 							[24, 24, ROOT_PATH_WEB . '/' . $thumb24x24],
-							[50, 50, ROOT_PATH_WEB . '/' . $thumb50x50],
+							[55, 55, ROOT_PATH_WEB . '/' . $thumb55x55],
 							[320, 320, ROOT_PATH_WEB . '/' . $thumb320x320]
 						]);
 
 						$thumbModel = new Application_Model_ImageThumb;
 						$thumbModel->save($thumb24x24, $image, [24, 24]);
-						$thumbModel->save($thumb50x50, $image, [50, 50]);
+						$thumbModel->save($thumb55x55, $image, [55, 55]);
 						$thumbModel->save($thumb320x320, $image, [320, 320]);
 
 						$user->save();
