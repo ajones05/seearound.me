@@ -170,6 +170,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * Edit user profile data action.
+	 *
+	 * @return void
+	 */
+    public function editProfileAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Retrieve user notifications action.
 	 *
 	 * @return void
