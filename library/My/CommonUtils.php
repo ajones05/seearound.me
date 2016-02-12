@@ -187,8 +187,19 @@ class My_CommonUtils
 				elseif ($mode === 2)
 				{
 					$temp_width = $source_img_w;
-					$temp_height = $source_img_w / $thumb_ratio;
-					$source_y = ($source_img_h - $temp_height) / 2;
+					$temp_height = max($source_img_w / $thumb_ratio, 1);
+
+					if ($source_img_w > $source_img_h)
+					{
+						$thumb_height = $source_img_h * ($thumb[0] / $source_img_w);
+						$temp_height /= $thumb[1] / $thumb_height;
+						$thumb[1] = max($thumb_height, 1);
+						$source_y = 0;
+					}
+					else
+					{
+						$source_y = ($source_img_h - $temp_height) / 2;
+					}
 				}
 				else
 				{
