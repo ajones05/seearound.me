@@ -1614,7 +1614,7 @@ function newPost_dialog(){
 							$('<input/>').hide()
 								.attr({type:'file',name:'image',accept:'image/*',size:'1'})
 								.change(function(){
-									$('.image').remove();
+									$('.image',newDialog).remove();
 									$(this).parent().prepend(
 										$('<div/>').addClass('image').html($(this).val()).append(
 											$('<img/>')
