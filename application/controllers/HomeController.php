@@ -96,6 +96,7 @@ class HomeController extends Zend_Controller_Action
 
 		if ($data)
 		{
+			(new My_UserData($data['user_id']))->clear();
 			$status = (new Application_Model_Loginstatus)->find($data['login_id'])->current();
 
 			if ($status)

@@ -154,8 +154,9 @@ class PostController extends Zend_Controller_Action
 
 		$searchForm = new Application_Form_PostSearch;
 		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
-		$userData = new Zend_Session_Namespace('data');
-		$isValidData = $searchForm->validateSearch((array) $userData->getIterator());
+		$userData = new My_UserData($user->id);
+		$sessionData = $userData->getData();
+		$isValidData = $sessionData ? $searchForm->validateSearch($sessionData) : false;
 
 		if ($center)
 		{
@@ -319,10 +320,11 @@ class PostController extends Zend_Controller_Action
 				$response['empty'] = My_ViewHelper::render('post/_list_empty');
 			}
 
-			$userData = new Zend_Session_Namespace('data');
-			$userData->radius = $searchParameters['radius'];
-			$userData->latitude = $searchParameters['latitude'];
-			$userData->longitude = $searchParameters['longitude'];
+			(new My_UserData($user->id))->write([
+				'radius' => $searchParameters['radius'],
+				'latitude' => $searchParameters['latitude'],
+				'longitude' => $searchParameters['longitude']
+			]);
 		}
 		catch (Exception $e)
 		{
