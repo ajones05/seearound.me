@@ -65,7 +65,7 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 
 		if ($newsLink)
 		{
-			$output .= My_ViewHelper::render('news/link-meta', array('link' => $newsLink));
+			$output .= My_ViewHelper::render('post/_link', array('link' => $newsLink));
 		}
 
 		return preg_replace('/\s{2,}/', ' ', $output);
