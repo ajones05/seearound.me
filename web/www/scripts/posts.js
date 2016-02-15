@@ -879,9 +879,9 @@ function postItem_renderContent(id, postContainer){
 		vote.attr('disabled', true);
 
 		ajaxJson({
-			url: baseUrl+'home/vote',
+			url: baseUrl+'post/vote',
 			data: {
-				news_id: id,
+				id: id,
 				vote: (target.hasClass('like') ? 1 : -1)
 			},
 			done: function(response){
@@ -1153,7 +1153,7 @@ function postItem_renderContent(id, postContainer){
 										$longitude.val(position.lng());
 
 										ajaxJson({
-											url: baseUrl + 'home/save-news-location',
+											url: baseUrl + 'post/save-location',
 											data: $('[name=id],[name=latitude],[name=longitude],[name=address]', postContainer).serialize(),
 											done: function(response){
 												if (isList){
@@ -1200,7 +1200,7 @@ function postItem_renderContent(id, postContainer){
 								var editButtons = $('.edit-panel a', postContainer)
 									.attr('disabled', true);
 								ajaxJson({
-									url: baseUrl+'home/delete',
+									url: baseUrl+'post/delete',
 									data: {id:id},
 									done: function(response){
 										if (!isList){
@@ -1237,7 +1237,7 @@ function postItem_renderContent(id, postContainer){
 									.attr('disabled', true);
 
 								ajaxJson({
-									url: baseUrl+'home/save-news',
+									url: baseUrl+'post/save',
 									data: editForm.serialize(),
 									beforeSend: function(){
 										body.attr('disabled', true);
@@ -1322,7 +1322,7 @@ function comment_render(comment){
 			}
 
 			ajaxJson({
-				url: baseUrl+'home/delete-comment',
+				url: baseUrl+'post/delete-comment',
 				data: {id:id},
 				done: function(response){
 					comment.remove();
@@ -1347,7 +1347,7 @@ function comment_render(comment){
 		$(this).attr('disabled', true);
 
 		ajaxJson({
-			url: baseUrl + 'home/read-more-comment',
+			url: baseUrl + 'post/read-more-comment',
 			data: {id:id},
 			done: function(response){
 				$('.post-comment__body span', comment).html(response.html);
@@ -2033,7 +2033,7 @@ function postItem_more(postContainer){
 	link.attr('disabled', true);
 
 	ajaxJson({
-		url: baseUrl+'home/read-more-news',
+		url: baseUrl+'post/read-more',
 		data: {id:postContainer.attr('data-id')},
 		done: function(response){
 			$('.post_text', postContainer).html(response.html);

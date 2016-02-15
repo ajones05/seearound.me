@@ -359,9 +359,8 @@ class ContactsController extends Zend_Controller_Action
 					'latitude' => $userAddress->latitude,
 					'longitude' => $userAddress->longitude
 				]) . ';')
-			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places')
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places')
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
-			->appendFile(My_Layout::assetUrl('www/scripts/news.js', $this->view))
 			->appendFile(My_Layout::assetUrl('www/scripts/friendlist.js', $this->view));
 
         $this->view->homePageExist = true;

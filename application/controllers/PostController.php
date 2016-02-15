@@ -635,6 +635,334 @@ class PostController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Save post action.
+	 *
+	 * @return void
+	 */
+	public function saveAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			$model = new Application_Model_News;
+
+			if (!$model->checkId($id, $post, 0))
+			{
+				throw new RuntimeException('Incorrect post ID', -1);
+			}
+
+			if ($user->id != $post->user_id)
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$body = $this->_request->getPost('news');
+
+			if (trim($body) === '')
+			{
+				throw new RuntimeException('Body cannot be blank', -1);
+			}
+
+			$post = $model->save(['news' => $body], $post);
+
+			$response = [
+				'status' => 1,
+				'html' => $post->renderContent()
+			];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Save post location action.
+	 *
+	 * @return void
+	 */
+	public function saveLocationAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			$address = $this->_request->getPost('address');
+
+			if (!v::optional(v::stringType())->validate($address))
+			{
+				throw new RuntimeException('Incorrect address value: ' .
+					var_export($address, true));
+			}
+
+			$latitude = $this->_request->getPost('latitude');
+
+			if (!v::stringType()->lat()->validate($latitude))
+			{
+				throw new RuntimeException('Incorrect latitude value: ' .
+					var_export($latitude, true));
+			}
+
+			$longitude = $this->_request->getPost('longitude');
+
+			if (!v::stringType()->lng()->validate($longitude))
+			{
+				throw new RuntimeException('Incorrect longitude value: ' .
+					var_export($longitude, true));
+			}
+
+			$model = new Application_Model_News;
+
+			if (!$model->checkId($id, $post, 0))
+			{
+				throw new RuntimeException('Incorrect post ID', -1);
+			}
+
+			if ($user->id != $post->user_id)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$post->Address = $address;
+			$post->latitude = $latitude;
+			$post->longitude = $longitude;
+			$post->save();
+
+			$response = ['status' => 1];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Delete post action.
+	 *
+	 * @return void
+	 */
+	public function deleteAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_News::checkId($id, $post, 0))
+			{
+				throw new Exception('Incorrect post ID.');
+			}
+
+			if ($post->user_id != $user->id)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$post->isdeleted = 1;
+			$post->save();
+
+			$response = ['status' => 1];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Vote post action.
+	 *
+	 * @return void
+	 */
+	public function voteAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_News::checkId($id, $post, 0))
+			{
+				throw new RuntimeException('Incorrect post ID', -1);
+			}
+
+			$vote = $this->_request->getPost('vote');
+
+			if (!v::intVal()->oneOf(v::equals(-1),v::equals(1))->validate($vote))
+			{
+				throw new RuntimeException('Incorrect vote value: ' .
+					var_export($vote, true), -1);
+			}
+
+			$model = new Application_Model_Voting;
+
+			if (!$model->canVote($user, $post))
+			{
+				throw new RuntimeException('You cannot vote this post', -1);
+			}
+
+			$userVote = $model->findVote($post->id, $user->id);
+
+			if (!$user->is_admin && $userVote)
+			{
+				$userVote->updated_at = (new DateTime)->format(My_Time::$mysqlFormat);
+				$userVote->canceled = 1;
+				$userVote->save();
+
+				if ($post->vote == 0)
+				{
+					$lastVote = $model->findVote($post->id);
+
+					if ($lastVote && $lastVote->vote)
+					{
+						$post->vote = $lastVote->vote;
+						$post->save();
+					}
+				}
+				else
+				{
+					$post->vote = max(0, $post->vote - $userVote->vote);
+					$post->save();
+				}
+			}
+
+			if ($user->is_admin || !$userVote || $userVote->vote != $vote)
+			{
+				$model->saveVotingData($vote, $user->id, $post);
+				$activeVote = $vote;
+			}
+			else
+			{
+				$activeVote = 0;
+			}
+
+			$response = array(
+				'status' => 1,
+				'vote' => $post->vote,
+				'active' => $activeVote
+			);
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? 
+					$e->getMessage() : 'Internal Server Error'
+			);
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Read more post action.
+	 *
+	 * @return void
+	 */
+	public function readMoreAction()
+	{
+		try
+		{
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_News::checkId($id, $post, 0))
+			{
+				throw new RuntimeException('Incorrect post ID');
+			}
+
+			$response = [
+				'status' => 1,
+				'html' => $post->renderContent()
+			];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * Post comments list action.
 	 *
 	 * @return void
@@ -754,6 +1082,102 @@ class PostController extends Zend_Controller_Action
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
 					'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Delete comment action.
+	 *
+	 * @return void
+	 */
+    public function deleteCommentAction()
+	{
+		try
+		{
+			$auth = Zend_Auth::getInstance()->getIdentity();
+
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect comment ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_Comments::checkId($id, $comment, 0))
+			{
+				throw new RuntimeException('Incorrect comment ID.');
+			}
+
+			$news = $comment->findDependentRowset('Application_Model_News')->current();
+
+			if ($news->isdeleted)
+			{
+				throw new RuntimeException('News does not exist', -1);
+			}
+
+			if ($user->id != $comment->user_id && $user->id != $news->user_id)
+			{
+				throw new RuntimeException('You are not authorized to access this action', -1);
+			}
+
+			(new Application_Model_Comments)->deleteRow($comment, $news);
+
+			$response = ['status' => 1];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Read more comment action.
+	 *
+	 * @return void
+	 */
+	public function readMoreCommentAction()
+	{
+		try
+		{
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect comment ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_Comments::checkId($id, $comment, 0))
+			{
+				throw new RuntimeException('Incorrect comment ID');
+			}
+
+			$response = [
+				'status' => 1,
+				'html' => $comment->renderContent()
+			];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			];
 		}
 
