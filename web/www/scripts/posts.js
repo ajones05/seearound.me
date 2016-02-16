@@ -46,7 +46,7 @@ require(['jquery'], function(){
 						var menu = $('.main-menu');
 						$('.community .count', menu).html(response.friends > 0 ? response.friends : '');
 						$('.message .count', menu).html(response.messages > 0 ? response.messages : '');
-						setTimeout(notification, 3600);
+						setTimeout(notification, 2000);
 					},
 					fail: function(data, textStatus, jqXHR){
 						if (data && data.code == 401){

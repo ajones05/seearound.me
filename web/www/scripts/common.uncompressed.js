@@ -40,9 +40,32 @@ $(function(){
 	});
 
 	if (isLogin){
-		// TODO: next execution after complete current ajax request
-        notification();
-        setInterval('notification()', 120000);
+		var notification = function(){
+			ajaxJson({
+				url: baseUrl+'contacts/friends-notification',
+				done: function(response){
+					if (response.friends > 0){
+						$("#noteTotal").html(response.friends).show();
+					} else {
+						$("#noteTotal").hide();
+					}
+					if (response.messages > 0){
+						$("#msgTotal").html(response.messages).show();
+					} else {
+						$("#msgTotal").hide();
+					}
+					setTimeout(notification, 2000);
+				},
+				fail: function(data, textStatus, jqXHR){
+					if (data && data.code == 401){
+						window.location.href = baseUrl;
+						return false;
+					}
+				}
+			});
+		};
+
+		notification();
 
 		$('#myProfLink').click(function(e){
 			e.preventDefault();

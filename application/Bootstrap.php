@@ -176,4 +176,24 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$status->visit_time = (new DateTime)->format(DateTime::W3C);
 		$status->save();
     }
+
+    /**
+     * Init update user data expiration.
+     *
+     * @return void
+     */
+    public function _initUserData()
+    {
+		if (!Zend_Auth::getInstance()->hasIdentity())
+		{
+			return true;
+		}
+
+		$userData = new Zend_Session_Namespace('userData');
+
+		if ($userData->data)
+		{
+			$userData->setExpirationSeconds(3);
+		}
+    }
 }

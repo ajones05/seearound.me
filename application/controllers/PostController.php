@@ -154,9 +154,8 @@ class PostController extends Zend_Controller_Action
 
 		$searchForm = new Application_Form_PostSearch;
 		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
-		$userData = new My_UserData($user->id);
-		$sessionData = $userData->getData();
-		$isValidData = $sessionData ? $searchForm->validateSearch($sessionData) : false;
+		$userData = (new Zend_Session_Namespace('userData'))->data;
+		$isValidData = $userData ? $searchForm->validateSearch($userData) : false;
 
 		if ($center)
 		{
@@ -164,7 +163,7 @@ class PostController extends Zend_Controller_Action
 		}
 		else
 		{
-			$center = $isValidData ? [$userData->latitude, $userData->longitude] :
+			$center = $isValidData ? [$userData['latitude'], $userData['longitude']] :
 				[$userAddress->latitude, $userAddress->longitude];
 		}
 
@@ -175,9 +174,9 @@ class PostController extends Zend_Controller_Action
 			'filter' => $this->_request->getParam('filter'),
 		];
 
-		if ($isValidData && isset($userData->radius))
+		if ($isValidData && !empty($userData['radius']))
 		{
-			$searchParameters['radius'] = $userData->radius;
+			$searchParameters['radius'] = $userData['radius'];
 		}
 
 		if (!$searchForm->validateSearch($searchParameters))
@@ -320,11 +319,13 @@ class PostController extends Zend_Controller_Action
 				$response['empty'] = My_ViewHelper::render('post/_list_empty');
 			}
 
-			(new My_UserData($user->id))->write([
+			$userData = new Zend_Session_Namespace('userData');
+			$userData->data = [
 				'radius' => $searchParameters['radius'],
 				'latitude' => $searchParameters['latitude'],
 				'longitude' => $searchParameters['longitude']
-			]);
+			];
+			$userData->setExpirationSeconds(3);
 		}
 		catch (Exception $e)
 		{
