@@ -1194,7 +1194,8 @@ class MobileController extends Zend_Controller_Action
 			{
 				$user_data = array(
 					'Name' => $data['name'],
-					'Birth_date' => trim($data['birth_date']) !== '' ? $data['birth_date'] : null,
+					'Birth_date' => trim($data['birth_date']) !== '' ?
+						(new DateTime($data['birth_date']))->format('Y-m-d') : null,
 					// 'Email_id' => $data['email']
 				);
 
