@@ -308,6 +308,138 @@ class MobileController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Follow user action.
+	 *
+	 * @return void
+	 */
+	public function followAction()
+	{
+		try
+		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user ID');
+			}
+
+			$receiver_id = $this->_request->getPost('receiver_id');
+
+			if (!v::intVal()->validate($receiver_id))
+			{
+				throw new RuntimeException('Incorrect receiver user ID value: ' .
+					var_export($receiver_id, true));
+			}
+
+			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			{
+				throw new RuntimeException('Incorrect follow user ID');
+			}
+
+			$model = new Application_Model_Friends;
+
+			if ($model->isFriend($user, $receiver))
+			{
+				throw new RuntimeException('User already in friend list');
+			}
+
+			$model->createRow([
+				'sender_id' => $user->id,
+				'reciever_id' => $receiver->id,
+				'status' => $model->status['confirmed'],
+				'source' => 'herespy'
+			])->updateStatus($user);
+
+			My_Email::send($receiver->Email_id, 'New follower', [
+				'template' => 'friend-invitation',
+				'assign' => ['name' => $user->Name]
+			]);
+
+			$response = ['status' => 'SUCCESS'];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Unfollow user action.
+	 *
+	 * @return void
+	 */
+	public function unfollowAction()
+	{
+		try
+		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user ID');
+			}
+
+			$receiver_id = $this->_request->getPost('receiver_id');
+
+			if (!v::intVal()->validate($receiver_id))
+			{
+				throw new RuntimeException('Incorrect receiver user ID value: ' .
+					var_export($receiver_id, true));
+			}
+
+			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			{
+				throw new RuntimeException('Incorrect follow user ID');
+			}
+
+			$model = new Application_Model_Friends;
+			$friend = $model->isFriend($user, $receiver);
+
+			if (!$friend)
+			{
+				throw new RuntimeException('User not found in friend list');
+			}
+
+			$friend->status = $model->status['rejected'];
+			$friend->updateStatus($user);
+
+			$response = ['status' => 'SUCCESS'];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * Profile details action.
 	 *
 	 * @return void
