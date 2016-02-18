@@ -1,5 +1,30 @@
 <?php
 /**
+ * Row class for friends.
+ */
+class Application_Model_FriendsRow extends Zend_Db_Table_Row_Abstract
+{
+	/**
+	 * Saves row and write status log.
+	 *
+	 * @param	Application_Model_UserRow $user
+	 * @return	Application_Model_FriendsRow
+	 */
+	public function updateStatus($user)
+	{
+		parent::save();
+
+		(new Application_Model_FriendLog)->insert([
+			'friend_id' => $this->id,
+			'user_id' => $user->id,
+			'status_id' => $this->status
+		]);
+
+		return $this;
+	}
+}
+
+/**
  * Friends model class.
  */
 class Application_Model_Friends extends Zend_Db_Table_Abstract
@@ -19,6 +44,13 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 	 * @var	string
 	 */
 	protected $_name = 'friends';
+
+    /**
+     * Classname for row.
+     *
+     * @var string
+     */
+    protected $_rowClass = 'Application_Model_FriendsRow';
 
 	/**
 	 * @var	array

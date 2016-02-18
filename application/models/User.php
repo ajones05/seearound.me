@@ -581,19 +581,12 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 					foreach($users as $tmp_user)
 					{
-						$friendStatus = $friendsModel->createRow(array(
+						$friendsModel->createRow([
 							'sender_id' => $tmp_user->sender_id,
 							'reciever_id' => $user->id,
 							'status' => $friendsModel->status['confirmed'],
 							'source' => 'herespy'
-						));
-						$friendStatus->save();
-
-						(new Application_Model_FriendLog)->insert(array(
-							'friend_id' => $friendStatus->id,
-							'user_id' => $user->id,
-							'status_id' => $friendStatus->status
-						));
+						])->updateStatus($user);
 
 						$tmp_user->delete();
 					}

@@ -94,7 +94,7 @@ $(function(){
 			data: {
 				action: isFriend ? 'reject' : 'follow',
 				user: reciever_userid,
-				total: true
+				total: 1
 			},
 			done: function(response){
 				target.val(isFriend ? 'Follow' : 'Unfollow')

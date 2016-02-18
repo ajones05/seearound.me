@@ -1,4 +1,5 @@
 <?php
+use Respect\Validation\Validator as v;
 
 class ContactsController extends Zend_Controller_Action
 {
@@ -274,9 +275,10 @@ class ContactsController extends Zend_Controller_Action
 
 			$network_id = trim($this->_request->getPost("network_id"));
 
-			if ($network_id === '')
+			if (!v::stringType()->validate($network_id))
 			{
-				throw new RuntimeException('Network ID cannot be blank.', -1);
+				throw new RuntimeException('Incorrect Network ID value: ' .
+					var_export($network_id, true));
 			}
 
 			$tableUser = new Application_Model_User;
@@ -292,10 +294,7 @@ class ContactsController extends Zend_Controller_Action
 			My_Email::send(
 				$reciever_email->recieverEmail,
 				'seearound.me connect request',
-				array(
-					'template' => 'follow',
-					'assign' => array('user' => $user)
-				)
+				['template' => 'follow', 'assign' => ['user' => $user]]
 			);
 
 			$friendsModel = new Application_Model_Friends;
@@ -303,29 +302,23 @@ class ContactsController extends Zend_Controller_Action
 
 			if (!$friendStatus)
 			{
-				$friendStatus = $friendsModel->createRow(array(
+				$friendsModel->createRow([
 					'sender_id' => $user->id,
 					'reciever_id' => $facebook_user->id,
 					'status' => $friendsModel->status['confirmed'],
 					'source' => 'connect'
-				));
-				$friendStatus->save();
-
-				(new Application_Model_FriendLog)->insert(array(
-					'friend_id' => $friendStatus->id,
-					'user_id' => $user->id,
-					'status_id' => $friendStatus->status
-				));
+				])->updateStatus($auth);
 			}
 
-			$response = array('status' => 1);
+			$response = ['status' => 1];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_helper->json($response);
@@ -436,84 +429,100 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$receiver_id = $this->_request->getPost('user');
-
 			$auth = Zend_Auth::getInstance()->getIdentity();
 
-			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $auth) || $receiver_id == $auth->id)
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			$receiver_id = $this->_request->getPost('user');
+
+			if (!v::intVal()->validate($receiver_id))
 			{
-				throw new RuntimeException('Incorrect receiver user ID', -1);
+				throw new RuntimeException('Incorrect receiver user ID value: ' .
+					var_export($receiver_id, true));
 			}
 
-			$friendsModel = new Application_Model_Friends;
-			$friendStatus = $friendsModel->isFriend($auth, $receiver);
+			if ($receiver_id == $user->id)
+			{
+				throw new RuntimeException('Access denied');
+			}
 
-			switch ($this->_request->getPost('action'))
+			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			{
+				throw new RuntimeException('Incorrect receiver user ID');
+			}
+
+			$action = $this->_request->getPost('action');
+
+			if (!v::stringType()->oneOf(v::equals('follow'),v::equals('reject'))->validate($action))
+			{
+				throw new RuntimeException('Incorrect action value: ' .
+					var_export($action, true));
+			}
+
+			$total = $this->_request->getPost('total');
+
+			if (!v::intVal()->equals(1)->validate($total))
+			{
+				throw new RuntimeException('Incorrect total value: ' .
+					var_export($total, true));
+			}
+
+			$model = new Application_Model_Friends;
+			$friend = $model->isFriend($user, $receiver);
+
+			switch ($action)
 			{
 				case 'follow':
-					if ($friendStatus)
+					if ($friend)
 					{
 						throw new RuntimeException('User already in friend list');
 					}
-					$friendStatus = $friendsModel->createRow(array(
-						'sender_id' => $auth->id,
+
+					$model->createRow([
+						'sender_id' => $user->id,
 						'reciever_id' => $receiver->id,
-						'status' => $friendsModel->status['confirmed'],
+						'status' => $model->status['confirmed'],
 						'source' => 'herespy'
-					));
+					])->updateStatus($user);
+
+					My_Email::send($receiver->Email_id, 'New follower', [
+						'template' => 'friend-invitation',
+						'assign' => ['name' => $user->Name]
+					]);
 					break;
 				case 'reject':
-					if (!$friendStatus)
+					if (!$friend)
 					{
 						throw new RuntimeException('User not found in friend list');
 					}
-					$friendStatus->status = $friendsModel->status['rejected'];
+					$friend->status = $model->status['rejected'];
+					$friend->updateStatus($user);
 					break;
-				default:
-					throw new RuntimeException('Incorrect action', -1);
 			}
 
-			$friendStatus->save();
+			$response = ['status' => 1];
 
-			(new Application_Model_FriendLog)->insert(array(
-				'friend_id' => $friendStatus->id,
-				'user_id' => $auth->id,
-				'status_id' => $friendStatus->status
-			));
-
-			if ($friendStatus->status == $friendsModel->status['confirmed'])
+			if ($total)
 			{
-				My_Email::send($receiver->Email_id, 'New follower', array(
-					'template' => 'friend-invitation',
-					'assign' => array('name' => $auth->Name)
-				));
-			}
-
-			$response = array('status' => 1);
-
-			if ($this->_request->getPost('total'))
-			{
-				$response['total'] = $friendsModel->fetchRow(
-					$friendsModel->select()
-						->from($friendsModel, array('COUNT(*) as count'))
-						->where('reciever_id=?', $auth->id)
-						->where('status=' . $friendsModel->status['confirmed'])
+				$response['total'] = $model->fetchRow(
+					$model->select()
+						->from($model, ['COUNT(*) as count'])
+						->where('reciever_id=?', $user->id)
+						->where('status=' . $model->status['confirmed'])
 						->where('notify=0')
 				)->count;
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_helper->json($response);
