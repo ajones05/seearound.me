@@ -16,6 +16,16 @@
 <div class="list-group">
 	<p class="list-group-item active">Friends</p>
 	<a href="#" class="list-group-item disabled">mobile/myfriendlist</a>
+	<a href="<?php echo $this->baseUrl('admin/mobile-api/follow'); ?>"
+		class="list-group-item">
+		<h4 class = "list-group-item-heading">mobile/follow</h4>
+		<p class = "list-group-item-text">Follow friend</p>
+	</a>
+	<a href="<?php echo $this->baseUrl('admin/mobile-api/unfollow'); ?>"
+		class="list-group-item">
+		<h4 class = "list-group-item-heading">mobile/unfollow</h4>
+		<p class = "list-group-item-text">Unollow friend</p>
+	</a>
 </div>
 <div class="list-group">
 	<p class="list-group-item active">Messages</p>
