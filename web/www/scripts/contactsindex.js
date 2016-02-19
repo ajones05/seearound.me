@@ -15,7 +15,7 @@ var posturl ="/picture?type=square";
 
                         if(nwId != undefined) { 
                             document.body.style.cursor = 'wait';
-                            $.post(baseUrl+'index/fb-login/', {'id':nwId,'name':name,'email': email,'picture':preurl+nwId+posturl,'gender':gender,'dob':dob}, getFbFriends, "text");
+                            $.post(baseUrl+'index/fb-auth/', {'id':nwId,'name':name,'email': email,'picture':preurl+nwId+posturl,'gender':gender,'dob':dob}, getFbFriends, "text");
                         }			
                     });
                 }, {scope: 'email,user_likes,user_birthday'});

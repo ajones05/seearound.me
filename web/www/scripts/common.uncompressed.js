@@ -100,7 +100,7 @@ $(function(){
 				if (response.status !== 'connected'){
 					return false;
 				}
-				window.location.href=baseUrl+'index/fb-login';
+				window.location.href=baseUrl+'index/fb-auth';
 			},{scope: 'email'});
 		});
 

@@ -169,7 +169,7 @@ class IndexController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-	public function fbLoginAction()
+	public function fbAuthAction()
 	{
 		$config = Zend_Registry::get('config_global');
 		Facebook\FacebookSession::setDefaultApplication($config->facebook->app->id, $config->facebook->app->secret);
