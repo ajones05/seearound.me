@@ -7,11 +7,10 @@ $commentsModel = new Application_Model_Comments;
 $comments = $commentsModel->findAllByNewsId($this->post->id, $commentsLimit);
 $hideComments = !$this->post->comment || !My_ArrayHelper::search(array('news_id' => $this->post->id), $comments->toArray(), 1);
 
-// TODO: merge with post query
-$image = $this->post->findManyToManyRowset('Application_Model_Image', 'Application_Model_NewsImage')->current();
-
-if ($image)
+if ($this->post->image_id)
 {
+	// TODO: merge with post query
+	$image = (new Application_Model_Image)->find($this->post->image_id)->current();
 	$thumb960x960 = $image->findThumb(array(960, 960));
 	$thumb448x320 = $image->findThumb(array(448, 320));
 }
@@ -49,7 +48,7 @@ $createdOutput = My_Time::time_ago($this->post->created_date, array('ago' => tru
 </div>
 </div>
 <div class="post_text"><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'limit')); ?></div>
-<?php if ($image != null): ?>
+<?php if ($this->post->image_id != null): ?>
 <div class="image">
 <img src="<?php echo $this->baseUrl($thumb448x320->path); ?>"
 data-src="<?php echo $this->baseUrl($thumb960x960->path); ?>"

@@ -70,15 +70,17 @@ class PostController extends Zend_Controller_Action
 			->setProperty('og:title', 'SeeAround.me')
 			->setProperty('og:description', My_StringHelper::stringLimit($post->news, 155, '...'));
 
-		$image = $post->findManyToManyRowset('Application_Model_Image',
-			'Application_Model_NewsImage')->current();
+		$thumb = false;
 
-		if ($image)
+		if ($post->image_id)
 		{
+			// TODO: merge with post query
+			$image = (new Application_Model_Image)->find($post->image_id)->current();
 			$thumb = $image->findThumb([320, 320]);
 		}
 		else
 		{
+			// TODO: merge with post query
 			$link = $post->findDependentRowset('Application_Model_NewsLink')->current();
 
 			if ($link)
@@ -95,7 +97,7 @@ class PostController extends Zend_Controller_Action
 
 		// TODO:  refactoring
 
-		if (!$image)
+		if (!$thumb)
 		{
 			if ($owner->image_id)
 			{

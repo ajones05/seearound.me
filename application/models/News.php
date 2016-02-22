@@ -330,16 +330,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 			$news->setFromArray($data);
 			$news->updated_date = new Zend_Db_Expr('NOW()');
-			$news->save();
 
 			if (!empty($data['image']))
 			{
 				$image = (new Application_Model_Image)->save('uploads/' . $data['image']);
-
-				(new Application_Model_NewsImage)->insert(array(
-					'news_id' => $news->id,
-					'image_id' => $image->id
-				));
+				$news->image_id = $image->id;
 
 				$thumb320x320 = 'tbnewsimages/' . $data['image'];
 				$thumb448x320 = 'thumb448x320/' . $data['image'];
@@ -356,7 +351,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				$thumbModel->save($thumb448x320, $image, array(448, 320));
 				$thumbModel->save($thumb960x960, $image, array(960, 960));
 			}
-			elseif (preg_match_all('/' . My_CommonUtils::$link_regex . '/', $news->news, $matches))
+
+			$news->save();
+
+			if (empty($data['image']) && preg_match_all('/' . My_CommonUtils::$link_regex . '/', $news->news, $matches))
 			{
 				foreach ($matches[0] as $link)
 				{

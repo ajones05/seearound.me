@@ -98,6 +98,8 @@ ALTER TABLE `news` ADD `vote` INT(11) NOT NULL DEFAULT '0' AFTER `Address`;
 ALTER TABLE `news` DROP `score`;
 ALTER TABLE `news` ADD `comment` INT(11) NOT NULL DEFAULT '0' AFTER `vote`; 
 ALTER TABLE `news` DROP `image`;
+ALTER TABLE `news` ADD `image_id` INT(11) NULL;
+ALTER TABLE `news` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Table structure for table `news_link`
@@ -143,18 +145,6 @@ CREATE TABLE `image_thumb` (
 	`thumb_width` INT(10) NULL,
 	`thumb_height` INT(10) NULL,
 	PRIMARY KEY (`id`),
-	FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE CASCADE
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
-
---
--- Table structure for table `news_image`
---
-CREATE TABLE `news_image` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`news_id` INT(11) NOT NULL,
-	`image_id` INT(11) NOT NULL,
-	PRIMARY KEY (`id`),
-	FOREIGN KEY (`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE,
 	FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 

@@ -1495,13 +1495,12 @@ class MobileController extends Zend_Controller_Action
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
 
-					$image = $row->findManyToManyRowset('Application_Model_Image',
-						'Application_Model_NewsImage')->current();
-
-					if ($image)
+					// TODO: merge with post query
+					if ($row->image_id)
 					{
+						$image = (new Application_Model_Image)->find($row->image_id)->current();
 						$data['images'] = $this->view->serverUrl() .
-							$this->view->baseUrl($image->findThumb(array(960, 960))->path);
+							$this->view->baseUrl($image->findThumb([960, 960])->path);
 					}
 
 					$response['result'][] = $data;
@@ -1602,13 +1601,12 @@ class MobileController extends Zend_Controller_Action
 						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 					);
 
-					$image = $row->findManyToManyRowset('Application_Model_Image',
-						'Application_Model_NewsImage')->current();
-
-					if ($image)
+					// TODO: merge with post query
+					if ($row->image_id)
 					{
+						$image = (new Application_Model_Image)->find($row->image_id)->current();
 						$data['images'] = $this->view->serverUrl() .
-							$this->view->baseUrl($image->findThumb(array(960, 960))->path);
+							$this->view->baseUrl($image->findThumb([960, 960])->path);
 					}
 
 					$response['result'][] = $data;
