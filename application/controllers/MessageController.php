@@ -132,11 +132,11 @@ class MessageController extends Zend_Controller_Action
 
 			if (!$conversationModel->checkId($id, $conversation))
 			{
-				throw new RuntimeException('Incorrect conversation ID');
+				throw new RuntimeException('Incorrect conversation ID: ' .
+					var_export($id, true));
 			}
 
-			if ($conversation->from_id == $user->id &&
-				$conversation->to_id == $user->id)
+			if ($conversation->from_id != $user->id && $conversation->to_id != $user->id)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -338,16 +338,18 @@ class MessageController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect message ID');
 			}
 
-			if ($conversation->from_id != $user->id && $conversation->to_id != $user->id)
+			if ($conversation->from_id != $user->id && $conversation->to_id != $user->id ||
+				$conversation->from_id != $receiver->id && $conversation->to_id != $receiver->id)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$body = $this->_request->getPost('message');
 
-			if (!v::stringType()->validate($body))
+			if (!v::stringType()->length(1, 65535)->validate($body))
 			{
-				throw new RuntimeException('Incorrect message body value');
+				throw new RuntimeException('Incorrect body value: ' .
+					var_export($body, true));
 			}
 
 			$messageModel = new Application_Model_ConversationMessage;

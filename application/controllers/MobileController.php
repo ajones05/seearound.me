@@ -533,58 +533,93 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect receiver ID', -1);
 			}
 
-			$form = new Application_Form_Message;
+			$body = $this->_request->getPost('message');
 
-			if (!$form->isValid($this->_request->getPost()))
+			if (!v::stringType()->length(1, 65535)->validate($body))
 			{
-				throw new RuntimeException('Validate error', -1);
+				throw new RuntimeException('Incorrect body value: ' .
+					var_export($body, true));
 			}
 
-			$data = $form->getValues();
+			$conversation_id = $this->_request->getPost('conversation_id');
 
-			$conversation = (new Application_Model_Conversation)->save(array(
-				'from_id' => $user->id,
-				'to_id' => $receiver->id,
-				'subject' => $data['subject']
-			));
+			if (!v::optional(v::intVal())->validate($conversation_id))
+			{
+				throw new RuntimeException('Incorrect receiver ID value: ' .
+					var_export($receiver_id, true));
+			}
 
-			$message = (new Application_Model_ConversationMessage)->save(array(
+			$conversationModel = new Application_Model_Conversation;
+
+			if ($conversation_id)
+			{
+				if (!$conversationModel->checkId($conversation_id, $conversation))
+				{
+					throw new RuntimeException('Incorrect conversation ID: ' .
+						var_export($conversation_id, true));
+				}
+
+				if ($conversation->from_id != $user->id && $conversation->to_id != $user->id ||
+					$conversation->from_id != $receiver->id && $conversation->to_id != $receiver->id)
+				{
+					throw new RuntimeException('You are not authorized to access this action');
+				}
+			}
+			else
+			{
+				$subject = $this->_request->getPost('subject');
+
+				if (!v::stringType()->length(1, 250)->validate($subject))
+				{
+					throw new RuntimeException('Incorrect subject value: ' .
+						var_export($subject, true));
+				}
+
+				$conversation = $conversationModel->save([
+					'from_id' => $user->id,
+					'to_id' => $receiver->id,
+					'subject' => $subject
+				]);
+			}
+
+			$message = (new Application_Model_ConversationMessage)->save([
 				'conversation_id' => $conversation->id,
 				'from_id' => $user->id,
 				'to_id' => $receiver->id,
-				'body' => $data['message'],
-				'is_first' => 1
-			));
+				'body' => $body,
+				'is_first' => !$conversation_id ? 1 : 0
+			]);
 
 			My_Email::send(
-				array($receiver->Name => $receiver->Email_id),
-				$data['subject'],
-				array(
+				[$receiver->Name => $receiver->Email_id],
+				$conversation->subject,
+				[
 					'template' => 'message-notification',
-					'assign' => array(
+					'assign' => [
 						'sender' => $user,
 						'receiver' => $receiver,
-						'subject' => $data['subject'],
-						'message' => $data['message']
-					)
-				)
+						'subject' => $conversation->subject,
+						'message' => $message->body
+					]
+				]
 			);
 
-			$response = array(
+			$response = [
 				'status' => "SUCCESS",
 				'message' => "Message Send Successfully",
-				'result' => array(
+				'result' => [
 					'id' => $conversation->id,
 					'created' => $conversation->created_at
-				)
-			);
+				]
+			];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);
