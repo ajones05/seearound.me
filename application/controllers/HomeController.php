@@ -144,26 +144,13 @@ class HomeController extends Zend_Controller_Action
 			$upload->addFilter('Rename', $full_path);
 			$upload->receive();
 
-			$currentImage = $user->findManyToManyRowset('Application_Model_Image',
-				'Application_Model_UserImage')->current();
-
-			if ($currentImage)
+			if ($user->image_id)
 			{
-				try
-				{
-					$currentImage->deleteImage();
-				}
-				catch (Exception $e)
-				{
-				}
+				$user->findDependentRowset('Application_Model_Image')
+					->current()->deleteImage();
 			}
 
 			$image = (new Application_Model_Image)->save('www/upload/' . $name);
-
-			(new Application_Model_UserImage)->insert(array(
-				'user_id' => $user->id,
-				'image_id' => $image->id
-			));
 
 			$thumb55x55 = 'thumb55x55/' . $name;
 			$thumb24x24 = 'thumb24x24/' . $name;
@@ -179,6 +166,9 @@ class HomeController extends Zend_Controller_Action
 			$thumbModel->save($thumb24x24, $image, [24, 24]);
 			$thumb = $thumbModel->save($thumb55x55, $image, [55, 55]);
 			$thumbModel->save($thumb320x320, $image, [320, 320]);
+
+			$user->image_id = $image->id;
+			$user->save();
 
 			$response = [
 				'status' => 1,

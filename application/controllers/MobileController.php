@@ -609,9 +609,12 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($user_id, $user))
+			$userModel = new Application_Model_User;
+
+			if (!$userModel->checkId($user_id, $user))
 			{
-				throw new RuntimeException('Incorrect user ID', -1);
+				throw new RuntimeException('Incorrect user ID: ' .
+					var_export($user_id, true));
 			}
 
 			$start = $this->_request->getPost('start', 0);
@@ -622,11 +625,9 @@ class MobileController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$config = Zend_Registry::get('config_global');
 			$model = new Application_Model_Conversation;
-			$messages = $model->fetchAll($model->select()
-				->setIntegrityCheck(false)
-				->from(array('c' => 'conversation'), array(
+			$query = $model->select()->setIntegrityCheck(false)
+				->from(['c' => 'conversation'], [
 					'c.id',
 					'c.subject',
 					'cm1.body',
@@ -634,34 +635,32 @@ class MobileController extends Zend_Controller_Action
 					'user_id' => 'u.id',
 					'user_name' => 'u.Name',
 					'user_email' => 'u.Email_id',
-					'user_image' => 'it.path',
 					'is_read' => 'IFNULL(cm3.is_read,1)'
-				))
+				])
 				->where('c.to_id=?', $user->id)
-				->joinLeft(array('cm1' => 'conversation_message'), '(cm1.conversation_id=c.id AND ' .
+				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
 					'cm1.is_first=1)', '')
-				->joinLeft(array('cm3' => 'conversation_message'), '(cm3.conversation_id=c.id AND ' .
+				->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
 					'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
-				->joinLeft(array('u' => 'user_data'), 'u.id=c.from_id', '')
-				->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '')
-				->joinLeft(array('it' => 'image_thumb'), '(it.image_id=IFNULL(ui.image_id,' .
-					$config->user->default_image . ') AND ' .
-					'it.thumb_width=320 AND it.thumb_height=320)', '')
+				->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', '')
 				->group('c.id')
 				->order('c.created_at DESC')
-				->limit(100, $start)
-			);
+				->limit(100, $start);
 
-			$response = array(
+			$userModel->setThumbsQuery($query, [[320, 320]], 'u');
+			$messages = $model->fetchAll($query);
+
+			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'Message list Send Successfully'
-			);
+			];
 
 			if (count($messages))
 			{
 				foreach ($messages as $message)
 				{
-					$response['result'][] = array(
+					$thumb = $userModel->getThumb($message, '320x320', 'u');
+					$response['result'][] = [
 						'id' => $message->id,
 						'sender_id' => $message->user_id,
 						'subject' => $message->subject,
@@ -671,18 +670,18 @@ class MobileController extends Zend_Controller_Action
 						'Name' => $message->user_name,
 						'Email_id' => $message->user_email,
 						'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($message->user_image)
-					);
+							$this->view->baseUrl($thumb['path'])
+					];
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_logRequest($response);
@@ -707,7 +706,9 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($user_id, $user))
+			$userModel = new Application_Model_User;
+
+			if (!$userModel->checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -720,46 +721,43 @@ class MobileController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$response = array(
-				'status' => 'SUCCESS',
-				'message' => 'Message list Send Successfully'
-			);
-
-			$config = Zend_Registry::get('config_global');
 			$model = new Application_Model_Conversation;
-			$messages = $model->fetchAll($model->select()
+			$query = $model->select()
 				->setIntegrityCheck(false)
-				->from(array('c' => 'conversation'), array(
+				->from(['c' => 'conversation'], [
 					'c.id',
 					'c.subject',
 					'cm1.body',
 					'cm1.created_at',
 					'user_id' => 'u.id',
 					'user_name' => 'u.Name',
-					'user_email' => 'u.Email_id',
-					'user_image' => 'it.path'
-				))
+					'user_email' => 'u.Email_id'
+				])
 				->where('c.to_id=?', $user->id)
-				->joinLeft(array('cm1' => 'conversation_message'), '(cm1.conversation_id=c.id AND ' .
+				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
 					'cm1.is_first=1)', '')
-				->joinLeft(array('cm3' => 'conversation_message'), '(cm3.conversation_id=c.id AND ' .
+				->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
 					'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
 				->where('cm3.id IS NOT NULL')
-				->joinLeft(array('u' => 'user_data'), 'u.id=c.from_id', '')
-				->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '')
-				->joinLeft(array('it' => 'image_thumb'), '(it.image_id=IFNULL(ui.image_id,' .
-					$config->user->default_image . ') AND ' .
-					'it.thumb_width=320 AND it.thumb_height=320)', '')
+				->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', '')
 				->group('c.id')
 				->order('c.created_at DESC')
-				->limit(100, $start)
-			);
+				->limit(100, $start);
+
+			$userModel->setThumbsQuery($query, [[320, 320]], 'u');
+			$messages = $model->fetchAll($query);
+
+			$response = [
+				'status' => 'SUCCESS',
+				'message' => 'Message list Send Successfully'
+			];
 
 			if (count($messages))
 			{
 				foreach ($messages as $message)
 				{
-					$response['result'][] = array(
+					$thumb = $userModel->getThumb($message, '320x320', 'u');
+					$response['result'][] = [
 						'id' => $message->id,
 						'sender_id' => $message->user_id,
 						'subject' => $message->subject,
@@ -769,18 +767,18 @@ class MobileController extends Zend_Controller_Action
 						'Name' => $message->user_name,
 						'Email_id' => $message->user_email,
 						'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($message->user_image)
-					);
+							$this->view->baseUrl($thumb['path'])
+					];
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_logRequest($response);
@@ -805,7 +803,9 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($user_id, $user))
+			$userModel = new Application_Model_User;
+
+			if (!$userModel->checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -818,7 +818,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($other_user_id, $other_user))
+			if (!$userModel->checkId($other_user_id, $other_user))
 			{
 				throw new RuntimeException('Incorrect other user ID', -1);
 			}
@@ -831,16 +831,14 @@ class MobileController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$response = array(
+			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'Inbox Message between two user rendered Successfully'
-			);
+			];
 
-			$config = Zend_Registry::get('config_global');
 			$model = new Application_Model_Conversation;
-			$messages = $model->fetchAll($model->select()
-				->setIntegrityCheck(false)
-				->from(array('c' => 'conversation'), array(
+			$query = $model->select()->setIntegrityCheck(false)
+				->from(['c' => 'conversation'], [
 					'c.id',
 					'c.subject',
 					'cm1.body',
@@ -848,32 +846,30 @@ class MobileController extends Zend_Controller_Action
 					'user_id' => 'u.id',
 					'user_name' => 'u.Name',
 					'user_email' => 'u.Email_id',
-					'user_image' => 'it.path',
 					'is_read' => 'IFNULL(cm3.is_read,1)'
-				))
+				])
 				->where('(c.to_id=?',  $user->id)
 				->where('c.from_id=?)', $other_user->id)
 				->orWhere('(c.to_id=?',  $other_user->id)
 				->where('c.from_id=?)', $user->id)
-				->joinLeft(array('cm1' => 'conversation_message'), '(cm1.conversation_id=c.id AND ' .
+				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
 					'cm1.is_first=1)', '')
-				->joinLeft(array('cm3' => 'conversation_message'), '(cm3.conversation_id=c.id AND ' .
+				->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
 					'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
-				->joinLeft(array('u' => 'user_data'), 'u.id=c.from_id', '')
-				->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '')
-				->joinLeft(array('it' => 'image_thumb'), '(it.image_id=IFNULL(ui.image_id,' .
-					$config->user->default_image . ') AND ' .
-					'it.thumb_width=320 AND it.thumb_height=320)', '')
+				->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', '')
 				->group('c.id')
 				->order('c.created_at DESC')
-				->limit(100, $start)
-			);
+				->limit(100, $start);
+
+			$userModel->setThumbsQuery($query, [[320, 320]], 'u');
+			$messages = $model->fetchAll($query);
 
 			if (count($messages))
 			{
 				foreach ($messages as $message)
 				{
-					$response['result'][] = array(
+					$thumb = $userModel->getThumb($message, '320x320', 'u');
+					$response['result'][] = [
 						'id' => $message->id,
 						'sender_id' => $message->user_id,
 						'subject' => $message->subject,
@@ -883,18 +879,18 @@ class MobileController extends Zend_Controller_Action
 						'Name' => $message->user_name,
 						'Email_id' => $message->user_email,
 						'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($message->user_image)
-					);
+							$this->view->baseUrl($thumb['path'])
+					];
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_logRequest($response);
@@ -919,7 +915,9 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($user_id, $user))
+			$userModel = new Application_Model_User;
+
+			if (!$userModel->checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -952,11 +950,10 @@ class MobileController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$config = Zend_Registry::get('config_global');
 			$messageModel = new Application_Model_ConversationMessage;
-			$messages = $messageModel->fetchAll($messageModel->select()
+			$query = $messageModel->select()
 				->setIntegrityCheck(false)
-				->from(array('cm' => 'conversation_message'), array(
+				->from(['cm' => 'conversation_message'], [
 					'cm.id',
 					'cm.to_id',
 					'cm.body',
@@ -970,25 +967,19 @@ class MobileController extends Zend_Controller_Action
 					'receiver_name' => 'ru.Name',
 					'receiver_email' => 'ru.Email_id',
 					'receiver_image' => 'rit.path',
-				))
+				])
 				->where('cm.conversation_id=?', $conversation->id)
 				->where('cm.is_first<>1')
-				->joinLeft(array('su' => 'user_data'), 'su.id=cm.from_id', '')
-				->joinLeft(array('sui' => 'user_image'), 'sui.user_id=su.id', '')
-				->joinLeft(array('sit' => 'image_thumb'), '(sit.image_id=IFNULL(sui.image_id,' .
-					$config->user->default_image . ') AND ' .
-					'sit.thumb_width=320 AND sit.thumb_height=320)', '')
-				->joinLeft(array('ru' => 'user_data'), 'ru.id=cm.to_id', '')
-				->joinLeft(array('rui' => 'user_image'), 'rui.user_id=ru.id', '')
-				->joinLeft(array('rit' => 'image_thumb'), '(rit.image_id=IFNULL(rui.image_id,' .
-					$config->user->default_image . ') AND ' .
-					'rit.thumb_width=320 AND rit.thumb_height=320)', '')
+				->joinLeft(['su' => 'user_data'], 'su.id=cm.from_id', '')
+				->joinLeft(['ru' => 'user_data'], 'ru.id=cm.to_id', '')
 				->order('cm.created_at DESC')
-				->limit(10, $start)
-			);
+				->limit(10, $start);
 
-			$response = array('status' => 'SUCCESS');
-			$updateCondition = array();
+			$userModel->setThumbsQuery($query, [[320, 320]], 'su');
+			$userModel->setThumbsQuery($query, [[320, 320]], 'ru');
+			$messages = $messageModel->fetchAll($query);
+
+			$updateCondition = [];
 
 			if ($conversation->to_id == $user->id)
 			{
@@ -996,26 +987,30 @@ class MobileController extends Zend_Controller_Action
 					' AND is_first=1)';
 			}
 
+			$response = ['status' => 'SUCCESS'];
+
 			if ($messages->count())
 			{
 				foreach ($messages as $message)
 				{
-					$response['result'][] = array(
+					$senderThumb = $userModel->getThumb($message, '320x320', 'su');
+					$receiverThumb = $userModel->getThumb($message, '320x320', 'ru');
+					$response['result'][] = [
 						'id' => $message->id,
 						'body' => $message->body,
 						'created_at' => $message->created_at,
 						'sender_id' => $message->sender_id,
 						'sender_name' => $message->sender_name,
 						'sender_email' => $message->sender_email,
-						'sender_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($message->sender_image),
+						'sender_image' =>  $this->view->serverUrl() .
+							$this->view->baseUrl($senderThumb['path']),
 						'receiver_id' => $message->receiver_id,
 						'receiver_name' => $message->receiver_name,
 						'receiver_email' => $message->receiver_email,
-						'receiver_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($message->receiver_image),
+						'receiver_image' =>  $this->view->serverUrl() .
+							$this->view->baseUrl($receiverThumb['path']),
 						'is_read' => $message->is_read
-					);
+					];
 
 					if ($message->to_id == $user->id)
 					{
@@ -1026,17 +1021,17 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($updateCondition))
 			{
-				$messageModel->update(array('is_read' => 1),
+				$messageModel->update(['is_read' => 1],
 					implode(' OR ', $updateCondition));
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_logRequest($response);
@@ -1149,7 +1144,9 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($user_id, $user))
+			$userModel = new Application_Model_User;
+
+			if (!$userModel->checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -1162,7 +1159,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($other_user_id, $other_user))
+			if (!$userModel->checkId($other_user_id, $other_user))
 			{
 				throw new RuntimeException('Incorrect other user ID', -1);
 			}
@@ -1175,11 +1172,10 @@ class MobileController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$config = Zend_Registry::get('config_global');
 			$messageModel = new Application_Model_ConversationMessage;
-			$messages = $messageModel->fetchAll($messageModel->select()
+			$query = $messageModel->select()
 				->setIntegrityCheck(false)
-				->from(array('cm' => 'conversation_message'), array(
+				->from(['cm' => 'conversation_message'], [
 					'cm.id',
 					'c.subject',
 					'cm.body',
@@ -1188,39 +1184,34 @@ class MobileController extends Zend_Controller_Action
 					'sender_id' => 'su.id',
 					'sender_name' => 'su.Name',
 					'sender_email' => 'su.Email_id',
-					'sender_image' => 'sit.path',
 					'receiver_id' => 'ru.id',
 					'receiver_name' => 'ru.Name',
-					'receiver_email' => 'ru.Email_id',
-					'receiver_image' => 'rit.path',
-				))
-				->joinLeft(array('c' => 'conversation'), 'c.id=cm.conversation_id', '')
+					'receiver_email' => 'ru.Email_id'
+				])
+				->joinLeft(['c' => 'conversation'], 'c.id=cm.conversation_id', '')
 				->where('(c.to_id=?',  $user->id)
 				->where('c.from_id=?)', $other_user->id)
 				->orWhere('(c.to_id=?',  $other_user->id)
 				->where('c.from_id=?)', $user->id)
-				->joinLeft(array('su' => 'user_data'), 'su.id=cm.from_id', '')
-				->joinLeft(array('sui' => 'user_image'), 'sui.user_id=su.id', '')
-				->joinLeft(array('sit' => 'image_thumb'), '(sit.image_id=IFNULL(sui.image_id,' .
-					$config->user->default_image . ') AND ' .
-					'sit.thumb_width=320 AND sit.thumb_height=320)', '')
-				->joinLeft(array('ru' => 'user_data'), 'ru.id=cm.to_id', '')
-				->joinLeft(array('rui' => 'user_image'), 'rui.user_id=ru.id', '')
-				->joinLeft(array('rit' => 'image_thumb'), '(rit.image_id=IFNULL(rui.image_id,' .
-					$config->user->default_image . ') AND ' .
-					'rit.thumb_width=320 AND rit.thumb_height=320)', '')
+				->joinLeft(['su' => 'user_data'], 'su.id=cm.from_id', '')
+				->joinLeft(['ru' => 'user_data'], 'ru.id=cm.to_id', '')
 				->group('cm.id')
 				->order('cm.created_at DESC')
-				->limit(10, $start)
-			);
+				->limit(10, $start);
 
-			$response = array('status' => 'SUCCESS');
+			$userModel->setThumbsQuery($query, [[320, 320]], 'su');
+			$userModel->setThumbsQuery($query, [[320, 320]], 'ru');
+			$messages = $messageModel->fetchAll($query);
+
+			$response = ['status' => 'SUCCESS'];
 
 			if ($messages->count())
 			{
 				foreach ($messages as $message)
 				{
-					$response['result'][] = array(
+					$senderThumb = $userModel->getThumb($message, '320x320', 'su');
+					$receiverThumb = $userModel->getThumb($message, '320x320', 'ru');
+					$response['result'][] = [
 						'id' => $message->id,
 						'subject' => $message->subject,
 						'body' => $message->body,
@@ -1230,23 +1221,23 @@ class MobileController extends Zend_Controller_Action
 						'sender_name' => $message->sender_name,
 						'sender_email' => $message->sender_email,
 						'sender_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($message->sender_image),
+							$this->view->baseUrl($senderThumb['path']),
 						'receiver_id' => $message->receiver_id,
 						'receiver_name' => $message->receiver_name,
 						'receiver_email' => $message->receiver_email,
 						'receiver_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($message->receiver_image)
-					);
+							$this->view->baseUrl($receiverThumb['path']),
+					];
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_logRequest($response);
@@ -1305,9 +1296,17 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user ID');
 			}
 
 			$model = new Application_Model_User;
@@ -1333,23 +1332,14 @@ class MobileController extends Zend_Controller_Action
 
 				if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
 				{
-					$currentImage = $user->findManyToManyRowset('Application_Model_Image',
-						'Application_Model_UserImage');
-
-					if ($currentImage->count())
+					if ($user->image_id)
 					{
-						foreach ($currentImage as $image)
-						{
-							$image->deleteImage();
-						}
+						$user->findDependentRowset('Application_Model_Image')
+							->current()->deleteImage();
 					}
 
 					$image = (new Application_Model_Image)->save('www/upload/' . $data['image']);
-
-					(new Application_Model_UserImage)->insert(array(
-						'user_id' => $user->id,
-						'image_id' => $image->id
-					));
+					$user_data['image_id'] = $image->id;
 
 					$thumb55x55 = 'thumb55x55/' . $data['image'];
 					$thumb24x24 = 'thumb24x24/' . $data['image'];
@@ -1632,7 +1622,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => true || $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
 			);
 		}
 
@@ -1874,7 +1864,15 @@ class MobileController extends Zend_Controller_Action
 		{
 			$user_id = $this->_request->getPost('user_id');
 
-			if (!Application_Model_User::checkId($user_id, $user))
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			$userModel = new Application_Model_User;
+
+			if (!$userModel->checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user id: ' .
 					var_export($user_id, true));
@@ -1888,77 +1886,66 @@ class MobileController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$response = array('status' => 'SUCCESS');
+			$response = ['status' => 'SUCCESS'];
 
 			$db = Zend_Db_Table::getDefaultAdapter();
-			$defaultImage = Zend_Registry::get('config_global')->user->default_image;
-			$thumbJoin = '(it.image_id=IFNULL(ui.image_id,' . $defaultImage . ') AND ' .
-					'it.thumb_width=320 AND it.thumb_height=320)';
 
 			$select1 = $db->select();
-			$select1->from(array('f' => 'friends'), array(
+			$select1->from(['f' => 'friends'], [
 				'f.id',
 				'type' => new Zend_Db_Expr('"friend"'),
 				'fl.created_at',
 				'user_id' => 'u.id',
-				'user_name' => 'u.Name',
-				'user_image' => 'it.path'
-			));
+				'user_name' => 'u.Name'
+			]);
 			$select1->where('f.reciever_id=? AND f.status=1 AND f.notify=0', $user->id);
-			$select1->joinLeft(array('fl' => 'friend_log'),
+			$select1->joinLeft(['fl' => 'friend_log'],
 				'fl.friend_id=f.id AND fl.status_id=f.status', '');
-			$select1->joinLeft(array('u' => 'user_data'), 'u.id=fl.user_id', '');
-			$select1->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
-			$select1->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
+			$select1->joinLeft(['u' => 'user_data'], 'u.id=fl.user_id', '');
+			$userModel->setThumbsQuery($select1, [[320, 320]], 'u');
 
 			$select2 = $db->select();
-			$select2->from(array('cm' => 'conversation_message'), array(
+			$select2->from(['cm' => 'conversation_message'], [
 				'cm.id',
 				'type' => new Zend_Db_Expr('"message"'),
 				'cm.created_at',
 				'user_id' => 'u.id',
-				'user_name' => 'u.Name',
-				'user_image' => 'it.path'
-			));
+				'user_name' => 'u.Name'
+			]);
 			$select2->where('cm.to_id=? AND cm.is_read=0', $user->id);
-			$select2->joinLeft(array('u' => 'user_data'), 'u.id=cm.from_id', '');
-			$select2->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
-			$select2->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
+			$select2->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '');
+			$userModel->setThumbsQuery($select2, [[320, 320]], 'u');
 
 			$select3 = $db->select();
-			$select3->from(array('n' => 'news'), array(
+			$select3->from(['n' => 'news'], [
 				'v.id',
 				'type' => new Zend_Db_Expr('"vote"'),
 				'v.created_at',
 				'user_id' => 'u.id',
-				'user_name' => 'u.Name',
-				'user_image' => 'it.path'
-			));
+				'user_name' => 'u.Name'
+			]);
 			$select3->where('n.isdeleted=0 AND n.user_id=?', $user->id);
-			$select3->joinLeft(array('v' => 'votings'), 'v.news_id=n.id', '');
+			$select3->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
 			$select3->where('v.canceled=0 AND v.is_read=0 AND v.user_id<>?', $user->id);
-			$select3->joinLeft(array('u' => 'user_data'), 'u.id=v.user_id', '');
-			$select3->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
-			$select3->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
+			$select3->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
+			$userModel->setThumbsQuery($select3, [[320, 320]], 'u');
 
 			$select4 = $db->select();
-			$select4->from(array('n' => 'news'), array(
+			$select4->from(['n' => 'news'], [
 				'c.id',
 				'type' => new Zend_Db_Expr('"comment"'),
 				'c.created_at',
 				'user_id' => 'u.id',
-				'user_name' => 'u.Name',
-				'user_image' => 'it.path'
-			));
+				'user_name' => 'u.Name'
+			]);
 			$select4->where('n.isdeleted=0 AND n.user_id=?', $user->id);
-			$select4->joinLeft(array('c' => 'comments'), 'c.news_id=n.id', '');
+			$select4->joinLeft(['c' => 'comments'], 'c.news_id=n.id', '');
 			$select4->where('c.isdeleted=0 AND c.is_read=0 AND c.user_id<>?', $user->id);
-			$select4->joinLeft(array('u' => 'user_data'), 'u.id=c.user_id', '');
-			$select4->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '');
-			$select4->joinLeft(array('it' => 'image_thumb'), $thumbJoin, '');
+			$select4->joinLeft(['u' => 'user_data'], 'u.id=c.user_id', '');
+			$userModel->setThumbsQuery($select4, [[320, 320]], 'u');
 
 			$select = $db->select()
-				->union(array($select1, $select2, $select3, $select4),
+				->union([$select1, $select2, $select3, $select4],
 					Zend_Db_Select::SQL_UNION_ALL)
 				->order('created_at DESC')
 				->limit(10, $start);
@@ -1967,68 +1954,75 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($result))
 			{
-				$typeId = array();
+				$typeId = [];
 
-				foreach ($result as &$row)
+				foreach ($result as $row)
 				{
-					$row['user_image'] = $this->view->serverUrl() .
-						'/' . $row['user_image'];
+					$thumb = $userModel->getThumb($row, '320x320', 'u');
+					$data = [
+						'id' => $row['id'],
+						'type' => $row['type'],
+						'created_at' => $row['created_at'],
+						'user_id' => $row['user_id'],
+						'user_name' => $row['user_name'],
+						'user_image' => $this->view->serverUrl() .
+							$this->view->baseUrl($thumb['path'])
+					];
 
 					switch ($row['type'])
 					{
 						case 'friend':
-							$row['message'] = $row['user_name'] .
+							$data['message'] = $row['user_name'] .
 								' started following you';
 						case 'message':
-							$row['message'] = $row['user_name'] .
+							$data['message'] = $row['user_name'] .
 								' sent you a new message';
 							break;
 						case 'vote':
-							$row['message'] = $row['user_name'] .
+							$data['message'] = $row['user_name'] .
 								' liked your post';
 						case 'comment':
-							$row['message'] = $row['user_name'] .
+							$data['message'] = $row['user_name'] .
 								' commented on your post';
 							break;
 					}
 
+					$response['result'][] = $data;
 					$typeId[$row['type']][] = $row['id'];
 				}
 
-				$response['result'] = $result;
-
 				if (!empty($typeId['friend']))
 				{
-					$db->update('friends', array('notify' => 1),
+					$db->update('friends', ['notify' => 1],
 						'id IN(' . implode(',', $typeId['friend']) . ')');
 				}
 
 				if (!empty($typeId['message']))
 				{
-					$db->update('conversation_message', array('is_read' => 1),
+					$db->update('conversation_message', ['is_read' => 1],
 						'id IN(' . implode(',', $typeId['message']) . ')');
 				}
 
 				if (!empty($typeId['vote']))
 				{
-					$db->update('votings', array('is_read' => 1),
+					$db->update('votings', ['is_read' => 1],
 						'id IN(' . implode(',', $typeId['vote']) . ')');
 				}
 
 				if (!empty($typeId['comment']))
 				{
-					$db->update('comments', array('is_read' => 1),
+					$db->update('comments', ['is_read' => 1],
 						'id IN(' . implode(',', $typeId['comment']) . ')');
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
 				'message' => true || $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_logRequest($response);

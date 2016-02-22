@@ -8,7 +8,7 @@
 		<li id="row_<?php echo $message->id; ?>" class="message-list<?php if (!$message->is_read) echo ' highLight'; ?>">
 			<div class="main-message-wrapper">
 				<div class="message-frist">
-					<img src="<?php echo $this->baseUrl($message->user_image); ?>" />
+					<img src="<?php echo $this->baseUrl($this->userModel->getThumb($message, '55x55', 'u')['path']); ?>" />
 				</div>
 				<div class="message-second">
 					<span class="name"><?php echo $message->user_name; ?></span>

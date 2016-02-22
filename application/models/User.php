@@ -38,15 +38,13 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	 *
 	 * @return	array
 	 */
-	public function getProfileImage($default)
+	public function getProfileImage($default = null)
 	{
-		$userImage = $this->findManyToManyRowset('Application_Model_Image',
-			'Application_Model_UserImage')->current();
-
-		if ($userImage)
+		if ($this->image_id)
 		{
+			$image = $this->findDependentRowset('Application_Model_Image');
 			return Zend_Controller_Front::getInstance()->getBaseUrl() . '/' .
-				$userImage->findThumb(array(320, 320))->path;
+				$image->current()->findThumb([320, 320])->path;
 		}
 
 		return $default;
@@ -145,6 +143,17 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 		}
 
 		return $userInvite->invite_count;
+	}
+
+	/**
+	 * Returns profile image thumb.
+	 *
+	 * @param	string $thumb "{WIDTH}x{HEIGHT}"
+	 * @return	array
+	 */
+	public function getThumb($thumb)
+	{
+		return (new Application_Model_User)->getThumb($this, $thumb);
 	}
 }
 
@@ -527,13 +536,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 						$image = (new Application_Model_Image)->save('www/upload/' . $name);
 
-						(new Application_Model_UserImage)->insert(array(
-							'user_id' => $user->id,
-							'image_id' => $image->id
-						));
-
-						$thumb55x55 = 'thumb55x55/' . $name;
 						$thumb24x24 = 'thumb24x24/' . $name;
+						$thumb55x55 = 'thumb55x55/' . $name;
 						$thumb320x320 = 'uploads/' . $name;
 
 						My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, [
@@ -547,12 +551,14 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 						$thumbModel->save($thumb55x55, $image, [55, 55]);
 						$thumbModel->save($thumb320x320, $image, [320, 320]);
 
-						$user->save();
+						$user->image_id = $image->id;
 					}
 					catch (Exception $e)
 					{
 					}
 				}
+
+				$user->save();
 
 				Application_Model_Profile::getInstance()->insert(array(
 					'user_id' => $user->id,
@@ -667,5 +673,70 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		}
 
 		return true;
+	}
+
+	/**
+	 * Sets profile image thumb query.
+	 *
+	 * @param	Zend_Db_Select $query
+	 * @param	array $thumbs [[width,height],...]
+	 * @param	string $alias
+	 * @return	Zend_Db_Select
+	 */
+	public function setThumbsQuery(Zend_Db_Select &$query, array $thumbs = [], $alias = 'user_data')
+	{
+		if ($query instanceof Zend_Db_Table_Select)
+		{
+			$query->setIntegrityCheck(false);
+		}
+
+		$fields = [$alias . '_image_id' => $alias . '.image_id'];
+
+		foreach ($thumbs as $thumb)
+		{
+			$prefix = $alias . implode('x', $thumb);
+			$fields[$prefix . '_path'] = $prefix . '.path';
+			$fields[$prefix . '_width'] = $prefix . '.width';
+			$fields[$prefix . '_height'] = $prefix . '.height';
+
+			$query->joinLeft([$prefix => 'image_thumb'],
+				'(' . $prefix . '.image_id=' . $alias . '.image_id AND ' .
+					$prefix . '.thumb_width=' . $thumb[0] . ' AND ' .
+					$prefix . '.thumb_height=' . $thumb[1] . ')', '');
+		}
+
+		$query->columns($fields);
+
+		return $query;
+	}
+
+	/**
+	 * Returns profile image thumb.
+	 *
+	 * @param	mixed $data
+	 * @param	string $thumb "{WIDTH}x{HEIGHT}"
+	 * @param	string $alias
+	 * @return	array
+	 */
+	public function getThumb($data, $thumb, $alias = 'used_data')
+	{
+		$prefix = $alias . $thumb;
+
+		if (My_ArrayHelper::getProp($data, $alias . '_image_id'))
+		{
+			return [
+				'path' => My_ArrayHelper::getProp($data, $prefix . '_path'),
+				'width' => My_ArrayHelper::getProp($data, $prefix . '_width'),
+				'height' => My_ArrayHelper::getProp($data, $prefix . '_height')
+			];
+		}
+
+		$config = Zend_Registry::get('config_global');
+
+		return [
+			'path' => $config->user->thumb->{$thumb}->path,
+			'width' => $config->user->thumb->{$thumb}->width,
+			'height' => $config->user->thumb->{$thumb}->height
+		];
 	}
 }

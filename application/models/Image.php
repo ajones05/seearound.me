@@ -70,7 +70,7 @@ class Application_Model_Image extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
     protected $_dependentTables = array(
-		'Application_Model_UserImage',
+		'Application_Model_User',
 		'Application_Model_NewsImage',
 		'Application_Model_NewsLinkImage'
 	);
@@ -84,9 +84,9 @@ class Application_Model_Image extends Zend_Db_Table_Abstract
 			'refTableClass' => 'Application_Model_ImageThumb',
 			'refColumns' => 'image_id'
 		),
-		'UserImage' => array(
+		'User' => array(
 			'columns' => 'id',
-			'refTableClass' => 'Application_Model_UserImage',
+			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'image_id'
 		),
 		'NewsImage' => array(

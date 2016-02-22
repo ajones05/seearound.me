@@ -14,45 +14,47 @@ class MessageController extends Zend_Controller_Action
 	public function indexAction()
 	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
+		$userModel = new Application_Model_User;
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		if (!$userModel->checkId($auth['user_id'], $user))
 		{
 			throw new RuntimeException('You are not authorized to access this action');
 		}
 
-		$config = Zend_Registry::get('config_global');
-		$model = new Application_Model_Conversation;
+		$page = $this->_request->getPost('page', 1);
 
-		$paginator = Zend_Paginator::factory(
-			$model->select()
-				->setIntegrityCheck(false)
-				->from(array('c' => 'conversation'), array(
-					'c.*',
-					'cm1.body',
-					'user_name' => 'u.Name',
-					'user_image' => 'it.path',
-					'is_read' => 'IFNULL(cm3.is_read,1)'
-				))
-				->where('(c.to_id=?', $user->id)
-				->orWhere('c.from_id=?)', $user->id)
-				->joinLeft(array('cm1' => 'conversation_message'), '(cm1.conversation_id=c.id AND ' .
-					'cm1.is_first=1)', '')
-				->joinLeft(array('cm3' => 'conversation_message'), '(cm3.conversation_id=c.id AND ' .
-					'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
-				->joinLeft(array('u' => 'user_data'), 'u.id=c.from_id', '')
-				->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '')
-				->joinLeft(array('it' => 'image_thumb'), '(it.image_id=IFNULL(ui.image_id,' .
-					$config->user->default_image . ') AND ' .
-					'it.thumb_width=320 AND it.thumb_height=320)', '')
-				->group('c.id')
-				->order('is_read ASC')
-				->order('c.created_at DESC')
-		);
+		if (!v::intVal()->validate($page))
+		{
+			throw new RuntimeException('Incorrect page value: ' .
+				var_export($page, true));
+		}
 
-		$paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
+		$conversationModel = new Application_Model_Conversation;
+		$query = $conversationModel->select()->setIntegrityCheck(false)
+			->from(['c' => 'conversation'], [
+				'c.*',
+				'cm1.body',
+				'user_name' => 'u.Name',
+				'is_read' => 'IFNULL(cm3.is_read,1)'
+			])
+			->where('(c.to_id=?', $user->id)
+			->orWhere('c.from_id=?)', $user->id)
+			->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
+				'cm1.is_first=1)', '')
+			->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
+				'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
+			->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', '')
+			->group('c.id')
+			->order(['is_read ASC', 'c.created_at DESC']);
+
+		$userModel->setThumbsQuery($query, [[55, 55]], 'u');
+
+		$paginator = Zend_Paginator::factory($query);
+		$paginator->setCurrentPageNumber($page);
 		$paginator->setItemCountPerPage(14);
 
 		$this->view->user = $user;
+		$this->view->userModel = $userModel;
         $this->view->paginator = $paginator;
 		$this->view->hideRight = true;
 
@@ -110,9 +112,10 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
+			$userModel = new Application_Model_User;
 			$auth = Zend_Auth::getInstance()->getIdentity();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if (!$userModel->checkId($auth['user_id'], $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -121,7 +124,8 @@ class MessageController extends Zend_Controller_Action
 
 			if (!v::intVal()->validate($id))
 			{
-				throw new RuntimeException('ID cannot be blank');
+				throw new RuntimeException('Incorrect conversation ID value: ' .
+					var_export($id, true));
 			}
 
 			$conversationModel = new Application_Model_Conversation;
@@ -141,44 +145,42 @@ class MessageController extends Zend_Controller_Action
 
 			if (!v::optional(v::intVal())->validate($start))
 			{
-				throw new RuntimeException('Incorrect start value');
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
 			$limit = $start ? 14 : 5;
 
-			$config = Zend_Registry::get('config_global');
 			$messageModel = new Application_Model_ConversationMessage;
-			$messages = $messageModel->fetchAll($messageModel->select()
-				->setIntegrityCheck(false)
-				->from(array('cm' => 'conversation_message'), array(
+			$query = $messageModel->select()->setIntegrityCheck(false)
+				->from(['cm' => 'conversation_message'], [
 					'cm.id',
 					'cm.to_id',
 					'cm.body',
 					'cm.is_read',
 					'cm.created_at',
-					'user_name' => 'u.Name',
-					'user_image' => 'it.path',
-				))
+					'user_name' => 'u.Name'
+				])
 				->where('cm.conversation_id=?', $conversation->id)
 				->where('cm.is_first<>1')
-				->joinLeft(array('u' => 'user_data'), 'u.id=cm.from_id', '')
-				->joinLeft(array('ui' => 'user_image'), 'ui.user_id=u.id', '')
-				->joinLeft(array('it' => 'image_thumb'), '(it.image_id=IFNULL(ui.image_id,' .
-					$config->user->default_image . ') AND ' .
-					'it.thumb_width=320 AND it.thumb_height=320)', '')
+				->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '')
 				->order('cm.created_at DESC')
-				->limit($limit, $start)
-			);
+				->limit($limit, $start);
 
-			$response = array('status' => 1);
+			$userModel->setThumbsQuery($query, [[55, 55]], 'u');
+
+			$messages = $messageModel->fetchAll($query);
 			$messagesCount = $messages->count();
-			$updateCondition = array();
+
+			$updateCondition = [];
 
 			if ($conversation->to_id == $user->id)
 			{
 				$updateCondition[] = '(conversation_id=' . $conversation->id .
 					' AND is_first=1)';
 			}
+
+			$response = ['status' => 1];
 
 			if ($messagesCount)
 			{
@@ -191,7 +193,7 @@ class MessageController extends Zend_Controller_Action
 						'created' => date('F j \a\t h:ia', strtotime($message->created_at)),
 						'sender' => array(
 							'name' => $message->user_name,
-							'image' => $this->view->baseUrl($message->user_image)
+							'image' => $this->view->baseUrl($userModel->getThumb($message, '55x55', 'u')['path'])
 						)
 					);
 

@@ -13,7 +13,7 @@ $(function(){
 		target.find(".message-third img").attr("src", baseUrl + "www/images/message_checked.png");
 		loadReplyMessages(target);
 		$('html, body').animate({scrollTop: target.offset().top - 50}, 0);
-		notification();
+		$('#msgTotal').hide();
 	});
 });
 

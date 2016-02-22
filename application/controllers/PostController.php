@@ -91,25 +91,23 @@ class PostController extends Zend_Controller_Action
 					$thumb = $image->findThumb([448, 320]);
 				}
 			}
-
-			if (!$image)
-			{
-				$image = $owner->findManyToManyRowset('Application_Model_Image',
-					'Application_Model_UserImage')->current();
-
-				if ($image)
-				{
-					$thumb = $image->findThumb([320, 320]);
-				}
-			}
 		}
+
+		// TODO:  refactoring
 
 		if (!$image)
 		{
-			$config = Zend_Registry::get('config_global');
-			$image = (new Application_Model_Image)
-				->find($config->user->default_image)->current();
-			$thumb = $image->findThumb([320, 320]);
+			if ($owner->image_id)
+			{
+				$image = (new Application_Model_Image)
+					->find($owner->image_id)->current();
+				$thumb = $image->findThumb([320, 320]);
+			}
+			else
+			{
+				$config = Zend_Registry::get('config_global');
+				$thumb = $config->user->thumb->{'320x320'};
+			}
 		}
 
 		$this->view->headMeta($this->view->serverUrl() .

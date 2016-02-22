@@ -6,6 +6,8 @@ ALTER TABLE `user_data` CHANGE `Network_id` `Network_id` VARCHAR(2000) NULL DEFA
 ALTER TABLE `user_data` CHANGE `is_admin` `is_admin` TINYINT(1) NOT NULL DEFAULT '0';
 ALTER TABLE `user_data` COLLATE 'utf8_general_ci';
 ALTER TABLE `user_data` ADD `password_hash` varchar(255) NULL;
+ALTER TABLE `user_data` ADD `image_id` INT(11) NULL;
+ALTER TABLE `user_data` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Table structure for table `address`
@@ -141,19 +143,6 @@ CREATE TABLE `image_thumb` (
 	`thumb_width` INT(10) NULL,
 	`thumb_height` INT(10) NULL,
 	PRIMARY KEY (`id`),
-	FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE CASCADE
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
-
---
--- Table structure for table `news_image`
---
-CREATE TABLE `user_image` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`user_id` INT(11) NOT NULL,
-	`image_id` INT(11) NOT NULL,
-	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	PRIMARY KEY (`id`),
-	FOREIGN KEY (`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE,
 	FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
