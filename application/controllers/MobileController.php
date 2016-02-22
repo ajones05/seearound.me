@@ -1888,6 +1888,8 @@ class MobileController extends Zend_Controller_Action
 
 			$response = ['status' => 'SUCCESS'];
 
+			$maxDate = (new DateTime)->modify('-15 days')->setTime(0, 0)
+				->format('Y-m-d H:i:s');
 			$db = Zend_Db_Table::getDefaultAdapter();
 
 			$select1 = $db->select();
@@ -1896,9 +1898,10 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"friend"'),
 				'fl.created_at',
 				'user_id' => 'u.id',
-				'user_name' => 'u.Name'
+				'user_name' => 'u.Name',
+				'is_read' => 'f.notify'
 			]);
-			$select1->where('f.reciever_id=? AND f.status=1 AND f.notify=0', $user->id);
+			$select1->where('f.reciever_id=? AND f.status=1 AND fl.created_at>=?', $user->id, $maxDate);
 			$select1->joinLeft(['fl' => 'friend_log'],
 				'fl.friend_id=f.id AND fl.status_id=f.status', '');
 			$select1->joinLeft(['u' => 'user_data'], 'u.id=fl.user_id', '');
@@ -1910,10 +1913,12 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"message"'),
 				'cm.created_at',
 				'user_id' => 'u.id',
-				'user_name' => 'u.Name'
+				'user_name' => 'u.Name',
+				'is_read' => 'cm.is_read'
 			]);
-			$select2->where('cm.to_id=? AND cm.is_read=0', $user->id);
+			$select2->where('cm.to_id=? AND cm.created_at>=?', $user->id, $maxDate);
 			$select2->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '');
+
 			$userModel->setThumbsQuery($select2, [[320, 320]], 'u');
 
 			$select3 = $db->select();
@@ -1922,11 +1927,12 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"vote"'),
 				'v.created_at',
 				'user_id' => 'u.id',
-				'user_name' => 'u.Name'
+				'user_name' => 'u.Name',
+				'is_read' => 'v.is_read'
 			]);
 			$select3->where('n.isdeleted=0 AND n.user_id=?', $user->id);
 			$select3->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
-			$select3->where('v.canceled=0 AND v.is_read=0 AND v.user_id<>?', $user->id);
+			$select3->where('v.canceled=0 AND v.user_id<>? AND v.created_at>=?', $user->id, $maxDate);
 			$select3->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
 			$userModel->setThumbsQuery($select3, [[320, 320]], 'u');
 
@@ -1936,11 +1942,12 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"comment"'),
 				'c.created_at',
 				'user_id' => 'u.id',
-				'user_name' => 'u.Name'
+				'user_name' => 'u.Name',
+				'is_read' => 'c.is_read'
 			]);
 			$select4->where('n.isdeleted=0 AND n.user_id=?', $user->id);
 			$select4->joinLeft(['c' => 'comments'], 'c.news_id=n.id', '');
-			$select4->where('c.isdeleted=0 AND c.is_read=0 AND c.user_id<>?', $user->id);
+			$select4->where('c.isdeleted=0 AND c.user_id<>? AND c.created_at>=?', $user->id, $maxDate);
 			$select4->joinLeft(['u' => 'user_data'], 'u.id=c.user_id', '');
 			$userModel->setThumbsQuery($select4, [[320, 320]], 'u');
 
@@ -1962,6 +1969,7 @@ class MobileController extends Zend_Controller_Action
 					$data = [
 						'id' => $row['id'],
 						'type' => $row['type'],
+						'is_read' => $row['is_read'],
 						'created_at' => $row['created_at'],
 						'user_id' => $row['user_id'],
 						'user_name' => $row['user_name'],
@@ -1974,6 +1982,7 @@ class MobileController extends Zend_Controller_Action
 						case 'friend':
 							$data['message'] = $row['user_name'] .
 								' started following you';
+							break;
 						case 'message':
 							$data['message'] = $row['user_name'] .
 								' sent you a new message';
@@ -1981,6 +1990,7 @@ class MobileController extends Zend_Controller_Action
 						case 'vote':
 							$data['message'] = $row['user_name'] .
 								' liked your post';
+							break;
 						case 'comment':
 							$data['message'] = $row['user_name'] .
 								' commented on your post';
@@ -1988,7 +1998,11 @@ class MobileController extends Zend_Controller_Action
 					}
 
 					$response['result'][] = $data;
-					$typeId[$row['type']][] = $row['id'];
+
+					if (!$row['is_read'])
+					{
+						$typeId[$row['type']][] = $row['id'];
+					}
 				}
 
 				if (!empty($typeId['friend']))
