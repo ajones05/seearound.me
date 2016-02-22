@@ -60,14 +60,14 @@ class My_ArrayHelper
 	 */
 	public static function getProp($src, $key, $default=null)
 	{
-		$property = &$src;
+		$property = $src;
 		foreach (array_map("trim", explode(".", str_replace("->", ".", $key))) as $k)
 		{
 			if (is_array($property))
 			{
 				if (isset($property[$k]))
 				{
-					$property = &$property[$k];
+					$property = $property[$k];
 					continue;
 				}
 			}
@@ -75,7 +75,7 @@ class My_ArrayHelper
 			{
 				if (isset($property->$k))
 				{
-					$property = &$property->$k;
+					$property = $property->$k;
 					continue;
 				}
 			}
