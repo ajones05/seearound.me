@@ -545,8 +545,8 @@ class MobileController extends Zend_Controller_Action
 
 			if (!v::optional(v::intVal())->validate($conversation_id))
 			{
-				throw new RuntimeException('Incorrect receiver ID value: ' .
-					var_export($receiver_id, true));
+				throw new RuntimeException('Incorrect conversation ID value: ' .
+					var_export($conversation_id, true));
 			}
 
 			$conversationModel = new Application_Model_Conversation;
