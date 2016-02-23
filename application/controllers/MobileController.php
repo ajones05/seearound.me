@@ -845,19 +845,6 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$other_user_id = $this->_request->getPost('other_user_id');
-
-			if (!v::intVal()->validate($other_user_id))
-			{
-				throw new RuntimeException('Incorrect other user ID value: ' .
-					var_export($other_user_id, true));
-			}
-
-			if (!$userModel->checkId($other_user_id, $other_user))
-			{
-				throw new RuntimeException('Incorrect other user ID', -1);
-			}
-
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -866,10 +853,21 @@ class MobileController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$response = [
-				'status' => 'SUCCESS',
-				'message' => 'Inbox Message between two user rendered Successfully'
-			];
+			$other_user_id = $this->_request->getPost('other_user_id');
+
+			if (!v::optional(v::intVal())->validate($other_user_id))
+			{
+				throw new RuntimeException('Incorrect other user ID value: ' .
+					var_export($other_user_id, true));
+			}
+
+			if ($other_user_id && !$userModel->checkId($other_user_id, $other_user))
+			{
+				throw new RuntimeException('Incorrect other user ID: ' .
+					var_export($other_user_id, true));
+			}
+
+			$response = ['status' => 'SUCCESS'];
 
 			$model = new Application_Model_Conversation;
 			$query = $model->select()->setIntegrityCheck(false)
@@ -883,10 +881,6 @@ class MobileController extends Zend_Controller_Action
 					'user_email' => 'u.Email_id',
 					'is_read' => 'IFNULL(cm3.is_read,1)'
 				])
-				->where('(c.to_id=?',  $user->id)
-				->where('c.from_id=?)', $other_user->id)
-				->orWhere('(c.to_id=?',  $other_user->id)
-				->where('c.from_id=?)', $user->id)
 				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
 					'cm1.is_first=1)', '')
 				->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
@@ -895,6 +889,21 @@ class MobileController extends Zend_Controller_Action
 				->group('c.id')
 				->order('c.created_at DESC')
 				->limit(100, $start);
+
+			if ($other_user_id)
+			{
+				$query->where('(c.to_id=?',  $user->id)
+					->where('c.from_id=?)', $other_user->id)
+					->orWhere('(c.to_id=?',  $other_user->id)
+					->where('c.from_id=?)', $user->id);
+				$response['message'] = 'Inbox Message between two user rendered Successfully';
+			}
+			else
+			{
+				$query->where('(c.to_id=?',  $user->id)
+					->orWhere('c.from_id=?)', $user->id);
+				$response['message'] = 'Message list Send Successfully';
+			}
 
 			$userModel->setThumbsQuery($query, [[320, 320]], 'u');
 			$messages = $model->fetchAll($query);
