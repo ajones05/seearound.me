@@ -41,17 +41,17 @@ class My_Layout
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => self::assetUrl('www/images/favicon/favicon-72x72.png', $view),
+				'href' => self::assetUrl('www/images/favicon/apple-touch-icon-72x72.png', $view),
 				'sizes' => '72x72'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => self::assetUrl('www/images/favicon/favicon-60x60.png', $view),
+				'href' => self::assetUrl('www/images/favicon/apple-touch-icon-60x60.png', $view),
 				'sizes' => '60x60'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => self::assetUrl('www/images/favicon/favicon-57x57.png', $view),
+				'href' => self::assetUrl('www/images/favicon/apple-touch-icon-57x57.png', $view),
 				'sizes' => '57x57'
 			), 'PREPEND');
 	}
