@@ -18,6 +18,13 @@ RewriteRule ^index/fb-login / [R=301,L]
 
 RewriteCond %{REQUEST_URI} ^/(robots.txt|sitemap.xml) [OR]
 RewriteCond %{REQUEST_URI} ^/assets-[0-9a-zA-Z.]+.* [OR]
+RewriteCond %{REQUEST_URI} ^/newsimages/ [OR]
+RewriteCond %{REQUEST_URI} ^/tbnewsimages/ [OR]
+RewriteCond %{REQUEST_URI} ^/thumb24x24/ [OR]
+RewriteCond %{REQUEST_URI} ^/thumb55x55/ [OR]
+RewriteCond %{REQUEST_URI} ^/thumb448x320/ [OR]
+RewriteCond %{REQUEST_URI} ^/uploads/ [OR]
+RewriteCond %{REQUEST_URI} ^/www/ [OR]
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d
