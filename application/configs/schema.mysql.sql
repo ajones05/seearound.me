@@ -18,7 +18,7 @@ CREATE TABLE `user_confirm` (
   `user_id` int(11) NOT NULL,
   `type_id` smallint NOT NULL,
   `code` varchar(255) NOT NULL,
-  `created_at` TIMESTAMP NOT NULL,
+  `created_at` TIMESTAMP NULL,
   `updated_at` TIMESTAMP NULL,
   `deleted` TINYINT(1) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
