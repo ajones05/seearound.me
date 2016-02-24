@@ -185,7 +185,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'Application_Model_News',
 		'Application_Model_Comments',
 		'Application_Model_CommentNotify',
-		'Application_Model_Address',
 		'Application_Model_Conversation',
 		'Application_Model_ConversationMessage',
 		'Application_Model_Friends',
@@ -400,35 +399,12 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * Register a new user.
 	 *
-	 * @param	array	$data
-	 *
+	 * @param	array $data
 	 * @return	Application_Model_UserRow
 	 */
 	public function register(array $data)
 	{
-		$user = $this->createRow(array(
-			'Name' => $data['name'],
-			'Email_id' => $data['email'],
-			'Password' => hash('sha256', $data['password']),
-			'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
-			'Creation_date' => date('Y-m-d H:i'),
-			'Update_date' => date('Y-m-d H:i'),
-			'Conf_code' => My_ArrayHelper::getProp($data, 'Conf_code', ''),
-			'Status' => $data['Status']
-		));
-
-		$user->id = $user->save();
-
-		(new Application_Model_Invitestatus)->insert(array(
-			'user_id' => $user->id,
-			'invite_count' => 10,
-			'created' => new Zend_Db_Expr('NOW()'),
-			'updated' => new Zend_Db_Expr('NOW()')
-		));
-
-		$addressModel = new Application_Model_Address;
-		$addressModel->insert(array(
-			'user_id' => $user->id,
+		$address = (new Application_Model_Address)->createRow([
 			'latitude' => $data['latitude'],
 			'longitude' => $data['longitude'],
 			'street_name' => My_ArrayHelper::getProp($data, 'street_name'),
@@ -437,7 +413,26 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'state' => My_ArrayHelper::getProp($data, 'state'),
 			'country' => My_ArrayHelper::getProp($data, 'country'),
 			'zip' => My_ArrayHelper::getProp($data, 'zip')
-		));
+		]);
+		$address->save();
+
+		$user = $this->createRow([
+			'address_id' => $address->id,
+			'Name' => $data['name'],
+			'Email_id' => $data['email'],
+			'Password' => hash('sha256', $data['password']),
+			'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
+			'Creation_date' => new Zend_Db_Expr('NOW()'),
+			'Conf_code' => My_ArrayHelper::getProp($data, 'Conf_code'),
+			'Status' => $data['Status']
+		]);
+		$user->save();
+
+		(new Application_Model_Invitestatus)->insert([
+			'user_id' => $user->id,
+			'invite_count' => 10,
+			'created' => new Zend_Db_Expr('NOW()')
+		]);
 
 		return $user;
 	}
@@ -471,19 +466,26 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 			if ($user)
 			{
-				$this->update(array('Network_id' => $network_id), 'id=' . $user->id);
+				$this->update(['Network_id' => $network_id], 'id=' . $user->id);
 			}
 			else
 			{
-				$user = $this->createRow(array(
+				$geolocation = My_Ip::geolocation();
+
+				$address = (new Application_Model_Address)->createRow([
+					'latitude' => $geolocation[0],
+					'longitude' => $geolocation[1]
+				]);
+				$address->save();
+
+				$user = $this->createRow([
+					'address_id' => $address->id,
 					'Network_id' => $network_id,
 					'Name' => $me->getName(),
 					'Email_id' => $email,
 					'Status' => 'active',
-					'Creation_date'=> new Zend_Db_Expr('NOW()'),
-					'Update_date' => new Zend_Db_Expr('NOW()')
-				));
-				$user->save();
+					'Creation_date'=> new Zend_Db_Expr('NOW()')
+				]);
 
 				$picture = (new Facebook\FacebookRequest(
 					$session, 'GET', '/me/picture', array('type' => 'large', 'redirect' => false)
@@ -545,19 +547,10 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 					'Gender' => ucfirst($me->getGender())
 				));
 
-				$geolocation = My_Ip::geolocation();
-
-				(new Application_Model_Address)->insert(array(
+				(new Application_Model_Invitestatus)->insert([
 					'user_id' => $user->id,
-					'latitude' => $geolocation[0],
-					'longitude' => $geolocation[1]
-				));
-
-				(new Application_Model_Invitestatus)->insert(array(
-					'user_id' => $user->id,
-					'created' => new Zend_Db_Expr('NOW()'),
-					'updated' => new Zend_Db_Expr('NOW()')
-				));
+					'created' => new Zend_Db_Expr('NOW()')
+				]);
 
 				$users = Application_Model_Fbtempusers::getInstance()->findAllByNetworkId($network_id);
 
@@ -614,13 +607,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			$this->update($user_data, $this->_db->quoteInto('id =?', $user->id));
 
 			$address = $user->findDependentRowset('Application_Model_Address')->current();
-
-			if (!$address)
-			{
-				$address = (new Application_Model_Address)
-					->createRow(['user_id' => $user->id]);
-			}
-
 			$address->latitude = $data['latitude'];
 			$address->longitude = $data['longitude'];
 			$address->street_name = My_ArrayHelper::getProp($data, 'street_name');
@@ -632,10 +618,11 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			$address->save();
 
 			$profile = $user->findDependentRowset('Application_Model_UserProfile')->current();
-			
+
 			if (!$profile)
 			{
-				$profile = (new Application_Model_UserProfile)->createRow(array('user_id' => $user->id));
+				$profile = (new Application_Model_UserProfile)
+					->createRow(['user_id' => $user->id]);
 			}
 
 			$profile->public_profile = $data['public_profile'];

@@ -359,7 +359,7 @@ class HomeController extends Zend_Controller_Action
 		{
 			$auth = Zend_Auth::getInstance()->getIdentity();
 
-			if (!$auth || !Application_Model_User::checkId($auth['user_id'], $user))
+			if (!Application_Model_User::checkId($auth['user_id'], $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -374,13 +374,6 @@ class HomeController extends Zend_Controller_Action
 			}
 
 			$address = $user->findDependentRowset('Application_Model_Address')->current();
-
-			if (!$address)
-			{
-				$address = (new Application_Model_Address)
-					->createRow(['user_id' => $user->id]);
-			}
-
 			$address->latitude = $data['latitude'];
 			$address->longitude = $data['longitude'];
 			$address->street_name = My_ArrayHelper::getProp($data, 'street_name');
@@ -391,7 +384,7 @@ class HomeController extends Zend_Controller_Action
 			$address->zip = My_ArrayHelper::getProp($data, 'zip');
 			$address->save();
 
-			$response = array('status' => 1);
+			$response = ['status' => 1];
 		}
 		catch (Exception $e)
 		{

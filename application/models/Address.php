@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This is the model class for table "address".
  */
@@ -15,13 +14,26 @@ class Application_Model_Address extends Zend_Db_Table_Abstract
 	/**
 	 * @var	array
 	 */
-	protected $_referenceMap = array(
-		'User' => array(
-			'columns' => 'user_id',
+    protected $_dependentTables = [
+		'Application_Model_User',
+		'Application_Model_News'
+	];
+
+	/**
+	 * @var	array
+	 */
+	protected $_referenceMap = [
+		'User' => [
+			'columns' => 'id',
 			'refTableClass' => 'Application_Model_User',
-			'refColumns' => 'id'
-		)
-	);
+			'refColumns' => 'address_id'
+		],
+		'News' => [
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_News',
+			'refColumns' => 'address_id'
+		]
+	];
 
 	/**
 	 * Formats address string.

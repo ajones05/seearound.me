@@ -9,6 +9,10 @@ ALTER TABLE `user_data` ADD `password_hash` varchar(255) NULL;
 ALTER TABLE `user_data` ADD `image_id` INT(11) NULL;
 ALTER TABLE `user_data` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE `user_data` CHANGE `image_id` `image_id` int(11) NULL AFTER `id`;
+ALTER TABLE `user_data` ADD `address_id` INT(11) NOT NULL AFTER `id`;
+ALTER TABLE `user_data` ADD FOREIGN KEY (`address_id`) REFERENCES `address`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+CREATE TRIGGER user_before_del BEFORE DELETE ON user_data
+	FOR EACH ROW DELETE FROM address WHERE address.id=OLD.address_id;
 
 --
 -- Table structure for table `user_confirm`
@@ -39,6 +43,8 @@ ALTER TABLE `address` ADD `city` varchar(255) NULL AFTER `street_number`;
 ALTER TABLE `address` ADD `state` varchar(255) NULL AFTER `city`;
 ALTER TABLE `address` ADD `country` varchar(255) NULL AFTER `state`;
 ALTER TABLE `address` ADD `zip` varchar(255) NULL AFTER `country`;
+ALTER TABLE `address` DROP FOREIGN KEY `address_ibfk_1`;
+ALTER TABLE `address` DROP `user_id`;
 
 --
 -- Table structure for table `user_profile`
