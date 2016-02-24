@@ -303,6 +303,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 		try
 		{
+			$imageModel = new Application_Model_Image;
+
 			if ($news == null)
 			{
 				$news = (new Application_Model_News)->createRow();
@@ -315,7 +317,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				{
 					foreach ($links as $link)
 					{
-						@unlink(ROOT_PATH_WEB . '/uploads/' . $link->link);
+						if ($link->image_id)
+						{
+							$imageModel->find($link->image_id)->current()->deleteImage();
+						}
+
 						$link->delete();
 					}
 				}
@@ -333,7 +339,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 			if (!empty($data['image']))
 			{
-				$image = (new Application_Model_Image)->save('uploads/' . $data['image']);
+				$image = $imageModel->save('uploads/' . $data['image']);
 				$news->image_id = $image->id;
 
 				$thumb320x320 = 'tbnewsimages/' . $data['image'];
@@ -375,7 +381,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						'description' => $info->getDescription(),
 						'author' => $html->bag->get('author')
 					));
-					$newsLink->save(true);
 
 					$opengraph = $info->getProvider('opengraph');
 					$images = $opengraph->bag->get('images');
@@ -439,13 +444,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 								}
 							}
 
-							$image = (new Application_Model_Image)->save('uploads/' . $name);
-
-							(new Application_Model_NewsLinkImage)->insert(array(
-								'news_link_id' => $newsLink->id,
-								'image_id' => $image->id
-							));
-
+							$image = $imageModel->save('uploads/' . $name);
 							$thumb448x320 = 'thumb448x320/' . $name;
 
 							My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
@@ -454,6 +453,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 							(new Application_Model_ImageThumb)
 								->save($thumb448x320, $image, array(448, 320));
+
+							$newsLink->image_id = $image->id;
 						}
 						catch (Exception $e)
 						{
@@ -464,6 +465,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						}
 					}
 
+					$newsLink->save(true);
 					break;
 				}
 			}

@@ -81,25 +81,17 @@ class PostController extends Zend_Controller_Action
 		else
 		{
 			// TODO: merge with post query
+			// TODO: refactoring
+
 			$link = $post->findDependentRowset('Application_Model_NewsLink')->current();
 
-			if ($link)
+			if ($link && $link->image_id)
 			{
-				$image = $link->findManyToManyRowset('Application_Model_Image',
-					'Application_Model_NewsLinkImage')->current();
-
-				if ($image)
-				{
-					$thumb = $image->findThumb([448, 320]);
-				}
+				$image = (new Application_Model_Image)
+					->find($link->image_id)->current();
+				$thumb = $image->findThumb([448, 320]);
 			}
-		}
-
-		// TODO:  refactoring
-
-		if (!$thumb)
-		{
-			if ($owner->image_id)
+			elseif ($owner->image_id)
 			{
 				$image = (new Application_Model_Image)
 					->find($owner->image_id)->current();
