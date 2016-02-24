@@ -1,4 +1,6 @@
 <?php
+use Respect\Validation\Validator as v;
+
 /**
  * Index controller class.
  * Handles index actions.
@@ -257,122 +259,126 @@ class IndexController extends Zend_Controller_Action
 		die(Zend_Json_Encoder::encode($response));
 	}
 
-    
+	/**
+	 * Forgot password action.
+	 *
+	 * @return void
+	 */
+	public function forgotAction()
+	{
+		$this->view->layout()->setLayout('login');
 
-    public function forgotAction()
+		$form = new Application_Form_Forgot;
 
-    {
-		$config = Zend_Registry::get('config_global');
+		if ($this->_request->isPost())
+		{
+			$data = $this->_request->getPost();
 
-        $this->view->layout()->setLayout('login');
+			if ($form->isValid($data))
+			{
+				$user = Application_Model_User::findByEmail($data['email']);
 
-        $tableUser = new Application_Model_User;
+				if (!$user)
+				{
+					$form->email->addError('Sorry! No account found with that email address.');
+					$form->markAsError();
+				}
 
-        if($this->_request->isPost()) {
+				if ($user->Status !== 'active')
+				{
+					$form->email->addError('Sorry! this account is not active.');
+					$form->markAsError();
+				}
 
-            if($email = $this->_request->getPost("email", null)) {
-
-                if($row = $tableUser->getUsers(array("Email_id" => $email))) {
-
-                    $row->Status = "inactive";
-                    $row->Conf_code = My_CommonUtils::generateCode();
-                    $row->save();
+				if (!$form->isErrors())
+				{
+					$confirmModel = new Application_Model_UserConfirm;
+					$confirm = $confirmModel->save([
+						'user_id' => $user->id,
+						'type_id' => $confirmModel::$type['forgot_password']
+					]);
 
 					My_Email::send(
-						$row->Email_id,
+						$user->Email_id,
 						'Forgot Password',
-						array(
-							'template' => 'forgot-password',
-							'assign' => array('user' => $row)
-						)
+						['template' => 'forgot-password', 'assign' => ['confirm' => $confirm]]
 					);
 
-                    $this->view->forgotsuccess = "done";
+					$this->_redirect($this->view->baseUrl('forgot-success'));
+				}
+			}
+		}
 
-                } else {
+		$this->view->form = $form;
+	}
 
-                    $this->view->forgoterror = "Sorry! No account found with that email address."; 
-
-                } 
-
-            } else {
-
-                $this->view->forgoterror = "Please enter email id."; 
-
-            }
-
-        }
-
-		$this->view->email = $this->_request->getPost('email');
-    }
-
-    
-
-    public function changePasswordAction() 
-    {
+	/**
+	 * Forgot password success action.
+	 *
+	 * @return void
+	 */
+	public function forgotSuccessAction()
+	{
 		$this->view->layout()->setLayout('login');
-        $this->view->email = $email = $this->_request->getParam("em", null);
-        $this->view->code = $code = $this->_request->getParam("cd", null);
+	}
 
-        if ($this->_request->isPost())
-		{ 
+	/**
+	 * Change password action.
+	 *
+	 * @return void
+	 */
+	public function changePasswordAction()
+	{
+		$this->view->layout()->setLayout('login');
 
-            $tableUser = new Application_Model_User;
+		$code = $this->_request->getParam('code');
 
-            $this->view->email = $email = $this->_request->getPost("email", null);
+		if (!v::stringType()->length(1, 12)->validate($code))
+		{
+			throw new RuntimeException('Incorrect confirm code value: ' .
+				var_export($code, true));
+		}
 
-            $this->view->code = $code   = $this->_request->getPost("code", null);
+		$confirmModel = new Application_Model_UserConfirm;
+		$confirm = $confirmModel->findByCode($code, false);
 
-            $password = $this->_request->getPost("password", null);
+		if ($confirm == null)
+		{
+			throw new RuntimeException('Incorrect confirm code: ' .
+				var_export($code, true));
+		}
 
-            $repassword = $this->_request->getPost("re-password", null);
+		$form = new Application_Form_UserPassword;
 
-            if($password == "") { 
+		if ($this->_request->isPost())
+		{
+			$data = $this->_request->getPost();
 
-                $this->view->pass = "Palese enter new password";
+			if ($form->isValid($data))
+			{
+				$user = $confirm->findDependentRowset('Application_Model_User')->current();
+				$user->Password = hash('sha256', $data['password']);
+				$user->password_hash = password_hash($data['password'], PASSWORD_BCRYPT);
+				$user->save();
 
-            }else if($password != $repassword) {  
+				$confirmModel->updateDelete($confirm);
 
-                $this->view->pass = "New password and re-password not matched";
+				$this->_redirect($this->view->baseUrl('change-password-success'));
+			}
+		}
 
-            }else { 
+		$this->view->form = $form;
+	}
 
-                $select = $tableUser->select()
-
-                    ->where('Email_id =?', $email)
-
-                    ->where('Conf_code =?', $code);
-
-                if($row = $tableUser->fetchRow($select)) {
-
-                    $insData = array(
-
-                        'Password'  => hash('sha256', $password),
-						'password_hash' => password_hash($password, PASSWORD_BCRYPT),
-
-                        'Conf_code' => new Zend_Db_Expr("NULL"),
-
-                        'Status'    => "active"
-
-                    );
-
-                    $row->setFromArray($insData);
-
-                    $row->save();
-
-                    $this->view->success = "Done";
-
-                }else { 
-
-                   $this->view->inactive = "This is an inactive link"; 
-
-                }    
-
-            }
-
-        }
-
-    }
+	/**
+	 * Change password success action.
+	 *
+	 * @return void
+	 */
+	public function changePasswordSuccessAction()
+	{
+		$this->view->layout()->setLayout('login');
+	}
 
 	public function sendInvitationAction()
 	{

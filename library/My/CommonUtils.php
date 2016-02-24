@@ -5,6 +5,11 @@
 class My_CommonUtils
 {
 	/**
+	 * @var	string
+	 */
+	const KEY_DICTONARY = '0123456789ABCDEFGHIKLMNPQRSTVXYZ';
+
+	/**
 	 * @var	array 	The extensions for mime types
 	 */
 	public static $mimetype_extension = array(
@@ -53,6 +58,25 @@ class My_CommonUtils
         mt_srand();
         return substr(md5(mt_rand(0, time())), mt_rand(0, 20), 10);
     }
+
+	/**
+	 * Generates alphanumeric key.
+	 *
+	 * @param	integer $len Key length.
+	 * @return	string Generated key.
+	 */
+	public static function generateKey($len)
+	{
+		$key = '';
+		$maxIndex = strlen(self::KEY_DICTONARY) - 1;
+
+		for ($i = 0; $i < $len; $i++)
+		{
+			$key .= substr(self::KEY_DICTONARY, rand(0, $maxIndex), 1);
+		}
+
+		return $key;
+	}
 
 	/**
 	 *

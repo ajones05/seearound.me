@@ -181,6 +181,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
     protected $_dependentTables = array(
+		'Application_Model_UserConfirm',
 		'Application_Model_News',
 		'Application_Model_Comments',
 		'Application_Model_CommentNotify',
@@ -196,6 +197,11 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
 	protected $_referenceMap = array(
+		'UserConfirm' => array(
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_UserConfirm',
+			'refColumns' => 'user_id'
+		),
 		'News' => array(
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_News',
@@ -232,32 +238,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'refColumns' => 'user_id'
 		)
 	); 
-
-    public function getUsers($data = array(), $all = false) {
-
-        $select = $this->select();
-
-        if(count($data) > 0) {
-
-            foreach($data as $index => $value) {
-
-                $select->where($index. " =?", $value);
-
-            }
-
-        }
-
-        if($all) {
-
-            return $this->fetchAll($select);
-
-        }else {
-
-            return $this->fetchRow($select);
-
-        }
-
-    }
 
     public function recordForEmail($sender = null, $reciever = null, $isFb = false) 
 

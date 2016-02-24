@@ -8,6 +8,21 @@ ALTER TABLE `user_data` COLLATE 'utf8_general_ci';
 ALTER TABLE `user_data` ADD `password_hash` varchar(255) NULL;
 ALTER TABLE `user_data` ADD `image_id` INT(11) NULL;
 ALTER TABLE `user_data` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `user_data` CHANGE `image_id` `image_id` int(11) NULL AFTER `id`;
+
+--
+-- Table structure for table `user_confirm`
+--
+CREATE TABLE `user_confirm` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` int(11) NOT NULL,
+  `type_id` smallint NOT NULL,
+  `code` varchar(255) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL,
+  `updated_at` TIMESTAMP NULL,
+  `deleted` TINYINT(1) NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE='InnoDB' COLLATE 'utf8_general_ci';
 
 --
 -- Table structure for table `address`

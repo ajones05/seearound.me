@@ -64,6 +64,41 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				)
 			);
 		}
+		else
+		{
+			$router->addRoute(
+				'change-password',
+				new Zend_Controller_Router_Route(
+					'change-password/:code',
+					['controller' => 'index', 'action' => 'change-password'],
+					['code' => '[A-Z0-9]+']
+				)
+			);
+
+			$router->addRoute(
+				'change-password-success',
+				new Zend_Controller_Router_Route(
+					'change-password-success',
+					['controller' => 'index', 'action' => 'change-password-success']
+				)
+			);
+
+			$router->addRoute(
+				'forgot',
+				new Zend_Controller_Router_Route(
+					'forgot',
+					['controller' => 'index', 'action' => 'forgot']
+				)
+			);
+
+			$router->addRoute(
+				'forgot-success',
+				new Zend_Controller_Router_Route(
+					'forgot-success',
+					['controller' => 'index', 'action' => 'forgot-success']
+				)
+			);
+		}
 
 		$router->addRoute(
 			'post',
