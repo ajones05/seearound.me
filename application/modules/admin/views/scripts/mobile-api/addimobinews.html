@@ -44,11 +44,51 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileaddimo
 		</div>
 	</div>
 	<div class="form-group">
-		<label class="control-label col-sm-2" for="address">Address [address]:</label>
+		<label class="control-label col-sm-2" for="street_name">Street name [street_name]:</label>
 		<div class="col-sm-10">
-			<input type="text" name="address" class="form-control"
-				id="address" placeholder="Enter address"
-				value="<?php echo $this->request->getParam('address'); ?>">
+			<input type="text" name="street_name" class="form-control"
+				id="street_name" placeholder="Enter street name"
+				value="<?php echo $this->request->getParam('street_name'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="street_number">Street number [street_number]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="street_number" class="form-control"
+				id="street_number" placeholder="Enter street number"
+				value="<?php echo $this->request->getParam('street_number'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="city">City [city]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="city" class="form-control"
+				id="city" placeholder="Enter street number"
+				value="<?php echo $this->request->getParam('city'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="state">State [state]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="state" class="form-control"
+				id="state" placeholder="Enter state"
+				value="<?php echo $this->request->getParam('state'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="country">Country [country]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="country" class="form-control"
+				id="country" placeholder="Enter country"
+				value="<?php echo $this->request->getParam('country'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="zip">Zip [zip]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="zip" class="form-control"
+				id="zip" placeholder="Enter zip"
+				value="<?php echo $this->request->getParam('zip'); ?>">
 		</div>
 	</div>
 	<div class="form-group">

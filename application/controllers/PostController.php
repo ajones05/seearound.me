@@ -25,6 +25,7 @@ class PostController extends Zend_Controller_Action
 				var_export($id, true));
 		}
 
+		// TODO: load address
 		// TODO: load link
 		// TODO: load user details
 		if (!Application_Model_News::checkId($id, $post, 0))
@@ -33,28 +34,28 @@ class PostController extends Zend_Controller_Action
 				var_export($id, true));
         }
 
+		$address = $post->findDependentRowset('Application_Model_Address')->current();
 		$owner = $post->findDependentRowset('Application_Model_User')->current();
 
-		$headScript = 'var opts=' . json_encode(['latitude' => $post->latitude,
-			'longitude' => $post->longitude], JSON_FORCE_OBJECT) . ',' .
+		$headScript = 'var opts=' . json_encode(['latitude' => $address->latitude,
+			'longitude' => $address->longitude], JSON_FORCE_OBJECT) . ',' .
 			'owner=' . json_encode([
 				'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 			]) . ',' .
 			'post=' . json_encode([
 				'id'=>$post->id,
-				'lat'=>$post->latitude,
-				'lng'=>$post->longitude,
-				'address'=>$post->Address
+				'lat'=>$address->latitude,
+				'lng'=>$address->longitude,
+				'address'=>Application_Model_Address::format($address) ?: $address->address
 			]);
 
 		if ($user)
 		{
-			$addressModel = new Application_Model_Address;
 			$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
 
 			$headScript .= ',user=' . json_encode([
 				'name' => $user->Name,
-				'address' => $addressModel->format($userAddress->toArray()),
+				'address' => Application_Model_Address::format($userAddress),
 				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 			]);
 		}
@@ -415,9 +416,8 @@ class PostController extends Zend_Controller_Action
 			}
 			else
 			{
-				$result = (new Application_Model_News)->search(array_merge(
-					$searchParameters, ['limit' => 1, 'radius' => 0.018939]
-				), $user);
+				$result = $model->search($searchParameters +
+					['limit' => 1, 'radius' => 0.018939], $user);
 
 				if (!$result->count())
 				{
@@ -430,9 +430,8 @@ class PostController extends Zend_Controller_Action
 				$post = $result[0];
 			}
 
-			$query = $model->searchQuery(array_merge(
-				$searchParameters, ['radius' => 0.018939]
-			), $user);
+			$query = $model->searchQuery($searchParameters +
+				['radius' => 0.018939], $user);
 
 			$query->join(['r' => new Zend_Db_Expr('(SELECT @rownum := 0)')], '', '');
 			$query->from('', ['(@rownum:=@rownum+1) AS _position']);
@@ -508,28 +507,49 @@ class PostController extends Zend_Controller_Action
 
 			if (!Application_Model_User::checkId($auth['user_id'], $user))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$form = new Application_Form_News;
+			$reset = $this->_request->getPost('reset');
 
-			if (!$form->isValid($this->_request->getParams()))
+			if (!v::optional(v::intVal()->equals(1))->validate($reset))
 			{
-				throw new RuntimeException('Validate error', -1);
+				throw new RuntimeException('Incorrect reset value: ' .
+					var_export($reset, true), -1);
 			}
 
-			$data = $form->getValues();
-			$data['user_id'] = $user->id;
+			$data = $this->_request->getPost();
+			$postForm = new Application_Form_News;
+
+			if (!$postForm->isValid($data))
+			{
+				throw new RuntimeException(
+					implode("\n", $postForm->getErrorMessages()));
+			}
+
+			$addressForm = new Application_Form_Address;
+
+			if (!$addressForm->isValid($data))
+			{
+				throw new RuntimeException(
+					implode("\n", $addressForm->getErrorMessages()));
+			}
+
+			$address = (new Application_Model_Address)
+				->createRow($addressForm->getValues());
+			$address->save();
+
 			$model = new Application_Model_News;
-			$post = $model->save($data);
+			$post = $model->save($postForm->getValues() +
+				['user_id' => $user->id, 'address_id' => $address->id]);
 
 			$response = [
 				'status' => 1,
 				'data' => [
 					[
 						$post->id,
-						$post->latitude,
-						$post->longitude,
+						$address->latitude,
+						$address->longitude,
 						$this->view->partial('post/_list_item.html', [
 							'post' => $post,
 							'owner' => $user,
@@ -539,11 +559,11 @@ class PostController extends Zend_Controller_Action
 				]
 			];
 
-			if ($this->_request->getPost('reset', 0))
+			if ($reset)
 			{
 				$result = $model->search([
-					'latitude' => $post->latitude,
-					'longitude' => $post->longitude,
+					'latitude' => $address->latitude,
+					'longitude' => $address->longitude,
 					'radius' => 0.8,
 					'limit' => 14,
 					'exclude_id' => [$post->id]
@@ -610,8 +630,9 @@ class PostController extends Zend_Controller_Action
 
 			$response = [
 				'status' => 1,
-				'html' => $this->view->partial('post/edit.html',
-					['user' => $user, 'post' => $post])
+				'latitude' => $post->latitude,
+				'longitude' => $post->longitude,
+				'body' => $post->news
 			];
 		}
 		catch (Exception $e)
@@ -655,22 +676,24 @@ class PostController extends Zend_Controller_Action
 
 			if (!$model->checkId($id, $post, 0))
 			{
-				throw new RuntimeException('Incorrect post ID', -1);
+				throw new RuntimeException('Incorrect post ID');
 			}
 
 			if ($user->id != $post->user_id)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$body = $this->_request->getPost('news');
+			$data = $this->_request->getPost();
+			$postForm = new Application_Form_News;
 
-			if (trim($body) === '')
+			if (!$postForm->isValid($data))
 			{
-				throw new RuntimeException('Body cannot be blank', -1);
+				throw new RuntimeException(
+					implode("\n", $postForm->getErrorMessages()));
 			}
 
-			$post = $model->save(['news' => $body], $post);
+			$post = $model->save(['news' => $data['news']], $post);
 
 			$response = [
 				'status' => 1,
@@ -705,7 +728,7 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$id = $this->_request->getPost('id');
+			$id = $this->_request->getParam('id');
 
 			if (!v::intVal()->validate($id))
 			{
@@ -713,35 +736,10 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			$address = $this->_request->getPost('address');
-
-			if (!v::optional(v::stringType())->validate($address))
+			if (!(new Application_Model_News)->checkId($id, $post, 0))
 			{
-				throw new RuntimeException('Incorrect address value: ' .
-					var_export($address, true));
-			}
-
-			$latitude = $this->_request->getPost('latitude');
-
-			if (!v::stringType()->lat()->validate($latitude))
-			{
-				throw new RuntimeException('Incorrect latitude value: ' .
-					var_export($latitude, true));
-			}
-
-			$longitude = $this->_request->getPost('longitude');
-
-			if (!v::stringType()->lng()->validate($longitude))
-			{
-				throw new RuntimeException('Incorrect longitude value: ' .
-					var_export($longitude, true));
-			}
-
-			$model = new Application_Model_News;
-
-			if (!$model->checkId($id, $post, 0))
-			{
-				throw new RuntimeException('Incorrect post ID', -1);
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($id, true));
 			}
 
 			if ($user->id != $post->user_id)
@@ -749,12 +747,22 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$post->Address = $address;
-			$post->latitude = $latitude;
-			$post->longitude = $longitude;
-			$post->save();
+			$addressForm = new Application_Form_Address;
 
-			$response = ['status' => 1];
+			if (!$addressForm->isValid($this->_request->getPost()))
+			{
+				throw new RuntimeException(
+					implode("\n", $addressForm->getErrorMessages()));
+			}
+
+			$address = $post->findDependentRowset('Application_Model_Address')->current();
+			$address->setFromArray($addressForm->getValues());
+			$address->save();
+
+			$response = [
+				'status' => 1,
+				'address' => Application_Model_Address::format($address)
+			];
 		}
 		catch (Exception $e)
 		{

@@ -365,23 +365,15 @@ class HomeController extends Zend_Controller_Action
 			}
 
 			$form = new Application_Form_Address;
-			$data = $this->_request->getPost();
 
-			if (!$form->isValid($data))
+			if (!$form->isValid($this->_request->getPost()))
 			{
 				throw new RuntimeException(
 					implode("\n", $form->getErrorMessages()));
 			}
 
 			$address = $user->findDependentRowset('Application_Model_Address')->current();
-			$address->latitude = $data['latitude'];
-			$address->longitude = $data['longitude'];
-			$address->street_name = My_ArrayHelper::getProp($data, 'street_name');
-			$address->street_number = My_ArrayHelper::getProp($data, 'street_number');
-			$address->city = My_ArrayHelper::getProp($data, 'city');
-			$address->state = My_ArrayHelper::getProp($data, 'state');
-			$address->country = My_ArrayHelper::getProp($data, 'country');
-			$address->zip = My_ArrayHelper::getProp($data, 'zip');
+			$address->setFromArray($form->getValues());
 			$address->save();
 
 			$response = ['status' => 1];

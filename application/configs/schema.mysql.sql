@@ -121,6 +121,14 @@ ALTER TABLE `news` ADD `comment` INT(11) NOT NULL DEFAULT '0' AFTER `vote`;
 ALTER TABLE `news` DROP `image`;
 ALTER TABLE `news` ADD `image_id` INT(11) NULL;
 ALTER TABLE `news` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `news` ADD `address_id` INT(11) NULL AFTER `id`;
+ALTER TABLE `news` ADD FOREIGN KEY (`address_id`) REFERENCES `address`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+CREATE TRIGGER news_before_del BEFORE DELETE ON news
+	FOR EACH ROW DELETE FROM address WHERE address.id=OLD.address_id;
+ALTER TABLE `news`
+	DROP `latitude`,
+	DROP `longitude`,
+	DROP `Address`;
 
 --
 -- Table structure for table `news_link`

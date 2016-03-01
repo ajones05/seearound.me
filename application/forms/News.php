@@ -1,4 +1,6 @@
 <?php
+use Respect\Validation\Validator as v;
+use Respect\Validation\Exceptions\ValidationException;
 
 /**
  * News form class
@@ -12,118 +14,66 @@ class Application_Form_News extends Zend_Form
      */
     public function init()
     {
-        $this->addElement(
-			'text',
-			'news',
-			array(
-				'required' => true,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('stringLength', false, array(1, 500))
-				)
-			)
-		);
-
-        $this->addElement(
-			'text',
-			'address',
-			array(
-				'required' => false,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('stringLength', false, array(0, 255))
-				)
-			)
-		);
-
-        $this->addElement(
-			'text',
-			'latitude',
-			array(
-				'required' => true,
-				'validators' => array(
-					array('Float'),
-					array(
-						'name' => 'Between',
-						false,
-						array(
-							'min' => -90,
-							'max' => 90,
-						)
-					)
-				)
-			)
-		);
-
-        $this->addElement(
-			'text',
-			'longitude',
-			array(
-				'required' => true,
-				'validators' => array(
-					array('Float'),
-					array(
-						'name' => 'Between',
-						false,
-						array(
-							'min' => -180,
-							'max' => 180,
-						)
-					)
-				)
-			)
-		);
+		$this->addElement('text', 'news');
     }
 
     /**
      * Validate the form.
      *
-     * @param 	array	$data
-	 *
+     * @param 	array $data
      * @return	boolean
      */
     public function isValid($data)
 	{
-		if (!parent::isValid($data))
+		$valid = parent::isValid($data);
+
+		try
 		{
-			return false;
+			v::stringType()->length(1, 500)->regex('/[^<>]/')
+				->assert(My_ArrayHelper::getProp($data, 'news'));
+		}
+		catch (Exception $e)
+		{
+			$valid = false;
+			$this->addErrorMessage($e->getMessage());
 		}
 
-		if (preg_match('/[<>]/', $data['news']))
+		if ($valid)
 		{
-			return false;
-		}
+			$upload = new Zend_File_Transfer;
 
-		$upload = new Zend_File_Transfer;
-
-		if (count($upload->getFileInfo()))
-		{
-			$upload->setValidators(array(
-				array('Extension', false, array('jpg', 'jpeg', 'png', 'gif')),
-				array('MimeType', false, array('image/jpeg', 'image/png', 'image/gif')),
-				array('Count', false, 1)
-			));
-
-			if (!$upload->isValid('image'))
+			if (count($upload->getFileInfo()))
 			{
-				return false;
+				$upload->setValidators([
+					['Extension', false, ['jpg', 'jpeg', 'png', 'gif']],
+					['MimeType', false, ['image/jpeg', 'image/png', 'image/gif']],
+					['Count', false, 2]
+				]);
+
+				if ($upload->isValid('image'))
+				{
+					$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
+
+					do
+					{
+						$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
+						$full_path = ROOT_PATH_WEB . '/uploads/' . $name;
+					}
+					while (file_exists($full_path));
+
+					$upload->addFilter('Rename', $full_path);
+					$upload->receive();
+
+					$this->addElement('text', 'image', ['value' => $name]);
+				}
+				else
+				{
+					$valid = false;
+					$this->addErrorMessage(implode(', ', $upload->getMessages()));
+				}
 			}
-
-			$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
-
-			do
-			{
-				$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
-				$full_path = ROOT_PATH_WEB . '/uploads/' . $name;
-			}
-			while (file_exists($full_path));
-
-			$upload->addFilter('Rename', $full_path);
-			$upload->receive();
-
-			$this->addElement('text', 'image', array('value' => $name));
 		}
 
-		return true;
+		return $valid;
 	}
 }

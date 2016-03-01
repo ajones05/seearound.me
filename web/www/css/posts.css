@@ -555,7 +555,7 @@ body.touch .posts-container .posts {
 	font: normal 10px 'Lato-Regular',sans-serif;
 }
 .post .post_text,
-.post .post_text form textarea {
+.post .post_text textarea {
 	color: rgb(51, 51, 51);
 	font: normal 14.37px/19.55px 'Lato-Regular',sans-serif;
 }
@@ -771,11 +771,8 @@ body.touch .posts-container .posts {
 .vote .icon .dislike.active {
     background: url(../images/dislike-active-red.png)center center no-repeat;
 }
-.post .post_text form {
+.post .post_text textarea {
 	width: 90%;
-}
-.post .post_text form textarea {
-	width: 100%;
     border: none;
 	resize: none;
 	box-sizing: border-box;
@@ -786,7 +783,7 @@ body.touch .posts-container .posts {
 	background-color: #fff;
 	outline: none;
 }
-.post_text form textarea:disabled {
+.post_text textarea:disabled {
 	background-color: #fff;
 }
 .ui-tooltip.postTooltip {

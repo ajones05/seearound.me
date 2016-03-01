@@ -155,10 +155,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				'news.*',
 				'((news.vote+news.comment+1)/((IFNULL(TIMESTAMPDIFF(HOUR, news.created_date, NOW()), 0)+30)^1.1))*10000 as score',
 				// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
-				'(3959 * acos(cos(radians(' . $parameters['latitude'] . ')) * cos(radians(news.latitude)) * ' .
-					'cos(radians(news.longitude) - ' . 'radians(' . $parameters['longitude'] . ')) + ' .
-					'sin(radians(' . $parameters['latitude'] . ')) * sin(radians(news.latitude)))) AS distance_from_source'
-			));
+				'(3959 * acos(cos(radians(' . $parameters['latitude'] . ')) * cos(radians(a.latitude)) * ' .
+					'cos(radians(a.longitude) - ' . 'radians(' . $parameters['longitude'] . ')) + ' .
+					'sin(radians(' . $parameters['latitude'] . ')) * sin(radians(a.latitude)))) AS distance_from_source'
+			))
+			->joinLeft(['a' => 'address'], 'a.id=news.address_id', [
+				'address', 'latitude', 'longitude', 'street_name',
+				'street_number', 'city', 'state', 'country', 'zip']);
 
 		if (trim(My_ArrayHelper::getProp($parameters, 'keywords')) !== '')
 		{
@@ -294,10 +297,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	/**
 	 * Saves form.
 	 *
-	 * @param	array	$data
+	 * @param	array $postData
+	 * @param	Application_Model_NewsRow $post
 	 * @return	Application_Model_NewsRow
 	 */
-	public function save(array $data, $news = null)
+	public function save(array $data, $post = null)
 	{
 		$this->_db->beginTransaction();
 
@@ -305,13 +309,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		{
 			$imageModel = new Application_Model_Image;
 
-			if ($news == null)
+			if ($post == null)
 			{
-				$news = (new Application_Model_News)->createRow();
+				$post = $this->createRow($data);
 			}
 			else
 			{
-				$links = $news->findDependentRowset('Application_Model_NewsLink');
+				$links = $post->findDependentRowset('Application_Model_NewsLink');
 
 				if (count($links))
 				{
@@ -325,22 +329,14 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						$link->delete();
 					}
 				}
-			}
 
-			// TODO: fix field name
-			if (isset($data['address']))
-			{
-				$data['Address'] = $data['address'];
-				unset($data['address']);
+				$post->setFromArray($data + ['updated_date' => new Zend_Db_Expr('NOW()')]);
 			}
-
-			$news->setFromArray($data);
-			$news->updated_date = new Zend_Db_Expr('NOW()');
 
 			if (!empty($data['image']))
 			{
 				$image = $imageModel->save('uploads/' . $data['image']);
-				$news->image_id = $image->id;
+				$post->image_id = $image->id;
 
 				$thumb320x320 = 'tbnewsimages/' . $data['image'];
 				$thumb448x320 = 'thumb448x320/' . $data['image'];
@@ -358,9 +354,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				$thumbModel->save($thumb960x960, $image, array(960, 960));
 			}
 
-			$news->save();
+			$post->save();
 
-			if (empty($data['image']) && preg_match_all('/' . My_CommonUtils::$link_regex . '/', $news->news, $matches))
+			if (empty($data['image']) && preg_match_all('/' . My_CommonUtils::$link_regex . '/', $post->news, $matches))
 			{
 				foreach ($matches[0] as $link)
 				{
@@ -375,7 +371,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 					$html = $info->getProvider('html');
 					$newsLink = (new Application_Model_NewsLink)->createRow(array(
-						'news_id' => $news->id,
+						'news_id' => $post->id,
 						'link' => $link,
 						'title' => $info->getTitle(),
 						'description' => $info->getDescription(),
@@ -472,7 +468,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 			$this->_db->commit();
 
-			return $news;
+			return $post;
 		}
 		catch (Exception $e)
 		{

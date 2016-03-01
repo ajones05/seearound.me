@@ -14,6 +14,8 @@ class Application_Form_Address extends Zend_Form
      */
     public function init()
     {
+		// TODO: remove
+		$this->addElement('text', 'address');
 		$this->addElement('text', 'latitude');
 		$this->addElement('text', 'longitude');
 		$this->addElement('text', 'street_name');

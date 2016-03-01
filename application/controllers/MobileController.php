@@ -1206,18 +1206,34 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$form = new Application_Form_News;
+			$data = $this->_request->getPost();
+			$postForm = new Application_Form_News;
 
-			if (!$form->isValid($this->_request->getPost()))
+			if (!$postForm->isValid($data))
 			{
-				$this->_formValidateException($form);
+				throw new RuntimeException(
+					implode("\n", $postForm->getErrorMessages()));
 			}
 
-			$news = (new Application_Model_News)->save(array_merge($form->getValues(), array('user_id' => $user->id)));
+			$addressForm = new Application_Form_Address;
+
+			if (!$addressForm->isValid($data))
+			{
+				throw new RuntimeException(
+					implode("\n", $addressForm->getErrorMessages()));
+			}
+
+			$address = (new Application_Model_Address)
+				->createRow($addressForm->getValues());
+			$address->save();
+
+			$model = new Application_Model_News;
+			$post = $model->save($postForm->getValues() +
+				['user_id' => $user->id, 'address_id' => $address->id]);
 
 			$response = array(
 				'status' => 'SUCCESS',
-				'message' => $news->news,
+				'message' => $post->news,
 				'userid' => $user->id
 			);
 		}
@@ -1432,7 +1448,7 @@ class MobileController extends Zend_Controller_Action
 						'isblock' => $row->isblock,
 						'latitude' => $row->latitude,
 						'longitude' => $row->longitude,
-						'Address' => $row->Address,
+						'Address' => Application_Model_Address::format($row) ?: $row->address,
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $row->comment,
@@ -1538,7 +1554,7 @@ class MobileController extends Zend_Controller_Action
 						'isblock' => $row->isblock,
 						'latitude' => $row->latitude,
 						'longitude' => $row->longitude,
-						'Address' => $row->Address,
+						'Address' => Application_Model_Address::format($row) ?: $row->address,
 						'score' => $row->score,
 						'distance_from_source' => $row->distance_from_source,
 						'comment_count' => $row->comment,
