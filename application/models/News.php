@@ -151,14 +151,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	public function searchQuery(array $parameters, Application_Model_UserRow $user)
 	{
 		$query = $this->publicSelect()->setIntegrityCheck(false)
-			->from($this, array(
-				'news.*',
-				'((news.vote+news.comment+1)/((IFNULL(TIMESTAMPDIFF(HOUR, news.created_date, NOW()), 0)+30)^1.1))*10000 as score',
-				// https://developers.google.com/maps/articles/phpsqlsearch_v3#findnearsql
-				'(3959 * acos(cos(radians(' . $parameters['latitude'] . ')) * cos(radians(a.latitude)) * ' .
-					'cos(radians(a.longitude) - ' . 'radians(' . $parameters['longitude'] . ')) + ' .
-					'sin(radians(' . $parameters['latitude'] . ')) * sin(radians(a.latitude)))) AS distance_from_source'
-			))
+			->from($this, ['news.*'])
 			->joinLeft(['a' => 'address'], 'a.id=news.address_id', [
 				'address', 'latitude', 'longitude', 'street_name',
 				'street_number', 'city', 'state', 'country', 'zip']);
@@ -214,8 +207,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		}
 
 		$query
-			->having('IFNULL(distance_from_source, 0) < ' . $parameters['radius'])
-			->order('score DESC')
+			->where('IFNULL((3959*acos(cos(radians(' . $parameters['latitude'] . '))*cos(radians(a.latitude))*' .
+				'cos(radians(a.longitude)-' . 'radians(' . $parameters['longitude'] . '))+' .
+				'sin(radians(' . $parameters['latitude'] . '))*sin(radians(a.latitude)))),0)<' . $parameters['radius'])
+			->order(['((news.vote+news.comment+1)/((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+30)^1.1))*10000 DESC', 'id ASC'])
 			->group('news.id');
 
 		return $query;

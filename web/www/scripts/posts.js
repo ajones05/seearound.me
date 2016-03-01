@@ -253,9 +253,9 @@ function renderView_callback(){
 				postList_locationMarker([opts.latitude,opts.longitude]);
 
 				if (Object.size(postData)){
-					for (var id in postData){
-						postItem_render(id);
-					}
+					$('.posts .post').each(function(){
+						postItem_render($(this).attr('data-id'));
+					});
 
 					if (Object.size(postData) >= postLimit){
 						postList_scrollHandler(true);
