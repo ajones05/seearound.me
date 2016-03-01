@@ -599,7 +599,7 @@ function renderEditLocationDialog(callback){
 				return userAddressTooltip(address, imagePath);
 			},
 			submit: function(dialogEvent, position, place){
-				$(window).scrollTo(0);
+				$('html,body').animate({scrollTop:0},0);
 
 				$('#map-canvas', dialogEvent.target).mask('Waiting...');
 
