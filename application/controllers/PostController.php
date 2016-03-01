@@ -617,6 +617,7 @@ class PostController extends Zend_Controller_Action
 
 			$post_id = $this->_request->getPost('id');
 
+			// TODO: load address
 			if (!(new Application_Model_News)->checkId($post_id, $post, 0))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
@@ -628,10 +629,12 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You have not access for this action', -1);
 			}
 
+			$address = $post->findDependentRowset('Application_Model_Address')->current();
+
 			$response = [
 				'status' => 1,
-				'latitude' => $post->latitude,
-				'longitude' => $post->longitude,
+				'latitude' => $address->latitude,
+				'longitude' => $address->longitude,
 				'body' => $post->news
 			];
 		}
