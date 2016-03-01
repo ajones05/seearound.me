@@ -2006,7 +2006,7 @@ function postList_scrollHandler(scroll){
 		var scrollTop = $(this).scrollTop()+$(this).height(),
 			scrollHeight = isTouch ? this.scrollHeight : $(document).height();
 
-		if (scrollTop > scrollHeight * 0.7){
+        if  ((scrollTop/(scrollHeight-$(window).height())) > 0.9){
 			$(this).unbind('scroll.load');
 			postList_load(Object.size(postData));
 		}
