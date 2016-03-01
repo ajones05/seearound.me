@@ -3,12 +3,13 @@ if (count($this->posts))
 {
 	foreach ($this->posts as $post)
 	{
-		echo My_ViewHelper::render('post/_list_item', array(
+		echo My_ViewHelper::render('post/_list_item', [
 			'post' => $post,
 			'owner' => $post->findDependentRowset('Application_Model_User')->current(),
 			'user' => $this->user,
-			'limit' => 350
-		));
+			'limit' => 350,
+			'hidden' => true
+		]);
 	}
 }
 else

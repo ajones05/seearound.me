@@ -1,6 +1,7 @@
 <?php
-echo My_ViewHelper::render('post/_list_item', array(
+echo My_ViewHelper::render('post/_list_item', [
 	'post' => $this->post,
 	'owner' => $this->owner,
-	'user' => $this->user
-));
+	'user' => $this->user,
+	'hidden' => true
+]);

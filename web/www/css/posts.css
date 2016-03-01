@@ -42,6 +42,9 @@
 	src:local('☺'),url('fonts/Lato-LightItalic.woff')format('woff'), url('fonts/Lato-LightItalic.ttf')format('truetype'), url('fonts/Lato-LightItalic.svg')format('svg');
 	font-weight:400;font-style:normal;
 }
+.hidden {
+	display: none;
+}
 body {
 	padding: 0;
 	margin: 0;
@@ -695,9 +698,6 @@ body.touch .posts-container .posts {
 	margin-bottom: 7px;
 	line-height: 17px;
 	overflow-y: hidden;
-}
-.post-comment__new.hidden {
-	display: none;
 }
 .post-comment__item,
 .post-comment__new-body textarea {

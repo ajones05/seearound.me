@@ -181,7 +181,7 @@ function renderView_callback(){
 						openTooltip: true
 					});
 
-					var postContainer = $('.post[data-id='+post.id+']');
+					var postContainer = $('.post[data-id='+post.id+']').show();
 					postItem_renderContent(post.id,postContainer);
 
 					$('a.user_avatar[href=#],a.user_name[href=#]').click(function(e){
@@ -254,7 +254,7 @@ function renderView_callback(){
 
 				if (Object.size(postData)){
 					$('.posts .post').each(function(){
-						postItem_render($(this).attr('data-id'));
+						postItem_render($(this).show().attr('data-id'));
 					});
 
 					if (Object.size(postData) >= postLimit){
