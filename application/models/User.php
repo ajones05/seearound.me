@@ -661,7 +661,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 		foreach ($thumbs as $thumb)
 		{
-			$prefix = $alias . implode('x', $thumb);
+			$prefix = $alias . '_' . implode('x', $thumb);
 			$fields[$prefix . '_path'] = $prefix . '.path';
 			$fields[$prefix . '_width'] = $prefix . '.width';
 			$fields[$prefix . '_height'] = $prefix . '.height';
@@ -687,7 +687,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public function getThumb($data, $thumb, $alias = 'used_data')
 	{
-		$prefix = $alias . $thumb;
+		$prefix = $alias . '_' . $thumb;
 
 		if (My_ArrayHelper::getProp($data, $alias . '_image_id'))
 		{
