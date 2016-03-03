@@ -17,7 +17,8 @@ class Application_Model_ImageThumbRow extends Zend_Db_Table_Row_Abstract
 
 			if ($log)
 			{
-				$log->log('Delete thumb file ' . $this->path . ' error: ' . error_get_last(), Zend_Log::ERR);
+				$log->log('Delete thumb file ' . $this->path . ' error: ' .
+					var_export(error_get_last(), true), Zend_Log::ERR);
 			}
 		}
 

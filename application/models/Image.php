@@ -32,7 +32,8 @@ class Application_Model_ImageRow extends Zend_Db_Table_Row_Abstract
 
 			if ($log)
 			{
-				$log->log('Delete image file ' . $this->path . ' error: ' . error_get_last(), Zend_Log::ERR);
+				$log->log('Delete image file ' . $this->path . ' error: ' .
+					var_export(error_get_last(), true), Zend_Log::ERR);
 			}
 		}
 
