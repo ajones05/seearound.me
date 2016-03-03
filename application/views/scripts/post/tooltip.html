@@ -1,7 +1,5 @@
 <?php
 $body = trim($this->post->news);
-$next = My_ArrayHelper::getProp($this, 'next');
-$prev = My_ArrayHelper::getProp($this, 'prev');
 ?>
 <div class="tooltip-content">
 <img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
@@ -13,16 +11,16 @@ $prev = My_ArrayHelper::getProp($this, 'prev');
 <?php endif; ?>
 </div>
 <div class="tooltip-footer">
-<?php if (!$this->point && ($prev || $next)): ?>
+<?php if (!$this->point && (!empty($this->prev) || !empty($this->next))): ?>
 <a href="<?php echo $this->baseUrl('center/' . $this->position . '?point=1'); ?>">More details</a>
 <?php else: ?>
 <a href="<?php echo $this->baseUrl('post/' . $this->post->id); ?>">More details</a>
 <?php endif; ?>
-<?php if ($prev): ?>
-<a class="prev" data-id="<?php echo $prev->id; ?>" href="#">&lt;</a>
+<?php if (!empty($this->prev)): ?>
+<a class="prev" data-id="<?php echo $this->prev; ?>" href="#">&lt;</a>
 <?php endif; ?>
-<?php if ($next): ?>
-<a class="next" data-id="<?php echo $next->id; ?>" href="#">&gt;</a>
+<?php if (!empty($this->next)): ?>
+<a class="next" data-id="<?php echo $this->next; ?>" href="#">&gt;</a>
 <?php endif; ?>
 </div>
 </div>

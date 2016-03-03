@@ -20,7 +20,7 @@ class InfoController extends Zend_Controller_Action
 
 			$news_id = $this->_request->getPost('news_id');
 
-			if (!Application_Model_News::checkId($news_id, $news, 0))
+			if (!Application_Model_News::checkId($news_id, $news, false))
 			{
 				throw new RuntimeException('Incorrect news ID', -1);
 			}

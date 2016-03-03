@@ -220,8 +220,8 @@ class HomeController extends Zend_Controller_Action
 
 		$latest_post = $newsModel->fetchRow(
 			$newsModel->publicSelect()
-				->where('user_id =?', $profile->id)
-				->order('id DESC')
+				->where('news.user_id=?', $profile->id)
+				->order('news.id DESC')
 		);
 
 		if ($auth)

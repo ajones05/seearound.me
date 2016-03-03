@@ -25,28 +25,26 @@ class PostController extends Zend_Controller_Action
 				var_export($id, true));
 		}
 
-		// TODO: load address
 		// TODO: load link
 		// TODO: load user details
-		if (!Application_Model_News::checkId($id, $post, 0))
+		if (!Application_Model_News::checkId($id, $post))
         {
 			throw new RuntimeException('Incorrect post ID: ' .
 				var_export($id, true));
         }
 
-		$address = $post->findDependentRowset('Application_Model_Address')->current();
 		$owner = $post->findDependentRowset('Application_Model_User')->current();
 
-		$headScript = 'var opts=' . json_encode(['latitude' => $address->latitude,
-			'longitude' => $address->longitude], JSON_FORCE_OBJECT) . ',' .
+		$headScript = 'var opts=' . json_encode(['latitude' => $post->latitude,
+			'longitude' => $post->longitude], JSON_FORCE_OBJECT) . ',' .
 			'owner=' . json_encode([
 				'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 			]) . ',' .
 			'post=' . json_encode([
 				'id'=>$post->id,
-				'lat'=>$address->latitude,
-				'lng'=>$address->longitude,
-				'address'=>Application_Model_Address::format($address) ?: $address->address
+				'lat'=>$post->latitude,
+				'lng'=>$post->longitude,
+				'address'=>Application_Model_Address::format($post) ?: $post->address
 			]);
 
 		if ($user)
@@ -408,7 +406,7 @@ class PostController extends Zend_Controller_Action
 
 			if ($id)
 			{
-				if (!$model->checkId($id, $post, 0))
+				if (!$model->checkId($id, $post))
 				{
 					throw new RuntimeException('Incorrect post ID: ' .
 						var_export($id, true), -1);
@@ -463,18 +461,18 @@ class PostController extends Zend_Controller_Action
 			{
 				if (count($besidePosts) == 2)
 				{
-					$this->view->prev = $model->findById($besidePosts[0]['id'], 0);
-					$this->view->next = $model->findById($besidePosts[1]['id'], 0);
+					$this->view->prev = $besidePosts[0]['id'];
+					$this->view->next = $besidePosts[1]['id'];
 				}
 				else
 				{
 					if ($currentPosition['_position'] > 1)
 					{
-						$this->view->prev = $model->findById($besidePosts[0]['id'], 0);
+						$this->view->prev = $besidePosts[0]['id'];
 					}
 					else
 					{
-						$this->view->next = $model->findById($besidePosts[0]['id'], 0);
+						$this->view->next = $besidePosts[0]['id'];
 					}
 				}
 			}
@@ -612,29 +610,32 @@ class PostController extends Zend_Controller_Action
 
 			if (!Application_Model_User::checkId($auth['user_id'], $user))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$post_id = $this->_request->getPost('id');
+			$id = $this->_request->getPost('id');
 
-			// TODO: load address
-			if (!(new Application_Model_News)->checkId($post_id, $post, 0))
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_News::checkId($id, $post))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
-					var_export($post_id, true), -1);
+					var_export($id, true));
 			}
 
 			if ($user->id != $post->user_id)
 			{
-				throw new RuntimeException('You have not access for this action', -1);
+				throw new RuntimeException('You have not access for this action');
 			}
-
-			$address = $post->findDependentRowset('Application_Model_Address')->current();
 
 			$response = [
 				'status' => 1,
-				'latitude' => $address->latitude,
-				'longitude' => $address->longitude,
+				'latitude' => $post->latitude,
+				'longitude' => $post->longitude,
 				'body' => $post->news
 			];
 		}
@@ -677,7 +678,7 @@ class PostController extends Zend_Controller_Action
 
 			$model = new Application_Model_News;
 
-			if (!$model->checkId($id, $post, 0))
+			if (!$model->checkId($id, $post, false))
 			{
 				throw new RuntimeException('Incorrect post ID');
 			}
@@ -739,7 +740,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!(new Application_Model_News)->checkId($id, $post, 0))
+			if (!(new Application_Model_News)->checkId($id, $post, false))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
@@ -803,7 +804,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, 0))
+			if (!Application_Model_News::checkId($id, $post, false))
 			{
 				throw new Exception('Incorrect post ID.');
 			}
@@ -854,7 +855,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, 0))
+			if (!Application_Model_News::checkId($id, $post, false))
 			{
 				throw new RuntimeException('Incorrect post ID', -1);
 			}
@@ -944,7 +945,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, 0))
+			if (!Application_Model_News::checkId($id, $post))
 			{
 				throw new RuntimeException('Incorrect post ID');
 			}
@@ -986,7 +987,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, 0))
+			if (!Application_Model_News::checkId($id, $post))
 			{
 				throw new RuntimeException('Incorrect post ID');
 			}
@@ -1055,7 +1056,7 @@ class PostController extends Zend_Controller_Action
 
 			$data = $this->_request->getParams();
 
-			if (empty($data['post_id']) || !Application_Model_News::checkId($data['post_id'], $post, 0))
+			if (empty($data['post_id']) || !Application_Model_News::checkId($data['post_id'], $post, false))
 			{
 				throw new RuntimeException('Incorrect post ID');
 			}

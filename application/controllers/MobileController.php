@@ -1597,24 +1597,35 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
+			$id = $this->_request->getPost('news_id');
+
+			if (!v::intVal()->validate($id))
 			{
-				throw new RuntimeException('Incorrect news ID', -1);
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
 			}
 
-			$offset = $this->_request->getPost('offsetValue', 0);
-
-			if (!My_Validate::digit($offset) || $offset < 0)
+			if (!Application_Model_News::checkId($id, $post, false))
 			{
-				throw new RuntimeException('Incorrect offset value', -1);
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($id, true));
 			}
 
-			$response = array(
+			$start = $this->_request->getPost('offsetValue', 0);
+
+			if (!v::optional(v::intVal())->min(0)->validate($start))
+			{
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
+			}
+
+			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'Comments rendred successfully',
-			);
+			];
 
-			$comments = (new Application_Model_Comments)->findAllByNewsId($news->id, 10, $offset);
+			$commentModel = new Application_Model_Comments;
+			$comments = $commentModel->findAllByNewsId($post->id, 10, $start);
 
 			if (count($comments))
 			{
@@ -1622,17 +1633,17 @@ class MobileController extends Zend_Controller_Action
 				{
 					$owner = $comment->findDependentRowset('Application_Model_User')->current();
 
-					$response['result'][] = array(
+					$response['result'][] = [
                         'id' => $comment->id,
-                        'news_id' => $news->id,
+                        'news_id' => $post->id,
                         'comment' => $comment->comment,
                         'user_name' => $owner->Name,
                         'user_id' => $owner->id,
                         'Profile_image' => $this->view->serverUrl() .
 							$owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
                         'commTime' => $comment->created_at,
-                        'totalComments' => $news->comment
-					);
+                        'totalComments' => $post->comment
+					];
 				}
 			}
 		}
@@ -1658,14 +1669,32 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
 			{
-				throw new RuntimeException('Incorrect user ID', -1);
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
 			}
 
-			if (!Application_Model_News::checkId($this->_request->getPost('news_id'), $news, 0))
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
-				throw new RuntimeException('Incorrect news ID', -1);
+				throw new RuntimeException('Incorrect user id: ' .
+					var_export($user_id, true));
+			}
+
+			$id = $this->_request->getPost('news_id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_News::checkId($id, $news, false))
+			{
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($id, true));
 			}
 
 			$form = new Application_Form_Comment;
@@ -1724,7 +1753,8 @@ class MobileController extends Zend_Controller_Action
 
 			if (!Application_Model_User::checkId($user_id, $user))
 			{
-				throw new RuntimeException('Incorrect user ID', -1);
+				throw new RuntimeException('Incorrect user id: ' .
+					var_export($user_id, true));
 			}
 
 			$id = $this->_request->getPost('news_id');
@@ -1735,7 +1765,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, 0))
+			if (!Application_Model_News::checkId($id, $post, false))
 			{
 				throw new RuntimeException('Incorrect post ID', -1);
 			}

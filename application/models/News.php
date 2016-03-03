@@ -132,13 +132,23 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 	/*
      * Returns an instance of a Zend_Db_Table_Select object.
-     *
-     * @param bool $withFromPart Whether or not to include the from part of the select based on the table
+	 *
      * @return Zend_Db_Table_Select
      */
-    public function publicSelect($withFromPart = self::SELECT_WITHOUT_FROM_PART)
+    public function publicSelect()
     {
-		return parent::select($withFromPart)->where('news.isdeleted =?', 0);
+		$query = parent::select(true)->where('news.isdeleted=0')
+			->setIntegrityCheck(false)
+			->joinLeft(['a' => 'address'], 'a.id=news.address_id', [
+				'address', 'latitude', 'longitude', 'street_name',
+				'street_number', 'city', 'state', 'country', 'zip'])
+			->joinLeft(['owner' => 'user_data'], 'owner.id=news.user_id', [
+				'owner_name' => 'Name']);
+
+		$userModel = new Application_Model_User;
+		$userModel->setThumbsQuery($query, [[24, 24],[55, 55],[320, 320]], 'owner');
+
+		return $query;
     }
 
 	/**
@@ -150,11 +160,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 */
 	public function searchQuery(array $parameters, Application_Model_UserRow $user)
 	{
-		$query = $this->publicSelect()->setIntegrityCheck(false)
-			->from($this, ['news.*'])
-			->joinLeft(['a' => 'address'], 'a.id=news.address_id', [
-				'address', 'latitude', 'longitude', 'street_name',
-				'street_number', 'city', 'state', 'country', 'zip']);
+		$query = $this->publicSelect();
 
 		if (trim(My_ArrayHelper::getProp($parameters, 'keywords')) !== '')
 		{
@@ -241,14 +247,14 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 *
 	 * @return	boolean
 	 */
-    public static function checkId($news_id, &$news, $deleted = null)
+    public static function checkId($news_id, &$news, $public = true)
     {
 		if ($news_id == null)
 		{
 			return false;
 		}
 
-		$news = self::findById($news_id, $deleted);
+		$news = self::findById($news_id, $public);
 
 		return $news != null;
     }
@@ -257,22 +263,14 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * Finds record by ID.
 	 *
 	 * @param	integer	$id
-	 *
-	 * return	mixed	If success Application_Model_NewsRow, otherwise NULL
+	 * @param	boolean	$public
+	 * return	mixed If success Application_Model_NewsRow, otherwise NULL
 	 */
-	public static function findById($id, $deleted = null)
+	public static function findById($id, $public = true)
 	{
-		$db = self::getInstance();
-
-		$query = $db->select()->where('id =?', $id);
-		
-		if ($deleted !== null)
-		{
-			$query->where('isdeleted =?', $deleted);
-		}
-
-		$result = $db->fetchRow($query);
-
+		$db = new self;
+		$query = $public ? $db->publicSelect() : $db->select()->where('isdeleted=0');
+		$result = $db->fetchRow($query->where('news.id=?', $id));
 		return $result;
 	}
 
