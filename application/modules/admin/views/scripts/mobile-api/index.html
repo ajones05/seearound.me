@@ -67,7 +67,11 @@
 		<h4 class="list-group-item-heading">mobile/addimobinews</h4>
 		<p class="list-group-item-text">Add new post</p>
 	</a>
-	<a href="#" class="list-group-item disabled">mobile/get-total-comments</a>
+	<a href="<?php echo $this->baseUrl('admin/mobile-api/get-total-comments'); ?>"
+		class="list-group-item">
+		<h4 class="list-group-item-heading">mobile/get-total-comments</h4>
+		<p class="list-group-item-text">Post comments list</p>
+	</a>
 	<a href="<?php echo $this->baseUrl('admin/mobile-api/myposts'); ?>"
 		class="list-group-item">
 		<h4 class = "list-group-item-heading">mobile/myposts</h4>
