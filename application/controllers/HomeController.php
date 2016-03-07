@@ -311,38 +311,37 @@ class HomeController extends Zend_Controller_Action
 					implode("\n", $searchForm->getErrorMessages()));
 			}
 
-			$result = (new Application_Model_News)->search(array_merge(
-				$searchParameters,
-				['filter' => 2, 'start' => 0, 'limit' => 15]
-			), $user);
+			$result = (new Application_Model_News)->search($searchParameters +
+				['filter' => 2, 'start' => 0, 'limit' => 15], $user);
 
-			$response = array('status' => 1);
+			$response = ['status' => 1];
 
 			if (count($result))
 			{
 				foreach ($result as $row)
 				{
-					$owner = $row->findDependentRowset('Application_Model_User')->current();
-					$response['result'][] = array(
+					$ownerThumb = Application_Model_User::getThumb($row, '320x320', 'owner');
+					$response['result'][] = [
 						'id' => $row->id,
-						'news' => $row->news,
+						'news' => My_StringHelper::stringLimit($row->news, 100, '...'),
 						'latitude' => $row->latitude,
 						'longitude' => $row->longitude,
-						'user' => array(
-							'id' => $owner->id,
-							'name' => $owner->Name,
-							'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-						)
-					);
+						'user' => [
+							'id' => $row->user_id,
+							'name' => $row->owner_name,
+							'image' => $this->view->baseUrl($ownerThumb['path']),
+						]
+					];
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_helper->json($response);

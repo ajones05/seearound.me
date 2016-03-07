@@ -3,9 +3,8 @@ if (count($this->posts))
 {
 	foreach ($this->posts as $post)
 	{
-		echo My_ViewHelper::render('post/_list_item', [
+		echo $this->partial('post/_list_item.html', [
 			'post' => $post,
-			'owner' => $post->findDependentRowset('Application_Model_User')->current(),
 			'user' => $this->user,
 			'limit' => 350,
 			'hidden' => true
@@ -14,5 +13,5 @@ if (count($this->posts))
 }
 else
 {
-	echo My_ViewHelper::render('post/_list_empty');
+	echo $this->partial('post/_list_empty.html');
 }

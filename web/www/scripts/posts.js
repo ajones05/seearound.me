@@ -447,7 +447,6 @@ function renderView_callback(){
 								url: baseUrl + 'home/change-address',
 								data: data,
 								done: function(response){
-									user.address = place.formatted_address;
 									user.location = location;
 									userPosition = position;
 									centerPosition = position;

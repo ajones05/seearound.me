@@ -233,7 +233,7 @@ function loadFriendNews(callback){
 				});
 			}
 		} else {
-			alert(response ? response.error.message : ERROR_MESSAGE);
+			alert(response ? response.message : ERROR_MESSAGE);
 		}
 	});
 }
@@ -484,13 +484,7 @@ function renderListingMarker(news, readmore){
 			'<img src="' + newsMarker.opts.data.user.image + '" />' +
 				'<div>' +
 					'<h4>' + newsMarker.opts.data.user.name + '</h4>' +
-					'<div>' + $.trim(newsMarker.opts.data.news.substring(0, 100));
-
-			if (newsMarker.opts.data.news.length > 100){
-				tooltip += '...';
-			}
-
-			tooltip += '</div>' +
+					'<div>' + newsMarker.opts.data.news + '</div>' +
 				'</div>' +
 			'</div>' +
 			'<div class="tooltip-footer">';

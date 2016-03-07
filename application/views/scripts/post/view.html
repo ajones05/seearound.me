@@ -1,7 +1,6 @@
 <?php
-echo My_ViewHelper::render('post/_list_item', [
+echo $this->partial('post/_list_item.html', [
 	'post' => $this->post,
-	'owner' => $this->owner,
 	'user' => $this->user,
 	'hidden' => true
 ]);

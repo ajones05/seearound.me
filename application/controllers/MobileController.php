@@ -1423,23 +1423,21 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'Nearest point data rendered successfully'
 			];
 
-			$result = (new Application_Model_News)->search(array_merge(
-				$searchParameters, ['limit' => 15]
-			), $user);
+			$result = (new Application_Model_News)
+				->search($searchParameters + ['limit' => 15], $user);
 
 			if (count($result))
 			{
-				$commentTable = new Application_Model_Comments;
 				$votingTable = new Application_Model_Voting;
 
 				foreach ($result as $row)
 				{
-					$owner = $row->findDependentRowset('Application_Model_User')->current();
 					$userLike = $votingTable->findVote($row->id, $user->id);
+					$ownerThumb = Application_Model_User::getThumb($row, '320x320', 'owner');
 
-					$data = array(
+					$data = [
 						'id' => $row->id,
-						'user_id' => $owner->id,
+						'user_id' => $row->user_id,
 						'news' => $row->news,
 						'created_date' => My_Time::time_ago($row->created_date),
 						'updated_date' => $row->updated_date,
@@ -1452,9 +1450,10 @@ class MobileController extends Zend_Controller_Action
 						'comment_count' => $row->comment,
 						'vote' => $row->vote,
 						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
-						'Name' => $owner->Name,
-						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
-					);
+						'Name' => $row->owner_name,
+						'Profile_image' => $this->view->serverUrl() .
+							$this->view->baseUrl($ownerThumb['path'])
+					];
 
 					// TODO: merge with post query
 					if ($row->image_id)
@@ -1470,10 +1469,11 @@ class MobileController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);
@@ -1520,30 +1520,31 @@ class MobileController extends Zend_Controller_Action
 					implode("\n", $searchForm->getErrorMessages()));
 			}
 
-			$response = array();
+			$response = [
+				'status' => 'SUCCESS',
+				'message' => 'Posts rendred successfully'
+			];
 
 			if ($searchParameters['filter'] == 1)
 			{
 				$response['interest'] = count($user->parseInterests());
 			}
 
-			$result = (new Application_Model_News)->search(array_merge(
-				$searchParameters, ['limit' => 15]
-			), $user);
+			$result = (new Application_Model_News)
+				->search($searchParameters + ['limit' => 15], $user);
 
 			if (count($result))
 			{
-				$commentTable = new Application_Model_Comments;
 				$votingTable = new Application_Model_Voting;
 
 				foreach ($result as $row)
 				{
-					$owner = $row->findDependentRowset('Application_Model_User')->current();
 					$userLike = $votingTable->findVote($row->id, $user->id);
+					$ownerThumb = Application_Model_User::getThumb($row, '320x320', 'owner');
 
-					$data = array(
+					$data = [
 						'id' => $row->id,
-						'user_id' => $owner->id,
+						'user_id' => $row->user_id,
 						'news' => $row->news,
 						'created_date' => My_Time::time_ago($row->created_date),
 						'updated_date' => $row->updated_date,
@@ -1556,9 +1557,10 @@ class MobileController extends Zend_Controller_Action
 						'comment_count' => $row->comment,
 						'vote' => $row->vote,
 						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
-						'Name' => $owner->Name,
-						'Profile_image' => $this->view->serverUrl() . $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
-					);
+						'Name' => $row->owner_name,
+						'Profile_image' => $this->view->serverUrl() .
+							$this->view->baseUrl($ownerThumb['path'])
+					];
 
 					// TODO: merge with post query
 					if ($row->image_id)
@@ -1571,16 +1573,14 @@ class MobileController extends Zend_Controller_Action
 					$response['result'][] = $data;
 				}
 			}
-
-			$response['status'] = 'SUCCESS';
-			$response['message'] = 'Posts rendred successfully';
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);

@@ -685,7 +685,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * @param	string $alias
 	 * @return	array
 	 */
-	public function getThumb($data, $thumb, $alias = 'used_data')
+	public static function getThumb($data, $thumb, $alias = 'used_data')
 	{
 		$prefix = $alias . '_' . $thumb;
 

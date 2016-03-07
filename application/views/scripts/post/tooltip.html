@@ -1,9 +1,10 @@
 <?php
 $body = trim($this->post->news);
+$ownerThumb = Application_Model_User::getThumb($this->post, '55x55', 'owner');
 ?>
 <div class="tooltip-content">
-<img src="<?php echo $this->owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" />
-<h4><?php echo $this->owner->Name; ?></h4>
+<img src="<?php echo $this->baseUrl($ownerThumb['path']); ?>" />
+<h4><?php echo $this->post->owner_name; ?></h4>
 <div class="tooltip-body">
 <?php echo My_StringHelper::stringLimit($body, 100, '...'); ?>
 <?php if ($this->readmore && strlen($body) > 100): ?>

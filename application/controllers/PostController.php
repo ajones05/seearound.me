@@ -14,8 +14,9 @@ class PostController extends Zend_Controller_Action
 	 */
 	public function viewAction()
 	{
+		$userModel = new Application_Model_User;
 		$auth = Zend_Auth::getInstance()->getIdentity();
-		$user = $auth ? (new Application_Model_User)->findById($auth['user_id']) : null;
+		$user = $auth ? $userModel->findById($auth['user_id']) : null;
 
 		$id = $this->_request->getParam('id');
 
@@ -26,19 +27,17 @@ class PostController extends Zend_Controller_Action
 		}
 
 		// TODO: load link
-		// TODO: load user details
 		if (!Application_Model_News::checkId($id, $post))
         {
 			throw new RuntimeException('Incorrect post ID: ' .
 				var_export($id, true));
         }
 
-		$owner = $post->findDependentRowset('Application_Model_User')->current();
-
+		$ownerThumb = $userModel->getThumb($post, '55x55', 'owner');
 		$headScript = 'var opts=' . json_encode(['latitude' => $post->latitude,
 			'longitude' => $post->longitude], JSON_FORCE_OBJECT) . ',' .
 			'owner=' . json_encode([
-				'image' => $owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+				'image' => $this->view->baseUrl($ownerThumb['path'])
 			]) . ',' .
 			'post=' . json_encode([
 				'id'=>$post->id,
@@ -49,19 +48,15 @@ class PostController extends Zend_Controller_Action
 
 		if ($user)
 		{
-			$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
-
 			$headScript .= ',user=' . json_encode([
 				'name' => $user->Name,
-				'address' => Application_Model_Address::format($userAddress),
 				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
 			]);
 		}
 
 		$this->view->user = $user;
 		$this->view->post = $post;
-		$this->view->owner = $owner;
-		$this->view->searchForm = new Application_Form_PostSearch;;
+		$this->view->searchForm = new Application_Form_PostSearch;
 		$this->view->headScript()->appendScript($headScript . ';');
 		$this->view->doctype('XHTML1_RDFA');
 		$this->view->headMeta()
@@ -90,23 +85,16 @@ class PostController extends Zend_Controller_Action
 					->find($link->image_id)->current();
 				$thumb = $image->findThumb([448, 320]);
 			}
-			elseif ($owner->image_id)
-			{
-				$image = (new Application_Model_Image)
-					->find($owner->image_id)->current();
-				$thumb = $image->findThumb([320, 320]);
-			}
 			else
 			{
-				$config = Zend_Registry::get('config_global');
-				$thumb = $config->user->thumb->{'320x320'};
+				$thumb = $userModel->getThumb($post, '320x320', 'owner');
 			}
 		}
 
 		$this->view->headMeta($this->view->serverUrl() .
-			$this->view->baseUrl($thumb->path), 'og:image', 'property')
-			->setProperty('og:image:width', $thumb->width)
-			->setProperty('og:image:height', $thumb->height);
+			$this->view->baseUrl($thumb['path']), 'og:image', 'property')
+			->setProperty('og:image:width', $thumb['width'])
+			->setProperty('og:image:height', $thumb['height']);
 
 		$this->view->addClass = ['post'];
 		$this->view->layout()->setLayout('posts');
@@ -190,9 +178,8 @@ class PostController extends Zend_Controller_Action
 				$data[$post->id] = [
 					$post->latitude,
 					$post->longitude,
-					My_ViewHelper::render('post/_list_item', [
+					$this->view->partial('post/_list_item.html', [
 						'post' => $post,
-						'owner' => $post->findDependentRowset('Application_Model_User')->current(),
 						'user' => $user,
 						'limit' => 350
 					]
@@ -216,7 +203,6 @@ class PostController extends Zend_Controller_Action
 		$this->view->headScript()->appendScript(
 			'var user=' . json_encode([
 				'name' => $user->Name,
-				'address' => Application_Model_Address::format($userAddress->toArray()),
 				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 				'location' => [$userAddress->latitude, $userAddress->longitude]
 			]) . ',' .
@@ -294,9 +280,8 @@ class PostController extends Zend_Controller_Action
 						$post->id,
 						$post->latitude,
 						$post->longitude,
-						My_ViewHelper::render('post/_list_item', [
+						$this->view->partial('post/_list_item.html', [
 							'post' => $post,
-							'owner' => $post->findDependentRowset('Application_Model_User')->current(),
 							'user' => $user,
 							'limit' => 350
 						])
@@ -479,7 +464,6 @@ class PostController extends Zend_Controller_Action
 
 			$this->view->post = $post;
 			$this->view->point = $point;
-			$this->view->owner = $post->findDependentRowset('Application_Model_User')->current();
 			$this->view->position = $searchParameters['latitude'] . ',' . $searchParameters['longitude'];
 			$this->view->readmore = $this->_request->getPost('readmore', 0);
 		}
@@ -569,14 +553,12 @@ class PostController extends Zend_Controller_Action
 
 				foreach ($result as $post)
 				{
-					$owner = $post->findDependentRowset('Application_Model_User')->current();
 					$response['data'][] = [
 						$post->id,
 						$post->latitude,
 						$post->longitude,
 						$this->view->partial('post/_list_item.html', [
 							'post' => $post,
-							'owner' => $post->findDependentRowset('Application_Model_User')->current(),
 							'user' => $user,
 							'limit' => 350
 						])
