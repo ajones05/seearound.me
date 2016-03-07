@@ -232,23 +232,32 @@ class HomeController extends Zend_Controller_Action
 		$this->view->auth_id = $auth ? $user->id : null;
 		$this->view->profile = $profile;
 
-		// TODO: check performance
-
-		$this->view->karma_posts = $newsModel->fetchRow(
-			$newsModel->publicSelect()
-				->setIntegrityCheck(false)
-				->from($newsModel, array(
-					'IFNULL(SUM(if(news.user_id = "' . $profile->id . '", 1, 0)), 0) AS news_count',
-					'IFNULL(SUM(comments.count), 0) as comments_count',
-					'IFNULL(SUM(comments_other.count), 0) as other_comments_count',
-					'IFNULL(SUM(if(news.user_id = "' . $profile->id . '", news.vote, 0)), 0) as votings_count',
-				))
-				->joinLeft(array('comments' => $newsModel->commentsSubQuery()), 'comments.news_id = news.id AND news.user_id = ' . $profile->id, '')
-				->joinLeft(array('comments_other' => $newsModel->commentsSubQuery()), 'comments_other.news_id = news.id AND comments_other.user_id = ' .
-					$profile->id . ' AND news.user_id <> ' . $profile->id, '')
+		$selfStasts = $newsModel->fetchRow(
+			$newsModel->select()
+				->from(['n' => 'news'], [
+					'COUNT(n.id) AS post',
+					'IFNULL(SUM(n.comment), 0) as comment',
+					'IFNULL(SUM(n.vote), 0) as vote'
+				])
+				->where('n.isdeleted=0 AND n.user_id=' . $profile->id)
 		);
 
-		$this->view->karma_comments = (new Application_Model_Comments)->getCountByUserId($profile->id);
+		$commentModel = new Application_Model_Comments;
+		$otherStats = $commentModel->fetchRow(
+			$commentModel->select()
+				->setIntegrityCheck(false)
+				->from(['c' => 'comments'], ['count(c.id) AS count'])
+				->where('c.isdeleted=0 AND c.user_id=' . $profile->id)
+				->joinLeft(['n' => 'news'], 'n.id=c.news_id', '')
+				->where('n.user_id<>' . $profile->id)
+		);
+
+		$this->view->karma = [
+			'post' => $selfStasts->post,
+			'comment' => $selfStasts->comment,
+			'comment_other' => $otherStats->count,
+			'vote' => $selfStasts->vote
+		];
 
 		if ($auth && $user->id != $profile->id)
 		{

@@ -1,12 +1,12 @@
 <?php
-$karma_post = $this->karma_posts->news_count +
-	(.25 * ($this->karma_posts->votings_count + $this->karma_posts->comments_count)) +
-	$this->karma_posts->other_comments_count * .25;
+$karma_post = $this->karma['post'] +
+	(.25 * ($this->karma['vote'] + $this->karma['comment'])) +
+	$this->karma['comment_other'] * .25;
 
-$karma_post_title = 'User posts: ' . $this->karma_posts->news_count . '<br/>' .
-	'User posts comments: ' . $this->karma_posts->comments_count . '<br/>' .
-	'User posts votings: ' . $this->karma_posts->votings_count . '<br/>' .
-	'User comments on other posts: ' . $this->karma_posts->other_comments_count;
+$karma_post_title = 'User posts: ' . $this->karma['post'] . '<br/>' .
+	'User posts comments: ' . $this->karma['comment'] . '<br/>' .
+	'User posts votings: ' . $this->karma['vote'] . '<br/>' .
+	'User comments on other posts: ' . $this->karma['comment_other'];
 ?>
 <div class="profile">
 <div class="leftCol">
