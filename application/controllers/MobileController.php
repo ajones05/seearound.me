@@ -1231,18 +1231,48 @@ class MobileController extends Zend_Controller_Action
 			$post = $model->save($postForm->getValues() +
 				['user_id' => $user->id, 'address_id' => $address->id]);
 
-			$response = array(
+			$response = [
 				'status' => 'SUCCESS',
-				'message' => $post->news,
-				'userid' => $user->id
-			);
+				'userid' => $user->id,
+				'message' => $post->news
+			];
+
+			$postLink = $post->findDependentRowset('Application_Model_NewsLink')->current();
+
+			if ($postLink)
+			{
+				$response += ['link_url' => $postLink->link];
+
+				if (trim($postLink->title) !== '')
+				{
+					$response += ['link_title' => $postLink->title];
+				}
+
+				if (trim($postLink->description) !== '')
+				{
+					$response += ['link_description' => $postLink->description];
+				}
+
+				if (trim($postLink->author) !== '')
+				{
+					$response += ['link_author' => $postLink->author];
+				}
+
+				if ($postLink->image_id != null)
+				{
+					$image = (new Application_Model_Image)->find($postLink->image_id)->current();
+					$response += ['link_image' => $this->view->serverUrl() .
+						$this->view->baseUrl($image->findThumb([448, 320])->path)];
+				}
+			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);
@@ -1463,6 +1493,36 @@ class MobileController extends Zend_Controller_Action
 							$this->view->baseUrl($image->findThumb([960, 960])->path);
 					}
 
+					// TODO: merge with post query
+					$postLink = $row->findDependentRowset('Application_Model_NewsLink')->current();
+
+					if ($postLink)
+					{
+						$data += ['link_url' => $postLink->link];
+
+						if (trim($postLink->title) !== '')
+						{
+							$data += ['link_title' => $postLink->title];
+						}
+
+						if (trim($postLink->description) !== '')
+						{
+							$data += ['link_description' => $postLink->description];
+						}
+
+						if (trim($postLink->author) !== '')
+						{
+							$data += ['link_author' => $postLink->author];
+						}
+
+						if ($postLink->image_id != null)
+						{
+							$image = (new Application_Model_Image)->find($postLink->image_id)->current();
+							$data += ['link_image' => $this->view->serverUrl() .
+								$this->view->baseUrl($image->findThumb([448, 320])->path)];
+						}
+					}
+
 					$response['result'][] = $data;
 				}
 			}
@@ -1568,6 +1628,36 @@ class MobileController extends Zend_Controller_Action
 						$image = (new Application_Model_Image)->find($row->image_id)->current();
 						$data['images'] = $this->view->serverUrl() .
 							$this->view->baseUrl($image->findThumb([960, 960])->path);
+					}
+
+					// TODO: merge with post query
+					$postLink = $row->findDependentRowset('Application_Model_NewsLink')->current();
+
+					if ($postLink)
+					{
+						$data += ['link_url' => $postLink->link];
+
+						if (trim($postLink->title) !== '')
+						{
+							$data += ['link_title' => $postLink->title];
+						}
+
+						if (trim($postLink->description) !== '')
+						{
+							$data += ['link_description' => $postLink->description];
+						}
+
+						if (trim($postLink->author) !== '')
+						{
+							$data += ['link_author' => $postLink->author];
+						}
+
+						if ($postLink->image_id != null)
+						{
+							$image = (new Application_Model_Image)->find($postLink->image_id)->current();
+							$data += ['link_image' => $this->view->serverUrl() .
+								$this->view->baseUrl($image->findThumb([448, 320])->path)];
+						}
 					}
 
 					$response['result'][] = $data;
@@ -2025,7 +2115,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = [
 				'status' => 'FAILED',
-				'message' => true || $e instanceof RuntimeException ?
+				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
 		}
