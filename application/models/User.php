@@ -163,6 +163,11 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 class Application_Model_User extends Zend_Db_Table_Abstract
 {
 	/**
+	 * @var	Application_Model_UserRow
+	 */
+	protected static $_auth;
+
+	/**
 	 * @var	string
 	 */
     protected $_name     = 'user_data';
@@ -337,10 +342,32 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	{
 		$db = new self;
 		$result = $db->fetchRow(
-			$db->select()->where('user_data.id =?', $id)
+			$db->select()->where('user_data.id=?', $id)
 		);
 
 		return $result;
+	}
+
+	/**
+	 * Returns auth user.
+	 *
+	 * return	mixed If success Application_Model_UserRow, otherwise NULL
+	 */
+	public static function getAuth()
+	{
+		$auth = Zend_Auth::getInstance()->getIdentity();
+
+		if (empty($auth['user_id']))
+		{
+			return false;
+		}
+
+		if (self::$_auth == null)
+		{
+			self::$_auth = self::findById($auth['user_id']);
+		}
+
+		return self::$_auth;
 	}
 
 	/**

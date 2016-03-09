@@ -11,11 +11,11 @@ class Admin_MobileApiController extends Zend_Controller_Action
 	 */
 	public function init()
 	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$this->user = Application_Model_User::getAuth();
 
-		if (!Application_Model_User::checkId($auth['user_id'], $this->user))
+		if ($this->user == null)
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			throw new RuntimeException('You are not authorized to access this action');
 		}
 
 		if (!$this->user->is_admin)

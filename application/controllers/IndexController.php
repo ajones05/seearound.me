@@ -214,13 +214,23 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function regSuccessAction()
 	{
-		if (!Application_Model_User::checkId($this->_request->getParam('id'), $user) || $user->Status != 'inactive')
+		$id = $this->_request->getParam('id');
+
+		if (!v::intVal()->validate($id))
 		{
-			throw new Exception('Incorrect user ID');
+			throw new RuntimeException('Incorrect user ID value: ' .
+				var_export($id, true));
+		}
+
+		if (!Application_Model_User::checkId($id, $user) ||
+			$user->Status != 'inactive')
+		{
+			throw new RuntimeException('Incorrect user ID');
 		}
 
 		$this->view->layout()->setLayout('login');
-		$this->view->headScript()->appendScript('	var user = ' . json_encode(array('id' => $user->id)) . ';');
+		$this->view->headScript()->appendScript('var user=' .
+			json_encode(['id' => $user->id]) . ';');
 	}
 
 	/**
@@ -232,9 +242,18 @@ class IndexController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('id'), $user) || $user->Status != 'inactive')
+			$id = $this->_request->getParam('id');
+
+			if (!v::intVal()->validate($id))
 			{
-				throw new RuntimeException('Incorrect user ID');
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_User::checkId($id, $user) || $user->Status != 'inactive')
+			{
+				throw new RuntimeException('Incorrect user ID: ' .
+					var_export($id, true));
 			}
 
 			My_Email::send(

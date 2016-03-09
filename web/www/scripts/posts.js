@@ -930,13 +930,13 @@ function postItem_renderContent(id, postContainer){
 						$('<div/>').append(
 							$('<input/>', {
 								type: 'email',
-								name: 'to',
+								name: 'email',
 								placeholder: 'Please enter receiver email address...'
 							})
 						),
 						$('<div/>').append(
 							$('<textarea/>', {
-								name: 'message',
+								name: 'body',
 								placeholder: 'Please enter message...'
 							})
 						),
@@ -947,7 +947,7 @@ function postItem_renderContent(id, postContainer){
 									$('.post__share-email').dialog('close');
 								})
 						),
-						$('<input/>', {type:'hidden',name:'news_id'}).val(id)
+						$('<input/>', {type:'hidden',name:'id'}).val(id)
 					)
 				)
 			)
@@ -970,12 +970,12 @@ function postItem_renderContent(id, postContainer){
 					require(['jquery-validate'], function(){
 						$('form', event.target).validate({
 							rules: {
-								to: {required:true,email:true},
-								message: {required:true}
+								email:{required:true,email:true},
+								body:{required:true}
 							},
 							submitHandler: function(form){
 								ajaxJson({
-									url: baseUrl+'info/public-message-email',
+									url: baseUrl+'post/share-email',
 									data: $(form).serialize(),
 									done: function(response){
 										$(event.target).empty().append(

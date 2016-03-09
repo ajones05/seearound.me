@@ -34,12 +34,12 @@ class HomeController extends Zend_Controller_Action
 
     public function editProfileAction()
 	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
 		$userModel = new Application_Model_User;
+		$user = $userModel->getAuth();
 
-		if (!$userModel->checkId($auth['user_id'], $user))
+		if ($user == null)
 		{
-			throw new RuntimeException('You are not authorized to access this action', -1);
+			throw new RuntimeException('You are not authorized to access this action');
 		}
 
 		$profileForm = new Application_Form_Profile;
@@ -113,11 +113,12 @@ class HomeController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$userModel = new Application_Model_User;
+			$user = $userModel->getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$upload = new Zend_File_Transfer;
@@ -167,8 +168,7 @@ class HomeController extends Zend_Controller_Action
 			$thumb = $thumbModel->save($thumb55x55, $image, [55, 55]);
 			$thumbModel->save($thumb320x320, $image, [320, 320]);
 
-			$user->image_id = $image->id;
-			$user->save();
+			$userModel->update(['image_id' => $image->id], 'id=' . $user->id);
 
 			$response = [
 				'status' => 1,
@@ -189,26 +189,40 @@ class HomeController extends Zend_Controller_Action
 
 	public function profileAction()
 	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$userModel = new Application_Model_User;
+		$isAuth = Zend_Auth::getInstance()->hasIdentity();
 
-		if ($auth && !Application_Model_User::checkId($auth['user_id'], $user))
+		if ($isAuth)
 		{
-			$auth->clearIdentity();
-			throw new RuntimeException('Incorrect user session', -1);
+			$user = $userModel->getAuth();
+
+			if ($user == null)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$this->view->user = $user;
 		}
 
 		$user_id = $this->_request->getParam('user');
 
+		if (!v::optional(v::intVal())->validate($user_id))
+		{
+			throw new RuntimeException('Incorrect user ID value: ' .
+				var_export($user_id, true));
+		}
+
 		if ($user_id)
 		{
-			if (!Application_Model_User::checkId($user_id, $profile))
+			if (!$userModel->checkId($user_id, $profile))
 			{
-				throw new RuntimeException('Incorrect user ID', -1);
+				throw new RuntimeException('Incorrect user ID: ' .
+					var_export($user_id, true));
 			}
 		}
 		else
 		{
-			if (!$auth)
+			if (!$isAuth)
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -224,12 +238,7 @@ class HomeController extends Zend_Controller_Action
 				->order('news.id DESC')
 		);
 
-		if ($auth)
-		{
-			$this->view->user = $user;
-		}
-
-		$this->view->auth_id = $auth ? $user->id : null;
+		$this->view->auth_id = $isAuth ? $user->id : null;
 		$this->view->profile = $profile;
 
 		$selfStasts = $newsModel->fetchRow(
@@ -259,7 +268,7 @@ class HomeController extends Zend_Controller_Action
 			'vote' => $selfStasts->vote
 		];
 
-		if ($auth && $user->id != $profile->id)
+		if ($isAuth && $user->id != $profile->id)
 		{
 			$isFriend = (new Application_Model_Friends)->isFriend($user, $profile);
 			$this->view->headScript()
@@ -299,11 +308,11 @@ class HomeController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$searchForm = new Application_Form_PostSearch;
@@ -365,11 +374,11 @@ class HomeController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$form = new Application_Form_Address;

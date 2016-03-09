@@ -1,5 +1,5 @@
 <?php
-$auth = Zend_Auth::getInstance()->getIdentity();
+$user = Application_Model_User::getAuth();
 $request = Zend_Controller_Front::getInstance()->getRequest();
 
 $error = isset($this->login_form) ? true : false;
@@ -15,7 +15,7 @@ if ($error)
 }
 ?>
 <div class="uprBar">
-	<?php if (Application_Model_User::checkId($auth['user_id'], $user)): ?>
+	<?php if ($user != null): ?>
 	<div class="uprBar-wrapper">
 		<ul class="uprBarInr">
 			<li class="leftCol">

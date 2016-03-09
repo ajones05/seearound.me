@@ -107,9 +107,9 @@ class PostController extends Zend_Controller_Action
 	 */
 	public function listAction()
 	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$user = Application_Model_User::getAuth();
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		if ($user == null)
 		{
 			$this->_helper->flashMessenger('Please log in to access this page.');
 			$this->_redirect($this->view->baseUrl('/'));
@@ -225,9 +225,9 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('Please log in to access this page.');
 			}
@@ -328,9 +328,9 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -357,9 +357,9 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -485,9 +485,9 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -588,9 +588,9 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -643,9 +643,9 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -707,9 +707,9 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -771,9 +771,9 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -822,9 +822,9 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
@@ -950,6 +950,76 @@ class PostController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Function to share public post through mail.
+	 *
+	 * @return	void
+	 */
+	public function shareEmailAction()
+	{
+		try
+		{
+			$user = Application_Model_User::getAuth();
+
+			if ($user == null)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_News::checkId($id, $post, false))
+			{
+				throw new RuntimeException('Incorrect user ID: ' .
+					var_export($id, true));
+			}
+
+			$email = $this->_request->getPost('email');
+
+			if (!v::email()->validate($email))
+			{
+				throw new RuntimeException('Incorrect email value: ' .
+					var_export($email, true));
+			}
+
+			$body = $this->_request->getPost('body');
+
+			if (!v::stringType()->length(1, 65535)->validate($body))
+			{
+				throw new RuntimeException('Incorrect body value: ' .
+					var_export($body, true));
+			}
+
+			My_Email::send($email, 'Interesting local news', [
+				'template' => 'post-share',
+				'assign' => [
+					'user' => $user,
+					'news' => $post,
+					'message' => $body,
+				]
+			]);
+
+			$response = ['status' => 1];
+		}
+		catch (Exception $e)
+		{
+			My_Log::exception($e);
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * Post comments list action.
 	 *
 	 * @return void
@@ -1029,27 +1099,36 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			$data = $this->_request->getParams();
+			$post_id = $this->_request->getParam('post_id');
 
-			if (empty($data['post_id']) || !Application_Model_News::checkId($data['post_id'], $post, false))
+			if (!v::intVal()->validate($post_id))
 			{
-				throw new RuntimeException('Incorrect post ID');
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($post_id, true));
+			}
+
+			if (!Application_Model_News::checkId($post_id, $post, false))
+			{
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($post_id, true));
 			}
 
 			$form = new Application_Form_Comment;
+			$data = $this->_request->getParams();
 
 			if (!$form->isValid($data))
 			{
 				throw new RuntimeException('Validate error', -1);
 			}
 
+			// TODO: refactoring
 			$comment = (new Application_Model_Comments)->save($form, $post, $user);
 
 			$response = [
@@ -1084,9 +1163,9 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}

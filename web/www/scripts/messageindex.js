@@ -70,26 +70,20 @@ function loadReplyMessages(target){
 								$(".rpl-loading", target).show();
 								$submitField.attr("disabled", true);
 
-								$.ajax({
-									type: "POST",
-									url: baseUrl + "message/reply",
-									data: {
-										id: messageId,
-										message: message
+								ajaxJson({
+									url:baseUrl+'message/reply',
+									data:{id:messageId,message:message},
+									done: function(replyResponse){
+										$(".rpl-loading", target).hide();
+										$submitField.attr("disabled", false);
+										$('.replyTxt', target).before(renderReplyMessage(replyResponse.message));
+										$messageField.val('');
+										setThisHeight(Number($("#midColLayout").height()));
 									},
-									dataType: 'json'
-								}).done(function(response){
-									$(".rpl-loading", target).hide();
-									$submitField.attr("disabled", false);
-
-									if (!response || !response.status){
-										replyMessageError(response ? response.error.message : 'There are some errors', target);
-										return false;
+									fail: function(data, textStatus, jqXHR){
+										$(".rpl-loading", target).hide();
+										$submitField.attr("disabled", false);
 									}
-
-									$('.replyTxt', target).before(renderReplyMessage(response.message));
-									$messageField.val('');
-									setThisHeight(Number($("#midColLayout").height()));
 								});
 							})
 					)

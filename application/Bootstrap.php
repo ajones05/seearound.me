@@ -194,13 +194,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      */
     public function _initSaveLastVisitTimestamp()
     {
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$user = Application_Model_User::getAuth();
 
-		if (!(new Application_Model_User)->checkId($auth['user_id'], $user))
+		if ($user == null)
 		{
 			return false;
 		}
 
+		$auth = Zend_Auth::getInstance()->getIdentity();
 		$status = (new Application_Model_Loginstatus)->find($auth['login_id'])->current();
 
 		if (!$status)

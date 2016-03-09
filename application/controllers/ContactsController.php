@@ -10,9 +10,9 @@ class ContactsController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$user = Application_Model_User::getAuth();
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		if ($user == null)
 		{
 			$this->_redirect($this->view->baseUrl('/'));
 		}
@@ -38,9 +38,9 @@ class ContactsController extends Zend_Controller_Action
 	 */
 	public function invitesAction() 
 	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$user = Application_Model_User::getAuth();
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		if ($user == null)
 		{
 			$this->_redirect($this->view->baseUrl('/'));
 		}
@@ -146,11 +146,11 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$network_id = trim($this->_request->getPost("network_id"));
@@ -215,11 +215,11 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$user_invites = $user->findDependentRowset('Application_Model_Invitestatus')->current();
@@ -266,11 +266,12 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$userModel = new Application_Model_User;
+			$user = $userModel->getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$network_id = trim($this->_request->getPost("network_id"));
@@ -281,15 +282,14 @@ class ContactsController extends Zend_Controller_Action
 					var_export($network_id, true));
 			}
 
-			$tableUser = new Application_Model_User;
-			$facebook_user = $tableUser->findByNetworkId($network_id);
+			$facebook_user = $userModel->findByNetworkId($network_id);
 
 			if (!$facebook_user)
 			{
 				throw new RuntimeException('Incorrect network ID.', -1);
 			}
 
-			$reciever_email = $tableUser->recordForEmail($user->id, $facebook_user->id);
+			$reciever_email = $userModel->recordForEmail($user->id, $facebook_user->id);
 
 			My_Email::send(
 				$reciever_email->recieverEmail,
@@ -331,9 +331,9 @@ class ContactsController extends Zend_Controller_Action
 	 */
 	public function friendsListAction()
 	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$user = Application_Model_User::getAuth();
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		if ($user == null)
 		{
 			$this->_redirect($this->view->baseUrl('/'));
 		}
@@ -372,11 +372,11 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$response = array('status' => 1);
@@ -389,8 +389,6 @@ class ContactsController extends Zend_Controller_Action
 
 			if (count($friends))
 			{
-				$tableUser = new Application_Model_User();
-
 				foreach ($friends as $friend)
 				{
 					$_user = $friend->reciever_id == $user->id ?
@@ -429,11 +427,12 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$userModel = new Application_Model_User;
+			$user = $userModel->getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$receiver_id = $this->_request->getPost('user');
@@ -449,7 +448,7 @@ class ContactsController extends Zend_Controller_Action
 				throw new RuntimeException('Access denied');
 			}
 
-			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			if (!$userModel->checkId($receiver_id, $receiver))
 			{
 				throw new RuntimeException('Incorrect receiver user ID');
 			}
@@ -537,11 +536,11 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', 401);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$response = array('status' => 1);
@@ -594,11 +593,11 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$response = array('status' => 1);
@@ -658,11 +657,11 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$search = $this->_request->getParam('search', null);

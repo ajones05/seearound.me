@@ -13,10 +13,10 @@ class MessageController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
 		$userModel = new Application_Model_User;
+		$user = $userModel->getAuth();
 
-		if (!$userModel->checkId($auth['user_id'], $user))
+		if ($user == null)
 		{
 			throw new RuntimeException('You are not authorized to access this action');
 		}
@@ -68,9 +68,9 @@ class MessageController extends Zend_Controller_Action
 	 */
 	public function sendsAction()
 	{
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$user = Application_Model_User::getAuth();
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user))
+		if ($user == null)
 		{
 			throw new RuntimeException('You are not authorized to access this action');
 		}
@@ -113,9 +113,9 @@ class MessageController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = $userModel->getAuth();
 
-			if (!$userModel->checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -236,9 +236,9 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -317,9 +317,9 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
+			$user = Application_Model_User::getAuth();
 
-			if (!Application_Model_User::checkId($auth['user_id'], $user))
+			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -328,18 +328,20 @@ class MessageController extends Zend_Controller_Action
 
 			if (!v::intVal()->validate($id))
 			{
-				throw new RuntimeException('Incorrect ID value');
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($id, true));
 			}
 
 			$conversationModel = new Application_Model_Conversation;
 
 			if (!$conversationModel->checkId($id, $conversation))
 			{
-				throw new RuntimeException('Incorrect message ID');
+				throw new RuntimeException('Incorrect message ID value: ' .
+					var_export($id, true));
 			}
 
-			if ($conversation->from_id != $user->id && $conversation->to_id != $user->id ||
-				$conversation->from_id != $receiver->id && $conversation->to_id != $receiver->id)
+			if ($conversation->from_id != $user->id &&
+				$conversation->to_id != $user->id)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -377,13 +379,11 @@ class MessageController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'error' => array(
-					'message' => $e instanceof RuntimeException ?
-						$e->getMessage() : 'Internal Server Error'
-				)
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_helper->json($response);

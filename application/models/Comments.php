@@ -133,32 +133,6 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 	}
 
 	/**
-	 * Returns comments count by user ID.
-	 *
-	 * @param	integer	$user_id
-	 *
-	 * @return	integer
-	 */
-	public function getCountByUserId($user_id)
-	{
-		$result = $this->fetchRow(
-			$this->publicSelect()
-				->setIntegrityCheck(false)
-				->from($this, 'count(comments.id) as rows_count')
-				->where('comments.user_id=?', $user_id)
-				->joinLeft('news', 'comments.news_id = news.id', '')
-				->where('news.isdeleted=?', 0)
-		);
-
-		if ($result)
-		{
-			return $result->rows_count;
-		}
-
-		return 0;
-	}
-
-	/**
 	 * Finds records by news ID.
 	 *
 	 * @param	integer	$news_id

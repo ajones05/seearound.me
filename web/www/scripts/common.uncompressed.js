@@ -538,14 +538,26 @@ function ajaxJson(url, settings){
 
 	var jqxhr = $.ajax($.extend(settings, {type: 'POST'}))
 		.done(function(data, textStatus, jqXHR){
-			if (typeof data !== 'object' || data.status == 0){
-				alert(typeof data === 'object' ? data.message : ERROR_MESSAGE);
+			var isObject = typeof data === 'object';
+			if (!isObject || data.status == 0){
+				if (typeof settings.fail === 'function'){
+					settings.fail(data, textStatus, jqXHR);
+				}
+				alert(isObject ? data.message : ERROR_MESSAGE);
 				return false;
 			}
 
 			if (typeof settings.done === 'function'){
 				return settings.done(data, textStatus, jqXHR);
 			}
+		}).fail(function(jqXHR, textStatus){
+			if (jqXHR.readyState == 0 || jqXHR.status == 0){
+				return true;
+			}
+			if (typeof settings.fail === 'function'){
+				settings.fail({}, textStatus, jqXHR);
+			}
+			alert('Internal server error');
 		});
 
 	return jqxhr;

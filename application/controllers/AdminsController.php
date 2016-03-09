@@ -4,15 +4,12 @@ class AdminsController extends Zend_Controller_Action
 {
     public function indexAction()
     {
-		$auth = Zend_Auth::getInstance()->getIdentity();
+		$user = Application_Model_User::getAuth();
 
-		if (!Application_Model_User::checkId($auth['user_id'], $user)) {
-			throw new RuntimeException('You are not authorized to access this action', -1);
+		if ($user == null || !$user->is_admin)
+		{
+			throw new RuntimeException('You are not authorized to access this action');
 		}
-
-        if (!$user->is_admin) {
-            $this->_redirect($this->view->baseUrl('/'));
-        }
 
         $response = new stdClass();
         $emailInvites  = new Application_Model_Emailinvites();

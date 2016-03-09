@@ -255,9 +255,17 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$start = $this->_request->getPost('start', 0);
@@ -450,36 +458,51 @@ class MobileController extends Zend_Controller_Action
 		{
 			$other_user_id = $this->_request->getPost('other_user_id');
 
+			if (!v::intVal()->validate($other_user_id))
+			{
+				throw new RuntimeException('Incorrect other user ID value: ' .
+					var_export($other_user_id, true));
+			}
+
 			if (!Application_Model_User::checkId($other_user_id, $other_user))
 			{
-				throw new RuntimeException('Incorrect other user ID', -1);
+				throw new RuntimeException('Incorrect other user ID: ' .
+					var_export($other_user_id, true));
 			}
-			
-			$response = array(
+
+			$response = [
 				'status' => 'SUCCESS',
-				'result' => My_ArrayHelper::filter(array(
+				'result' => My_ArrayHelper::filter([
 					'id' => $other_user->id,
 					'Name' => $other_user->Name,
-					'Profile_image' => $this->view->serverUrl() . $other_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					'Profile_image' => $this->view->serverUrl() .
+						$other_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
 					'Email_id' => $other_user->Email_id,
 					'Gender' => $other_user->gender(),
 					'Activities' => $other_user->activities(),
 					'Birth_date' => $other_user->Birth_date
-				))
-			);
+				])
+			];
 
 			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::optional(v::intVal())->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
 
 			if ($user_id != null)
 			{
 				if ($user_id == $other_user_id)
 				{
-					throw new RuntimeException('Other user ID cannot be the same as your ID', -1);
+					throw new RuntimeException('Other user ID cannot be the same as your ID');
 				}
 
 				if (!Application_Model_User::checkId($user_id, $user))
 				{
-					throw new RuntimeException('Incorrect user ID', -1);
+					throw new RuntimeException('Incorrect user ID: ' .
+						var_export($user_id, true));
 				}
 
 				$response['friends'] = (new Application_Model_Friends)->isFriend($user, $other_user) ? 1 : 0;
@@ -487,10 +510,11 @@ class MobileController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);
@@ -517,7 +541,8 @@ class MobileController extends Zend_Controller_Action
 
 			if (!Application_Model_User::checkId($sender_id, $user))
 			{
-				throw new RuntimeException('Incorrect sender ID', -1);
+				throw new RuntimeException('Incorrect sender ID: ' .
+					var_export($sender_id, true));
 			}
 
 			$receiver_id = $this->_request->getPost('reciever_id');
@@ -530,7 +555,8 @@ class MobileController extends Zend_Controller_Action
 
 			if (!Application_Model_User::checkId($receiver_id, $receiver))
 			{
-				throw new RuntimeException('Incorrect receiver ID', -1);
+				throw new RuntimeException('Incorrect receiver ID: ' .
+					var_export($receiver_id, true));
 			}
 
 			$body = $this->_request->getPost('message');
@@ -648,7 +674,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$userModel->checkId($user_id, $user))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$start = $this->_request->getPost('start', 0);
@@ -745,7 +771,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$userModel->checkId($user_id, $user))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$start = $this->_request->getPost('start', 0);
@@ -866,7 +892,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$userModel->checkId($user_id, $user))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$id = $this->_request->getPost('id');
@@ -886,7 +912,7 @@ class MobileController extends Zend_Controller_Action
 
 			if ($user->id != $conversation->to_id && $user->id != $conversation->from_id)
 			{
-				throw new RuntimeException('You have no permissions to access this action', -1);
+				throw new RuntimeException('You have no permissions to access this action');
 			}
 
 			$start = $this->_request->getPost('start', 0);
@@ -1005,7 +1031,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!Application_Model_User::checkId($user_id, $user))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$post_id = $this->_request->getPost('post_id');
@@ -1095,7 +1121,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$userModel->checkId($user_id, $user))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$other_user_id = $this->_request->getPost('other_user_id');
@@ -1108,7 +1134,8 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$userModel->checkId($other_user_id, $other_user))
 			{
-				throw new RuntimeException('Incorrect other user ID', -1);
+				throw new RuntimeException('Incorrect other user ID: ' .
+					var_export($other_user_id, true));
 			}
 
 			$start = $this->_request->getPost('start', 0);
@@ -1201,9 +1228,17 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			if (!Application_Model_User::checkId($this->_request->getPost('user_id'), $user))
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$data = $this->_request->getPost();
@@ -1297,12 +1332,14 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($user_id, $user))
+			$model = new Application_Model_User;
+
+			if (!$model->checkId($user_id, $user))
 			{
-				throw new RuntimeException('Incorrect user ID');
+				throw new RuntimeException('Incorrect user ID: ' .
+					var_export($user_id, true));
 			}
 
-			$model = new Application_Model_User;
 			$form = new Application_Form_MobileProfile;
 
 			if (!$form->isValid($this->_request->getPost()))
