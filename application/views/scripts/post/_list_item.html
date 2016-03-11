@@ -37,19 +37,17 @@ $createdOutput = My_Time::time_ago($this->post->created_date, array('ago' => tru
 if ($this->owner)
 {
 	$ownerName = $this->owner->Name;
-	// TODO: refactoring
-	$thumbPath = $this->owner->getProfileImage('www/images/img-prof40x40.jpg');
+	$ownerThumb = $this->owner->getThumb('55x55');
 }
 else
 {
 	$ownerName = $this->post->owner_name;
 	$ownerThumb = Application_Model_User::getThumb($this->post, '55x55', 'owner');
-	$thumbPath = $ownerThumb['path'];
 }
 ?>
 <div class="post <?php if ($this->hidden) echo ' hidden';?>" data-id="<?php echo $this->post->id; ?>">
 <a href="<?php echo $profileUrl; ?>" class="user_avatar">
-<img src="<?php echo $this->baseUrl($thumbPath); ?>">
+<img src="<?php echo $this->baseUrl($ownerThumb['path']); ?>">
 </a>
 <a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($ownerName); ?></a>
 <a href="<?php echo $link; ?>" class="post-time" title="<?php echo $created->format('F j \a\t h:ia'); ?>"><?php echo $createdOutput; ?></a>

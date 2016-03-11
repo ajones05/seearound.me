@@ -34,23 +34,6 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	}
 
 	/**
-	 * Returns user profile image.
-	 *
-	 * @return	array
-	 */
-	public function getProfileImage($default = null)
-	{
-		if ($this->image_id)
-		{
-			$image = $this->findDependentRowset('Application_Model_Image');
-			return Zend_Controller_Front::getInstance()->getBaseUrl() . '/' .
-				$image->current()->findThumb([320, 320])->path;
-		}
-
-		return $default;
-	}
-
-	/**
 	 * Returns user public profile value.
 	 *
 	 * @return	integer
@@ -241,7 +224,26 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'refTableClass' => 'Application_Model_Invitestatus',
 			'refColumns' => 'user_id'
 		)
-	); 
+	);
+
+	/*
+     * Returns an instance of a Zend_Db_Table_Select object.
+	 *
+     * @return Zend_Db_Table_Select
+     */
+    public function publicSelect()
+    {
+		$query = parent::select(true)
+			->setIntegrityCheck(false)
+			->from(['u' => 'user_data'], 'u.*')
+			->joinLeft(['a' => 'address'], 'a.id=u.address_id', [
+				'address', 'latitude', 'longitude', 'street_name',
+				'street_number', 'city', 'state', 'country', 'zip']);
+		$userModel = new Application_Model_User;
+		$userModel->setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]]);
+
+		return $query;
+    }
 
     public function recordForEmail($sender = null, $reciever = null, $isFb = false) 
 
@@ -340,11 +342,10 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function findById($id)
 	{
-		$db = new self;
-		$result = $db->fetchRow(
-			$db->select()->where('user_data.id=?', $id)
+		$model = new self;
+		$result = $model->fetchRow(
+			$model->publicSelect()->where('u.id=?', $id)
 		);
-
 		return $result;
 	}
 
@@ -382,7 +383,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		$db = new self;
 
 		$result = $db->fetchRow(
-			$db->select()->where('user_data.Network_id =?', $network_id)
+			$db->publicSelect()->where('u.Network_id=?', $network_id)
 		);
 
 		return $result;
@@ -400,7 +401,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		$db = new self;
 
 		$result = $db->fetchRow(
-			$db->select()->where('Conf_code=?', $code)
+			$db->publicSelect()->where('u.Conf_code=?', $code)
 		);
 
 		return $result;
@@ -417,7 +418,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	{
 		$db = new self;
 		$result = $db->fetchRow(
-			$db->select()->where('Email_id =?', $email)
+			$db->publicSelect()->where('u.Email_id=?', $email)
 		);
 
 		return $result;
@@ -545,18 +546,18 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 						$image = (new Application_Model_Image)->save('www/upload/' . $name);
 
-						$thumb24x24 = 'thumb24x24/' . $name;
+						$thumb26x26 = 'thumb26x26/' . $name;
 						$thumb55x55 = 'thumb55x55/' . $name;
 						$thumb320x320 = 'uploads/' . $name;
 
 						My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, [
-							[24, 24, ROOT_PATH_WEB . '/' . $thumb24x24],
-							[55, 55, ROOT_PATH_WEB . '/' . $thumb55x55],
+							[26, 26, ROOT_PATH_WEB . '/' . $thumb26x26, 2],
+							[55, 55, ROOT_PATH_WEB . '/' . $thumb55x55, 2],
 							[320, 320, ROOT_PATH_WEB . '/' . $thumb320x320]
 						]);
 
 						$thumbModel = new Application_Model_ImageThumb;
-						$thumbModel->save($thumb24x24, $image, [24, 24]);
+						$thumbModel->save($thumb26x26, $image, [26, 26]);
 						$thumbModel->save($thumb55x55, $image, [55, 55]);
 						$thumbModel->save($thumb320x320, $image, [320, 320]);
 
@@ -677,7 +678,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * @param	string $alias
 	 * @return	Zend_Db_Select
 	 */
-	public function setThumbsQuery(Zend_Db_Select &$query, array $thumbs = [], $alias = 'user_data')
+	public function setThumbsQuery(Zend_Db_Select &$query, array $thumbs = [], $alias = 'u')
 	{
 		if ($query instanceof Zend_Db_Table_Select)
 		{
@@ -712,7 +713,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * @param	string $alias
 	 * @return	array
 	 */
-	public static function getThumb($data, $thumb, $alias = 'used_data')
+	public static function getThumb($data, $thumb, $alias = 'u')
 	{
 		$prefix = $alias . '_' . $thumb;
 

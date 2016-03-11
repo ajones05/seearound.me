@@ -3,10 +3,8 @@ $config = Zend_Registry::get('config_global');
 
 My_Layout::renderFavicon($this);
 
-// TODO: thumbnail 24x24
-$defaultImage = $this->baseUrl('www/images/img-prof40x40.jpg');
-$profileImage = $this->user ? $this->user->getProfileImage($defaultImage) :
-	$defaultImage;
+$profileImage = $this->user ? $this->user->getThumb('26x26')['path'] :
+	My_ArrayHelper::getProp($config, 'user.thumb.26x26.path')->path;
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('www/css/posts.css', $this));
@@ -121,7 +119,7 @@ $this->headLink() . $this->headScript(); ?></head>
 			</li>
 			<li class="dropdown profile">
 				<a class="dropdown-toggle" href="#">
-					<img class="profile" width="24" height="24" src="<?php echo $profileImage; ?>" alt="profile">Profile
+					<img class="profile" width="24" height="24" src="<?php echo $this->baseUrl($profileImage); ?>" alt="profile">Profile
 				</a>
 				<ul class="dropdown-menu">
 					<li><a href="<?php echo $this->baseUrl('home/profile'); ?>">Profile</a></li>

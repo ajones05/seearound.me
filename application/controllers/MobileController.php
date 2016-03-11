@@ -37,35 +37,33 @@ class MobileController extends Zend_Controller_Action
 		{
 			$email = $this->_request->getPost('email');
 
-			if (My_Validate::emptyString($email))
+			if (!v::email()->validate($email))
 			{
-				throw new RuntimeException('Email cannot be blank', -1);
-			}
-
-			if (!filter_var($email, FILTER_VALIDATE_EMAIL))
-			{
-				throw new RuntimeException('Incorrect email address: ' . var_export($email, true), -1);
+				throw new RuntimeException('Incorrect email address value: ' .
+					var_export($email, true));
 			}
 
 			$password = $this->_request->getPost('password');
 
-			if (My_Validate::emptyString($password))
+			if (!v::stringType()->validate($password))
 			{
-				throw new RuntimeException('Password cannot be blank', -1);
+				throw new RuntimeException('Incorrect password value: ' .
+					var_export($password, true));
 			}
 
-			$user = (new Application_Model_User)->findByEmail($email);
+			$userModel = new Application_Model_User;
+			$user = $userModel->findByEmail($email);
 
 			// TODO: password_verify($password, $user->password_hash)
 			if (!$user || $user->Password !== hash('sha256', $password))
 			{
-				throw new RuntimeException('Incorrect user email or password', -1);
+				throw new RuntimeException('Incorrect user email or password');
 			}
 
 			if (!$user->password_hash)
 			{
-				$user->password_hash = password_hash($password, PASSWORD_BCRYPT);
-				$user->save();
+				$userModel->update(['password_hash' => password_hash($password, PASSWORD_BCRYPT)],
+					'id=' . $user->id);
 			}
 
 			if ($user->Status != 'active')
@@ -77,12 +75,12 @@ class MobileController extends Zend_Controller_Action
 
 			$nowTime = (new DateTime)->format(DateTime::W3C);
 
-			$login_id = (new Application_Model_Loginstatus)->insert(array(
+			$login_id = (new Application_Model_Loginstatus)->insert([
 				'user_id' => $user->id,
 				'login_time' => $nowTime,
 				'visit_time' => $nowTime,
-				'ip_address' => $_SERVER['REMOTE_ADDR'])
-			);
+				'ip_address' => $_SERVER['REMOTE_ADDR']
+			]);
 
 			if (date('N') == 1)
 			{
@@ -99,12 +97,13 @@ class MobileController extends Zend_Controller_Action
 					'Name' => $user->Name,
 					'Email_id' => $user->Email_id,
 					'Birth_date' => $user->Birth_date,
-					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					'Profile_image' => $this->view->serverUrl() .
+						$this->view->baseUrl($user->getThumb('320x320')['path']),
 					'Status' => $user->Status,
 					'Token' => $user->Token,
-					'address' => Application_Model_Address::format($userAddress->toArray()),
-					'latitude' => $userAddress->latitude,
-					'longitude' => $userAddress->longitude,
+					'address' => Application_Model_Address::format($user),
+					'latitude' => $user->latitude,
+					'longitude' => $user->longitude,
 					'Activities' => $user->activities(),
 					'Gender' => $user->gender(),
 					'login_id' => $login_id,
@@ -270,15 +269,16 @@ class MobileController extends Zend_Controller_Action
 
 			$start = $this->_request->getPost('start', 0);
 
-			if (!My_Validate::digit($start) || $start < 0)
+			if (!v::optional(v::intVal())->validate($start))
 			{
-				throw new RuntimeException('Incorrect start value', -1);
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
-			$response = array(
+			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'My Friend list rendered successfully'
-			);
+			];
 
 			$friends = (new Application_Model_Friends)->findAllByUserId($user->id, 100, $start);
 
@@ -286,28 +286,30 @@ class MobileController extends Zend_Controller_Action
 			{
 				foreach ($friends as $friend)
 				{
-					$_user = $friend->reciever_id == $user->id ?
-						$friend->findDependentRowset('Application_Model_User', 'FriendSender')->current() :
-						$friend->findDependentRowset('Application_Model_User', 'FriendReceiver')->current();
+					$friendUserId = $friend->reciever_id == $user->id ? $friend->sender_id : $friend->reciever_id;
+					// TODO: merge
+					$friendUser = Application_Model_User::findById($friendUserId);
 
-					$response['result'][] = My_ArrayHelper::filter(array(
-						'id' => $_user->id,
-						'Name' => $_user->Name,
-						'Email_id' => $_user->Email_id,
-						'Profile_image' => $this->view->serverUrl() . $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-						'Birth_date' => $_user->Birth_date,
-						'Gender' => $_user->gender(),
-						'Activities' => $_user->activities()
-					));
+					$response['result'][] = My_ArrayHelper::filter([
+						'id' => $friendUser->id,
+						'Name' => $friendUser->Name,
+						'Email_id' => $friendUser->Email_id,
+						'Profile_image' => $this->view->serverUrl() .
+							$this->view->baseUrl($friendUser->getThumb('320x320')['path']),
+						'Birth_date' => $friendUser->Birth_date,
+						'Gender' => $friendUser->gender(),
+						'Activities' => $friendUser->activities()
+					]);
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);
@@ -464,7 +466,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($other_user_id, $other_user))
+			if (!Application_Model_User::checkId($other_user_id, $profile))
 			{
 				throw new RuntimeException('Incorrect other user ID: ' .
 					var_export($other_user_id, true));
@@ -473,14 +475,14 @@ class MobileController extends Zend_Controller_Action
 			$response = [
 				'status' => 'SUCCESS',
 				'result' => My_ArrayHelper::filter([
-					'id' => $other_user->id,
-					'Name' => $other_user->Name,
+					'id' => $profile->id,
+					'Name' => $profile->Name,
 					'Profile_image' => $this->view->serverUrl() .
-						$other_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-					'Email_id' => $other_user->Email_id,
-					'Gender' => $other_user->gender(),
-					'Activities' => $other_user->activities(),
-					'Birth_date' => $other_user->Birth_date
+						$this->view->baseUrl($profile->getThumb('320x320')['path']),
+					'Email_id' => $profile->Email_id,
+					'Gender' => $profile->gender(),
+					'Activities' => $profile->activities(),
+					'Birth_date' => $profile->Birth_date
 				])
 			];
 
@@ -505,7 +507,7 @@ class MobileController extends Zend_Controller_Action
 						var_export($user_id, true));
 				}
 
-				$response['friends'] = (new Application_Model_Friends)->isFriend($user, $other_user) ? 1 : 0;
+				$response['friends'] = (new Application_Model_Friends)->isFriend($user, $profile) ? 1 : 0;
 			}
 		}
 		catch (Exception $e)
@@ -1371,26 +1373,25 @@ class MobileController extends Zend_Controller_Action
 					$image = (new Application_Model_Image)->save('www/upload/' . $data['image']);
 					$user_data['image_id'] = $image->id;
 
+					$thumb26x26 = 'thumb26x26/' . $data['image'];
 					$thumb55x55 = 'thumb55x55/' . $data['image'];
-					$thumb24x24 = 'thumb24x24/' . $data['image'];
 					$thumb320x320 = 'uploads/' . $data['image'];
 
 					My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, [
-						[24, 24, ROOT_PATH_WEB . '/' . $thumb24x24],
-						[55, 55, ROOT_PATH_WEB . '/' . $thumb55x55],
+						[26, 26, ROOT_PATH_WEB . '/' . $thumb26x26, 2],
+						[55, 55, ROOT_PATH_WEB . '/' . $thumb55x55, 2],
 						[320, 320, ROOT_PATH_WEB . '/' . $thumb320x320]
 					]);
 
 					$thumbModel = new Application_Model_ImageThumb;
-					$thumbModel->save($thumb24x24, $image, [24, 24]);
+					$thumbModel->save($thumb26x26, $image, [26, 26]);
 					$thumbModel->save($thumb55x55, $image, [55, 55]);
 					$thumb = $thumbModel->save($thumb320x320, $image, [320, 320]);
-					$profileImage = $this->view->baseUrl($thumb->path);
+					$profileImage = $thumb->path;
 				}
 				else
 				{
-					$profileImage = $user->getProfileImage(
-						$this->view->baseUrl('www/images/img-prof40x40.jpg'));
+					$profileImage = $user->getThumb('320x320')['path'];
 				}
 
 				$model->update($user_data, 'id=' . $user->id);
@@ -1428,7 +1429,8 @@ class MobileController extends Zend_Controller_Action
 					'address' => Application_Model_Address::format($userAddress->toArray()),
 					'latitude' => $userAddress->latitude,
 					'longitude' => $userAddress->longitude,
-					'Profile_image' => $this->view->serverUrl() . $profileImage,
+					'Profile_image' => $this->view->serverUrl() .
+						$this->view->baseUrl($profileImage),
 					'Gender' => $data['gender'],
 					'Activities' => $data['activities'],
 					'Birth_date' => $data['birth_date']
@@ -1758,7 +1760,8 @@ class MobileController extends Zend_Controller_Action
 			{
 				foreach ($comments as $comment)
 				{
-					$owner = $comment->findDependentRowset('Application_Model_User')->current();
+					// TODO: merge
+					$owner = Application_Model_User::findById($comment->user_id);
 
 					$response['result'][] = [
                         'id' => $comment->id,
@@ -1767,7 +1770,7 @@ class MobileController extends Zend_Controller_Action
                         'user_name' => $owner->Name,
                         'user_id' => $owner->id,
                         'Profile_image' => $this->view->serverUrl() .
-							$owner->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+							$this->view->baseUrl($owner->getThumb('320x320')['path']),
                         'commTime' => $comment->created_at,
                         'totalComments' => $post->comment
 					];
@@ -1831,29 +1834,32 @@ class MobileController extends Zend_Controller_Action
 				$this->_formValidateException($form);
 			}
 
+			// TODO: refactoring
 			$comment = (new Application_Model_Comments)->save($form, $news, $user);
 
-			$response = array(
+			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'Comments Post Successfully',
-				'result' => array(
+				'result' => [
 					'id' => $comment->id,
 					'news_id' => $news->id,
 					'comment' => $comment->comment,
 					'user_name' => $user->Name,
 					'user_id' => $user->id,
-					'Profile_image' => $this->view->serverUrl() . $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					'Profile_image' => $this->view->serverUrl() .
+						$this->view->baseUrl($user->getThumb('320x320')['path']),
 					'commTime' => $comment->created_at,
 					'totalComments' => $news->comment
-				)
-			);
+				]
+			];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response =[
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);

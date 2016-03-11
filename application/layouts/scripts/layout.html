@@ -1,14 +1,19 @@
 <?php
 $auth = Zend_Auth::getInstance()->getIdentity();
 $request = Zend_Controller_Front::getInstance()->getRequest();
+$config = Zend_Registry::get('config_global');
 
 if ($auth)
 {
 	$user = Application_Model_User::findById($auth['user_id']);
+	$image = $user->getThumb('55x55')['path'];
+}
+else
+{
+	$image = My_ArrayHelper::getProp($config, 'user.thumb.55x55.path')->path;
 }
 
 $geoip = My_Ip::geolocation();
-$image = $this->baseUrl('www/images/img-prof40x40.jpg');
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this))
@@ -21,7 +26,7 @@ $this->headScript()
 		"var facebook_appId = " . json_encode(Zend_Registry::get('config_global')->facebook->app->id) . ";\n" .
 		"var user_id = " . json_encode($auth ? $user->id : '') . ";\n" .
 		"var userName = " . json_encode($auth ? $user->Name : '') . ";\n" .
-		"var imagePath = " . json_encode($auth ? $user->getProfileImage($image) : $image) . ";\n" .
+		"var imagePath = " . json_encode($this->baseUrl($image)) . ";\n" .
 		My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700')
 	)
 	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))

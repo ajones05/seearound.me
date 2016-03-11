@@ -146,7 +146,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				'owner_name' => 'Name']);
 
 		$userModel = new Application_Model_User;
-		$userModel->setThumbsQuery($query, [[24, 24],[55, 55],[320, 320]], 'owner');
+		$userModel->setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]], 'owner');
 
 		return $query;
     }

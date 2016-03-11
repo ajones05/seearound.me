@@ -153,18 +153,18 @@ class HomeController extends Zend_Controller_Action
 
 			$image = (new Application_Model_Image)->save('www/upload/' . $name);
 
+			$thumb26x26 = 'thumb26x26/' . $name;
 			$thumb55x55 = 'thumb55x55/' . $name;
-			$thumb24x24 = 'thumb24x24/' . $name;
 			$thumb320x320 = 'uploads/' . $name;
 
 			My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, [
-				[24, 24, ROOT_PATH_WEB . '/' . $thumb24x24],
-				[55, 55, ROOT_PATH_WEB . '/' . $thumb55x55],
+				[26, 26, ROOT_PATH_WEB . '/' . $thumb26x26, 2],
+				[55, 55, ROOT_PATH_WEB . '/' . $thumb55x55, 2],
 				[320, 320, ROOT_PATH_WEB . '/' . $thumb320x320]
 			]);
 
 			$thumbModel = new Application_Model_ImageThumb;
-			$thumbModel->save($thumb24x24, $image, [24, 24]);
+			$thumbModel->save($thumb26x26, $image, [26, 26]);
 			$thumb = $thumbModel->save($thumb55x55, $image, [55, 55]);
 			$thumbModel->save($thumb320x320, $image, [320, 320]);
 
@@ -418,24 +418,38 @@ class HomeController extends Zend_Controller_Action
 
 		try
 		{
-			$id = $this->_request->getParam('id');
-			$code = $this->_request->getParam('q');
-			$user = (new Application_Model_User)->findByCode($code);
+			$user_id = $this->_request->getParam('id');
 
-			if (!$user || $user->id != $id || $user->Status != 'inactive')
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			$code = $this->_request->getParam('q');
+
+			if (!v::stringType()->validate($code))
+			{
+				throw new RuntimeException('Incorrect code value: ' .
+					var_export($code, true));
+			}
+
+			$userModel = new Application_Model_User;
+			$user = $userModel->findByCode($code);
+
+			if (!$user || $user->id != $user_id || $user->Status != 'inactive')
 			{
 				throw new RuntimeException('Incorrect user confirm code', -1);
 			}
 
-			$user->Status = 'active';
-			$user->Conf_code = '';
-			$user->save();
+			$userModel->update(['Status' => 'active', 'Conf_code' => ''],
+				'id=' . $user->id);
 
 			$this->view->success = 'Email confirm success';
 		}
 		catch (RuntimeException $e)
 		{
-			$this->view->eroors = "Inactive link";
+			$this->view->errors = "Inactive link";
 		}
 		catch (Exception $e)
 		{

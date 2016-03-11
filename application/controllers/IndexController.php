@@ -57,6 +57,7 @@ class IndexController extends Zend_Controller_Action
 
 		if ($this->_request->isPost())
 		{
+			$userModel = new Application_Model_User;
 			$nowTime = (new DateTime)->format(DateTime::W3C);
 			$data = $this->_request->getPost();
 
@@ -64,7 +65,7 @@ class IndexController extends Zend_Controller_Action
 			{
 				if ($login_form->isValid($data))
 				{
-					$user = (new Application_Model_User)->findByEmail($login_form->email->getValue());
+					$user = $userModel->findByEmail($login_form->email->getValue());
 					$password = $login_form->password->getValue();
 
 					// TODO: password_verify($password, $user->password_hash)
@@ -72,8 +73,8 @@ class IndexController extends Zend_Controller_Action
 					{
 						if (!$user->password_hash)
 						{
-							$user->password_hash = password_hash($password, PASSWORD_BCRYPT);
-							$user->save();
+							$userModel->update(['password_hash' => password_hash($password, PASSWORD_BCRYPT)],
+								'id=' . $user->id);
 						}
 
 						if ($user->Status !== 'active')
@@ -118,7 +119,7 @@ class IndexController extends Zend_Controller_Action
 				{
 					if ($validProfile)
 					{
-						$user = (new Application_Model_User)->register(array_merge($data,[
+						$user = $userModel->register(array_merge($data,[
 							'Conf_code' => My_CommonUtils::generateCode(),
 							'Status' => 'inactive'
 						]));

@@ -138,23 +138,16 @@ var newsMap, newsMapRady = false, newsMarkers = {}, newsMarkersCluster = [],
 				minLength: 1,
 				source: function (request, callback){
 					$("#sacrchWait").show();
-
-					$.ajax({
-						url: baseUrl + 'contacts/search',
-						data: {search: request.term},
-						type: 'POST',
-						dataType: 'json'
-					}).done(function(response){
-						if (response && response.status){
+					ajaxJson({
+						url:baseUrl+'contacts/search',
+						data:{keywords:request.term},
+						done: function(response){
 							callback(response.result);
-						} else {
-							alert(response ? response.error.message : ERROR_MESSAGE);
+							$("#sacrchWait").hide();
+						},
+						fail: function(){
+							$("#sacrchWait").hide();
 						}
-
-						$("#sacrchWait").hide();
-					}).fail(function(jqXHR, textStatus){
-						alert(textStatus);
-						$("#sacrchWait").hide();
 					});
 				},
 				focus: function (event, ui){
@@ -241,13 +234,10 @@ function loadFriendNews(callback){
 function moreFriends(){
 	var offset = $('#friendList > .invtFrndList').size();
 
-	$.ajax({
-		url: baseUrl + 'contacts/friends-list-load',
-		data: {offset: offset},
-		type: 'POST',
-		dataType: 'json'
-	}).done(function(response){
-		if (response && response.status){
+	ajaxJson({
+		url:baseUrl+'contacts/friends-list-load',
+		data:{offset:offset},
+		done: function(response){
 			$('.postClass_after').remove();
 
 			if (!response.friends){
@@ -305,7 +295,7 @@ function moreFriends(){
 				if ($("#midColLayout").height() > 714){
 					setThisHeight(Number($("#midColLayout").height()));
 				}
-				
+
 				offset++;
 			}
 
@@ -319,11 +309,7 @@ function moreFriends(){
 						.append($('<lable/>').text('More'))
 				);
 			}
-		} else {
-			alert(response ? response.error.message : ERROR_MESSAGE);
 		}
-	}).fail(function(jqXHR, textStatus){
-		alert(textStatus);
 	});
 }
 

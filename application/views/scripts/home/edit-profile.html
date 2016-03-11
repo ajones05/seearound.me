@@ -138,7 +138,7 @@
 		<div class="profile-img">
 			<a style="z-index:9999;" href="<?php echo $this->baseUrl("home/profile"); ?>">
 				<span id="image_upload_field">
-					<img src="<?php echo $this->user->getprofileImage($this->baseUrl("www/images/img-prof40x40.jpg")); ?>" class="imgProf" />
+					<img src="<?php echo $this->baseUrl($this->user->getThumb('55x55')['path']); ?>" class="imgProf">
 				</span>
 			</a> 
 		</div>

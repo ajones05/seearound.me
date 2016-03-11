@@ -372,7 +372,7 @@ class MessageController extends Zend_Controller_Action
 					'created' => date('F j \a\t h:ia', strtotime($message->created_at)),
 					'sender' => array(
 						'name' => $user->Name,
-						'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+						'image' => $this->view->baseUrl($user->getThumb('55x55')['path'])
 					)
 				)
 			);

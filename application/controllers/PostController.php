@@ -50,7 +50,7 @@ class PostController extends Zend_Controller_Action
 		{
 			$headScript .= ',user=' . json_encode([
 				'name' => $user->Name,
-				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg'))
+				'image' => $this->view->baseUrl($user->getThumb('55x55')['path'])
 			]);
 		}
 
@@ -132,7 +132,6 @@ class PostController extends Zend_Controller_Action
 		}
 
 		$searchForm = new Application_Form_PostSearch;
-		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
 		$userData = (new Zend_Session_Namespace('userData'))->data;
 		$isValidData = $userData ? $searchForm->validateSearch($userData) : false;
 
@@ -143,7 +142,7 @@ class PostController extends Zend_Controller_Action
 		else
 		{
 			$center = $isValidData ? [$userData['latitude'], $userData['longitude']] :
-				[$userAddress->latitude, $userAddress->longitude];
+				[$user->latitude, $user->longitude];
 		}
 
 		$searchParameters = [
@@ -203,8 +202,8 @@ class PostController extends Zend_Controller_Action
 		$this->view->headScript()->appendScript(
 			'var user=' . json_encode([
 				'name' => $user->Name,
-				'image' => $user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-				'location' => [$userAddress->latitude, $userAddress->longitude]
+				'image' => $this->view->baseUrl($user->getThumb('55x55')['path']),
+				'location' => [$user->latitude, $user->longitude]
 			]) . ',' .
 			'isList=true' . ',' .
 			'opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) . ';'

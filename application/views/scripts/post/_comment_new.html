@@ -1,14 +1,19 @@
 <?php
-$ownerImage = $this->baseUrl('www/images/img-prof40x40.jpg');
-
 if ($this->user)
 {
-	$ownerImage = $this->user->getProfileImage($ownerImage);
+	$userImage = $this->user->getThumb('55x55')['path'];
+	$userName = $this->user->Name;
+}
+else
+{
+	$config = Zend_Registry::get('config_global');
+	$userImage = My_ArrayHelper::getProp($config, 'user.thumb.55x55.path');
+	$userName = 'owner';
 }
 ?>
 <div class="post-comment__new<?php if (!empty($this->hidden)) echo ' hidden'; ?>">
 <div class="post-comment__new-owner">
-<img width="43" height="43" src="<?php echo $ownerImage; ?>" alt="<?php echo $this->user ? $this->user->Name : 'owner' ?>" />
+<img width="43" height="43" src="<?php echo $this->baseUrl($userImage); ?>" alt="<?php echo $userName; ?>">
 </div>
 <div class="post-comment__new-body">
 <textarea placeholder="Write a Comment..."></textarea>

@@ -1,14 +1,14 @@
 <?php
 $user_id = $this->user ? $this->user->id : null;
 // TODO: refactoring
-$owner = $this->comment->findDependentRowset('Application_Model_User')->current();
+$owner = Application_Model_User::findById($this->comment->user_id);
 
 $profileUrl = $this->user ?
 	$this->baseUrl('home/profile/user/' . $owner->id) : '#';
 ?>
 <div class="post-comment__item" data-id="<?php echo $this->comment->id; ?>">
 <a class="post-comment__item-owner" href="<?php echo $profileUrl; ?>">
-<img width="43" height="43" src="<?php echo $owner->getProfileImage($this->baseUrl('www/images/img-prof40x40.jpg')); ?>" alt="<?php echo $owner->Name; ?>" />
+<img width="43" height="43" src="<?php echo $this->baseUrl($owner->getThumb('55x55')['path']); ?>" alt="<?php echo $owner->Name; ?>" />
 </a>
 <?php if ($user_id == $this->post->user_id || $user_id == $owner->id): ?>
 <div class="post-comment__delete">

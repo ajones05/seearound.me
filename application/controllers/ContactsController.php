@@ -379,40 +379,45 @@ class ContactsController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$response = array('status' => 1);
+			$offset = $this->_request->getPost('offset', 0);
 
-			$tableFriends = new Application_Model_Friends;
+			if (!v::intVal()->validate($offset))
+			{
+				throw new RuntimeException('Incorrect offset value: ' .
+					var_export($offset, true));
+			}
 
-			$offset = $this->_request->getPost("offset", 0);
+			$friendModel = new Application_Model_Friends;
+			$friends = $friendModel->findAllByUserId($user->id, 5, $offset);
 
-			$friends = $tableFriends->findAllByUserId($user->id, 5, $offset);
+			$response = ['status' => 1];
 
 			if (count($friends))
 			{
 				foreach ($friends as $friend)
 				{
-					$_user = $friend->reciever_id == $user->id ?
-						$friend->findDependentRowset('Application_Model_User', 'FriendSender')->current() :
-						$friend->findDependentRowset('Application_Model_User', 'FriendReceiver')->current();
-					$address = $_user->findDependentRowset('Application_Model_Address')->current();
+					$friendUserId = $friend->reciever_id == $user->id ? $friend->sender_id : $friend->reciever_id;
+					// TODO: merge
+					$friendUser = Application_Model_User::findById($friendUserId);
 
-					$response['friends'][] = array(
-						'id' => $_user->id,
-						'image' => $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-						'name' => $_user->Name,
-						'address' => Application_Model_Address::format($address->toArray()),
-						'latitude' => $address->latitude,
-						'longitude' => $address->longitude
-					);
+					$response['friends'][] = [
+						'id' => $friendUser->id,
+						'image' => $this->view->baseUrl($friendUser->getThumb('55x55')['path']),
+						'name' => $friendUser->Name,
+						'address' => Application_Model_Address::format($friendUser),
+						'latitude' => $friendUser->latitude,
+						'longitude' => $friendUser->longitude
+					];
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_helper->json($response);
@@ -600,49 +605,50 @@ class ContactsController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$response = array('status' => 1);
-
-			$model = new Application_Model_Friends;
-
-			$friends = $model->fetchAll(
-				$model->select()
+			$friendModel = new Application_Model_Friends;
+			$friends = $friendModel->fetchAll(
+				$friendModel->select()
 					->where('reciever_id=?', $user->id)
 					->where('status=1')
 					->where('notify=0')
 					->limit(10)
 			);
 
-			if ($count = count($friends))
+			$response = ['status' => 1];
+			$count = $friends->count();
+
+			if ($count)
 			{
-				$data = array();
+				$data = [];
 
 				foreach ($friends as $friend)
 				{
-					$sender = $friend->findDependentRowset('Application_Model_User', 'FriendSender')->current();
+					// TODO: merge
+					$sender = Application_Model_User::findById($friend->sender_id);
 
-					$data[] = array(
-						'image' => $sender->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
+					$data[] = [
+						'image' => $this->view->baseUrl($sender->getThumb('55x55')['path']),
 						'name' => $sender->Name,
 						'link' => $this->view->baseUrl("home/profile/user/" . $sender->id)
-					);
+					];
 				}
 
-				$model->update(
-					array('notify' => 1),
-					array('reciever_id=' . $user->id, 'status=1')
+				$friendModel->update(
+					['notify' => 1],
+					['reciever_id=' . $user->id, 'status=1']
 				);
 
 				$response['data'] = $data;
-				$response['total'] = $count < 5 ? $count : $model->getCountByReceiverId($user->id);
+				$response['total'] = $count < 5 ? $count : $friendModel->getCountByReceiverId($user->id);
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_helper->json($response);
@@ -657,60 +663,60 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$userModel = new Application_Model_User;
+			$user = $userModel->getAuth();
 
 			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$search = $this->_request->getParam('search', null);
-			
-			if (!strlen($search))
+			$keywords = $this->_request->getPost('keywords');
+
+			if (!v::stringType()->validate($keywords))
 			{
-				throw new RuntimeException('Incorrect search keyword', -1);
+				throw new RuntimeException('Incorrect keywords value: ' .
+					var_export($keywords, true));
 			}
 
-			$response = array('status' => 1);
+			$response = ['status' => 1];
 
-			$userModel = new Application_Model_User;
-			$query = $userModel->select();
+			$query = $userModel->publicSelect()
+				->where('u.id<>?', $user->id)
+				->order('u.Name')
+				->group('u.id');
 
-			if (strpos($search, '@') !== false)
+			if (strpos($keywords, '@') !== false)
 			{
-				$query->where("Email_id LIKE ?", '%' . $search . '%');
+				$query->where('u.Email_id LIKE ?', '%' . $keywords . '%');
 			}
 			else
 			{
-				$query->where("Name LIKE ?", '%' . $search . '%');
+				$query->where('u.Name LIKE ?', '%' . $keywords . '%');
 			}
 
-			$result = $userModel->fetchAll(
-				$query
-					->where('id !=?', $user->id)
-					->order("Name")
-			);
+			$users = $userModel->fetchAll($query);
 
-			if (count($result))
+			if (count($users))
 			{
-				foreach ($result as $_user)
+				foreach ($users as $_user)
 				{
-					$address = $_user->findDependentRowset('Application_Model_Address')->current();
-					$response['result'][] = array(
+					$response['result'][] = [
 						'id' => $_user->id,
 						'name' => $_user->Name,
-						'image' => $_user->getProfileImage($this->view->baseUrl('www/images/img-prof40x40.jpg')),
-						'address' => Application_Model_Address::format($address->toArray())
-					);
+						'image' => $this->view->baseUrl($_user->getThumb('55x55')['path']),
+						'address' => Application_Model_Address::format($_user)
+					];
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_helper->json($response);
