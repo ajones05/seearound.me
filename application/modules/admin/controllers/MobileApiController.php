@@ -49,6 +49,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * Friends list action.
+	 *
+	 * @return void
+	 */
+    public function myfriendlistAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Follow action.
 	 *
 	 * @return void
@@ -208,6 +219,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
 	 * @return void
 	 */
     public function editProfileAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
+	 * User profile details action.
+	 *
+	 * @return void
+	 */
+    public function getotheruserprofileAction()
     {
 		$this->view->headScript()
 			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));

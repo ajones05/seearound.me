@@ -1,0 +1,34 @@
+<h2>mobile/getotheruserprofile</h2>
+<ol class="breadcrumb">
+	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
+	<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile Api</a></li>
+	<li class="active">getotheruserprofile</li>
+</ol>
+<div class="well">
+<p>User profile details</p>
+<a href="https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilegetotheruserprofile">
+https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilegetotheruserprofile</a>
+</div>
+<form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/getotheruserprofile'); ?>" method="post">
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="user_id">User ID [user_id]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="user_id" class="form-control"
+				id="user_id" placeholder="Enter user ID"
+				value="<?php echo $this->request->getParam('user_id'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="other_user_id">Other User ID [other_user_id]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="other_user_id" class="form-control"
+				id="other_user_id" placeholder="Enter other user ID"
+				value="<?php echo $this->request->getParam('other_user_id'); ?>">
+		</div>
+	</div>
+	<div class="form-group">        
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="btn btn-default">Submit</button>
+		</div>
+	</div>
+</form>
