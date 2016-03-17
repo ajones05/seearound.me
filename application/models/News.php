@@ -133,20 +133,27 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	/*
      * Returns an instance of a Zend_Db_Table_Select object.
 	 *
+	 * @param	array $options
      * @return Zend_Db_Table_Select
      */
-    public function publicSelect()
+    public function publicSelect(array $options = [])
     {
-		$query = parent::select(true)->where('news.isdeleted=0')
-			->setIntegrityCheck(false)
-			->joinLeft(['a' => 'address'], 'a.id=news.address_id', [
-				'address', 'latitude', 'longitude', 'street_name',
-				'street_number', 'city', 'state', 'country', 'zip'])
-			->joinLeft(['owner' => 'user_data'], 'owner.id=news.user_id', [
-				'owner_name' => 'Name']);
+		$isCount = My_ArrayHelper::getProp($options, 'count', false);
+		$addressFields = $isCount ? '' : ['address', 'latitude', 'longitude',
+			'street_name', 'street_number', 'city', 'state', 'country', 'zip'];
+		$postFields = $isCount ? ['count' => 'COUNT(news.id)'] : 'news.*';
 
-		$userModel = new Application_Model_User;
-		$userModel->setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]], 'owner');
+		$query = parent::select()->setIntegrityCheck(false)
+			->from('news', $postFields)
+			->where('news.isdeleted=0')
+			->join(['a' => 'address'], 'a.id=news.address_id', $addressFields);
+
+		if (!$isCount)
+		{
+			$query->join(['owner' => 'user_data'], 'owner.id=news.user_id', ['owner_name' => 'Name']);
+			$userModel = new Application_Model_User;
+			$userModel->setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]], 'owner');
+		}
 
 		return $query;
     }
@@ -156,11 +163,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 *
 	 * @param	array $parameters
 	 * @param	Application_Model_UserRow $user
+	 * @param	array $options
 	 * @return	Zend_Db_Table_Select
 	 */
-	public function searchQuery(array $parameters, Application_Model_UserRow $user)
+	public function searchQuery(array $parameters, Application_Model_UserRow $user, array $options = [])
 	{
-		$query = $this->publicSelect();
+		$query = $this->publicSelect($options);
+		$isCount = My_ArrayHelper::getProp($options, 'count', false);
 
 		if (trim(My_ArrayHelper::getProp($parameters, 'keywords')) !== '')
 		{
@@ -212,12 +221,17 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			}
 		}
 
+		if (!$isCount)
+		{
+			$query->group('news.id');
+		}
+
 		$query
 			->where('IFNULL((3959*acos(cos(radians(' . $parameters['latitude'] . '))*cos(radians(a.latitude))*' .
 				'cos(radians(a.longitude)-' . 'radians(' . $parameters['longitude'] . '))+' .
 				'sin(radians(' . $parameters['latitude'] . '))*sin(radians(a.latitude)))),0)<' . $parameters['radius'])
-			->order(['((news.vote+news.comment+1)/((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+30)^1.1))*10000 DESC', 'id ASC'])
-			->group('news.id');
+			->order(['((news.vote+news.comment+1)/((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+30)^1.1))*10000 DESC',
+				'news.id ASC']);
 
 		return $query;
 	}

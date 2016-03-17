@@ -1823,7 +1823,7 @@ function postList_locationMarker(center){
 	}
 }
 
-function postTooltip_content(id, position, event, ui){
+function postTooltip_content(position, event, ui, start){
 	!$(event.target).data('tooltip-ajax') ||
 		$(event.target).data('tooltip-ajax').abort();
 
@@ -1831,7 +1831,7 @@ function postTooltip_content(id, position, event, ui){
 
 	if (!opts.point || getDistance([position.lat(),position.lng()],
 		[opts.latitude,opts.longitude])<=groupDistance){
-		data.id=id;
+		data.start=start;
 		data.latitude=position.lat();
 		data.longitude=position.lng();
 		data.keywords=opts.keywords;
@@ -1903,7 +1903,7 @@ function postTooltip_render(content, position, event, ui){
 			return false;
 		}
 		link.attr('disabled', true);
-		postTooltip_content(link.attr('data-id'), position, event, ui);
+		postTooltip_content(position, event, ui, link.attr('data-start'));
 	});
 
 	ui.tooltip.position($(event.target).tooltip('option', 'position'));
@@ -1973,7 +1973,7 @@ function postItem_marker(id, location, data){
 				postTooltip_render(content, marker.getPosition(), event, ui);
 				return true;
 			}
-			postTooltip_content(marker.data('id'), marker.getPosition(), event, ui);
+			postTooltip_content(marker.getPosition(), event, ui, 0);
 		},
 		close: function(event, ui){
 			clearTimeout($(event.target).data('tooltip-mouseout'));

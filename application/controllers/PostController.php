@@ -360,15 +360,31 @@ class PostController extends Zend_Controller_Action
 
 			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$readmore = $this->_request->getPost('readmore', 0);
+
+			if (!v::optional(v::intVal()->equals(1))->validate($readmore))
+			{
+				throw new RuntimeException('Incorrect readmore value: ' .
+					var_export($readmore, true));
 			}
 
 			$point = $this->_request->getParam('point');
 
-			if (!v::optional(v::equals(1))->validate($point))
+			if (!v::optional(v::intVal()->equals(1))->validate($point))
 			{
 				throw new RuntimeException('Incorrect point value: ' .
 					var_export($point, true));
+			}
+
+			$start = $this->_request->getParam('start');
+
+			if (!v::intVal()->min(0)->validate($start))
+			{
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
 			$searchForm = new Application_Form_PostSearch;
@@ -386,85 +402,35 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$model = new Application_Model_News;
-			$id = $this->_request->getPost('id');
+			$post = $model->fetchRow($model->searchQuery($searchParameters +
+				['radius' => 0.018939], $user)->limit(1, $start));
 
-			if ($id)
+			if (!$post)
 			{
-				if (!$model->checkId($id, $post))
-				{
-					throw new RuntimeException('Incorrect post ID: ' .
-						var_export($id, true), -1);
-				}
-			}
-			else
-			{
-				$result = $model->search($searchParameters +
-					['limit' => 1, 'radius' => 0.018939], $user);
-
-				if (!$result->count())
-				{
-					$this->_helper->viewRenderer->setNoRender(true);
-					echo $this->view->partial('post/user-tooltip.html',
-						['user' => $user]);
-					return true;
-				}
-
-				$post = $result[0];
+				$this->_helper->viewRenderer->setNoRender(true);
+				echo $this->view->partial('post/user-tooltip.html',
+					['user' => $user]);
+				return true;
 			}
 
-			$query = $model->searchQuery($searchParameters +
-				['radius' => 0.018939], $user);
+			$count = $model->fetchRow($model->searchQuery($searchParameters +
+				['radius' => 0.018939], $user, ['count' => true]))->count;
 
-			$query->join(['r' => new Zend_Db_Expr('(SELECT @rownum := 0)')], '', '');
-			$query->from('', ['(@rownum:=@rownum+1) AS _position']);
-			$stmt = $model->getAdapter()->query('SELECT n._position FROM ('.
-				$query->assemble() . ') n WHERE n.id=' . $post->id, []);
-
-			$currentPosition = $stmt->fetch();
-
-			if (!$currentPosition)
+			if ($start)
 			{
-				throw new RuntimeException('Incorrect post position', -1);
+				$this->view->prev = $start - 1;
 			}
 
-			$where = [];
-
-			if ($currentPosition['_position'] > 1)
+			if (++$start < $count)
 			{
-				$where[] = 'n._position=' . ($currentPosition['_position'] - 1);
-			}
-
-			$where[] = 'n._position=' . ($currentPosition['_position'] + 1);
-
-			$stmt = $model->getAdapter()->query('SELECT n.id FROM ('.
-				$query->assemble() . ') n WHERE (' . implode(' OR ', $where) . ')', []);
-
-			$besidePosts = $stmt->fetchAll();
-
-			if (count($besidePosts))
-			{
-				if (count($besidePosts) == 2)
-				{
-					$this->view->prev = $besidePosts[0]['id'];
-					$this->view->next = $besidePosts[1]['id'];
-				}
-				else
-				{
-					if ($currentPosition['_position'] > 1)
-					{
-						$this->view->prev = $besidePosts[0]['id'];
-					}
-					else
-					{
-						$this->view->next = $besidePosts[0]['id'];
-					}
-				}
+				$this->view->next = $start;
 			}
 
 			$this->view->post = $post;
 			$this->view->point = $point;
-			$this->view->position = $searchParameters['latitude'] . ',' . $searchParameters['longitude'];
-			$this->view->readmore = $this->_request->getPost('readmore', 0);
+			$this->view->readmore = $readmore;
+			$this->view->position = $searchParameters['latitude'] . ',' .
+				$searchParameters['longitude'];
 		}
 		catch (Exception $e)
 		{

@@ -12,16 +12,16 @@ $ownerThumb = Application_Model_User::getThumb($this->post, '55x55', 'owner');
 <?php endif; ?>
 </div>
 <div class="tooltip-footer">
-<?php if (!$this->point && (!empty($this->prev) || !empty($this->next))): ?>
+<?php if (!$this->point && (isset($this->prev) || isset($this->next))): ?>
 <a href="<?php echo $this->baseUrl('center/' . $this->position . '?point=1'); ?>">More details</a>
 <?php else: ?>
 <a href="<?php echo $this->baseUrl('post/' . $this->post->id); ?>">More details</a>
 <?php endif; ?>
-<?php if (!empty($this->prev)): ?>
-<a class="prev" data-id="<?php echo $this->prev; ?>" href="#">&lt;</a>
+<?php if (isset($this->prev)): ?>
+<a class="prev" data-start="<?php echo $this->prev; ?>" href="#">&lt;</a>
 <?php endif; ?>
-<?php if (!empty($this->next)): ?>
-<a class="next" data-id="<?php echo $this->next; ?>" href="#">&gt;</a>
+<?php if (isset($this->next)): ?>
+<a class="next" data-start="<?php echo $this->next; ?>" href="#">&gt;</a>
 <?php endif; ?>
 </div>
 </div>
