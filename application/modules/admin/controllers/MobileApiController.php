@@ -49,6 +49,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * Faceook login action.
+	 *
+	 * @return void
+	 */
+    public function fbLoginAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Friends list action.
 	 *
 	 * @return void

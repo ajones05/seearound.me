@@ -87,8 +87,6 @@ class MobileController extends Zend_Controller_Action
 				$user->updateInviteCount();
 			}
 
-			$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
-
 			$response = array(
 				'status' => 'SUCCESS',
 				'message' => 'AUTHENTICATED',
@@ -147,33 +145,46 @@ class MobileController extends Zend_Controller_Action
 
 			$nowTime = (new DateTime)->format(DateTime::W3C);
 
-			$login_id = (new Application_Model_Loginstatus)->insert(array(
+			$login_id = (new Application_Model_Loginstatus)->insert([
 				'user_id' => $user->id,
 				'login_time' => $nowTime,
 				'visit_time' => $nowTime,
-				'ip_address' => $_SERVER['REMOTE_ADDR'])
-			);
+				'ip_address' => $_SERVER['REMOTE_ADDR']
+			]);
 
 			if (date('N') == 1)
 			{
 				$user->updateInviteCount();
 			}
 
-			$response = array(
+			$response = [
 				'status' => 'SUCCESS',
-				'result' => array(
+				'result' => [
+					'id' => $user->id,
+					'Name' => $user->Name,
+					'Email_id' => $user->Email_id,
+					'Birth_date' => $user->Birth_date,
+					'Profile_image' => $this->view->serverUrl() .
+						$this->view->baseUrl($user->getThumb('320x320')['path']),
+					'Status' => $user->Status,
+					'Token' => $user->Token,
+					'address' => Application_Model_Address::format($user),
+					'latitude' => $user->latitude,
+					'longitude' => $user->longitude,
+					'Activities' => $user->activities(),
+					'Gender' => $user->gender(),
 					'login_id' => $login_id
-				)
-			);
+				]
+			];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
 				'message' => $e instanceof RuntimeException ||
 					$e instanceof Facebook\FacebookAuthorizationException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_logRequest($response);
