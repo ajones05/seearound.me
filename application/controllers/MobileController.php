@@ -2028,6 +2028,7 @@ class MobileController extends Zend_Controller_Action
 				'f.id',
 				'type' => new Zend_Db_Expr('"friend"'),
 				'fl.created_at',
+				'target_id' => new Zend_Db_Expr('NULL'),
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'is_read' => 'f.notify'
@@ -2044,6 +2045,7 @@ class MobileController extends Zend_Controller_Action
 				'cm.id',
 				'type' => new Zend_Db_Expr('"message"'),
 				'cm.created_at',
+				'target_id' => new Zend_Db_Expr('NULL'),
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'is_read' => 'cm.is_read'
@@ -2059,6 +2061,7 @@ class MobileController extends Zend_Controller_Action
 				'v.id',
 				'type' => new Zend_Db_Expr('"vote"'),
 				'v.created_at',
+				'target_id' => 'n.id',
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'is_read' => 'v.is_read'
@@ -2075,6 +2078,7 @@ class MobileController extends Zend_Controller_Action
 				'c.id',
 				'type' => new Zend_Db_Expr('"comment"'),
 				'c.created_at',
+				'target_id' => 'n.id',
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'is_read' => 'c.is_read'
@@ -2123,10 +2127,12 @@ class MobileController extends Zend_Controller_Action
 								' sent you a new message';
 							break;
 						case 'vote':
+							$data['post_id'] = $row['target_id'];
 							$data['message'] = $row['user_name'] .
 								' liked your post';
 							break;
 						case 'comment':
+							$data['post_id'] = $row['target_id'];
 							$data['message'] = $row['user_name'] .
 								' commented on your post';
 							break;
