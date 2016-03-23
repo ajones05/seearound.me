@@ -683,9 +683,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			$userModel = new Application_Model_User;
-
-			if (!$userModel->checkId($user_id, $user))
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -721,7 +719,7 @@ class MobileController extends Zend_Controller_Action
 				->order('c.created_at DESC')
 				->limit(100, $start);
 
-			$userModel->setThumbsQuery($query, [[320, 320]], 'u');
+			My_Query::setThumbsQuery($query, [[320, 320]], 'u');
 			$messages = $model->fetchAll($query);
 
 			$response = [
@@ -733,7 +731,7 @@ class MobileController extends Zend_Controller_Action
 			{
 				foreach ($messages as $message)
 				{
-					$thumb = $userModel->getThumb($message, '320x320', 'u');
+					$thumb = My_Query::getThumb($message, '320x320', 'u', true);
 					$response['result'][] = [
 						'id' => $message->id,
 						'sender_id' => $message->user_id,
@@ -847,14 +845,14 @@ class MobileController extends Zend_Controller_Action
 				$response['message'] = 'Message list Send Successfully';
 			}
 
-			$userModel->setThumbsQuery($query, [[320, 320]], 'u');
+			My_Query::setThumbsQuery($query, [[320, 320]], 'u');
 			$messages = $model->fetchAll($query);
 
 			if (count($messages))
 			{
 				foreach ($messages as $message)
 				{
-					$thumb = $userModel->getThumb($message, '320x320', 'u');
+					$thumb = My_Query::getThumb($message, '320x320', 'u', true);
 					$response['result'][] = [
 						'id' => $message->id,
 						'sender_id' => $message->user_id,
@@ -901,9 +899,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			$userModel = new Application_Model_User;
-
-			if (!$userModel->checkId($user_id, $user))
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -948,11 +944,9 @@ class MobileController extends Zend_Controller_Action
 					'sender_id' => 'su.id',
 					'sender_name' => 'su.Name',
 					'sender_email' => 'su.Email_id',
-					'sender_image' => 'sit.path',
 					'receiver_id' => 'ru.id',
 					'receiver_name' => 'ru.Name',
-					'receiver_email' => 'ru.Email_id',
-					'receiver_image' => 'rit.path',
+					'receiver_email' => 'ru.Email_id'
 				])
 				->where('cm.conversation_id=?', $conversation->id)
 				->where('cm.is_first<>1')
@@ -961,8 +955,8 @@ class MobileController extends Zend_Controller_Action
 				->order('cm.created_at DESC')
 				->limit(10, $start);
 
-			$userModel->setThumbsQuery($query, [[320, 320]], 'su');
-			$userModel->setThumbsQuery($query, [[320, 320]], 'ru');
+			My_Query::setThumbsQuery($query, [[320, 320]], 'su');
+			My_Query::setThumbsQuery($query, [[320, 320]], 'ru');
 			$messages = $messageModel->fetchAll($query);
 
 			$updateCondition = [];
@@ -979,8 +973,8 @@ class MobileController extends Zend_Controller_Action
 			{
 				foreach ($messages as $message)
 				{
-					$senderThumb = $userModel->getThumb($message, '320x320', 'su');
-					$receiverThumb = $userModel->getThumb($message, '320x320', 'ru');
+					$senderThumb = My_Query::getThumb($message, '320x320', 'su', true);
+					$receiverThumb = My_Query::getThumb($message, '320x320', 'ru', true);
 					$response['result'][] = [
 						'id' => $message->id,
 						'body' => $message->body,
@@ -1015,7 +1009,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ?
+				'message' => true || $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
 		}
@@ -1186,8 +1180,8 @@ class MobileController extends Zend_Controller_Action
 				->order('cm.created_at DESC')
 				->limit(10, $start);
 
-			$userModel->setThumbsQuery($query, [[320, 320]], 'su');
-			$userModel->setThumbsQuery($query, [[320, 320]], 'ru');
+			My_Query::setThumbsQuery($query, [[320, 320]], 'su');
+			My_Query::setThumbsQuery($query, [[320, 320]], 'ru');
 			$messages = $messageModel->fetchAll($query);
 
 			$response = ['status' => 'SUCCESS'];
@@ -1196,8 +1190,8 @@ class MobileController extends Zend_Controller_Action
 			{
 				foreach ($messages as $message)
 				{
-					$senderThumb = $userModel->getThumb($message, '320x320', 'su');
-					$receiverThumb = $userModel->getThumb($message, '320x320', 'ru');
+					$senderThumb = My_Query::getThumb($message, '320x320', 'su', true);
+					$receiverThumb = My_Query::getThumb($message, '320x320', 'ru', true);
 					$response['result'][] = [
 						'id' => $message->id,
 						'subject' => $message->subject,
@@ -1285,7 +1279,8 @@ class MobileController extends Zend_Controller_Action
 				'message' => $post->news
 			];
 
-			$postLink = $post->findDependentRowset('Application_Model_NewsLink')->current();
+			// TODO: refactoring
+			$postLink = $post->findParentRow('Application_Model_NewsLink');
 
 			if ($postLink)
 			{
@@ -1308,7 +1303,7 @@ class MobileController extends Zend_Controller_Action
 
 				if ($postLink->image_id != null)
 				{
-					$image = (new Application_Model_Image)->find($postLink->image_id)->current();
+					$image = $postLink->findParentRow('Application_Model_Image');
 					$response += ['link_image' => $this->view->serverUrl() .
 						$this->view->baseUrl($image->findThumb([448, 320])->path)];
 				}
@@ -1504,7 +1499,7 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user);
+				->search($searchParameters + ['limit' => 15], $user, ['link'=>true]);
 
 			if (count($result))
 			{
@@ -1513,7 +1508,7 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as $row)
 				{
 					$userLike = $votingTable->findVote($row->id, $user->id);
-					$ownerThumb = Application_Model_User::getThumb($row, '320x320', 'owner');
+					$ownerThumb = My_Query::getThumb($row, '320x320', 'owner', true);
 
 					$data = [
 						'id' => $row->id,
@@ -1535,41 +1530,37 @@ class MobileController extends Zend_Controller_Action
 							$this->view->baseUrl($ownerThumb['path'])
 					];
 
-					// TODO: merge with post query
 					if ($row->image_id)
 					{
-						$image = (new Application_Model_Image)->find($row->image_id)->current();
+						$thumb = My_Query::getThumb($row, '448x320', 'news');
 						$data['images'] = $this->view->serverUrl() .
-							$this->view->baseUrl($image->findThumb([960, 960])->path);
+							$this->view->baseUrl($thumb['path']);
 					}
 
-					// TODO: merge with post query
-					$postLink = $row->findDependentRowset('Application_Model_NewsLink')->current();
-
-					if ($postLink)
+					if ($row->link_id)
 					{
-						$data += ['link_url' => $postLink->link];
+						$data += ['link_url' => $row->link_link];
 
-						if (trim($postLink->title) !== '')
+						if (trim($row->link_title) !== '')
 						{
-							$data += ['link_title' => $postLink->title];
+							$data += ['link_title' => $row->link_title];
 						}
 
-						if (trim($postLink->description) !== '')
+						if (trim($row->link_description) !== '')
 						{
-							$data += ['link_description' => $postLink->description];
+							$data += ['link_description' => $row->link_description];
 						}
 
-						if (trim($postLink->author) !== '')
+						if (trim($row->link_author) !== '')
 						{
-							$data += ['link_author' => $postLink->author];
+							$data += ['link_author' => $row->link_author];
 						}
 
-						if ($postLink->image_id != null)
+						if ($row->link_image_id != null)
 						{
-							$image = (new Application_Model_Image)->find($postLink->image_id)->current();
+							$thumb = My_Query::getThumb($row, '448x320', 'link');
 							$data += ['link_image' => $this->view->serverUrl() .
-								$this->view->baseUrl($image->findThumb([448, 320])->path)];
+								$this->view->baseUrl($thumb['path'])];
 						}
 					}
 
@@ -1641,7 +1632,7 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user);
+				->search($searchParameters + ['limit' => 15], $user, ['link'=>true]);
 
 			if (count($result))
 			{
@@ -1650,7 +1641,7 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as $row)
 				{
 					$userLike = $votingTable->findVote($row->id, $user->id);
-					$ownerThumb = Application_Model_User::getThumb($row, '320x320', 'owner');
+					$ownerThumb = My_Query::getThumb($row, '320x320', 'owner', true);
 
 					$data = [
 						'id' => $row->id,
@@ -1672,41 +1663,37 @@ class MobileController extends Zend_Controller_Action
 							$this->view->baseUrl($ownerThumb['path'])
 					];
 
-					// TODO: merge with post query
 					if ($row->image_id)
 					{
-						$image = (new Application_Model_Image)->find($row->image_id)->current();
+						$thumb = My_Query::getThumb($row, '448x320', 'news');
 						$data['images'] = $this->view->serverUrl() .
-							$this->view->baseUrl($image->findThumb([960, 960])->path);
+							$this->view->baseUrl($thumb['path']);
 					}
 
-					// TODO: merge with post query
-					$postLink = $row->findDependentRowset('Application_Model_NewsLink')->current();
-
-					if ($postLink)
+					if ($row->link_id)
 					{
-						$data += ['link_url' => $postLink->link];
+						$data += ['link_url' => $row->link_link];
 
-						if (trim($postLink->title) !== '')
+						if (trim($row->link_title) !== '')
 						{
-							$data += ['link_title' => $postLink->title];
+							$data += ['link_title' => $row->link_title];
 						}
 
-						if (trim($postLink->description) !== '')
+						if (trim($row->link_description) !== '')
 						{
-							$data += ['link_description' => $postLink->description];
+							$data += ['link_description' => $row->link_description];
 						}
 
-						if (trim($postLink->author) !== '')
+						if (trim($row->link_author) !== '')
 						{
-							$data += ['link_author' => $postLink->author];
+							$data += ['link_author' => $row->link_author];
 						}
 
-						if ($postLink->image_id != null)
+						if ($row->link_image_id != null)
 						{
-							$image = (new Application_Model_Image)->find($postLink->image_id)->current();
+							$thumb = My_Query::getThumb($row, '448x320', 'link');
 							$data += ['link_image' => $this->view->serverUrl() .
-								$this->view->baseUrl($image->findThumb([448, 320])->path)];
+								$this->view->baseUrl($thumb['path'])];
 						}
 					}
 
@@ -1745,7 +1732,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, false))
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
@@ -1832,7 +1819,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $news, false))
+			if (!Application_Model_News::checkId($id, $news, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
@@ -1909,7 +1896,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, false))
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID', -1);
 			}
@@ -2001,9 +1988,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			$userModel = new Application_Model_User;
-
-			if (!$userModel->checkId($user_id, $user))
+			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user id: ' .
 					var_export($user_id, true));
@@ -2038,7 +2023,7 @@ class MobileController extends Zend_Controller_Action
 			$select1->joinLeft(['fl' => 'friend_log'],
 				'fl.friend_id=f.id AND fl.status_id=f.status', '');
 			$select1->joinLeft(['u' => 'user_data'], 'u.id=fl.user_id', '');
-			$userModel->setThumbsQuery($select1, [[320, 320]], 'u');
+			My_Query::setThumbsQuery($select1, [[320, 320]], 'u');
 
 			$select2 = $db->select();
 			$select2->from(['cm' => 'conversation_message'], [
@@ -2053,8 +2038,7 @@ class MobileController extends Zend_Controller_Action
 			$select2->where('cm.to_id=?', $user->id, $maxDate);
 			$select2->where('cm.is_read=0 OR cm.created_at>?', $maxDate);
 			$select2->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '');
-
-			$userModel->setThumbsQuery($select2, [[320, 320]], 'u');
+			My_Query::setThumbsQuery($select2, [[320, 320]], 'u');
 
 			$select3 = $db->select();
 			$select3->from(['n' => 'news'], [
@@ -2071,7 +2055,7 @@ class MobileController extends Zend_Controller_Action
 			$select3->where('v.canceled=0 AND v.user_id<>?', $user->id);
 			$select3->where('v.is_read=0 OR v.created_at>?', $maxDate);
 			$select3->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
-			$userModel->setThumbsQuery($select3, [[320, 320]], 'u');
+			My_Query::setThumbsQuery($select3, [[320, 320]], 'u');
 
 			$select4 = $db->select();
 			$select4->from(['n' => 'news'], [
@@ -2088,7 +2072,7 @@ class MobileController extends Zend_Controller_Action
 			$select4->where('c.isdeleted=0 AND c.user_id<>?', $user->id);
 			$select4->where('c.is_read=0 OR c.created_at>?', $maxDate);
 			$select4->joinLeft(['u' => 'user_data'], 'u.id=c.user_id', '');
-			$userModel->setThumbsQuery($select4, [[320, 320]], 'u');
+			My_Query::setThumbsQuery($select4, [[320, 320]], 'u');
 
 			$select = $db->select()
 				->union([$select1, $select2, $select3, $select4],
@@ -2104,7 +2088,7 @@ class MobileController extends Zend_Controller_Action
 
 				foreach ($result as $row)
 				{
-					$thumb = $userModel->getThumb($row, '320x320', 'u');
+					$thumb = My_Query::getThumb($row, '320x320', 'u', true);
 					$data = [
 						'id' => $row['id'],
 						'type' => $row['type'],

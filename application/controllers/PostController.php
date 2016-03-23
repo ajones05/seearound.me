@@ -26,14 +26,13 @@ class PostController extends Zend_Controller_Action
 				var_export($id, true));
 		}
 
-		// TODO: load link
-		if (!Application_Model_News::checkId($id, $post))
+		if (!Application_Model_News::checkId($id, $post, ['link'=>true]))
         {
 			throw new RuntimeException('Incorrect post ID: ' .
 				var_export($id, true));
         }
 
-		$ownerThumb = $userModel->getThumb($post, '55x55', 'owner');
+		$ownerThumb = My_Query::getThumb($post, '55x55', 'owner', true);
 		$headScript = 'var opts=' . json_encode(['latitude' => $post->latitude,
 			'longitude' => $post->longitude], JSON_FORCE_OBJECT) . ',' .
 			'owner=' . json_encode([
@@ -64,32 +63,9 @@ class PostController extends Zend_Controller_Action
 			->setProperty('og:title', 'SeeAround.me')
 			->setProperty('og:description', My_StringHelper::stringLimit($post->news, 155, '...'));
 
-		$thumb = false;
-
-		if ($post->image_id)
-		{
-			// TODO: merge with post query
-			$image = (new Application_Model_Image)->find($post->image_id)->current();
-			$thumb = $image->findThumb([320, 320]);
-		}
-		else
-		{
-			// TODO: merge with post query
-			// TODO: refactoring
-
-			$link = $post->findDependentRowset('Application_Model_NewsLink')->current();
-
-			if ($link && $link->image_id)
-			{
-				$image = (new Application_Model_Image)
-					->find($link->image_id)->current();
-				$thumb = $image->findThumb([448, 320]);
-			}
-			else
-			{
-				$thumb = $userModel->getThumb($post, '320x320', 'owner');
-			}
-		}
+		$thumb = $post->image_id ? My_Query::getThumb($post, '448x320', 'news') :
+			($post->link_image_id ? My_Query::getThumb($post, '448x320', 'link') :
+				My_Query::getThumb($post, '320x320', 'owner', true));
 
 		$this->view->headMeta($this->view->serverUrl() .
 			$this->view->baseUrl($thumb['path']), 'og:image', 'property')
@@ -166,7 +142,7 @@ class PostController extends Zend_Controller_Action
 		$posts = (new Application_Model_News)->search(array_merge(
 			$searchParameters,
 			['limit' => 15, 'radius' => $point ? 0.018939 : 0.8]
-		), $user);
+		), $user, ['link'=>true]);
 
 		if (count($posts))
 		{
@@ -265,7 +241,7 @@ class PostController extends Zend_Controller_Action
 			$result = (new Application_Model_News)->search(array_merge(
 				$searchParameters, ['limit' => 15, 'exclude_id' => $new,
 					'radius' => $point ? 0.018939 : $searchParameters['radius']]
-			), $user);
+			), $user, ['link'=>true]);
 
 			$response = ['status' => 1];
 
@@ -489,6 +465,8 @@ class PostController extends Zend_Controller_Action
 			$model = new Application_Model_News;
 			$post = $model->save($postForm->getValues() +
 				['user_id' => $user->id, 'address_id' => $address->id]);
+			// TODO: refactoring
+			$post = $model->findById($post->id, ['link'=>true]);
 
 			$response = [
 				'status' => 1,
@@ -514,7 +492,7 @@ class PostController extends Zend_Controller_Action
 					'radius' => 0.8,
 					'limit' => 14,
 					'exclude_id' => [$post->id]
-				], $user);
+				], $user, ['link'=>true]);
 
 				foreach ($result as $post)
 				{
@@ -625,7 +603,7 @@ class PostController extends Zend_Controller_Action
 
 			$model = new Application_Model_News;
 
-			if (!$model->checkId($id, $post, false))
+			if (!$model->checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID');
 			}
@@ -645,6 +623,8 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$post = $model->save(['news' => $data['news']], $post);
+			// TODO: refactoring
+			$post = $model->findById($post->id, ['link'=>true]);
 
 			$response = [
 				'status' => 1,
@@ -687,7 +667,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!(new Application_Model_News)->checkId($id, $post, false))
+			if (!(new Application_Model_News)->checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
@@ -751,7 +731,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, false))
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
 				throw new Exception('Incorrect post ID.');
 			}
@@ -802,7 +782,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, false))
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID', -1);
 			}
@@ -892,7 +872,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post))
+			if (!Application_Model_News::checkId($id, $post, ['link'=>true]))
 			{
 				throw new RuntimeException('Incorrect post ID');
 			}
@@ -938,7 +918,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, false))
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect user ID: ' .
 					var_export($id, true));
@@ -1079,7 +1059,7 @@ class PostController extends Zend_Controller_Action
 					var_export($post_id, true));
 			}
 
-			if (!Application_Model_News::checkId($post_id, $post, false))
+			if (!Application_Model_News::checkId($post_id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($post_id, true));

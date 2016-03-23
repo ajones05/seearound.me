@@ -11,7 +11,6 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function renderContent($limit = false)
 	{
-		$newsLink = $this->findDependentRowset('Application_Model_NewsLink')->current();
 		$linksCount = preg_match_all('/' . My_CommonUtils::$link_regex . '/', $this->news);
 
 		$output = '';
@@ -22,7 +21,7 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 
 			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->news, $i), $matches))
 			{
-				if ($linksCount > 1 || !$newsLink)
+				if ($linksCount > 1 || !$this->link_id)
 				{
 					$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '" target="_blank">';
 
@@ -63,9 +62,9 @@ class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
 			}
 		}
 
-		if ($newsLink)
+		if ($this->link_id)
 		{
-			$output .= My_ViewHelper::render('post/_link', array('link' => $newsLink));
+			$output .= My_ViewHelper::render('post/_link', ['post' => $this]);
 		}
 
 		return preg_replace('/\s{2,}/', ' ', $output);
@@ -148,11 +147,20 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			->where('news.isdeleted=0')
 			->join(['a' => 'address'], 'a.id=news.address_id', $addressFields);
 
+		My_Query::setThumbsQuery($query, [[448, 320], [960, 960]], 'news');
+
 		if (!$isCount)
 		{
 			$query->join(['owner' => 'user_data'], 'owner.id=news.user_id', ['owner_name' => 'Name']);
-			$userModel = new Application_Model_User;
-			$userModel->setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]], 'owner');
+			My_Query::setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]], 'owner');
+		}
+
+		if (!empty($options['link']))
+		{
+			$query->joinLeft(['link' => 'news_link'], 'link.news_id=news.id', ['link_id' => 'id',
+				'link_link' => 'link', 'link_title' => 'title', 'link_description' => 'description',
+				'link_author' => 'author', 'link_image_id' => 'image_id']);
+			My_Query::setThumbsQuery($query, [[448, 320]], 'link');
 		}
 
 		return $query;
@@ -241,11 +249,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
  	 *
  	 * @param	array $parameters
  	 * @param	Application_Model_UserRow $user
+ 	 * @param	array $options
  	 * @return	array
  	 */
- 	public function search(array $parameters, Application_Model_UserRow $user)
+ 	public function search(array $parameters, Application_Model_UserRow $user, array $options=[])
  	{
-		$query = $this->searchQuery($parameters, $user);
+		$query = $this->searchQuery($parameters, $user, $options);
 		$result = $this->fetchAll($query->limit($parameters['limit'],
 			My_ArrayHelper::getProp($parameters, 'start', 0)));
 
@@ -256,19 +265,18 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * Checks if news id is valid.
 	 *
 	 * @param	integer	$news_id
-	 * @param	mixed	$news
-	 * @param	mixed	$deleted
-	 *
+	 * @param	mixed $news
+	 * @param	array $options
 	 * @return	boolean
 	 */
-    public static function checkId($news_id, &$news, $public = true)
+    public static function checkId($news_id, &$news, array $options=[])
     {
 		if ($news_id == null)
 		{
 			return false;
 		}
 
-		$news = self::findById($news_id, $public);
+		$news = self::findById($news_id, $options);
 
 		return $news != null;
     }
@@ -277,14 +285,16 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * Finds record by ID.
 	 *
 	 * @param	integer	$id
-	 * @param	boolean	$public
+	 * @param	array $options
 	 * return	mixed If success Application_Model_NewsRow, otherwise NULL
 	 */
-	public static function findById($id, $public = true)
+	public static function findById($id, array $options=[])
 	{
-		$db = new self;
-		$query = $public ? $db->publicSelect() : $db->select()->where('isdeleted=0');
-		$result = $db->fetchRow($query->where('news.id=?', $id));
+		$model = new self;
+		$join = My_ArrayHelper::getProp($options, 'join', true);
+		$query = $join ? $model->publicSelect($options) :
+			$model->select()->where('isdeleted=0');
+		$result = $model->fetchRow($query->where('news.id=?', $id));
 		return $result;
 	}
 
@@ -322,19 +332,16 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			}
 			else
 			{
-				$links = $post->findDependentRowset('Application_Model_NewsLink');
+				$link = $post->findParentRow('Application_Model_NewsLink');
 
-				if (count($links))
+				if ($link)
 				{
-					foreach ($links as $link)
+					if ($link->image_id)
 					{
-						if ($link->image_id)
-						{
-							$imageModel->find($link->image_id)->current()->deleteImage();
-						}
-
-						$link->delete();
+						$link->findParentRow('Application_Model_Image')->deleteImage();
 					}
+
+					$link->delete();
 				}
 
 				$post->setFromArray($data + ['updated_date' => new Zend_Db_Expr('NOW()')]);
@@ -377,13 +384,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					}
 
 					$html = $info->getProvider('html');
-					$newsLink = (new Application_Model_NewsLink)->createRow(array(
+					$newsLink = (new Application_Model_NewsLink)->createRow([
 						'news_id' => $post->id,
 						'link' => $link,
 						'title' => $info->getTitle(),
 						'description' => $info->getDescription(),
 						'author' => $html->bag->get('author')
-					));
+					]);
 
 					$opengraph = $info->getProvider('opengraph');
 					$images = $opengraph->bag->get('images');
@@ -483,20 +490,5 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 			throw $e;
 		}
-	}
-
-	/**
-	 * Returns select news comments expression.
-	 *
-	 * @return	Zend_Db_Expr
-	 */
-	public function commentsSubQuery()
-	{
-		$commentsModel = new Application_Model_Comments;
-		$query = $commentsModel->publicSelect()
-			->from($commentsModel, array('user_id', 'news_id', 'COUNT(*) as count'))
-			->group('news_id');
-
-		return new Zend_Db_Expr('(' . $query . ')');
 	}
 }

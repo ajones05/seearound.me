@@ -13,8 +13,7 @@ class MessageController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$userModel = new Application_Model_User;
-		$user = $userModel->getAuth();
+		$user = Application_Model_User::getAuth();
 
 		if ($user == null)
 		{
@@ -47,14 +46,13 @@ class MessageController extends Zend_Controller_Action
 			->group('c.id')
 			->order(['is_read ASC', 'c.created_at DESC']);
 
-		$userModel->setThumbsQuery($query, [[55, 55]], 'u');
+		My_Query::setThumbsQuery($query, [[55, 55]], 'u');
 
 		$paginator = Zend_Paginator::factory($query);
 		$paginator->setCurrentPageNumber($page);
 		$paginator->setItemCountPerPage(14);
 
 		$this->view->user = $user;
-		$this->view->userModel = $userModel;
         $this->view->paginator = $paginator;
 		$this->view->hideRight = true;
 
@@ -112,8 +110,7 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
-			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth();
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -167,7 +164,7 @@ class MessageController extends Zend_Controller_Action
 				->order('cm.created_at DESC')
 				->limit($limit, $start);
 
-			$userModel->setThumbsQuery($query, [[55, 55]], 'u');
+			My_Query::setThumbsQuery($query, [[55, 55]], 'u');
 
 			$messages = $messageModel->fetchAll($query);
 			$messagesCount = $messages->count();
@@ -193,7 +190,7 @@ class MessageController extends Zend_Controller_Action
 						'created' => date('F j \a\t h:ia', strtotime($message->created_at)),
 						'sender' => array(
 							'name' => $message->user_name,
-							'image' => $this->view->baseUrl($userModel->getThumb($message, '55x55', 'u')['path'])
+							'image' => $this->view->baseUrl(My_Query::getThumb($message, '55x55', 'u', true)['path'])
 						)
 					);
 

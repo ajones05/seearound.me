@@ -1,31 +1,24 @@
 <?php
-$link = My_CommonUtils::renderLink($this->link->link);
-
-// TODO: merge with post query
-if ($this->link->image_id)
-{
-	$image = (new Application_Model_Image)
-		->find($this->link->image_id)->current();
-}
+$link = My_CommonUtils::renderLink($this->post->link_link);
 ?>
 <div class="link-meta">
-	<?php if ($this->link->image_id): ?>
+	<?php if ($this->post->link_image_id): ?>
 	<div class="image">
 		<a href="<?php echo htmlspecialchars($link); ?>" target="_blank">
-			<img src="<?php echo $this->baseUrl($image->findThumb(array(448, 320))->path); ?>" />
+			<img src="<?php echo $this->baseUrl(My_Query::getThumb($this->post, '448x320', 'link')['path']); ?>">
 		</a>
 	</div>
 	<?php endif; ?>
 	<div class="meta-content">
-		<a class="title" href="<?php echo htmlspecialchars($link); ?>" target="_blank"><?php echo $this->link->title; ?></a>
-		<?php if ($this->link->description != null): ?>
-		<div class="description"><?php echo My_StringHelper::stringLimit($this->link->description, 185, '...'); ?></div>
+		<a class="title" href="<?php echo htmlspecialchars($link); ?>" target="_blank"><?php echo $this->post->link_title; ?></a>
+		<?php if ($this->post->link_description != null): ?>
+		<div class="description"><?php echo My_StringHelper::stringLimit($this->post->link_description, 185, '...'); ?></div>
 		<?php endif; ?>
 		<div>
 			<span><?php echo strtoupper(parse_url($link, PHP_URL_HOST)); ?></span>
-			<?php if ($this->link->author != null): ?>
+			<?php if ($this->post->link_author != null): ?>
 			<span class="delim">|</span>
-			<span>BY <?php echo strtoupper($this->link->author); ?></span>
+			<span>BY <?php echo strtoupper($this->post->link_author); ?></span>
 			<?php endif; ?>
 		</div>
 	</div>

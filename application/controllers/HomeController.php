@@ -338,7 +338,7 @@ class HomeController extends Zend_Controller_Action
 			{
 				foreach ($result as $row)
 				{
-					$ownerThumb = Application_Model_User::getThumb($row, '320x320', 'owner');
+					$ownerThumb = My_Query::getThumb($row, '320x320', 'owner', true);
 					$response['result'][] = [
 						'id' => $row->id,
 						'news' => My_StringHelper::stringLimit($row->news, 100, '...'),

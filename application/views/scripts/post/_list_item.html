@@ -9,10 +9,8 @@ $hideComments = !$this->post->comment || !My_ArrayHelper::search(array('news_id'
 
 if ($this->post->image_id)
 {
-	// TODO: merge with post query
-	$image = (new Application_Model_Image)->find($this->post->image_id)->current();
-	$thumb960x960 = $image->findThumb(array(960, 960));
-	$thumb448x320 = $image->findThumb(array(448, 320));
+	$thumb960x960 = My_Query::getThumb($this->post, '960x960', 'news');
+	$thumb448x320 = My_Query::getThumb($this->post, '448x320', 'news');
 }
 
 $userVote = 0;
@@ -42,7 +40,7 @@ if ($this->owner)
 else
 {
 	$ownerName = $this->post->owner_name;
-	$ownerThumb = Application_Model_User::getThumb($this->post, '55x55', 'owner');
+	$ownerThumb = My_Query::getThumb($this->post, '55x55', 'owner', true);
 }
 ?>
 <div class="post <?php if ($this->hidden) echo ' hidden';?>" data-id="<?php echo $this->post->id; ?>">
@@ -61,10 +59,10 @@ else
 <div class="post_text"><?php echo $this->post->renderContent(My_ArrayHelper::getProp($this, 'limit')); ?></div>
 <?php if ($this->post->image_id != null): ?>
 <div class="image">
-<img src="<?php echo $this->baseUrl($thumb448x320->path); ?>"
-data-src="<?php echo $this->baseUrl($thumb960x960->path); ?>"
-data-width="<?php echo $thumb960x960->width; ?>"
-data-height="<?php echo $thumb960x960->height; ?>">
+<img src="<?php echo $this->baseUrl($thumb448x320['path']); ?>"
+data-src="<?php echo $this->baseUrl($thumb960x960['path']); ?>"
+data-width="<?php echo $thumb960x960['width']; ?>"
+data-height="<?php echo $thumb960x960['height']; ?>">
 </div>
 <?php endif; ?>
 <div class="social_share">

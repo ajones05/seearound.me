@@ -136,7 +136,7 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	 */
 	public function getThumb($thumb)
 	{
-		return (new Application_Model_User)->getThumb($this, $thumb);
+		return My_Query::getThumb($this, $thumb, 'u', true);
 	}
 }
 
@@ -239,8 +239,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			->joinLeft(['a' => 'address'], 'a.id=u.address_id', [
 				'address', 'latitude', 'longitude', 'street_name',
 				'street_number', 'city', 'state', 'country', 'zip']);
-		$userModel = new Application_Model_User;
-		$userModel->setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]]);
+		My_Query::setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]], 'u');
 
 		return $query;
     }
@@ -668,70 +667,5 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		}
 
 		return true;
-	}
-
-	/**
-	 * Sets profile image thumb query.
-	 *
-	 * @param	Zend_Db_Select $query
-	 * @param	array $thumbs [[width,height],...]
-	 * @param	string $alias
-	 * @return	Zend_Db_Select
-	 */
-	public function setThumbsQuery(Zend_Db_Select &$query, array $thumbs = [], $alias = 'u')
-	{
-		if ($query instanceof Zend_Db_Table_Select)
-		{
-			$query->setIntegrityCheck(false);
-		}
-
-		$fields = [$alias . '_image_id' => $alias . '.image_id'];
-
-		foreach ($thumbs as $thumb)
-		{
-			$prefix = $alias . '_' . implode('x', $thumb);
-			$fields[$prefix . '_path'] = $prefix . '.path';
-			$fields[$prefix . '_width'] = $prefix . '.width';
-			$fields[$prefix . '_height'] = $prefix . '.height';
-
-			$query->joinLeft([$prefix => 'image_thumb'],
-				'(' . $prefix . '.image_id=' . $alias . '.image_id AND ' .
-					$prefix . '.thumb_width=' . $thumb[0] . ' AND ' .
-					$prefix . '.thumb_height=' . $thumb[1] . ')', '');
-		}
-
-		$query->columns($fields);
-
-		return $query;
-	}
-
-	/**
-	 * Returns profile image thumb.
-	 *
-	 * @param	mixed $data
-	 * @param	string $thumb "{WIDTH}x{HEIGHT}"
-	 * @param	string $alias
-	 * @return	array
-	 */
-	public static function getThumb($data, $thumb, $alias = 'u')
-	{
-		$prefix = $alias . '_' . $thumb;
-
-		if (My_ArrayHelper::getProp($data, $alias . '_image_id'))
-		{
-			return [
-				'path' => My_ArrayHelper::getProp($data, $prefix . '_path'),
-				'width' => My_ArrayHelper::getProp($data, $prefix . '_width'),
-				'height' => My_ArrayHelper::getProp($data, $prefix . '_height')
-			];
-		}
-
-		$config = Zend_Registry::get('config_global');
-
-		return [
-			'path' => $config->user->thumb->{$thumb}->path,
-			'width' => $config->user->thumb->{$thumb}->width,
-			'height' => $config->user->thumb->{$thumb}->height
-		];
 	}
 }
