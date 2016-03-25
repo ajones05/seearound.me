@@ -87,11 +87,12 @@ class MobileController extends Zend_Controller_Action
 				$user->updateInviteCount();
 			}
 
-			$response = array(
+			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'AUTHENTICATED',
-				'result' => array(
+				'result' => [
 					'id' => $user->id,
+					'karma' => round($userModel->getKarma($user->id)['karma'], 4),
 					'Name' => $user->Name,
 					'Email_id' => $user->Email_id,
 					'Birth_date' => $user->Birth_date,
@@ -104,16 +105,17 @@ class MobileController extends Zend_Controller_Action
 					'longitude' => $user->longitude,
 					'Activities' => $user->activities(),
 					'Gender' => $user->gender(),
-					'login_id' => $login_id,
-				)
-			);
+					'login_id' => $login_id
+				]
+			];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);
@@ -469,6 +471,7 @@ class MobileController extends Zend_Controller_Action
     {
 		try
 		{
+			$userModel = new Application_Model_User;
 			$other_user_id = $this->_request->getPost('other_user_id');
 
 			if (!v::intVal()->validate($other_user_id))
@@ -477,7 +480,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
-			if (!Application_Model_User::checkId($other_user_id, $profile))
+			if (!$userModel->checkId($other_user_id, $profile))
 			{
 				throw new RuntimeException('Incorrect other user ID: ' .
 					var_export($other_user_id, true));
@@ -487,6 +490,7 @@ class MobileController extends Zend_Controller_Action
 				'status' => 'SUCCESS',
 				'result' => My_ArrayHelper::filter([
 					'id' => $profile->id,
+					'karma' => round($userModel->getKarma($profile->id)['karma'], 4),
 					'Name' => $profile->Name,
 					'Profile_image' => $this->view->serverUrl() .
 						$this->view->baseUrl($profile->getThumb('320x320')['path']),
@@ -1340,9 +1344,9 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			$model = new Application_Model_User;
+			$userModel = new Application_Model_User;
 
-			if (!$model->checkId($user_id, $user))
+			if (!$userModel->checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user ID: ' .
 					var_export($user_id, true));
@@ -1357,7 +1361,7 @@ class MobileController extends Zend_Controller_Action
 
 			$data = $form->getValues();
 
-			$model->getDefaultAdapter()->beginTransaction();
+			$userModel->getDefaultAdapter()->beginTransaction();
 
 			try
 			{
@@ -1400,13 +1404,13 @@ class MobileController extends Zend_Controller_Action
 					$profileImage = $user->getThumb('320x320')['path'];
 				}
 
-				$model->update($user_data, 'id=' . $user->id);
+				$userModel->update($user_data, 'id=' . $user->id);
 
 				$profile = $user->findDependentRowset('Application_Model_UserProfile')->current();
 
 				if (!$profile)
 				{
-					$profile = (new Application_Model_UserProfile)->createRow(array('user_id' => $user->id));
+					$profile = (new Application_Model_UserProfile)->createRow(['user_id' => $user->id]);
 				}
 
 				$profile->public_profile = $data['public_profile'];
@@ -1414,22 +1418,23 @@ class MobileController extends Zend_Controller_Action
 				$profile->Gender = $data['gender'];
 				$profile->save();
 
-				$model->getDefaultAdapter()->commit();
+				$userModel->getDefaultAdapter()->commit();
 			}
 			catch (Exception $e)
 			{
-				$model->getDefaultAdapter()->rollBack();
+				$userModel->getDefaultAdapter()->rollBack();
 
 				throw $e;
 			}
 
 			$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
 
-			$response = array(
+			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'User profile has been updated successfully',
-				'result' => My_ArrayHelper::filter(array(
+				'result' => My_ArrayHelper::filter([
 					'user_id' => $user->id,
+					'karma' => round($userModel->getKarma($user->id)['karma'], 4),
 					'Name' => $data['name'],
 					'Email_id' => $data['email'],
 					'address' => Application_Model_Address::format($userAddress->toArray()),
@@ -1440,15 +1445,16 @@ class MobileController extends Zend_Controller_Action
 					'Gender' => $data['gender'],
 					'Activities' => $data['activities'],
 					'Birth_date' => $data['birth_date']
-				)
-			));
+				])
+			];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);

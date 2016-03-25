@@ -1,9 +1,5 @@
 <?php
-$karma_post = $this->karma['post'] +
-	(.25 * ($this->karma['vote'] + $this->karma['comment'])) +
-	$this->karma['comment_other'] * .25;
-
-$karma_post_title = 'User posts: ' . $this->karma['post'] . '<br/>' .
+$karmaTitle = 'User posts: ' . $this->karma['post'] . '<br/>' .
 	'User posts comments: ' . $this->karma['comment'] . '<br/>' .
 	'User posts votings: ' . $this->karma['vote'] . '<br/>' .
 	'User comments on other posts: ' . $this->karma['comment_other'];
@@ -24,13 +20,14 @@ $karma_post_title = 'User posts: ' . $this->karma['post'] . '<br/>' .
 	</div>
 </div>
 <ul class="viewForm" style="width:100%; margin-left: 0px;">
-	<li>
-		<label>Karma</label>
-		<span class="karma">
-			<b title="<?php echo htmlspecialchars($karma_post_title); ?>"><?php echo round($karma_post, 4); ?></b>(Calculated based on posts &amp; comments)
-		</span>
-		<div class="clr"></div>
-	</li>
+<li>
+<label>Karma</label>
+<span class="karma">
+<b title="<?php echo htmlspecialchars($karmaTitle); ?>"><?php echo round($this->karma['karma'], 4); ?></b
+>(Calculated based on posts &amp; comments)
+</span>
+<div class="clr"></div>
+</li>
 	<?php if ($this->auth_id == $this->profile->id): ?>
 	<li>
 		<label>Email Address</label>

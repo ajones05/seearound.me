@@ -230,43 +230,9 @@ class HomeController extends Zend_Controller_Action
 			$profile = $user;
 		}
 
-		$newsModel = new Application_Model_News;
-
-		$latest_post = $newsModel->fetchRow(
-			$newsModel->publicSelect()
-				->where('news.user_id=?', $profile->id)
-				->order('news.id DESC')
-		);
-
 		$this->view->auth_id = $isAuth ? $user->id : null;
 		$this->view->profile = $profile;
-
-		$selfStasts = $newsModel->fetchRow(
-			$newsModel->select()
-				->from(['n' => 'news'], [
-					'COUNT(n.id) AS post',
-					'IFNULL(SUM(n.comment), 0) as comment',
-					'IFNULL(SUM(n.vote), 0) as vote'
-				])
-				->where('n.isdeleted=0 AND n.user_id=' . $profile->id)
-		);
-
-		$commentModel = new Application_Model_Comments;
-		$otherStats = $commentModel->fetchRow(
-			$commentModel->select()
-				->setIntegrityCheck(false)
-				->from(['c' => 'comments'], ['count(c.id) AS count'])
-				->where('c.isdeleted=0 AND c.user_id=' . $profile->id)
-				->joinLeft(['n' => 'news'], 'n.id=c.news_id', '')
-				->where('n.user_id<>' . $profile->id)
-		);
-
-		$this->view->karma = [
-			'post' => $selfStasts->post,
-			'comment' => $selfStasts->comment,
-			'comment_other' => $otherStats->count,
-			'vote' => $selfStasts->vote
-		];
+		$this->view->karma = $userModel->getKarma($profile->id);
 
 		if ($isAuth && $user->id != $profile->id)
 		{
@@ -279,22 +245,20 @@ class HomeController extends Zend_Controller_Action
 		$this->view->headLink()
 			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
-		$addressModel = new Application_Model_Address;
-		$profileAddress = $profile->findDependentRowset('Application_Model_Address')->current();
-		$addressFormat = $addressModel->format($profileAddress->toArray(), ['street' => false]);
+		$addressFormat = Application_Model_Address::format($profile, ['street'=>false]);
 		$this->view->addressFormat = $addressFormat;
 
-		$config = Zend_Registry::get('config_global');
 		$this->view->headScript()
 			->appendScript('var reciever_userid=' . json_encode($profile->id) . ',' .
 				'profileData=' . json_encode([
 				'id' => $profile->id,
 				'address' => $addressFormat,
-				'latitude' => $profileAddress->latitude,
-				'longitude' => $profileAddress->longitude
+				'latitude' => $profile->latitude,
+				'longitude' => $profile->longitude
 			]) . ';')
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view));
 
+		$config = Zend_Registry::get('config_global');
 		My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
 				'key=' . $config->google->maps->key . '&sensor=false&v=3&callback=initMap', $this->view);
 	}

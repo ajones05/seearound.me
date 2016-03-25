@@ -668,4 +668,41 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 		return true;
 	}
+
+	/**
+	 * Returns user karma.
+	 *
+	 * @param	integer $user_id
+	 * @return	array
+	 */
+	public function getKarma($user_id)
+	{
+		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
+
+		$selfStasts = $db->fetchRow($db->select()
+			->from(['n' => 'news'], [
+				'COUNT(n.id) AS post',
+				'IFNULL(SUM(n.comment), 0) as comment',
+				'IFNULL(SUM(n.vote), 0) as vote'
+			])
+			->where('n.isdeleted=0 AND n.user_id=' . $user_id)
+		);
+
+		$otherStats = $db->fetchRow($db->select()
+			->from(['c' => 'comments'], ['count(c.id) AS count'])
+			->where('c.isdeleted=0 AND c.user_id=' . $user_id)
+			->joinLeft(['n' => 'news'], 'n.id=c.news_id', '')
+			->where('n.user_id<>' . $user_id)
+		);
+
+		return [
+			'post' => $selfStasts['post'],
+			'comment' => $selfStasts['comment'],
+			'comment_other' => $otherStats['count'],
+			'vote' => $selfStasts['vote'],
+			'karma' => $selfStasts['post'] +
+				(.25 * ($selfStasts['vote'] + $selfStasts['comment'])) +
+				$otherStats['count'] * .25
+		];
+	}
 }
