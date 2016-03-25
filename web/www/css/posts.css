@@ -394,8 +394,13 @@ body.touch .posts-container .posts {
 	width: 180px;
 	margin-bottom: 10px;
 	position: relative;
+	text-align: center;
 }
-.post-new__dialog .image img {
+.post-new__dialog .image img.preview {
+	max-width: 190px;
+	max-height: 190px;
+}
+.post-new__dialog .image img.delete {
     cursor: pointer;
     margin-left: 10px;
     position: absolute;

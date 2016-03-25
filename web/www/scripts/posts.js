@@ -1599,9 +1599,30 @@ function newPost_dialog(){
 								.attr({type:'file',name:'image',accept:'image/*',size:'1'})
 								.change(function(){
 									$('.image',newDialog).remove();
-									$(this).parent().prepend(
-										$('<div/>').addClass('image').html($(this).val()).append(
-											$('<img/>')
+									if ($.trim($(this).val()) === ''){
+										return true;
+									}
+
+									if ($.inArray(this.files[0]['type'],['image/gif','image/jpeg','image/png'])<0){
+										alert('Invalid file type');
+										$(this).val('');
+										return false;
+									}
+
+									var imageContainer=$('<div/>').addClass('image');
+									if (typeof window.FileReader !== 'undefined'){
+										var reader=new FileReader();
+										reader.onload=function(e){
+											imageContainer.prepend($('<img/>').addClass('preview')
+												.attr('src', e.target.result));
+										}
+										reader.readAsDataURL(this.files[0]);
+									} else {
+										imageContainer.html($(this).val());
+									}
+									$(this).parent().prepend(imageContainer
+										.append(
+											$('<img/>').addClass('delete')
 												.attr({width:12,height:12,
 													src:assetsBaseUrl+'www/images/delete-icon12x12.png'})
 												.click(function(){
