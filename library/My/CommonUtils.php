@@ -178,6 +178,27 @@ class My_CommonUtils
 			throw new InvalidArgumentException('Incorrect image file: ' . $image);
 		}
 
+		if ($imageType == IMAGETYPE_JPEG)
+		{
+			$exif = exif_read_data($image);
+
+			if(!empty($exif['Orientation']))
+			{
+				switch($exif['Orientation'])
+				{
+					case 8:
+						$source = imagerotate($source, 90, 0);
+						break;
+					case 3:
+						$source = imagerotate($source, 180, 0);
+						break;
+					case 6:
+						$source = imagerotate($source, -90, 0);
+						break;
+				}
+			}
+		}
+
 		$source_img_w = imageSX($source);
 		$source_img_h = imageSY($source);
 		$source_ratio = $source_img_w / $source_img_h;
