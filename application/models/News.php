@@ -95,39 +95,37 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	/**
 	 * @var	array
 	 */
-    protected $_dependentTables = array(
+    protected $_dependentTables = [
+		'Application_Model_Address',
 		'Application_Model_Comments',
 		'Application_Model_NewsLink'
-	);
+	];
 
 	/**
 	 * @var	array
 	 */
-	protected $_referenceMap = array(
-		'User' => array(
+	protected $_referenceMap = [
+		'User' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'user_id'
-        ),
-		'Comments' => array(
+        ],
+		'Address' => [
+			'columns' => 'address_id',
+			'refTableClass' => 'Application_Model_Address',
+			'refColumns' => 'id'
+        ],
+		'Comments' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Comments',
 			'refColumns' => 'news_id'
-        ),
-		'Links' => array(
+        ],
+		'Links' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_NewsLink',
 			'refColumns' => 'news_id'
-        )
-    );
-
-    public static function getInstance() 
-    {
-            if (null === self::$_instance) {
-                    self::$_instance = new self();
-            }		
-            return self::$_instance;
-    }
+        ]
+    ];
 
 	/*
      * Returns an instance of a Zend_Db_Table_Select object.
