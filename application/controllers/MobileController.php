@@ -1229,7 +1229,116 @@ class MobileController extends Zend_Controller_Action
 
 		$this->_helper->json($response);
 	}
-	
+
+	/**
+	 * Post details action.
+	 *
+	 * @return	void
+	 */
+	public function postAction()
+	{
+		try
+		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user ID: ' .
+					var_export($user_id, true));
+			}
+
+			$post_id = $this->_request->getPost('post_id');
+
+			if (!v::intVal()->validate($post_id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($post_id, true));
+			}
+
+			if (!Application_Model_News::checkId($post_id, $post, ['link'=>true]))
+			{
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($post_id, true));
+			}
+
+			$userLike = (new Application_Model_Voting)
+				->findVote($post->id, $post->id);
+			$ownerThumb = My_Query::getThumb($post, '320x320', 'owner', true);
+
+			$response = [
+				'status' => 'SUCCESS',
+				'post' => [
+					'id' => $post->id,
+					'user_id' => $post->user_id,
+					'news' => $post->news,
+					'created_date' => My_Time::time_ago($post->created_date),
+					'updated_date' => $post->updated_date,
+					'latitude' => $post->latitude,
+					'longitude' => $post->longitude,
+					'Address' => Application_Model_Address::format($post) ?: $post->address,
+					'comment_count' => $post->comment,
+					'vote' => $post->vote,
+					'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
+					'Name' => $post->owner_name,
+					'Profile_image' => $this->view->serverUrl() .
+						$this->view->baseUrl($ownerThumb['path'])
+				]
+			];
+
+			if ($post->image_id)
+			{
+				$thumb = My_Query::getThumb($post, '448x320', 'news');
+				$response['post']['images'] = $this->view->serverUrl() .
+					$this->view->baseUrl($thumb['path']);
+			}
+
+			if ($post->link_id != null)
+			{
+				$response['post']['link_url'] = $post->link_link;
+
+				if (trim($post->link_title) !== '')
+				{
+					$response['post']['link_title'] = $post->link_title;
+				}
+
+				if (trim($post->link_description) !== '')
+				{
+					$response['post']['link_description'] = $post->link_description;
+				}
+
+				if (trim($post->link_author) !== '')
+				{
+					$response['post']['link_author'] = $post->link_author;
+				}
+
+				if ($post->link_image_id != null)
+				{
+					$thumb = My_Query::getThumb($post, '448x320', 'link');
+					$response['post']['link_image'] = $this->view->serverUrl() .
+						$this->view->baseUrl($thumb['path']);
+				}
+			}
+        }
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
 	/**
 	 * Add news action.
 	 * 
