@@ -1866,8 +1866,8 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'Comments rendred successfully',
 			];
 
-			$commentModel = new Application_Model_Comments;
-			$comments = $commentModel->findAllByNewsId($post->id, 10, $start);
+			$comments = (new Application_Model_Comments)
+				->findAllByNewsId($post->id, 1000, $start);
 
 			if (count($comments))
 			{
@@ -1892,10 +1892,11 @@ class MobileController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_logRequest($response);
