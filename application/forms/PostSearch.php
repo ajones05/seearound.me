@@ -33,9 +33,10 @@ class Application_Form_PostSearch extends Zend_Form
 				'value' => '',
 				'style' => 'display:none',
 				'multiOptions' => array(
-					'' => 'View all posts',
-					'0' => 'Mine Only',
-					'1' => 'My Interests',
+					'' => 'Most interesting',
+					'3' => 'Most recent',
+					'0' => 'My posts',
+					'1' => 'My interests',
 					'2' => 'Following'
 				)
 			)

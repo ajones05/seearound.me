@@ -182,6 +182,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			$query->where('news.news LIKE ?', '%' . $parameters['keywords'] . '%');
 		}
 
+		$order = [];
 		$filter = My_ArrayHelper::getProp($parameters, 'filter');
 
 		if ($filter != null)
@@ -190,10 +191,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			{
 				case '0':
 					$query->where('news.user_id=?', $user->id);
+					$order[] = $this->mostInterestingOrder();
 					break;
 				case '1':
 					$interests = $user->parseInterests();
-
 					if (count($interests))
 					{
 						$adapter = $this->getAdapter();
@@ -205,7 +206,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 						$query->where(implode(' OR ', $interests));
 					}
-
+					$order[] = $this->mostInterestingOrder();
 					break;
 				case '2':
 					$query->where('news.user_id<>?', $user->id);
@@ -215,8 +216,16 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					$query->where('news.user_id=f1.reciever_id)');
 					$query->orWhere('(f2.status=1');
 					$query->where('news.user_id=f2.sender_id))');
+					$order[] = $this->mostInterestingOrder();
+					break;
+				case '3':
+					$order[] = 'created_date DESC';
 					break;
 			}
+		}
+		else
+		{
+			$order[] = $this->mostInterestingOrder();
 		}
 
 		if (count(My_ArrayHelper::getProp($parameters, 'exclude_id', array())))
@@ -232,12 +241,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			$query->group('news.id');
 		}
 
+		$order[] = 'news.id ASC';
+
 		$query
 			->where('IFNULL((3959*acos(cos(radians(' . $parameters['latitude'] . '))*cos(radians(a.latitude))*' .
 				'cos(radians(a.longitude)-' . 'radians(' . $parameters['longitude'] . '))+' .
 				'sin(radians(' . $parameters['latitude'] . '))*sin(radians(a.latitude)))),0)<' . $parameters['radius'])
-			->order(['((news.vote+news.comment+1)/((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+30)^1.1))*10000 DESC',
-				'news.id ASC']);
+			->order($order);
 
 		return $query;
 	}
@@ -488,5 +498,15 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 			throw $e;
 		}
+	}
+
+	/**
+	 * Returns most interesting order.
+	 *
+	 */
+	protected function mostInterestingOrder($order='DESC')
+	{
+		return '((news.vote+news.comment+1)/' .
+			'((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+30)^1.1))*10000 ' . $order;
 	}
 }
