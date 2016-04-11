@@ -730,6 +730,7 @@ function postSearch_submit(form){
 	$('.search', form).remove();
 
 	if (isList){
+		$('.keywords img', form).remove();
 		postSearch_clearButton(form);
 	}
 
