@@ -1599,7 +1599,7 @@ class MobileController extends Zend_Controller_Action
 				'latitude' => $this->_request->getPost('latitude'),
 				'longitude' => $this->_request->getPost('longitude'),
 				'radius' => $this->_request->getPost('radious', 1),
-				'start' => $this->_request->getPost('fromPage', 0)
+				'start' => $this->_request->getPost('start', 0)
 			];
 
 			if (!$searchForm->validateSearch($searchParameters))
