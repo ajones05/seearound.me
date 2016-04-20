@@ -1853,7 +1853,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			$start = $this->_request->getPost('offsetValue', 0);
+			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->min(0)->validate($start))
 			{
