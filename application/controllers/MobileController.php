@@ -1867,7 +1867,7 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$comments = (new Application_Model_Comments)
-				->findAllByNewsId($post->id, 1000, $start);
+				->findAllByNewsId($post->id, 10, $start);
 
 			if (count($comments))
 			{
