@@ -259,6 +259,64 @@ class MobileController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Reset password api gateway.
+	 *
+	 * @return void
+	 */
+	public function resetPasswordAction()
+	{
+		try
+		{
+			$email = $this->_request->getPost('email');
+
+			if (!v::email()->validate($email))
+			{
+				throw new RuntimeException('Incorrect email value: ' .
+					var_export($email, true));
+			}
+
+			$userModel = new Application_Model_User;
+			$user = $userModel->findByEmail($email);
+
+			if (!$user)
+			{
+				throw new RuntimeException('No account found with that email address: ' .
+					var_export($email, true));
+			}
+
+			if ($user->Status !== 'active')
+			{
+				throw new RuntimeException('This account is not active');
+			}
+
+			$confirmModel = new Application_Model_UserConfirm;
+			$confirm = $confirmModel->save([
+				'user_id' => $user->id,
+				'type_id' => $confirmModel::$type['forgot_password']
+			]);
+
+			My_Email::send(
+				$email,
+				'Forgot Password',
+				['template' => 'forgot-password', 'assign' => ['confirm' => $confirm]]
+			);
+
+			$response = ['status' => 'SUCCESS'];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_logRequest($response);
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * Friends list action.
 	 *
 	 * @return void

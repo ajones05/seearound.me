@@ -60,6 +60,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * Reset password api gateway.
+	 *
+	 * @return void
+	 */
+    public function resetPasswordAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Friends list action.
 	 *
 	 * @return void
