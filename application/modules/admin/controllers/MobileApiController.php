@@ -247,6 +247,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * Delete comment action.
+	 *
+	 * @return void
+	 */
+    public function deleteCommentAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Posts like action.
 	 *
 	 * @return void

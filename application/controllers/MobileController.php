@@ -1531,6 +1531,11 @@ class MobileController extends Zend_Controller_Action
 					var_export($post_id, true));
 			}
 
+			if ($user->id != $post->user_id)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
 			$response = [
 				'status' => 'SUCCESS',
 				'body' => $post->news
@@ -2203,6 +2208,75 @@ class MobileController extends Zend_Controller_Action
 
 		$this->_logRequest($response);
 
+		$this->_helper->json($response);
+     }
+
+	/**
+	 * Delete post comment action.
+	 *
+	 * @return void
+	 */
+    public function deleteCommentAction()
+	{
+		try
+		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user id: ' .
+					var_export($user_id, true));
+			}
+
+			$id = $this->_request->getPost('comment_id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect comment ID value: ' .
+					var_export($id, true));
+			}
+
+			$model = new Application_Model_Comments;
+
+			if (!$model->checkId($id, $comment, 0))
+			{
+				throw new RuntimeException('Incorrect comment ID: ' .
+					var_export($id, true));
+			}
+
+			$post = $comment->findDependentRowset('Application_Model_News')->current();
+
+			if ($post->isdeleted)
+			{
+				throw new RuntimeException('Incorrect comment ID: ' .
+					var_export($id, true));
+			}
+
+			if ($user->id != $comment->user_id && $user->id != $post->user_id)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$model->deleteRow($comment, $post);
+
+			$response = ['status' => 'SUCCESS'];
+		}
+		catch (Exception $e)
+		{
+			$response =[
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_logRequest($response);
 		$this->_helper->json($response);
      }
 
