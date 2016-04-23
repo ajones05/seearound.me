@@ -1667,6 +1667,68 @@ class MobileController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Delete post action.
+	 *
+	 * @return	void
+	 */
+	public function deletePostAction()
+	{
+		try
+		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user ID: ' .
+					var_export($user_id, true));
+			}
+
+			$post_id = $this->_request->getPost('post_id');
+
+			if (!v::intVal()->validate($post_id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($post_id, true));
+			}
+
+			$model = new Application_Model_News;
+
+			if (!$model->checkId($post_id, $post, ['join'=>false]))
+			{
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($post_id, true));
+			}
+
+			if ($user->id != $post->user_id)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$post->isdeleted = 1;
+			$post->save();
+
+			$response = ['status' => 'SUCCESS'];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_logRequest($response);
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * Edit profile action.
 	 * 
 	 * @return	void
