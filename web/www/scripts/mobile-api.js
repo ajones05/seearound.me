@@ -6,9 +6,17 @@ $(function(){
 		e.preventDefault();
 
 		$('form :input').each(function(){
-			var value = $(this).val(),
-				name = $(this).attr('name');
-			if ($.trim(value) !== ''){
+			var isValid = true,
+				value = $(this).val(),
+				name = $(this).attr('name'),
+				type = $(this).attr('type');
+			switch (type){
+				case 'checkbox':
+					if (!$(this).is(':checked')){
+						isValid=false;
+					}
+			}
+			if (isValid && $.trim(value) !== ''){
 				data.append(name, $(this).attr('type') == 'file' ?
 					$(this)[0].files[0] : value);
 				outputData[name] = value;
