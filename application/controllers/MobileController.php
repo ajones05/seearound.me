@@ -1479,6 +1479,13 @@ class MobileController extends Zend_Controller_Action
 						$this->view->baseUrl($image->findThumb([448, 320])->path)];
 				}
 			}
+
+			if ($post->image_id != null)
+			{
+				$image = $post->findDependentRowset('Application_Model_Image')->current();
+				$response += ['image' => $this->view->serverUrl() .
+					$this->view->baseUrl($image->findThumb([448, 320])->path)];
+			}
 		}
 		catch (Exception $e)
 		{
@@ -1538,8 +1545,27 @@ class MobileController extends Zend_Controller_Action
 
 			$response = [
 				'status' => 'SUCCESS',
-				'body' => $post->news
+				'post' => [
+					'body' => $post->news,
+					'latitude' => $post->latitude,
+					'longitude' => $post->longitude,
+				] + My_ArrayHelper::filter([
+					'address' => Application_Model_Address::format($post) ?: $post->address,
+					'street_name' => $post->street_name,
+					'street_number' => $post->street_number,
+					'city' => $post->city,
+					'state' => $post->state,
+					'country' => $post->country,
+					'zip' => $post->zip
+				])
 			];
+
+			if ($post->image_id != null)
+			{
+				$image = $post->findDependentRowset('Application_Model_Image')->current();
+				$response['post']['image'] = $this->view->serverUrl() .
+						$this->view->baseUrl($image->path);
+			}
 		}
 		catch (Exception $e)
 		{
@@ -1572,14 +1598,6 @@ class MobileController extends Zend_Controller_Action
 					var_export($user_id, true));
 			}
 
-			$body = $this->_request->getPost('body');
-
-			if (!v::stringType()->validate($body))
-			{
-				throw new RuntimeException('Incorrect body value: ' .
-					var_export($body, true));
-			}
-
 			if (!Application_Model_User::checkId($user_id, $user))
 			{
 				throw new RuntimeException('Incorrect user ID: ' .
@@ -1607,7 +1625,14 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$data = ['news' => $body];
+			$data = $this->_request->getPost();
+
+			// TODO: change post body field name
+			if (isset($data['body']))
+			{
+				$data['news'] = $data['body'];
+			}
+
 			$postForm = new Application_Form_News;
 
 			if (!$postForm->isValid($data))
@@ -1616,14 +1641,46 @@ class MobileController extends Zend_Controller_Action
 					implode("\n", $postForm->getErrorMessages()));
 			}
 
-			$post = $model->save($data, $post);
+			$addressForm = new Application_Form_Address;
+
+			if (!$addressForm->isValid($data))
+			{
+				throw new RuntimeException(
+					implode("\n", $addressForm->getErrorMessages()));
+			}
+
+			$post = $model->save($postForm->getValues(), $post);
+
+			$address = $post->findParentRow('Application_Model_Address');
+			$address->setFromArray(['address'=>null]+$data);
+			$address->save();
+
 			// TODO: refactoring
 			$post = $model->findById($post->id, ['link'=>true]);
 
 			$response = [
 				'status' => 'SUCCESS',
-				'post' => ['news' => $post->news]
+				'post' => [
+					'body' => $post->news,
+					'latitude' => $post->latitude,
+					'longitude' => $post->longitude,
+				] + My_ArrayHelper::filter([
+					'address' => Application_Model_Address::format($post) ?: $post->address,
+					'street_name' => $post->street_name,
+					'street_number' => $post->street_number,
+					'city' => $post->city,
+					'state' => $post->state,
+					'country' => $post->country,
+					'zip' => $post->zip
+				])
 			];
+
+			if ($post->image_id != null)
+			{
+				$image = $post->findDependentRowset('Application_Model_Image')->current();
+				$response['post']['image'] = $this->view->serverUrl() .
+						$this->view->baseUrl($image->path);
+			}
 
 			if ($post->link_id != null)
 			{

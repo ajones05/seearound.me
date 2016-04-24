@@ -355,7 +355,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				$post->setFromArray($data + ['updated_date' => new Zend_Db_Expr('NOW()')]);
 			}
 
-			if (!empty($data['image']))
+			if ($post->image_id != null && !empty($data['delete_image']))
+			{
+				$post->findDependentRowset('Application_Model_Image')
+					->current()->deleteImage();
+				$post->image_id = null;
+			}
+			elseif (!empty($data['image']))
 			{
 				$image = $imageModel->save('uploads/' . $data['image']);
 				$post->image_id = $image->id;
