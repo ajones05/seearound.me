@@ -180,7 +180,7 @@ class My_CommonUtils
 
 		if ($imageType == IMAGETYPE_JPEG)
 		{
-			$exif = exif_read_data($image);
+			$exif = @exif_read_data($image);
 
 			if(!empty($exif['Orientation']))
 			{
