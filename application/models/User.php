@@ -153,12 +153,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * @var	string
 	 */
-    protected $_name     = 'user_data';
-
-	/**
-	 * @var	string
-	 */
-    protected $_primary  = array('id');
+    protected $_name = 'user_data';
 
 	/**
 	 * @var	string
@@ -168,7 +163,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * @var	array
 	 */
-    protected $_dependentTables = array(
+    protected $_dependentTables = [
+		'Application_Model_Address',
 		'Application_Model_UserConfirm',
 		'Application_Model_News',
 		'Application_Model_Comments',
@@ -178,53 +174,58 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'Application_Model_Friends',
 		'Application_Model_UserProfile',
 		'Application_Model_Invitestatus'
-	);
+	];
 
 	/**
 	 * @var	array
 	 */
-	protected $_referenceMap = array(
-		'UserConfirm' => array(
+	protected $_referenceMap = [
+		'Address' => [
+			'columns' => 'address_id',
+			'refTableClass' => 'Application_Model_Address',
+			'refColumns' => 'id'
+        ],
+		'UserConfirm' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_UserConfirm',
 			'refColumns' => 'user_id'
-		),
-		'News' => array(
+		],
+		'News' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_News',
 			'refColumns' => 'user_id'
-		),
-		'Comments' => array(
+		],
+		'Comments' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Comments',
 			'refColumns' => 'user_id'
-		),
-		'CommentsNotify' => array(
+		],
+		'CommentsNotify' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_CommentNotify',
 			'refColumns' => 'user_id'
-		),
-		'FriendReceiver' => array(
+		],
+		'FriendReceiver' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Friends',
 			'refColumns' => 'reciever_id'
-		),
-		'FriendSender' => array(
+		],
+		'FriendSender' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Friends',
 			'refColumns' => 'sender_id'
-		),
-		'Profile' => array(
+		],
+		'Profile' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_UserProfile',
 			'refColumns' => 'user_id'
-		),
-		'InviteStatus' => array(
+		],
+		'InviteStatus' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Invitestatus',
 			'refColumns' => 'user_id'
-		)
-	);
+		]
+	];
 
 	/*
      * Returns an instance of a Zend_Db_Table_Select object.
@@ -238,7 +239,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			->from(['u' => 'user_data'], 'u.*')
 			->joinLeft(['a' => 'address'], 'a.id=u.address_id', [
 				'address', 'latitude', 'longitude', 'street_name',
-				'street_number', 'city', 'state', 'country', 'zip']);
+				'street_number', 'city', 'state', 'country', 'zip', 'timezone']);
 		My_Query::setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]], 'u');
 
 		return $query;
@@ -434,12 +435,20 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		$address = (new Application_Model_Address)->createRow([
 			'latitude' => $data['latitude'],
 			'longitude' => $data['longitude'],
-			'street_name' => My_ArrayHelper::getProp($data, 'street_name'),
-			'street_number' => My_ArrayHelper::getProp($data, 'street_number'),
-			'city' => My_ArrayHelper::getProp($data, 'city'),
-			'state' => My_ArrayHelper::getProp($data, 'state'),
-			'country' => My_ArrayHelper::getProp($data, 'country'),
-			'zip' => My_ArrayHelper::getProp($data, 'zip')
+			'street_name' => My_StringHelper::trimToNull(
+				My_ArrayHelper::getProp($data, 'street_name')),
+			'street_number' => My_StringHelper::trimToNull(
+				My_ArrayHelper::getProp($data, 'street_number')),
+			'city' => My_StringHelper::trimToNull(
+				My_ArrayHelper::getProp($data, 'city')),
+			'state' => My_StringHelper::trimToNull(
+				My_ArrayHelper::getProp($data, 'state')),
+			'country' => My_StringHelper::trimToNull(
+				My_ArrayHelper::getProp($data, 'country')),
+			'zip' => My_StringHelper::trimToNull(
+				My_ArrayHelper::getProp($data, 'zip')),
+			'timezone' => My_StringHelper::trimToNull(
+				My_ArrayHelper::getProp($data, 'timezone'))
 		]);
 		$address->save();
 
@@ -642,6 +651,12 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			$address->state = My_ArrayHelper::getProp($data, 'state');
 			$address->country = My_ArrayHelper::getProp($data, 'country');
 			$address->zip = My_ArrayHelper::getProp($data, 'zip');
+
+			if ($address->timezone == null && !empty($data['timezone']))
+			{
+				$address->timezone = $data['timezone'];
+			}
+
 			$address->save();
 
 			$profile = $user->findDependentRowset('Application_Model_UserProfile')->current();

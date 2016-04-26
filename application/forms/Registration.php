@@ -27,17 +27,17 @@ class Application_Form_Registration extends Zend_Form
         $this->addElement(
 			'text',
 			'email',
-			array(
+			[
 				'required' => true,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('EmailAddress'),
-					array('Db_NoRecordExists', false, array(
+				'filters' => ['StringTrim'],
+				'validators' => [
+					['EmailAddress', true, ['domain' => false]],
+					['Db_NoRecordExists', false, [
 						'table' => 'user_data',
                         'field' => 'Email_id'
-					))
-				)
-			)
+					]]
+				]
+			]
 		);
 
 		$error_message = 'Password  minimum of 6 characters, with at least one character or number.';

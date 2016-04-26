@@ -16,7 +16,8 @@ $this->headScript()
 	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))
 	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js', $this))
 	->appendFile(My_Layout::assetUrl('bower_components/jquery-validation/dist/jquery.validate.min.js', $this))
-	->appendFile(My_Layout::assetUrl('www/scripts/common.js', $this));
+	->appendFile(My_Layout::assetUrl('www/scripts/common.js', $this))
+	->appendFile(My_Layout::assetUrl('www/scripts/commondev.js', $this));
 
 $this->headMeta('text/html; charset=utf-8', 'Content-Type', 'http-equiv');
 ?>

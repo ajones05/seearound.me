@@ -34,6 +34,7 @@ class HomeController extends Zend_Controller_Action
 
     public function editProfileAction()
 	{
+		$config = Zend_Registry::get('config_global');
 		$userModel = new Application_Model_User;
 		$user = $userModel->getAuth();
 
@@ -79,6 +80,7 @@ class HomeController extends Zend_Controller_Action
 				'activities' => $user->activities(),
 				'latitude' => $userAddress->latitude,
 				'longitude' => $userAddress->longitude,
+				'timezone' => $userAddress->timezone,
 			]);
 
 			if ($user->Birth_date != null)
@@ -99,12 +101,16 @@ class HomeController extends Zend_Controller_Action
 			->appendScript('var profileData=' . json_encode([
 				'address' => $addressFormat,
 				'latitude' => $userAddress->latitude,
-				'longitude' => $userAddress->longitude
-			]) . ';')
-			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places');
+				'longitude' => $userAddress->longitude,
+				'timezone' => $userAddress->timezone
+			]) . ',' .
+			'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
+				$config->google->maps->key);
 
 		$this->view->profileForm = $profileForm;
 		$this->view->addressForm = $addressForm;
+		$this->view->address = $userAddress;
         $this->view->user = $user;
         $this->view->changeLocation = true;
     }

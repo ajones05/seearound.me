@@ -60,6 +60,17 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
+	 * User registration action.
+	 *
+	 * @return void
+	 */
+    public function registrationAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
+
+	/**
 	 * Reset password api gateway.
 	 *
 	 * @return void

@@ -24,6 +24,7 @@ class Application_Form_Address extends Zend_Form
 		$this->addElement('text', 'state');
 		$this->addElement('text', 'country');
 		$this->addElement('text', 'zip');
+		$this->addElement('text', 'timezone');
     }
 
 	/**

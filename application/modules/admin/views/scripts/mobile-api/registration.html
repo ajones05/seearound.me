@@ -1,0 +1,119 @@
+<h2>mobile/registration</h2>
+<ol class="breadcrumb">
+	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
+	<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile Api</a></li>
+	<li class="active">registration</li>
+</ol>
+<div class="well">
+<p>New user registration action</p>
+<a href="https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileregistration">
+https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileregistration</a>
+</div>
+<form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/registration'); ?>"
+	method="post" enctype="multipart/form-data">
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="name">Name [name]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="name" class="form-control"
+				id="name" placeholder="Enter name"
+				value="<?php echo htmlspecialchars($this->request->getParam('name')); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="email">Email [email]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="email" class="form-control"
+				id="email" placeholder="Enter email"
+				value="<?php echo htmlspecialchars($this->request->getParam('email')); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="password">Password [password]:</label>
+		<div class="col-sm-10">
+			<input type="password" name="password" class="form-control"
+				id="password" placeholder="Enter password"
+				value="<?php echo htmlspecialchars($this->request->getParam('password')); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="latitude">Latitude [latitude]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="latitude" class="form-control"
+				id="latitude" placeholder="Enter center latitude"
+				value="<?php echo $this->request->getParam('latitude'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="longitude">Longitude [longitude]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="longitude" class="form-control"
+				id="longitude" placeholder="Enter center longitude"
+				value="<?php echo $this->request->getParam('longitude'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="street_name">Street name [street_name]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="street_name" class="form-control"
+				id="street_name" placeholder="Enter street name"
+				value="<?php echo $this->request->getParam('street_name'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="street_number">Street number [street_number]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="street_number" class="form-control"
+				id="street_number" placeholder="Enter street number"
+				value="<?php echo $this->request->getParam('street_number'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="city">City [city]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="city" class="form-control"
+				id="city" placeholder="Enter street number"
+				value="<?php echo $this->request->getParam('city'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="state">State [state]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="state" class="form-control"
+				id="state" placeholder="Enter state"
+				value="<?php echo $this->request->getParam('state'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="country">Country [country]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="country" class="form-control"
+				id="country" placeholder="Enter country"
+				value="<?php echo $this->request->getParam('country'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="zip">Zip [zip]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="zip" class="form-control"
+				id="zip" placeholder="Enter zip"
+				value="<?php echo $this->request->getParam('zip'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="timezone">Time zone [timezone]:</label>
+		<div class="col-sm-10">
+			<select name="timezone" class="form-control"
+				id="timezone">
+			<option value="">Select time zone</option>
+			<?php foreach (My_CommonUtils::$timezone as $id => $name): ?>
+			<option value="<?php echo $id; ?>"><?php echo $name; ?></option>
+			<?php endforeach; ?>
+			</select>
+		</div>
+	</div>
+	<div class="form-group">        
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="btn btn-default">Submit</button>
+		</div>
+	</div>
+</form>

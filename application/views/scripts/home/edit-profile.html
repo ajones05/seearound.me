@@ -43,24 +43,34 @@
 				infoWindowContent: function(address){
 					return userAddressTooltip(address, imagePath);
 				},
-				submit: function(dialogEvent, position, place){
+				submit: function(dialogMap,event,position,place){
 					if (latlngDistance(position,userPosition) > 0){
-						var data = place?parsePlaceAddress(place):{};
-						userAddress = place.formatted_address;
-						userPosition = position;
-						$latitude.val(position.lat());
-						$longitude.val(position.lng());
-						$('[name=street_name]', form).val(data.street_name?data.street_name:'');
-						$('[name=street_number]', form).val(data.street_number?data.street_number:'');
-						$('[name=city]', form).val(data.city?data.city:'');
-						$('[name=state]', form).val(data.state?data.state:'');
-						$('[name=country]', form).val(data.country?data.country:'');
-						$('[name=zip]', form).val(data.zip?data.zip:'');
-						map.setCenter(position);
-						marker.setPosition(position);
-						infowindow.setContent(userAddressTooltip(place.formatted_address, imagePath));
+						locationTimezone(position,function(timezone){
+							var data = place?parsePlaceAddress(place):{};
+							userAddress = place.formatted_address;
+							userPosition = position;
+							$latitude.val(position.lat());
+							$longitude.val(position.lng());
+							$('[name=street_name]', form).val(data.street_name?data.street_name:'');
+							$('[name=street_number]', form).val(data.street_number?data.street_number:'');
+							$('[name=city]', form).val(data.city?data.city:'');
+							$('[name=state]', form).val(data.state?data.state:'');
+							$('[name=country]', form).val(data.country?data.country:'');
+							$('[name=zip]', form).val(data.zip?data.zip:'');
+							$('[name=timezone]',form).val(timezone);
+							map.setCenter(position);
+							marker.setPosition(position);
+							infowindow.setContent(userAddressTooltip(place.formatted_address, imagePath));
+							$(event.target).dialog('close');
+						});
+					} else if (profileData.timezone===null) {
+						locationTimezone(position,function(timezone){
+							$('[name=timezone]',form).val(timezone);
+							$(event.target).dialog('close');
+						});
+					} else {
+						$(event.target).dialog('close');
 					}
-					$(dialogEvent.target).dialog('close');
 				}
 			});
 		});
@@ -218,6 +228,11 @@
 				?>
 			</dd>
 		</li>
+<?php if ($this->address->timezone == null): ?>
+<li><?php echo $this->profileForm->timezone; ?></li>
+<?php else: ?>
+<input type="hidden" name="timezone" value="<?php echo $this->addressForm->timezone->getValue(); ?>">
+<?php endif; ?>
 	</ul>
 	<div class="clr"></div>
 	<div class="btnBarM20">

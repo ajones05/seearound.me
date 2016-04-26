@@ -1,12 +1,12 @@
 (function($){
-var newsMap, newsMapRady = false, newsMarkers = {}, newsMarkersCluster = [],
+var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersCluster = [],
 	newsMapCircle, currentLocationMarke;
 
 	$(function(){
-		var center = new google.maps.LatLng(profileData.latitude, profileData.longitude);
+		userPosition = new google.maps.LatLng(profileData.latitude, profileData.longitude);
 
 		renderNewsMap({
-			center: center,
+			center: userPosition,
 			isListing: true
 		});
 
@@ -126,7 +126,63 @@ var newsMap, newsMapRady = false, newsMarkers = {}, newsMarkersCluster = [],
 		});
 
 		$("#locationButton").click(function(){
-			renderEditLocationDialog(function(){loadFriendNews(); });
+			editLocationDialog({
+				mapZoom: 14,
+				markerIcon: baseUrl + 'www/images/icons/icon_1.png',
+				inputPlaceholder: 'Enter address',
+				submitText: 'Use This Address',
+				defaultAddress: profileData.address,
+				center: newsMapCircle.center,
+				infoWindowContent: function(address){
+					return userAddressTooltip(address, imagePath);
+				},
+				submit: function(map, dialogEvent, position, place){
+					if (latlngDistance(position,userPosition)<=0){
+						$(dialogEvent.target).dialog('close');
+						return true;
+					}
+
+					$('html,body').animate({scrollTop:0},0);
+					map.setOptions({draggable:false,zoomControl:false});
+
+					locationTimezone(position,function(timezone){
+						var data = {
+							latitude: position.lat(),
+							longitude: position.lng(),
+							timezone: timezone
+						};
+
+						if (place){
+							data = $.extend(data, parsePlaceAddress(place));
+						}
+
+						ajaxJson({
+							url:baseUrl+'home/change-address',
+							data:data,
+							done:function(response){
+								userPosition = position;
+
+								profileData.address = place.formatted_address;
+								profileData.latitude = position.lat();
+								profileData.longitude = position.lng();
+
+								newsMap.setCenter(position);
+								newsMapCircle.changeCenter(position, 0.8);
+								currentLocationMarker.setPosition(position);
+
+								loadFriendNews();
+
+								$(dialogEvent.target).dialog('close');
+							},
+							fail:function(jqXHR, textStatus){
+								map.setOptions({draggable:true,zoomControl:true});
+								$('[name=address],[type=submit]',dialogEvent.target)
+									.attr('disabled',false);
+							}
+						});
+					});
+				}
+			});
 		});
 
 		loadFriendNews();
@@ -566,67 +622,6 @@ function updateMarkersCluster(){
 		}
 	}
 };
-
-function renderEditLocationDialog(callback){
-		editLocationDialog({
-			mapZoom: 14,
-			markerIcon: baseUrl + 'www/images/icons/icon_1.png',
-			inputPlaceholder: 'Enter address',
-			submitText: 'Use This Address',
-			defaultAddress: profileData.address,
-			center: newsMapCircle.center,
-			infoWindowContent: function(address){
-				return userAddressTooltip(address, imagePath);
-			},
-			submit: function(dialogEvent, position, place){
-				$('html,body').animate({scrollTop:0},0);
-
-				$('#map-canvas', dialogEvent.target).mask('Waiting...');
-
-				var data = {
-					latitude: position.lat(),
-					longitude: position.lng()
-				};
-
-				if (place){
-					data = $.extend(data, parsePlaceAddress(place));
-				}
-
-				$.ajax({
-					url: baseUrl + 'home/change-address',
-					data: data,
-					type: 'POST',
-					dataType: 'json',
-					beforeSend: function(jqXHR, settings){
-						$('[name=address]', dialogEvent.target);
-					}
-				}).done(function(response){
-					if (response && response.status){
-						userAddress = place.formatted_address;
-						profileData.address = place.formatted_address;
-						profileData.latitude = position.lat();
-						profileData.longitude = position.lng();
-
-						newsMap.setCenter(position);
-						newsMapCircle.changeCenter(position, 0.8);
-						currentLocationMarker.setPosition(position);
-
-						callback();
-
-						$(dialogEvent.target).dialog('close');
-					} else {
-						alert(response ? response.message : ERROR_MESSAGE);
-						$('#map-canvas', dialogEvent.target).unmask();
-						$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
-					}
-				}).fail(function(jqXHR, textStatus){
-					alert(textStatus);
-					$('#map-canvas', dialogEvent.target).unmask();
-					$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
-				});
-			}
-		});
-}
 
 /**
  * NewsMarker

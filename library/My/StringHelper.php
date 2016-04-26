@@ -91,4 +91,37 @@ class My_StringHelper
 	{
 		return (string)$value === '1' ? $single : $multiple;
 	}
+
+	/**
+	 * Removes control characters from both ends of this string
+	 * returning null if the string is empty ("") after the trim or if it is null.
+	 *
+	 * @param	string $string
+	 * @param	array $values
+	 * @return	string
+	 */
+	public static function trimToNull($string, array $values = [''])
+	{
+		return self::toNull(trim($string), $values);
+	}
+
+	/**
+	 * Returning null if the string is equals one of values.
+	 *
+	 * @param	string $string
+	 * @param	array $values
+	 * @return	string
+	 */
+	public static function toNull($string, array $values)
+	{
+		foreach ($values as $value)
+		{
+			if ($string === $value)
+			{
+				return null;
+			}
+		}
+
+		return $string;
+	}
 }

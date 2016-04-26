@@ -25,11 +25,12 @@ require.config({paths: {
 	'jquery-ui': assetsBaseUrl+'bower_components/jquery-ui/jquery-ui.min',
 	'jquery-validate': assetsBaseUrl+'bower_components/jquery-validation/dist/jquery.validate.min',
 	'textarea_autosize': assetsBaseUrl+'bower_components/textarea-autosize/src/jquery.textarea_autosize',
+	'common': assetsBaseUrl+'www/scripts/commondev',
 	'facebook-sdk': 'http://connect.facebook.net/en_US/sdk',
 	'google.maps': 'https://maps.googleapis.com/maps/api/js?v=3&libraries=places&callback=renderView_callback'
 }});
 require(['google.maps']);
-require(['jquery'], function(){
+require(['jquery', 'common'], function(){
 	$(function(){
 		if ($('body').hasClass('touch')){
 			isTouch = true;
@@ -431,35 +432,38 @@ function renderView_callback(){
 								return true;
 							}
 
-							$('html, body').animate({scrollTop: 0}, 0);
+							$('html, body').animate({scrollTop:0},0);
 							map.setOptions({draggable: false, zoomControl: false});
 
-							var data = {
-								latitude: position.lat(),
-								longitude: position.lng()
-							};
+							locationTimezone(position,function(timezone){
+								var data = {
+									latitude: position.lat(),
+									longitude: position.lng(),
+									timezone: timezone
+								};
 
-							if (place){
-								data = $.extend(data, parsePlaceAddress(place));
-							}
-
-							ajaxJson({
-								url: baseUrl + 'home/change-address',
-								data: data,
-								done: function(response){
-									user.location = location;
-									userPosition = position;
-									centerPosition = position;
-									mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
-									areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),getRadius());
-									postList_change();
-									$(event.target).dialog('close');
-								},
-								fail: function(jqXHR, textStatus){
-									map.setOptions({draggable: true, zoomControl: true});
-									$('[name=address],[type=submit]', event.target)
-										.attr('disabled', false);
+								if (place){
+									data = $.extend(data, parsePlaceAddress(place));
 								}
+
+								ajaxJson({
+									url: baseUrl+'home/change-address',
+									data:data,
+									done:function(response){
+										user.location = location;
+										userPosition = position;
+										centerPosition = position;
+										mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
+										areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),getRadius());
+										postList_change();
+										$(event.target).dialog('close');
+									},
+									fail:function(jqXHR,textStatus){
+										map.setOptions({draggable: true, zoomControl: true});
+										$('[name=address],[type=submit]', event.target)
+											.attr('disabled', false);
+									}
+								});
 							});
 						}
 					});
@@ -1380,179 +1384,6 @@ function keyCode(event){
 	return event.keyCode || event.which;
 }
 
-// TODO: require from common js
-function editLocationDialog(options){
-	var locationForm = $('<form/>').attr({autocomplete:false}).hide();
-	if (options.cancelButton===true){
-		var cancelButton=$('<input/>',{type:'button'})
-			.addClass('cancel')
-			.val('Cancel')
-			.prependTo(locationForm);
-	}
-	$('body').css({overflow: 'hidden'});
-	$('<div/>').addClass('location-dialog')
-		.append(
-			$('<div/>', {id: 'map-canvas'}),
-			$('<div/>').addClass('panel').append(
-				locationForm.append(
-					$('<input/>', {type: 'text', name: 'address', placeholder: options.inputPlaceholder}),
-					$('<input/>', {type: 'submit'}).val('').addClass('search'),
-					$('<input/>', {type: 'button'}).val(options.submitText).addClass('save')
-				)
-			)
-		)
-		.appendTo('body')
-		.dialog({
-			modal: true,
-			resizable: false,
-			drag: false,
-			width: 980,
-			height: 500,
-			dialogClass: 'dialog',
-			beforeClose: function(event, ui){
-				if (typeof options.beforeClose === 'function'){
-					options.beforeClose(event, ui);
-				}
-				$('.pac-container').remove();
-				$('body').css({overflow: 'visible'});
-				$(event.target).dialog('destroy').remove();
-			},
-			open: function(dialogEvent, ui){
-				var renderPlace=false,
-					submitInput=$('[type=submit]',locationForm),
-					locationAddress=$('[name=address]',locationForm)
-						.on('input', function(){submitInput.attr('disabled', false); }),
-					autocomplete = new google.maps.places.Autocomplete(locationAddress.get(0)),
-					geocoder = new google.maps.Geocoder();
-				var renderLocation=function(renderOpt){
-					if (typeof renderOpt.place==='undefined'){
-						return (function(){
-							geocoder.geocode({
-								latLng:renderOpt.position
-							}, function(results,status){
-								renderOpt.place=status===google.maps.GeocoderStatus.OK?
-									results[0]:false;
-								return renderLocation(renderOpt);
-							});
-						})();
-					}
-					renderPlace=renderOpt.place;
-					if (renderOpt.update){
-						var position=renderOpt.position?renderOpt.position:
-							renderPlace.geometry.location;
-						if ($.inArray('map',renderOpt.update)>=0){
-							map.setCenter(position);
-						}
-						if ($.inArray('marker',renderOpt.update)>=0){
-							marker.setPosition(position);
-						}
-					}
-					var address=renderPlace?renderPlace.formatted_address:'';
-					infowindow.setContent(options.infoWindowContent(address));
-					infowindow.open(map,marker);
-					setGoogleMapsAutocompleteValue(locationAddress.val(address),address);
-				};
-				var map = new google.maps.Map(document.getElementById('map-canvas'),{
-					zoom:options.mapZoom,
-					center:options.center,
-					draggable:false,
-					zoomControl:false,
-					scrollwheel:false,
-					disableDoubleClickZoom:true,
-					styles:[{
-						featureType:'poi',
-						stylers:[{visibility:'off'}]
-					}]
-				});
-				var marker = new google.maps.Marker({
-					position:options.center,
-					icon:options.markerIcon,
-					draggable:false
-				});
-				var infowindow = new google.maps.InfoWindow({maxWidth:220});
-				google.maps.event.addListener(map,'idle',function(){
-					marker.setMap(map);
-				});
-				google.maps.event.addListener(map,'dragstart',function(){
-					infowindow.close();
-				});
-				google.maps.event.addListener(map,'zoom_changed',function(){
-					infowindow.close();
-				});
-				google.maps.event.addListener(map,'click',function(event){
-					infowindow.close();
-					renderLocation({position:event.latLng,update:['marker']});
-				});
-				google.maps.event.addListener(marker,'dragstart',function(){
-					infowindow.close();
-				});
-				google.maps.event.addListener(marker,'dragend',function(event){
-					renderLocation({position:event.latLng});
-				});
-				geocoder.geocode({
-					latLng: options.center
-				}, function(results, status){
-					if (status==google.maps.GeocoderStatus.OK){
-						var address=results[0].formatted_address;
-						locationAddress.val(address);
-						infowindow.setContent(options.infoWindowContent(address));
-						infowindow.open(map,marker);
-						renderPlace=results[0];
-					}
-					locationForm.show();
-					map.setOptions({
-						draggable:true,
-						zoomControl:true,
-						scrollwheel:true,
-						disableDoubleClickZoom:false
-					});
-					marker.setDraggable(true);
-				});
-				google.maps.event.addListener(autocomplete,'place_changed',function(){
-					var place = autocomplete.getPlace();
-					if (!place || typeof place.geometry==='undefined'){
-						return false;
-					}
-					renderLocation({place:place,update:['map','marker']});
-				});
-				if (options.cancelButton==true){
-					cancelButton.click(function(){
-						$(dialogEvent.target).dialog('close');
-					});
-				}
-				locationForm.submit(function(e){
-					e.preventDefault();
-					if (submitInput.is(':disabled')){
-						return true;
-					}
-					var address=$.trim(locationAddress.val());
-					if (address===''){
-						locationAddress.focus();
-						return false;
-					}
-					submitInput.add(locationAddress).attr('disabled',true);
-					geocoder.geocode({
-						address:address
-					}, function(results, status){
-						var elements=locationAddress;
-						if (status===google.maps.GeocoderStatus.OK){
-							renderLocation({place:results[0],update:['map','marker']});
-							elements.add(submitInput);
-						} else {
-							alert('Sorry! We are unable to find this location.');
-							renderPlace=false;
-						}
-						elements.attr('disabled',false);
-					});
-				});
-				$('.save',locationForm).click(function(){
-					$('input',locationForm).attr('disabled',true);
-					options.submit(map,dialogEvent,marker.getPosition(),renderPlace);
-				});
-			}
-		});
-}
-
 function newPost_dialog(){
 	var newDialog = $('<div/>').addClass('post-new__dialog')
 		.append(
@@ -2125,15 +1956,6 @@ function ajaxJson(url, settings){
 		});
 
 	return jqxhr;
-}
-
-// TODO: require from common js
-function setGoogleMapsAutocompleteValue(input, value){
-	input.blur();
-	$('.pac-container .pac-item').addClass('hidden');
-	setTimeout(function(){
-		input.val(value).change();
-	}, .1);
 }
 
 // TODO: require from common js

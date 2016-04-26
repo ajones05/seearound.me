@@ -345,14 +345,17 @@ class ContactsController extends Zend_Controller_Action
 
 		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
 
+		$config = Zend_Registry::get('config_global');
 		$this->view->headScript()
 			->appendScript('var friends_count=' . $friends_count . ',' .
 				'profileData=' . json_encode([
 					'address' => Application_Model_Address::format($userAddress->toArray()),
 					'latitude' => $userAddress->latitude,
 					'longitude' => $userAddress->longitude
-				]) . ';')
-			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places')
+				]) . ',' .
+				'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
+				$config->google->maps->key)
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
 			->appendFile(My_Layout::assetUrl('www/scripts/friendlist.js', $this->view));
 

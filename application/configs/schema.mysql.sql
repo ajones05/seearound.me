@@ -45,6 +45,7 @@ ALTER TABLE `address` ADD `country` varchar(255) NULL AFTER `state`;
 ALTER TABLE `address` ADD `zip` varchar(255) NULL AFTER `country`;
 ALTER TABLE `address` DROP FOREIGN KEY `address_ibfk_1`;
 ALTER TABLE `address` DROP `user_id`;
+ALTER TABLE `address` ADD `timezone` varchar(255) NULL;
 
 --
 -- Table structure for table `user_profile`

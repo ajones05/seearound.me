@@ -181,8 +181,9 @@ class PostController extends Zend_Controller_Action
 				'image' => $this->view->baseUrl($user->getThumb('55x55')['path']),
 				'location' => [$user->latitude, $user->longitude]
 			]) . ',' .
-			'isList=true' . ',' .
-			'opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) . ';'
+			'isList=true,' .
+			'opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) . ',' .
+			'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';'
 		);
 
 		$this->view->addClass = ['posts'];

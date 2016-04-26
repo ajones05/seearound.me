@@ -109,5 +109,15 @@ class Application_Form_Profile extends Zend_Form
 				'multiOptions' => array_combine(array_merge(array(''), $years), array_merge(array('Year'), $years))
 			)
 		);
+
+        $this->addElement(
+			'select',
+			'timezone',
+			array(
+				'label' => 'Time zone',
+				'required' => false,
+				'multiOptions' => [''=>'UTC']+My_CommonUtils::$timezone
+			)
+		);
     }
 }

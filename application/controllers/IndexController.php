@@ -39,6 +39,7 @@ class IndexController extends Zend_Controller_Action
 			return true;
 		}
 
+		$config = Zend_Registry::get('config_global');
 		$login_form = new Application_Form_Login;
 		$addressForm = new Application_Form_Address;
 		$reg_form = new Application_Form_Registration;
@@ -119,10 +120,10 @@ class IndexController extends Zend_Controller_Action
 				{
 					if ($validProfile)
 					{
-						$user = $userModel->register(array_merge($data,[
+						$user = $userModel->register([
 							'Conf_code' => My_CommonUtils::generateCode(),
 							'Status' => 'inactive'
-						]));
+						]+$data);
 
 						My_Email::send(
 							$user->Email_id,
@@ -163,8 +164,10 @@ class IndexController extends Zend_Controller_Action
 		$this->view->addressForm = $addressForm;
 
 		$this->view->headScript()
-			->appendScript("	var	geolocation = " . json_encode(My_Ip::geolocation()) . ";\n")
-			->prependFile('https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places');
+			->appendScript('var	geolocation=' . json_encode(My_Ip::geolocation()) . ',' .
+				'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
+			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
+				$config->google->maps->key);
 	}
 
 	/**
