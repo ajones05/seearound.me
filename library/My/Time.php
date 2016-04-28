@@ -5,9 +5,14 @@
 class My_Time
 {
 	/**
-	 * @var	string
+	 * @const	string
 	 */
-	public static $mysqlFormat = 'Y-m-d H:i:s';
+	const SQL = 'Y-m-d H:i:s';
+
+	/**
+	 * @const	string
+	 */
+	const OUTPUT = 'F j \a\t h:ia';
 
 	/**
 	 * Converts timestamp to time ago.

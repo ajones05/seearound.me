@@ -110,7 +110,7 @@ class ContactsController extends Zend_Controller_Action
 						"sender_id" => $user->id,
 						"receiver_email" => $email,
 						"code" => $code,
-						"created" => date('y-m-d H:i:s')
+						'created' => new Zend_Db_Expr('NOW()')
 					));
 
 					My_Email::send(

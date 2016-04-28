@@ -3,7 +3,12 @@
 </h3>
 <?php if (count($this->paginator) > 0): ?>
 <div class="inboxSec">
-	<?php foreach($this->paginator as $message): ?>
+<?php
+$userTimezone = $this->user->getTimezone();
+foreach($this->paginator as $message):
+$createdAt = (new DateTime($message->created_at))
+	->setTimezone($userTimezone);
+?>
 	<ul>
 		<li id="row_<?php echo $message->id; ?>" class="message-list<?php if (!$message->is_read) echo ' highLight'; ?>">
 			<div class="main-message-wrapper">
@@ -19,7 +24,7 @@
 					</div>
 				</div>
 				<div class="message-third">
-					<span class="dateTime"><?php echo date('F j \a\t h:ia', strtotime($message->created_at)); ?></span>
+					<span class="dateTime"><?php echo $createdAt->format(My_Time::OUTPUT); ?></span>
 					<img src="<?php echo $this->baseUrl('www/images/' . ($message->is_read ? 'message_checked.png' : 'message_check.png')); ?>" />
                 </div>
 				<div class="clr"></div>

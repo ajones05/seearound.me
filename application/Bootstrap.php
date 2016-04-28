@@ -209,7 +209,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			return false;
 		}
 
-		$status->visit_time = (new DateTime)->format(DateTime::W3C);
+		$status->visit_time = new Zend_Db_Expr('NOW()');
 		$status->save();
     }
 

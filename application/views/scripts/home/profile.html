@@ -3,6 +3,8 @@ $karmaTitle = 'User posts: ' . $this->karma['post'] . '<br/>' .
 	'User posts comments: ' . $this->karma['comment'] . '<br/>' .
 	'User posts votings: ' . $this->karma['vote'] . '<br/>' .
 	'User comments on other posts: ' . $this->karma['comment_other'];
+$age = $this->profile->Birth_date ?
+	(new DateTime($this->profile->Birth_date))->diff(new DateTime())->y : null;
 ?>
 <div class="profile">
 <div class="leftCol">
@@ -52,13 +54,13 @@ $karmaTitle = 'User posts: ' . $this->karma['post'] . '<br/>' .
 		<div class="clr"></div>
     </li>
     <?php endif; ?>
+	<?php if ($age): ?>
     <li>
         <label>Age</label>
-		<?php if ($this->profile->Birth_date): ?>
-        <span><?php echo My_CommonUtils::dateConversion(strtotime($this->profile->Birth_date)); ?></span>
-		<?php endif; ?>
+        <span><?php echo $age; ?> Year<?php if ($age !== 1) echo 's'; ?></span>
 		<div class="clr"></div>
     </li>
+	<?php endif; ?>
 </ul>
 <?php if ($this->profile->id == $this->auth_id): ?>
 <div class="btnBarM20">

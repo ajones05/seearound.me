@@ -29,8 +29,23 @@ if ($canVote && !$this->is_new)
 }
 
 $link = $this->baseUrl('post/' . $this->post->id);
-$created = new Datetime($this->post->created_date);
-$createdOutput = My_Time::time_ago($this->post->created_date, array('ago' => true));
+
+
+$timeAttr = '';
+$timeVal = '';
+
+if ($this->user)
+{
+	$createdAt = new DateTime($this->post->created_date);
+	$timeVal = My_Time::time_ago($createdAt, ['ago' => true]);
+	$createdAt->setTimezone($this->user->getTimezone());
+	$timeAttr = 'title="' . $createdAt->format(My_Time::OUTPUT) . '"';
+}
+else
+{
+	$timeAttr = 'data-time="' . (new DateTime($this->post->created_date))
+		->format('c') . '"';
+}
 
 if ($this->owner)
 {
@@ -48,7 +63,8 @@ else
 <img src="<?php echo $this->baseUrl($ownerThumb['path']); ?>">
 </a>
 <a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($ownerName); ?></a>
-<a href="<?php echo $link; ?>" class="post-time" title="<?php echo $created->format('F j \a\t h:ia'); ?>"><?php echo $createdOutput; ?></a>
+<a href="<?php echo $link; ?>" class="post-time"
+<?php echo $timeAttr; ?>><?php echo $timeVal; ?></a>
 <div class="vote"<?php if (!$canVote): ?> disabled<?php endif; ?>>
 <div class="_3_copy"><?php echo $this->post->vote; ?></div>
 <div class="icon">

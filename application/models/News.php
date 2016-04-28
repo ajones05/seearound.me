@@ -314,7 +314,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
      */
     public function insert(array $data)
     {
-		$data['updated_date'] = date('Y-m-d H:i:s');
+		$data['updated_date'] = new Zend_Db_Expr('NOW()');
 
 		return parent::insert($data);
 	}
@@ -336,7 +336,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 			if ($post == null)
 			{
-				$post = $this->createRow($data);
+				$post = $this->createRow($data+[
+					'created_date' => new Zend_Db_Expr('NOW()')
+				]);
 			}
 			else
 			{
@@ -352,7 +354,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					$link->delete();
 				}
 
-				$post->setFromArray($data + ['updated_date' => new Zend_Db_Expr('NOW()')]);
+				$post->setFromArray($data+[
+					'updated_date' => new Zend_Db_Expr('NOW()')
+				]);
 			}
 
 			if ($post->image_id != null && !empty($data['delete_image']))

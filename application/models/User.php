@@ -114,7 +114,7 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 				$loginStatusModel->select()
 					->from($loginStatusModel, 'count(*) as count')
 					->where('user_id =?', $this->id)
-					->where('login_time >= "' . (new DateTime('-1 week'))->format(DateTime::W3C) . '"')
+					->where('login_time>=DATE_SUB(NOW(),INTERVAL 7 DAY)')
 			);
 
 			if ($result && $result->count > 5)
@@ -137,6 +137,16 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	public function getThumb($thumb)
 	{
 		return My_Query::getThumb($this, $thumb, 'u', true);
+	}
+
+	/**
+	 * Returns user timezone.
+	 *
+	 * @return	DateTimeZone
+	 */
+	public function getTimezone()
+	{
+		return (new DateTimeZone($this->timezone ?: 'UTC'));
 	}
 }
 

@@ -867,6 +867,14 @@ function postItem_imageDimensions(width, height){
 }
 
 function postItem_renderContent(id, postContainer){
+	if (!isLogin){
+		var postTimeContainer=$('.post-time',postContainer),
+			postTime=new Date(postTimeContainer.attr('data-time'));
+		resetTimeAgo();
+		postTimeContainer.text($.timeago(postTime))
+			.attr('title',formatOutputDate(postTime));
+	}
+
 	$('.like,.dislike', postContainer).click(function(){
 		var target = $(this),
 			vote = $('.vote', postContainer);
@@ -1331,6 +1339,13 @@ function comment_render(comment){
 			e.preventDefault();
 			guestAction();
 		});
+
+		var commentTimeContainer=$('.post-coment__date',comment),
+			commentTime=new Date(commentTimeContainer.attr('data-time'));
+		resetTimeAgo();
+		$.timeago.settings.strings.suffixAgo='';
+		commentTimeContainer.text($.timeago(commentTime))
+			.attr('title',formatOutputDate(commentTime));
 	}
 
 	$('.moreButton', comment).click(function(e){

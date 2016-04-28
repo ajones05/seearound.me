@@ -39,7 +39,7 @@ class Admin_IndexController extends Zend_Controller_Action
 		$commentsModel = new Application_Model_Comments;
 		$loginstatusModel = new Application_Model_Loginstatus;
 
-		$onlineTime = (new DateTime('-10 minutes'))->format(DateTime::W3C);
+		$onlineTime = (new DateTime('-10 minutes'))->format(My_Time::SQL);
 
 		$this->view->currentlyLoggedIn = $loginstatusModel->fetchRow(
 			$loginstatusModel->select()
@@ -48,7 +48,7 @@ class Admin_IndexController extends Zend_Controller_Action
 				->where('visit_time>="' . $onlineTime . '"')
 		);
 
-		$pastDayTime = (new DateTime('-24 hours'))->format(DateTime::W3C);
+		$pastDayTime = (new DateTime('-24 hours'))->format(My_Time::SQL);
 
 		$this->view->pastDayLoggedIn = $loginstatusModel->fetchRow(
 			$loginstatusModel->select()
@@ -68,7 +68,7 @@ class Admin_IndexController extends Zend_Controller_Action
 				->where('created_at>"' . $pastDayTime . '"')
 		);
 
-		$pastWeekTime = (new DateTime('-1 week'))->format(DateTime::W3C);
+		$pastWeekTime = (new DateTime('-1 week'))->format(My_Time::SQL);
 
 		$this->view->pastWeekLoggedIn = $loginstatusModel->fetchRow(
 			$loginstatusModel->select()

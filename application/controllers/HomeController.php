@@ -21,7 +21,7 @@ class HomeController extends Zend_Controller_Action
 
 			if ($status)
 			{
-				$status->logout_time = date('Y-m-d H:i:s');
+				$status->logout_time = new Zend_Db_Expr('NOW()');
 				$status->save();
 			}
 

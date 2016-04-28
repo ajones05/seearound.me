@@ -73,12 +73,10 @@ class MobileController extends Zend_Controller_Action
 
 			$user->updateToken();
 
-			$nowTime = (new DateTime)->format(DateTime::W3C);
-
 			$login_id = (new Application_Model_Loginstatus)->insert([
 				'user_id' => $user->id,
-				'login_time' => $nowTime,
-				'visit_time' => $nowTime,
+				'login_time' => new Zend_Db_Expr('NOW()'),
+				'visit_time' => new Zend_Db_Expr('NOW()'),
 				'ip_address' => $_SERVER['REMOTE_ADDR']
 			]);
 
@@ -145,12 +143,10 @@ class MobileController extends Zend_Controller_Action
 			$session = new Facebook\FacebookSession($token);
 			$user = (new Application_Model_User)->facebookAuthentication($session);
 
-			$nowTime = (new DateTime)->format(DateTime::W3C);
-
 			$login_id = (new Application_Model_Loginstatus)->insert([
 				'user_id' => $user->id,
-				'login_time' => $nowTime,
-				'visit_time' => $nowTime,
+				'login_time' => new Zend_Db_Expr('NOW()'),
+				'visit_time' => new Zend_Db_Expr('NOW()'),
 				'ip_address' => $_SERVER['REMOTE_ADDR']
 			]);
 
@@ -231,14 +227,12 @@ class MobileController extends Zend_Controller_Action
 				array('template' => 'ws-registration')
 			);
 
-			$nowTime = (new DateTime)->format(DateTime::W3C);
-
-			$login_id = (new Application_Model_Loginstatus)->insert(array(
+			$login_id = (new Application_Model_Loginstatus)->insert([
 				'user_id' => $user->id,
-				'login_time' => $nowTime,
-				'visit_time' => $nowTime,
-				'ip_address' => $_SERVER['REMOTE_ADDR'])
-			);
+				'login_time' => new Zend_Db_Expr('NOW()'),
+				'visit_time' => new Zend_Db_Expr('NOW()'),
+				'ip_address' => $_SERVER['REMOTE_ADDR']
+			]);
 
 			$response = array(
 				'status' => 'SUCCESS',
@@ -710,7 +704,9 @@ class MobileController extends Zend_Controller_Action
 				'message' => "Message Send Successfully",
 				'result' => [
 					'id' => $conversation->id,
-					'created' => $conversation->created_at
+					'created' => (new DateTime($conversation->created_at))
+						->setTimezone($user->getTimezone())
+						->format(My_Time::SQL)
 				]
 			];
 		}
@@ -791,6 +787,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($messages))
 			{
+				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
 				{
 					$thumb = My_Query::getThumb($message, '320x320', 'u', true);
@@ -799,7 +796,9 @@ class MobileController extends Zend_Controller_Action
 						'sender_id' => $message->user_id,
 						'subject' => $message->subject,
 						'message' => $message->body,
-						'created' => $message->created_at,
+						'created' => (new DateTime($message->created_at))
+							->setTimezone($userTimezone)
+							->format(My_Time::SQL),
 						'reciever_read' => 0,
 						'Name' => $message->user_name,
 						'Email_id' => $message->user_email,
@@ -912,6 +911,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($messages))
 			{
+				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
 				{
 					$thumb = My_Query::getThumb($message, '320x320', 'u', true);
@@ -920,7 +920,9 @@ class MobileController extends Zend_Controller_Action
 						'sender_id' => $message->user_id,
 						'subject' => $message->subject,
 						'message' => $message->body,
-						'created' => $message->created_at,
+						'created' => (new DateTime($message->created_at))
+							->setTimezone($userTimezone)
+							->format(My_Time::SQL),
 						'reciever_read' => $message->is_read,
 						'Name' => $message->user_name,
 						'Email_id' => $message->user_email,
@@ -1033,6 +1035,7 @@ class MobileController extends Zend_Controller_Action
 
 			if ($messages->count())
 			{
+				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
 				{
 					$senderThumb = My_Query::getThumb($message, '320x320', 'su', true);
@@ -1040,7 +1043,9 @@ class MobileController extends Zend_Controller_Action
 					$response['result'][] = [
 						'id' => $message->id,
 						'body' => $message->body,
-						'created_at' => $message->created_at,
+						'created_at' => (new DateTime($message->created_at))
+							->setTimezone($userTimezone)
+							->format(My_Time::SQL),
 						'sender_id' => $message->sender_id,
 						'sender_name' => $message->sender_name,
 						'sender_email' => $message->sender_email,
@@ -1250,6 +1255,7 @@ class MobileController extends Zend_Controller_Action
 
 			if ($messages->count())
 			{
+				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
 				{
 					$senderThumb = My_Query::getThumb($message, '320x320', 'su', true);
@@ -1259,7 +1265,9 @@ class MobileController extends Zend_Controller_Action
 						'subject' => $message->subject,
 						'body' => $message->body,
 						'is_read' => $message->is_read,
-						'created_at' => $message->created_at,
+						'created_at' => (new DateTime($message->created_at))
+							->setTimezone($userTimezone)
+							->format(My_Time::SQL),
 						'sender_id' => $message->sender_id,
 						'sender_name' => $message->sender_name,
 						'sender_email' => $message->sender_email,
@@ -1336,7 +1344,9 @@ class MobileController extends Zend_Controller_Action
 					'user_id' => $post->user_id,
 					'news' => $post->news,
 					'created_date' => My_Time::time_ago($post->created_date),
-					'updated_date' => $post->updated_date,
+					'updated_date' => (new DateTime($post->updated_date))
+						->setTimezone($user->getTimezone())
+						->format(My_Time::SQL),
 					'latitude' => $post->latitude,
 					'longitude' => $post->longitude,
 					'Address' => Application_Model_Address::format($post) ?: $post->address,
@@ -1967,6 +1977,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($result))
 			{
+				$userTimezone = $user->getTimezone();
 				$votingTable = new Application_Model_Voting;
 
 				foreach ($result as $row)
@@ -1979,7 +1990,9 @@ class MobileController extends Zend_Controller_Action
 						'user_id' => $row->user_id,
 						'news' => $row->news,
 						'created_date' => My_Time::time_ago($row->created_date),
-						'updated_date' => $row->updated_date,
+						'updated_date' => (new DateTime($row->updated_date))
+							->setTimezone($userTimezone)
+							->format(My_Time::SQL),
 						'isdeleted' => $row->isdeleted,
 						'isflag' => $row->isflag,
 						'isblock' => $row->isblock,
@@ -2100,6 +2113,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($result))
 			{
+				$userTimezone = $user->getTimezone();
 				$votingTable = new Application_Model_Voting;
 
 				foreach ($result as $row)
@@ -2112,7 +2126,9 @@ class MobileController extends Zend_Controller_Action
 						'user_id' => $row->user_id,
 						'news' => $row->news,
 						'created_date' => My_Time::time_ago($row->created_date),
-						'updated_date' => $row->updated_date,
+						'updated_date' => (new DateTime($row->updated_date))
+							->setTimezone($userTimezone)
+							->format(My_Time::SQL),
 						'isdeleted' => $row->isdeleted,
 						'isflag' => $row->isflag,
 						'isblock' => $row->isblock,
@@ -2220,6 +2236,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($comments))
 			{
+				$userTimezone = $user->getTimezone();
 				foreach ($comments as $comment)
 				{
 					// TODO: merge
@@ -2233,7 +2250,9 @@ class MobileController extends Zend_Controller_Action
                         'user_id' => $owner->id,
                         'Profile_image' => $this->view->serverUrl() .
 							$this->view->baseUrl($owner->getThumb('320x320')['path']),
-                        'commTime' => $comment->created_at,
+						'commTime' => (new DateTime($comment->created_at))
+							->setTimezone($userTimezone)
+							->format(My_Time::SQL),
                         'totalComments' => $post->comment
 					];
 				}
@@ -2311,7 +2330,9 @@ class MobileController extends Zend_Controller_Action
 					'user_id' => $user->id,
 					'Profile_image' => $this->view->serverUrl() .
 						$this->view->baseUrl($user->getThumb('320x320')['path']),
-					'commTime' => $comment->created_at,
+					'commTime' => (new DateTime($comment->created_at))
+						->setTimezone($user->getTimezone())
+						->format(My_Time::SQL),
 					'totalComments' => $news->comment
 				]
 			];
@@ -2454,7 +2475,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$user->is_admin && $userVote)
 			{
-				$userVote->updated_at = (new DateTime)->format(My_Time::$mysqlFormat);
+				$userVote->updated_at = new Zend_Db_Expr('NOW()');
 				$userVote->canceled = 1;
 				$userVote->save();
 
@@ -2539,7 +2560,7 @@ class MobileController extends Zend_Controller_Action
 			$response = ['status' => 'SUCCESS'];
 
 			$maxDate = (new DateTime)->modify('-15 days')->setTime(0, 0)
-				->format('Y-m-d H:i:s');
+				->format(My_Time::SQL);
 			$db = Zend_Db_Table::getDefaultAdapter();
 
 			$select1 = $db->select();
@@ -2618,6 +2639,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($result))
 			{
+				$userTimezone = $user->getTimezone();
 				$typeId = [];
 
 				foreach ($result as $row)
@@ -2627,7 +2649,9 @@ class MobileController extends Zend_Controller_Action
 						'id' => $row['id'],
 						'type' => $row['type'],
 						'is_read' => $row['is_read'],
-						'created_at' => $row['created_at'],
+						'created_at' => (new DateTime($row['created_at']))
+							->setTimezone($userTimezone)
+							->format(My_Time::SQL),
 						'user_id' => $row['user_id'],
 						'user_name' => $row['user_name'],
 						'user_image' => $this->view->serverUrl() .

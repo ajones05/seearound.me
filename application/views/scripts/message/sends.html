@@ -3,13 +3,18 @@
 </h3>
 <?php if (count($this->paginator) > 0): ?>
 <div class="inboxSec">
-	<?php foreach($this->paginator as $message): ?>
+<?php
+$userTimezone = $this->user->getTimezone();
+foreach($this->paginator as $message):
+$createdAt = (new DateTime($message->created_at))
+	->setTimezone($userTimezone);
+?>
 	<ul>
         <li id="row_<?php echo $message->id; ?>" class="message-list<?php if ($message->is_read) echo ' highLight'; ?>">
 			<div>
 				<span class="subject"><?php echo $message->subject; ?></span>
 				<span class="name">(<?php echo $message->user_name; ?>)</span>
-				<span class="dateTime"><?php echo date('F j \a\t h:ia', strtotime($message->created_at)); ?></span>
+				<span class="dateTime"><?php echo $createdAt->format(My_Time::OUTPUT); ?></span>
 				<div class="clr"></div>
 			</div>
         </li>

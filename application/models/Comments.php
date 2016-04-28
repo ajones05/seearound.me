@@ -34,18 +34,6 @@ class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
 
 		return $output;
 	}
-
-    /**
-     * Saves the properties to the database.
-     *
-     * @return mixed The primary key value(s), as an associative array if the
-     *     key is compound, or a scalar if the key is single-column.
-     */
-	public function save()
-	{
-		$this->updated_at = date('Y-m-d H:i:s');
-		return parent::save();
-	}
 }
 
 class Application_Model_Comments extends Zend_Db_Table_Abstract
@@ -237,6 +225,8 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		$row = $this->createRow($form->getValues());
 		$row->user_id = $user->id;
 		$row->news_id = $news->id;
+		$row->created_at = new Zend_Db_Expr('NOW()');
+		$row->updated_at = new Zend_Db_Expr('NOW()');
 		$row->save();
 
 		$news->comment++;
@@ -255,6 +245,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 	public function deleteRow(Application_Model_CommentsRow $comment, Application_Model_NewsRow $news)
 	{
 		$comment->isdeleted = 1;
+		$comment->updated_at = new Zend_Db_Expr('NOW()');
 		$comment->save();
 
 		$news->comment--;

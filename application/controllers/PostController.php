@@ -807,7 +807,7 @@ class PostController extends Zend_Controller_Action
 
 			if (!$user->is_admin && $userVote)
 			{
-				$userVote->updated_at = (new DateTime)->format(My_Time::$mysqlFormat);
+				$userVote->updated_at = new Zend_Db_Expr('NOW()');
 				$userVote->canceled = 1;
 				$userVote->save();
 

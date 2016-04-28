@@ -181,18 +181,21 @@ class MessageController extends Zend_Controller_Action
 
 			if ($messagesCount)
 			{
+				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
 				{
-					$response['reply'][] = array(
+					$response['reply'][] = [
 						'receiver_id' => $message->to_id,
 						'receiver_read' => $message->is_read,
 						'reply_text' => $message->body,
-						'created' => date('F j \a\t h:ia', strtotime($message->created_at)),
-						'sender' => array(
+						'created' => (new DateTime($message->created_at))
+							->setTimezone($userTimezone)
+							->format(My_Time::OUTPUT),
+						'sender' => [
 							'name' => $message->user_name,
 							'image' => $this->view->baseUrl(My_Query::getThumb($message, '55x55', 'u', true)['path'])
-						)
-					);
+						]
+					];
 
 					if ($message->to_id == $user->id)
 					{
@@ -360,19 +363,22 @@ class MessageController extends Zend_Controller_Action
 				'body' => $body,
 			));
 
-			$response = array(
+			$createdAt = (new DateTime($message->created_at))
+				->setTimezone($user->getTimezone());
+
+			$response = [
 				'status' => 1,
-				'message' => array(
+				'message' => [
 					'receiver_id' => $message->to_id,
 					'receiver_read' => 0,
 					'reply_text' => $body,
-					'created' => date('F j \a\t h:ia', strtotime($message->created_at)),
-					'sender' => array(
+					'created' => $createdAt->format(My_Time::OUTPUT),
+					'sender' => [
 						'name' => $user->Name,
 						'image' => $this->view->baseUrl($user->getThumb('55x55')['path'])
-					)
-				)
-			);
+					]
+				]
+			];
 		}
 		catch (Exception $e)
 		{
