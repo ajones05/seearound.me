@@ -32,4 +32,23 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 			'refColumns' => 'id'
 		]
 	];
+
+	/**
+	 * Finds row by link.
+	 *
+	 * @param	string	$link
+	 * @return	mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
+	 */
+	public function findByLink($link)
+	{
+		$result = $this->fetchRow(
+			$this->select()
+				->setIntegrityCheck(false)
+				->from(['l' => 'news_link'], 'l.*')
+				->where('l.link LIKE ?', $link)
+				->join(['p' => 'news'], 'p.id=l.news_id', '')
+				->where('p.isdeleted=0')
+		);
+		return $result;
+	}
 }

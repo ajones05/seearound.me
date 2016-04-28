@@ -1484,30 +1484,59 @@ function newPost_dialog(){
 				).submit(function(e){
 					e.preventDefault();
 
-					var bodyField = $('textarea', newDialog);
-					if ($.trim(bodyField.val()) === ''){
+					var bodyField = $('textarea', newDialog),
+						body = bodyField.val();
+					if ($.trim(body) === ''){
 						bodyField.focus();
 						return false;
 					}
 
 					$('textarea,input', newDialog).attr('disabled', true);
 
-					editLocationDialog({
-						mapZoom: 14,
-						markerIcon: assetsBaseUrl+'www/images/icons/icon_1.png',
-						inputPlaceholder: 'Enter address',
-						submitText: 'Post from here',
-						cancelButton: true,
-						center: centerPosition,
-						infoWindowContent: function(address){
-							return userAddressTooltip(address, user.image);
+					ajaxJson({
+						url: baseUrl+'post/before-save',
+						data: {body:body},
+						done: function(response){
+							if (response.post_id){
+								$('<div/>').appendTo('body')
+									.text('Another user has already shared that same link: '+
+										'do you want to see that post?')
+									.dialog({
+										width: 450,
+										modal:true,
+										buttons: [{
+											text:'Cancel',
+											click:function(){
+												$(this).dialog('close');
+											}
+										},{
+											text:'See post',
+											id:'view-post',
+											click:function(){return true; }
+										},{
+											text:'Post anyway',
+											click:function(){
+												newPost_addressDialog(newDialog);
+												$(this).dialog('close');
+											}
+										}],
+										beforeClose: function(event, ui){
+											$('textarea,input', newDialog).attr('disabled',false);
+											$(event.target).dialog('destroy').remove();
+										},
+										open:function(event,ui){
+											$('#view-post').wrap($('<a/>',{
+												href:baseUrl+'post/'+response.post_id,
+												target:'_blank'
+											}));
+										}
+									});
+							} else {
+								newPost_addressDialog(newDialog);
+							}
 						},
-						beforeClose: function(event, ui){
+						fail: function(){
 							$('textarea,input', newDialog).attr('disabled', false);
-						},
-						submit: function(map, dialogEvent, position, place){
-							map.setOptions({draggable: false, zoomControl: false});
-							newPost_save(position,place);
 						}
 					});
 				})
@@ -1515,6 +1544,27 @@ function newPost_dialog(){
 		.appendTo('body')
 		.fadeIn(150);
 	$('textarea', newDialog).focus();
+}
+
+function newPost_addressDialog(dialog){
+	editLocationDialog({
+		mapZoom: 14,
+		markerIcon: assetsBaseUrl+'www/images/icons/icon_1.png',
+		inputPlaceholder: 'Enter address',
+		submitText: 'Post from here',
+		cancelButton: true,
+		center: centerPosition,
+		infoWindowContent: function(address){
+			return userAddressTooltip(address, user.image);
+		},
+		beforeClose: function(event, ui){
+			$('textarea,input',dialog).attr('disabled', false);
+		},
+		submit: function(map, dialogEvent, position, place){
+			map.setOptions({draggable: false, zoomControl: false});
+			newPost_save(position,place);
+		}
+	});
 }
 
 function newPost_save(position,place){

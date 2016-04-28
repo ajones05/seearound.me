@@ -444,6 +444,7 @@ class PostController extends Zend_Controller_Action
 
 			$data = $this->_request->getPost();
 			$postForm = new Application_Form_News;
+			$postForm->setScenario('new');
 
 			if (!$postForm->isValid($data))
 			{
@@ -579,6 +580,76 @@ class PostController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Before save post action.
+	 *
+	 * @return void
+	 */
+	public function beforeSaveAction()
+	{
+		try
+		{
+			$user = Application_Model_User::getAuth();
+
+			if ($user == null)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$data = $this->_request->getPost();
+
+			// TODO: change post body field name
+			if (isset($data['body']))
+			{
+				$data['news'] = $data['body'];
+			}
+
+			$postForm = new Application_Form_News;
+			$postForm->setScenario('before-save');
+
+			if (!$postForm->isValid($data))
+			{
+				throw new RuntimeException(
+					implode("\n", $postForm->getErrorMessages()));
+			}
+
+			$linkModel = new Application_Model_NewsLink;
+			$linkExist = null;
+
+			if (preg_match_all('/' . My_CommonUtils::$link_regex . '/', $data['body'], $linkMatches))
+			{
+				foreach ($linkMatches[6] as $key => $path)
+				{
+					$trimPath = preg_match('/\/[^\/?]+/', $path, $pathMatches) ? $pathMatches[0] : $path;
+					$linkExist = $linkModel->findByLink('%' . $linkMatches[5][$key] . $trimPath . '%');
+
+					if ($linkExist != null)
+					{
+						break;
+					}
+				}
+			}
+
+			$response = ['status' => 1];
+
+			if ($linkExist != null)
+			{
+				$response['post_id'] = $linkExist->news_id;
+			}
+		}
+		catch (Exception $e)
+		{
+			My_Log::exception($e);
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * Save post action.
 	 *
 	 * @return void
@@ -615,7 +686,9 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$data = $this->_request->getPost();
+
 			$postForm = new Application_Form_News;
+			$postForm->setScenario('save');
 
 			if (!$postForm->isValid($data))
 			{
@@ -634,6 +707,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
@@ -698,6 +772,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
@@ -749,6 +824,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
@@ -846,6 +922,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = array(
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? 
@@ -885,6 +962,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ?
@@ -1147,6 +1225,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
@@ -1186,6 +1265,7 @@ class PostController extends Zend_Controller_Action
 		}
 		catch (Exception $e)
 		{
+			My_Log::exception($e);
 			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ?

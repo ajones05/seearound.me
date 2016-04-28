@@ -7,6 +7,11 @@ use Respect\Validation\Exceptions\ValidationException;
  */
 class Application_Form_News extends Zend_Form
 {
+	/**
+	 * @var	string
+	 */
+	private $_scenario;
+
     /**
      * Initialize form (used by extending classes)
      *
@@ -15,7 +20,11 @@ class Application_Form_News extends Zend_Form
     public function init()
     {
 		$this->addElement('text', 'news');
-		$this->addElement('text', 'delete_image');
+
+		if ($this->getScenario() == 'save-mobile')
+		{
+			$this->addElement('text', 'delete_image');
+		}
     }
 
     /**
@@ -26,6 +35,7 @@ class Application_Form_News extends Zend_Form
      */
     public function isValid($data)
 	{
+		$scenario = $this->getScenario();
 		$valid = parent::isValid($data);
 
 		try
@@ -39,18 +49,22 @@ class Application_Form_News extends Zend_Form
 			$this->addErrorMessage($e->getMessage());
 		}
 
-		try
+		if ($scenario == 'save-mobile')
 		{
-			v::optional(v::intVal()->equals(1))
-				->assert(My_ArrayHelper::getProp($data, 'delete_image'));
-		}
-		catch (Exception $e)
-		{
-			$valid = false;
-			$this->addErrorMessage($e->getMessage());
+			try
+			{
+				v::optional(v::intVal()->equals(1))
+					->assert(My_ArrayHelper::getProp($data, 'delete_image'));
+			}
+			catch (Exception $e)
+			{
+				$valid = false;
+				$this->addErrorMessage($e->getMessage());
+			}
 		}
 
-		if ($valid && empty($data['delete_image']))
+		if ($valid && ($scenario == 'new' ||
+			$scenario == 'save-mobile' && empty($data['delete_image'])))
 		{
 			$upload = new Zend_File_Transfer;
 
@@ -87,5 +101,25 @@ class Application_Form_News extends Zend_Form
 		}
 
 		return $valid;
+	}
+
+	/**
+	 * Returns the scenario that this model is used in.
+	 *
+	 * @return string the scenario that this model is in.
+	 */
+	public function getScenario()
+	{
+		return $this->_scenario;
+	}
+
+	/**
+	 * Sets the scenario for the model.
+	 *
+	 * @param string $value the scenario that this model is in.
+	 */
+	public function setScenario($value)
+	{
+		$this->_scenario=$value;
 	}
 }

@@ -285,7 +285,7 @@ class My_CommonUtils
 	/**
 	 * @var	string
 	 */
-	public static $link_regex = '(((f|ht)tps?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=!;]*)';
+	public static $link_regex = '(((f|ht)tps?:\/\/.)|(www\.))([-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6})\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=!;]*)';
 
 	/**
 	 * Checks and fix link fomat.

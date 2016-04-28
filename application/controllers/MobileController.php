@@ -1431,6 +1431,7 @@ class MobileController extends Zend_Controller_Action
 
 			$data = $this->_request->getPost();
 			$postForm = new Application_Form_News;
+			$postForm->setScenario('new');
 
 			if (!$postForm->isValid($data))
 			{
@@ -1508,6 +1509,83 @@ class MobileController extends Zend_Controller_Action
 
 		$this->_logRequest($response);
 
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Before save post action.
+	 *
+	 * @return void
+	 */
+	public function beforeSavePostAction()
+	{
+		try
+		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user ID: ' .
+					var_export($user_id, true));
+			}
+
+			$data = $this->_request->getPost();
+
+			// TODO: change post body field name
+			if (isset($data['body']))
+			{
+				$data['news'] = $data['body'];
+			}
+
+			$postForm = new Application_Form_News;
+			$postForm->setScenario('before-save');
+
+			if (!$postForm->isValid($data))
+			{
+				throw new RuntimeException(
+					implode("\n", $postForm->getErrorMessages()));
+			}
+
+			$linkModel = new Application_Model_NewsLink;
+			$linkExist = null;
+
+			if (preg_match_all('/' . My_CommonUtils::$link_regex . '/', $data['body'], $linkMatches))
+			{
+				foreach ($linkMatches[6] as $key => $path)
+				{
+					$trimPath = preg_match('/\/[^\/?]+/', $path, $pathMatches) ? $pathMatches[0] : $path;
+					$linkExist = $linkModel->findByLink('%' . $linkMatches[5][$key] . $trimPath . '%');
+
+					if ($linkExist != null)
+					{
+						break;
+					}
+				}
+			}
+
+			$response = ['status' => 'SUCCESS'];
+
+			if ($linkExist != null)
+			{
+				$response['post_id'] = $linkExist->news_id;
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_logRequest($response);
 		$this->_helper->json($response);
 	}
 
@@ -1644,6 +1722,7 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$postForm = new Application_Form_News;
+			$postForm->setScenario('mobile-save');
 
 			if (!$postForm->isValid($data))
 			{
