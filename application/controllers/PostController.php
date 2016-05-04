@@ -617,10 +617,9 @@ class PostController extends Zend_Controller_Action
 
 			if (preg_match_all('/' . My_CommonUtils::$link_regex . '/', $data['body'], $linkMatches))
 			{
-				foreach ($linkMatches[6] as $key => $path)
+				foreach ($linkMatches[0] as $link)
 				{
-					$trimPath = preg_match('/\/[^\/?]+/', $path, $pathMatches) ? $pathMatches[0] : $path;
-					$linkExist = $linkModel->findByLink('%' . $linkMatches[5][$key] . $trimPath . '%');
+					$linkExist = $linkModel->findByLinkTrim($linkModel->trimLink($link));
 
 					if ($linkExist != null)
 					{

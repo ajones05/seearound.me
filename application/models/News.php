@@ -402,9 +402,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					}
 
 					$html = $info->getProvider('html');
-					$newsLink = (new Application_Model_NewsLink)->createRow([
+
+					$linkModel = new Application_Model_NewsLink;
+					$newsLink = $linkModel->createRow([
 						'news_id' => $post->id,
 						'link' => $link,
+						'link_trim' => $linkModel->trimLink($link),
 						'title' => $info->getTitle(),
 						'description' => $info->getDescription(),
 						'author' => $html->bag->get('author')

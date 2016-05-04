@@ -153,6 +153,7 @@ ALTER TABLE `news_link` DROP `image_width`;
 ALTER TABLE `news_link` DROP `image_height`;
 ALTER TABLE `news_link` ADD `image_id` INT(11) NULL;
 ALTER TABLE `news_link` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `news_link` ADD `link_trim` VARCHAR(2000) NOT NULL AFTER `link`;
 
 --
 -- Table structure for table `image`
