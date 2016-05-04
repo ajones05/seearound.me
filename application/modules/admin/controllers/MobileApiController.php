@@ -214,17 +214,6 @@ class Admin_MobileApiController extends Zend_Controller_Action
     }
 
 	/**
-	 * Edit post action.
-	 *
-	 * @return void
-	 */
-    public function editPostAction()
-    {
-		$this->view->headScript()
-			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
-    }
-
-	/**
 	 * Save post action.
 	 *
 	 * @return void
