@@ -2282,6 +2282,20 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user id: ' .
+					var_export($user_id, true));
+			}
+
 			$id = $this->_request->getPost('news_id');
 
 			if (!v::intVal()->validate($id))
