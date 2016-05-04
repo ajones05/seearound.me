@@ -20,11 +20,6 @@ class Application_Form_News extends Zend_Form
     public function init()
     {
 		$this->addElement('text', 'news');
-
-		if ($this->getScenario() == 'save-mobile')
-		{
-			$this->addElement('text', 'delete_image');
-		}
     }
 
     /**
@@ -49,12 +44,13 @@ class Application_Form_News extends Zend_Form
 			$this->addErrorMessage($e->getMessage());
 		}
 
-		if ($scenario == 'save-mobile')
+		if ($scenario == 'mobile-save')
 		{
 			try
 			{
-				v::optional(v::intVal()->equals(1))
-					->assert(My_ArrayHelper::getProp($data, 'delete_image'));
+				$value = My_ArrayHelper::getProp($data, 'delete_image');
+				v::optional(v::intVal()->equals(1))->assert($value);
+				$this->addElement('text', 'delete_image', ['value' => $value]);
 			}
 			catch (Exception $e)
 			{
@@ -64,7 +60,7 @@ class Application_Form_News extends Zend_Form
 		}
 
 		if ($valid && ($scenario == 'new' ||
-			$scenario == 'save-mobile' && empty($data['delete_image'])))
+			$scenario == 'mobile-save' && empty($data['delete_image'])))
 		{
 			$upload = new Zend_File_Transfer;
 
