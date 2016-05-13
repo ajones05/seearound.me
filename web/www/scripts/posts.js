@@ -1456,7 +1456,7 @@ function newPost_dialog(){
 										return false;
 									}
 
-									var imageContainer=$('<div/>').addClass('image');
+									var imageContainer=$('<div/>');
 									if (typeof window.FileReader !== 'undefined'){
 										var reader=new FileReader();
 										reader.onload=function(e){
@@ -1467,7 +1467,7 @@ function newPost_dialog(){
 									} else {
 										imageContainer.html($(this).val());
 									}
-									$(this).parent().prepend(imageContainer
+									$(this).parent().prepend($('<div/>').addClass('image').append(imageContainer
 										.append(
 											$('<img/>').addClass('delete')
 												.attr({width:12,height:12,
@@ -1477,7 +1477,7 @@ function newPost_dialog(){
 													$('[type=file]',newDialog).val('');
 												})
 										)
-									);
+									));
 								}),
 							$('<input/>').attr({type:'submit'}).val('Post')
 						)

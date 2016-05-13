@@ -389,12 +389,14 @@ body.touch .posts-container .posts {
 	padding: 0;
 }
 .post-new__dialog .image {
-    word-wrap: break-word;
 	float: left;
 	width: 180px;
 	margin-bottom: 10px;
-	position: relative;
 	text-align: center;
+}
+.post-new__dialog .image > div {
+	display: inline-block;
+	position: relative;
 }
 .post-new__dialog .image img.preview {
 	max-width: 190px;
