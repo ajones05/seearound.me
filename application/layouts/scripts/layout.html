@@ -10,7 +10,7 @@ if ($auth)
 }
 else
 {
-	$image = My_ArrayHelper::getProp($config, 'user.thumb.55x55.path')->path;
+	$image = My_ArrayHelper::getProp($config, 'user.thumb.55x55.path');
 }
 
 $geoip = My_Ip::geolocation();
