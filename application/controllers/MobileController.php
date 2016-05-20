@@ -1557,7 +1557,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (preg_match_all('/' . My_CommonUtils::$link_regex . '/', $data['body'], $linkMatches))
 			{
-				foreach ($linkMatches[0] as $path)
+				foreach ($linkMatches[0] as $link)
 				{
 					$linkExist = $linkModel->findByLinkTrim($linkModel->trimLink($link));
 
