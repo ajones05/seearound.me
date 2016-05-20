@@ -526,6 +526,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	protected function mostInterestingOrder($order='DESC')
 	{
 		return '((news.vote+news.comment+1)/' .
-			'((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+30)^1.1))*10000 ' . $order;
+			'((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+1)^1.4))*10000 ' . $order;
 	}
 }
