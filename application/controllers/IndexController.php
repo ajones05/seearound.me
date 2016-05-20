@@ -16,9 +16,9 @@ class IndexController extends Zend_Controller_Action
      */
 	public function init()
 	{
-		if (count(Zend_Auth::getInstance()->getIdentity()) > 0)
+		if (Zend_Auth::getInstance()->hasIdentity())
 		{
-			$this->_redirect($this->view->baseUrl('/'));
+			$this->_redirect('/');
 		}
 
 		parent::init();
@@ -40,7 +40,7 @@ class IndexController extends Zend_Controller_Action
 		}
 
 		$config = Zend_Registry::get('config_global');
-		$login_form = new Application_Form_Login;
+		$loginForm = new Application_Form_Login;
 		$addressForm = new Application_Form_Address;
 		$reg_form = new Application_Form_Registration;
         $reg_form->addElement(
@@ -63,10 +63,10 @@ class IndexController extends Zend_Controller_Action
 
 			if ($this->_request->get('isLogin'))
 			{
-				if ($login_form->isValid($data))
+				if ($loginForm->isValid($data))
 				{
-					$user = $userModel->findByEmail($login_form->email->getValue());
-					$password = $login_form->password->getValue();
+					$user = $userModel->findByEmail($loginForm->email->getValue());
+					$password = $loginForm->password->getValue();
 
 					// TODO: password_verify($password, $user->password_hash)
 					if ($user && $user->Password === hash('sha256', $password))
@@ -82,31 +82,35 @@ class IndexController extends Zend_Controller_Action
 							$this->_redirect($this->view->baseUrl('index/reg-success/id/' . $user->id));
 						}
 
-						$login_id = (new Application_Model_Loginstatus)->insert(array(
+						$login_id = (new Application_Model_Loginstatus)->insert([
 							'user_id' => $user->id,
 							'login_time' => new Zend_Db_Expr('NOW()'),
 							'visit_time' => new Zend_Db_Expr('NOW()'),
-							'ip_address' => $_SERVER['REMOTE_ADDR'])
-						);
+							'ip_address' => $_SERVER['REMOTE_ADDR']
+						]);
 
-						Zend_Auth::getInstance()->getStorage()->write(array(
+						$auth = Zend_Auth::getInstance();
+						$auth->getStorage()->write([
 							'user_id' => $user->id,
 							'login_id' => $login_id
-						));
+						]);
+
+						$remember = $loginForm->remember->getValue();
+						Zend_Session::rememberMe($remember == 1 ?
+							1209600 : // 2 weeks
+							604800 // 1 week
+						);
 
 						if (date('N') == 1)
 						{
 							$user->updateInviteCount();
 						}
 
-						$remember = $login_form->remember->getValue();
-						Zend_Session::rememberMe($remember ? 0 : 604800);
-
-						$this->_redirect($this->view->baseUrl('/'));
+						$this->_redirect('/');
 					}
 					else
 					{
-						$login_form->addError('Incorrect user email or password');
+						$loginForm->addError('Incorrect user email or password');
 					}
 				}
 			}
@@ -158,7 +162,7 @@ class IndexController extends Zend_Controller_Action
 		}
 
 		$this->view->layout()->setLayout('login');
-		$this->view->login_form = $login_form;
+		$this->view->login_form = $loginForm;
 		$this->view->reg_form = $reg_form;
 		$this->view->addressForm = $addressForm;
 
