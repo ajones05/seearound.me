@@ -1,3 +1,6 @@
+<?php
+$type = $this->request->getParam('type');
+?>
 <h2>mobile/notification-read</h2>
 <ol class="breadcrumb">
 	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
@@ -31,10 +34,10 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilenotifi
 		<div class="col-sm-10">
 			<select class="form-control" id="type" name="type">
 				<option value="">-- Select One --</option>
-				<option value="friend">friend</option>
-				<option value="message">message</option>
-				<option value="vote">vote</option>
-				<option value="comment">comment</option>
+				<option value="friend"<?php if ($type == 'friend') echo ' selected';?>>friend</option>
+				<option value="message"<?php if ($type == 'message') echo ' selected';?>>message</option>
+				<option value="vote"<?php if ($type == 'vote') echo ' selected';?>>vote</option>
+				<option value="comment"<?php if ($type == 'comment') echo ' selected';?>>comment</option>
 			</select>
 		</div>
 	</div>
