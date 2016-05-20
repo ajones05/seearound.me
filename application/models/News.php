@@ -414,9 +414,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						'news_id' => $post->id,
 						'link' => $link,
 						'link_trim' => $linkModel->trimLink($link),
-						'title' => $info->getTitle(),
-						'description' => $info->getDescription(),
-						'author' => $html->bag->get('author')
+						'title' => strip_tags($info->getTitle()),
+						'description' => strip_tags($info->getDescription()),
+						'author' => strip_tags($html->bag->get('author'))
 					]);
 
 					$opengraph = $info->getProvider('opengraph');
