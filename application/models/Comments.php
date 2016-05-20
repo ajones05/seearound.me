@@ -66,11 +66,16 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
 	protected $_referenceMap = array(
-		'User' => array(
+		'User' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'user_id'
-        )
+        ],
+		'News' => [
+			'columns' => 'news_id',
+			'refTableClass' => 'Application_Model_News',
+			'refColumns' => 'id'
+        ]
     );
 
 	public static function getInstance() {

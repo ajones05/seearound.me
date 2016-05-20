@@ -2652,7 +2652,6 @@ class MobileController extends Zend_Controller_Action
 			if (count($result))
 			{
 				$userTimezone = $user->getTimezone();
-				$typeId = [];
 
 				foreach ($result as $row)
 				{
@@ -2693,37 +2692,158 @@ class MobileController extends Zend_Controller_Action
 					}
 
 					$response['result'][] = $data;
-
-					if (!$row['is_read'])
-					{
-						$typeId[$row['type']][] = $row['id'];
-					}
-				}
-
-				if (!empty($typeId['friend']))
-				{
-					$db->update('friends', ['notify' => 1],
-						'id IN(' . implode(',', $typeId['friend']) . ')');
-				}
-
-				if (!empty($typeId['message']))
-				{
-					$db->update('conversation_message', ['is_read' => 1],
-						'id IN(' . implode(',', $typeId['message']) . ')');
-				}
-
-				if (!empty($typeId['vote']))
-				{
-					$db->update('votings', ['is_read' => 1],
-						'id IN(' . implode(',', $typeId['vote']) . ')');
-				}
-
-				if (!empty($typeId['comment']))
-				{
-					$db->update('comments', ['is_read' => 1],
-						'id IN(' . implode(',', $typeId['comment']) . ')');
 				}
 			}
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_logRequest($response);
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Set notifications read status action.
+	 *
+	 * @return void
+	 */
+	public function notificationReadAction()
+	{
+		try
+		{
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if (!Application_Model_User::checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user id: ' .
+					var_export($user_id, true));
+			}
+
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect notification ID value: ' .
+					var_export($id, true));
+			}
+
+			$type = $this->_request->getPost('type');
+
+			if (!v::stringType()->validate($type))
+			{
+				throw new RuntimeException('Incorrect notification type value: ' .
+					var_export($type, true));
+			}
+
+			switch ($type)
+			{
+				case 'friend':
+					$friendRequest = (new Application_Model_Friends)
+						->findById($id);
+
+					if ($friendRequest == null)
+					{
+						throw new RuntimeException('Incorrect friend request ID: ' .
+							var_export($id, true));
+					}
+
+					if ($user_id != $friendRequest->reciever_id)
+					{
+						throw new RuntimeException('You are not authorized to access this action');
+					}
+
+					$friendRequest->notify = 1;
+					$friendRequest->save();
+					break;
+				case 'message':
+					$message = (new Application_Model_ConversationMessage)
+						->findById($id);
+
+					if ($message == null)
+					{
+						throw new RuntimeException('Incorrect message ID: ' .
+							var_export($id, true));
+					}
+
+					if ($user_id != $message->to_id)
+					{
+						throw new RuntimeException('You are not authorized to access this action');
+					}
+
+					$message->is_read = 1;
+					$message->save();
+					break;
+				case 'vote':
+					$vote = (new Application_Model_Voting)
+						->findById($id);
+
+					if ($vote == null)
+					{
+						throw new RuntimeException('Incorrect vote ID: ' .
+							var_export($id, true));
+					}
+
+					$post = $vote->findParentRow('Application_Model_News');
+
+					if ($post->isdeleted == 1)
+					{
+						throw new RuntimeException('Incorrect vote ID: ' .
+							var_export($id, true));
+					}
+
+					if ($user_id == $vote->user_id || $user_id != $post->user_id)
+					{
+						throw new RuntimeException('You are not authorized to access this action');
+					}
+
+					$vote->is_read = 1;
+					$vote->save();
+					break;
+				case 'comment':
+					$comment = (new Application_Model_Comments)
+						->findById($id, 0);
+
+					if ($comment == null)
+					{
+						throw new RuntimeException('Incorrect comment ID: ' .
+							var_export($id, true));
+					}
+
+					$post = $comment->findParentRow('Application_Model_News');
+
+					if ($post->isdeleted == 1)
+					{
+						throw new RuntimeException('Incorrect comment ID: ' .
+							var_export($id, true));
+					}
+
+					if ($user_id == $comment->user_id || $user_id != $post->user_id)
+					{
+						throw new RuntimeException('You are not authorized to access this action');
+					}
+
+					$comment->is_read = 1;
+					$comment->save();
+					break;
+				default:
+					throw new RuntimeException('Incorrect notification type: ' .
+						var_export($type, true));
+			}
+
+			$response = ['status' => 'SUCCESS'];
 		}
 		catch (Exception $e)
 		{

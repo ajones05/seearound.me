@@ -8,6 +8,24 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 	protected $_name = 'votings';
 
 	/**
+	 * @var	array
+	 */
+    protected $_dependentTables = [
+		'Application_Model_News'
+	];
+
+	/**
+	 * @var	array
+	 */
+	protected $_referenceMap = [
+		'News' => [
+			'columns' => 'news_id',
+			'refTableClass' => 'Application_Model_News',
+			'refColumns' => 'id'
+        ]
+    ];
+
+	/**
 	 * Saves voting data.
 	 *
 	 * @param	integer $vote
@@ -68,5 +86,20 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 		}
 
 		return $user->is_admin ? true : $user->id != $post->user_id;
+	}
+
+	/**
+	 * Finds record by ID.
+	 *
+	 * @param	integer $id
+	 * return	mixed If success Zend_Db_Table_Row, otherwise NULL
+	 */
+	public function findById($id)
+	{
+		$model = new self;
+		$result = $model->fetchRow(
+			$model->select()->where('id=?', $id)
+		);
+		return $result;
 	}
 }

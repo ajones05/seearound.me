@@ -174,4 +174,19 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 
 		return 0;
 	}
+
+	/**
+	 * Finds record by ID.
+	 *
+	 * @param	integer $id
+	 * return	mixed If success Zend_Db_Table_Row, otherwise NULL
+	 */
+	public function findById($id)
+	{
+		$model = new self;
+		$result = $model->fetchRow(
+			$model->select()->where('id=?', $id)
+		);
+		return $result;
+	}
 }

@@ -98,7 +98,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
     protected $_dependentTables = [
 		'Application_Model_Address',
 		'Application_Model_Comments',
-		'Application_Model_NewsLink'
+		'Application_Model_NewsLink',
+		'Application_Model_Voting'
 	];
 
 	/**
@@ -123,6 +124,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		'Links' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_NewsLink',
+			'refColumns' => 'news_id'
+        ],
+		'Voting' => [
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_Voting',
 			'refColumns' => 'news_id'
         ]
     ];

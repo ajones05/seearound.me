@@ -333,4 +333,15 @@ class Admin_MobileApiController extends Zend_Controller_Action
 		$this->view->headScript()
 			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
     }
+
+	/**
+	 * Set user notifications read status action.
+	 *
+	 * @return void
+	 */
+    public function notificationReadAction()
+    {
+		$this->view->headScript()
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+    }
 }
