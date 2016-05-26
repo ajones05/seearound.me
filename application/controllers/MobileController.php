@@ -2622,6 +2622,7 @@ class MobileController extends Zend_Controller_Action
 			$select3->where('v.canceled=0 AND v.user_id<>?', $user->id);
 			$select3->where('v.is_read=0 OR v.created_at>?', $maxDate);
 			$select3->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
+			$select3->group(['u.id', 'n.id']);
 			My_Query::setThumbsQuery($select3, [[320, 320]], 'u');
 
 			$select4 = $db->select();
