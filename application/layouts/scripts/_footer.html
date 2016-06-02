@@ -1,10 +1,15 @@
+<?php
+$view = $request->getParam('view');
+?>
 <div class="special-footer">
 <div class="loginFtr">
 <ul>
+<?php if ($view != null): ?>
 <li>
 <a href="<?php echo $this->baseUrl('/'); ?>">Home</a>
 </li>
-<?php if ($request->getParam('view') != 'about'): ?>
+<?php endif; ?>
+<?php if ($view != 'about'): ?>
 <li>
 <a href="<?php echo $this->url(array(), 'about'); ?>">About</a>
 </li>
