@@ -144,7 +144,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		$isCount = My_ArrayHelper::getProp($options, 'count', false);
 		$addressFields = $isCount ? '' : ['address', 'latitude', 'longitude',
 			'street_name', 'street_number', 'city', 'state', 'country', 'zip'];
-		$postFields = $isCount ? ['count' => 'COUNT(news.id)'] : 'news.*';
+		$postFields = $isCount ? ['count' => 'COUNT(news.id)'] : ['news.*'];
 
 		$query = parent::select()->setIntegrityCheck(false)
 			->from('news', $postFields)
@@ -197,7 +197,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			{
 				case '0':
 					$query->where('news.user_id=?', $user->id);
-					$order[] = $this->mostInterestingOrder();
+					$order[] = $this->postScore() . ' DESC';
 					break;
 				case '1':
 					$interests = $user->parseInterests();
@@ -212,7 +212,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 						$query->where(implode(' OR ', $interests));
 					}
-					$order[] = $this->mostInterestingOrder();
+					$order[] = $this->postScore() . ' DESC';
 					break;
 				case '2':
 					$query->where('news.user_id<>?', $user->id);
@@ -222,7 +222,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					$query->where('news.user_id=f1.reciever_id)');
 					$query->orWhere('(f2.status=1');
 					$query->where('news.user_id=f2.sender_id))');
-					$order[] = $this->mostInterestingOrder();
+					$order[] = $this->postScore() . ' DESC';
 					break;
 				case '3':
 					$order[] = 'created_date DESC';
@@ -231,7 +231,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		}
 		else
 		{
-			$order[] = $this->mostInterestingOrder();
+			$order[] = $this->postScore() . ' DESC';
 		}
 
 		if (count(My_ArrayHelper::getProp($parameters, 'exclude_id', array())))
@@ -523,9 +523,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * Returns most interesting order.
 	 *
 	 */
-	protected function mostInterestingOrder($order='DESC')
+	protected function postScore()
 	{
 		return '((news.vote+news.comment+1)/' .
-			'((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+1)^1.4))*10000 ' . $order;
+			'((IFNULL(TIMESTAMPDIFF(SECOND,news.created_date,NOW()),0)+1)^1.4))*10000';
 	}
 }
