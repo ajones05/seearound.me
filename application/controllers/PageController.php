@@ -28,6 +28,7 @@ class PageController extends Zend_Controller_Action
 			throw new Exception('Incorrect view name');
 		}
 
+		$this->view->bodyClass = [$view];
 		$this->render($view);
 	}
 }

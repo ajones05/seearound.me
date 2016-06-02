@@ -20,13 +20,20 @@ $this->headScript()
 	->appendFile(My_Layout::assetUrl('www/scripts/commondev.js', $this));
 
 $this->headMeta('text/html; charset=utf-8', 'Content-Type', 'http-equiv');
+
+$bodyClass = ['page'];
+
+if (!empty($this->bodyClass))
+{
+	$bodyClass =array_merge($bodyClass, $this->bodyClass);
+}
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <?php include '_head.html'; ?>
 </head>
-<body class="page">
+<body class="<?php echo implode(' ', $bodyClass); ?>">
 	<?php include '_header.html'; ?>
 	<div align="center" class="mainContainer brdrNone">
 		<?php echo $this->layout()->content; ?>
