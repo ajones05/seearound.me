@@ -1046,7 +1046,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 body.bgRegForm,
 body.page.about {
-	background: url(../images/template/background-city.jpg) no-repeat 0px 8%; background-size: 100%;
+	background: url(../images/template/background-city.jpg) no-repeat 0px 8%; background-size: auto 100%;
 }
 
 .loginForm{ float:right; margin:0px;}
@@ -2271,7 +2271,7 @@ body.error .mainContainer > img {
 .t-and-c{
     background: rgba(0,0,0,0.3);
     width: 100%;
-    max-width: 1173px;
+    max-width: 940px;
     margin: 68px auto 50px;
     padding: 80px 30px 30px;
     border-radius: 30px;
@@ -2281,7 +2281,7 @@ body.error .mainContainer > img {
 }
 
 .t-and-c h2{
-    font-size: 34px;
+    font-size: 22x;
     width:44%;
     display: inline-block;
     vertical-align: top;
@@ -2293,12 +2293,12 @@ body.error .mainContainer > img {
 }
 
 .t-and-c h3{
-    font-size: 28px;
+    font-size: 20px;
     margin-bottom: 36px;
 }
 
 .t-and-c p{
-    font-size: 24px;
+    font-size: 16px;
     margin-bottom: 36px;
 }
 
@@ -2308,5 +2308,5 @@ body.error .mainContainer > img {
 
 .t-and-c .further-step{
     text-align: center;
-    margin-top:80px;
+    margin-top:30px;
 }
