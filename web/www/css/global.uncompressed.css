@@ -1046,7 +1046,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 body.bgRegForm,
 body.page.about {
-	background: url(../images/template/background-city.jpg) no-repeat 0px 8%; background-size: auto 100%;
+	background: url(../images/template/background-city.jpg) no-repeat 0px 8%; background-size: cover;
 }
 
 .loginForm{ float:right; margin:0px;}
@@ -2281,7 +2281,7 @@ body.error .mainContainer > img {
 }
 
 .t-and-c h2{
-    font-size: 22x;
+    font-size: 22px;
     width:44%;
     display: inline-block;
     vertical-align: top;
