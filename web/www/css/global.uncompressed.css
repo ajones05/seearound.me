@@ -2272,8 +2272,8 @@ body.error .mainContainer > img {
     background: rgba(0,0,0,0.3);
     width: 100%;
     max-width: 940px;
-    margin: 68px auto 50px;
-    padding: 80px 30px 30px;
+    margin: 30px auto 0;
+    padding: 30px 30px 1px;
     border-radius: 30px;
     color: #fff;
     font-family: Lato;
