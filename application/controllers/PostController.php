@@ -63,14 +63,25 @@ class PostController extends Zend_Controller_Action
 			->setProperty('og:title', 'SeeAround.me')
 			->setProperty('og:description', My_StringHelper::stringLimit($post->news, 155, '...'));
 
-		$thumb = $post->image_id ? My_Query::getThumb($post, '448x320', 'news') :
-			($post->link_image_id ? My_Query::getThumb($post, '448x320', 'link') :
-				My_Query::getThumb($post, '320x320', 'owner', true));
+		if ($post->image_id != null || $post->link_image_id != null)
+		{
+			$thumb = $post->image_id ? My_Query::getThumb($post, '448x320', 'news') :
+				My_Query::getThumb($post, '448x320', 'link');
+			$imagePath = $thumb['path'];
+			$imageWidth = $thumb['width'];
+			$imageHeight = $thumb['height'];
+		}
+		else
+		{
+			$imagePath = 'www/images/logo-social.png';
+			$imageWidth = 278;
+			$imageHeight = 278;
+		}
 
 		$this->view->headMeta($this->view->serverUrl() .
-			$this->view->baseUrl($thumb['path']), 'og:image', 'property')
-			->setProperty('og:image:width', $thumb['width'])
-			->setProperty('og:image:height', $thumb['height']);
+			$this->view->baseUrl($imagePath), 'og:image', 'property')
+			->setProperty('og:image:width', $imageWidth)
+			->setProperty('og:image:height', $imageHeight);
 
 		$this->view->addClass = ['post'];
 		$this->view->layout()->setLayout('posts');
@@ -924,7 +935,7 @@ class PostController extends Zend_Controller_Action
 			My_Log::exception($e);
 			$response = array(
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ? 
+				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			);
 		}
