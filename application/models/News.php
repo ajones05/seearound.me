@@ -99,7 +99,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		'Application_Model_Address',
 		'Application_Model_Comments',
 		'Application_Model_NewsLink',
-		'Application_Model_Voting'
+		'Application_Model_Voting',
+		'Application_Model_PostSocial'
 	];
 
 	/**
@@ -130,8 +131,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Voting',
 			'refColumns' => 'news_id'
-        ]
-    ];
+		],
+		'Social' => [
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_PostSocial',
+			'refColumns' => 'post_id'
+    ]
+	];
 
 	/*
      * Returns an instance of a Zend_Db_Table_Select object.
@@ -145,6 +151,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		$addressFields = $isCount ? '' : ['address', 'latitude', 'longitude',
 			'street_name', 'street_number', 'city', 'state', 'country', 'zip'];
 		$postFields = $isCount ? ['count' => 'COUNT(news.id)'] : ['news.*'];
+
+		// TODO: remove after confirm fixeng task 27
+		$postFields += ['score' => $this->postScore()];
 
 		$query = parent::select()->setIntegrityCheck(false)
 			->from('news', $postFields)
@@ -165,6 +174,21 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				'link_link' => 'link', 'link_title' => 'title', 'link_description' => 'description',
 				'link_author' => 'author', 'link_image_id' => 'image_id']);
 			My_Query::setThumbsQuery($query, [[448, 320]], 'link');
+
+			$query->joinLeft(['li' => 'image'], 'li.id=link.image_id', [
+					'link_image_path' => 'path',
+					'link_image_width' => 'width',
+					'link_image_height' => 'height'
+			]);
+		}
+
+		if (!empty($options['image']))
+		{
+			$query->joinLeft(['i' => 'image'], 'i.id=news.image_id', [
+					'image_path' => 'path',
+					'image_width' => 'width',
+					'image_height' => 'height'
+			]);
 		}
 
 		return $query;
@@ -523,7 +547,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * Returns most interesting order.
 	 *
 	 */
-	protected function postScore()
+	public function postScore()
 	{
 		return '((news.vote+news.comment+4)/' .
 			'((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+12)^1.4))*10000';

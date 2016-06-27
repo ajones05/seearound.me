@@ -32,7 +32,7 @@ CREATE TABLE `user_confirm` (
 -- Table structure for table `address`
 --
 ALTER TABLE `address` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `address` CHANGE `address` `address` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL; 
+ALTER TABLE `address` CHANGE `address` `address` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 ALTER TABLE `address` COLLATE 'utf8_general_ci';
 ALTER TABLE `address` CHANGE `Id` `id` int(10) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `address` CHANGE `latitude` `latitude` double NOT NULL;
@@ -118,7 +118,7 @@ ALTER TABLE `news` CHANGE `images` `image` TEXT CHARACTER SET latin1 COLLATE lat
 ALTER TABLE `news` DROP `news_html`;
 ALTER TABLE `news` ADD `vote` INT(11) NOT NULL DEFAULT '0' AFTER `Address`;
 ALTER TABLE `news` DROP `score`;
-ALTER TABLE `news` ADD `comment` INT(11) NOT NULL DEFAULT '0' AFTER `vote`; 
+ALTER TABLE `news` ADD `comment` INT(11) NOT NULL DEFAULT '0' AFTER `vote`;
 ALTER TABLE `news` DROP `image`;
 ALTER TABLE `news` ADD `image_id` INT(11) NULL;
 ALTER TABLE `news` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -154,6 +154,17 @@ ALTER TABLE `news_link` DROP `image_height`;
 ALTER TABLE `news_link` ADD `image_id` INT(11) NULL;
 ALTER TABLE `news_link` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE `news_link` ADD `link_trim` VARCHAR(2000) NOT NULL AFTER `link`;
+
+--
+-- Table structure for table `post_social`
+--
+CREATE TABLE `post_social` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`post_id` INT(11) NOT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`),
+	FOREIGN KEY (`post_id`) REFERENCES `news`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 --
 -- Table structure for table `image`

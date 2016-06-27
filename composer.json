@@ -4,6 +4,7 @@
 		"facebook/php-sdk-v4" : "4.0.*",
 		"respect/validation" : "1.*",
 		"mobiledetect/mobiledetectlib": "^2.8",
-		"embed/embed": "2.6.1"
+		"embed/embed": "2.6.1",
+		"wp-cli/php-cli-tools": "0.*"
 	}
 }
