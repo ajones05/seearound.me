@@ -525,7 +525,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 */
 	protected function postScore()
 	{
-		return '((news.vote+news.comment+1)/' .
-			'((IFNULL(TIMESTAMPDIFF(SECOND,news.created_date,NOW()),0)+1)^1.4))*10000';
+		return '((news.vote+news.comment+4)/' .
+			'((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+12)^1.4))*10000';
 	}
 }
