@@ -315,7 +315,7 @@ class MobileController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-	public function myfriendlistAction() 
+	public function myfriendlistAction()
 	{
 		try
 		{
@@ -824,7 +824,7 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Retrieve message conversation action.
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function messageConversationAction()
@@ -948,7 +948,7 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Conversation messages list action.
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function conversationMessageAction()
@@ -1088,7 +1088,7 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Set notificatations status action.
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function viewedAction()
@@ -1176,7 +1176,7 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Messages list action.
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function messagesAction()
@@ -1327,7 +1327,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($post_id, true));
 			}
 
-			if (!Application_Model_News::checkId($post_id, $post, ['link'=>true]))
+			if (!Application_Model_News::checkId($post_id, $post, ['link'=>true,'image'=>true]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($post_id, true));
@@ -1362,7 +1362,9 @@ class MobileController extends Zend_Controller_Action
 			if ($post->image_id)
 			{
 				$thumb = My_Query::getThumb($post, '448x320', 'news');
-				$response['post']['images'] = $this->view->serverUrl() .
+				$response['post']['image'] = $this->view->serverUrl() .
+					$this->view->baseUrl($post['image_path']);
+				$response['post']['thumb'] = $this->view->serverUrl() .
 					$this->view->baseUrl($thumb['path']);
 			}
 
@@ -1388,8 +1390,10 @@ class MobileController extends Zend_Controller_Action
 				if ($post->link_image_id != null)
 				{
 					$thumb = My_Query::getThumb($post, '448x320', 'link');
-					$response['post']['link_image'] = $this->view->serverUrl() .
+					$response['post']['link_thumb'] = $this->view->serverUrl() .
 						$this->view->baseUrl($thumb['path']);
+					$response['post']['link_image'] = $this->view->serverUrl() .
+						$this->view->baseUrl($post->link_image_path);
 				}
 			}
         }
@@ -1409,7 +1413,7 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Add news action.
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function addimobinewsAction()
@@ -1486,16 +1490,24 @@ class MobileController extends Zend_Controller_Action
 				if ($postLink->image_id != null)
 				{
 					$image = $postLink->findParentRow('Application_Model_Image');
-					$response += ['link_image' => $this->view->serverUrl() .
-						$this->view->baseUrl($image->findThumb([448, 320])->path)];
+					$response += [
+						'link_thumb' => $this->view->serverUrl() .
+							$this->view->baseUrl($image->findThumb([448, 320])->path),
+						'link_image' => $this->view->serverUrl() .
+							$this->view->baseUrl($image->path)
+					];
 				}
 			}
 
 			if ($post->image_id != null)
 			{
 				$image = $post->findDependentRowset('Application_Model_Image')->current();
-				$response += ['image' => $this->view->serverUrl() .
-					$this->view->baseUrl($image->findThumb([448, 320])->path)];
+				$response += [
+					'thumb' => $this->view->serverUrl() .
+						$this->view->baseUrl($image->findThumb([448, 320])->path),
+					'image' => $this->view->serverUrl() .
+						$this->view->baseUrl($image->path)
+				];
 			}
 		}
 		catch (Exception $e)
@@ -1686,6 +1698,8 @@ class MobileController extends Zend_Controller_Action
 			if ($post->image_id != null)
 			{
 				$image = $post->findDependentRowset('Application_Model_Image')->current();
+				$response['post']['thumb'] = $this->view->serverUrl() .
+						$this->view->baseUrl($image->findThumb([448,320])->path);
 				$response['post']['image'] = $this->view->serverUrl() .
 						$this->view->baseUrl($image->path);
 			}
@@ -1712,8 +1726,10 @@ class MobileController extends Zend_Controller_Action
 				if ($post->link_image_id != null)
 				{
 					$thumb = My_Query::getThumb($post, '448x320', 'link');
-					$response['post']['link_image'] = $this->view->serverUrl() .
+					$response['post']['link_thumb'] = $this->view->serverUrl() .
 						$this->view->baseUrl($thumb['path']);
+					$response['post']['link_image'] = $this->view->serverUrl() .
+						$this->view->baseUrl($post->link_image_path);
 				}
 			}
 		}
@@ -1795,7 +1811,7 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Edit profile action.
-	 * 
+	 *
 	 * @return	void
 	 */
     public function editProfileAction()
@@ -1930,7 +1946,7 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * List neares news action.
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function requestNearestAction()
@@ -1971,7 +1987,7 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user, ['link'=>true]);
+				->search($searchParameters + ['limit' => 15], $user, ['link'=>true,'image'=>true]);
 
 			if (count($result))
 			{
@@ -2008,8 +2024,10 @@ class MobileController extends Zend_Controller_Action
 					if ($row->image_id)
 					{
 						$thumb = My_Query::getThumb($row, '448x320', 'news');
-						$data['images'] = $this->view->serverUrl() .
+						$data['thumb'] = $this->view->serverUrl() .
 							$this->view->baseUrl($thumb['path']);
+						$data['image'] = $this->view->serverUrl() .
+							$this->view->baseUrl($row->image_path);
 					}
 
 					if ($row->link_id)
@@ -2034,8 +2052,12 @@ class MobileController extends Zend_Controller_Action
 						if ($row->link_image_id != null)
 						{
 							$thumb = My_Query::getThumb($row, '448x320', 'link');
-							$data += ['link_image' => $this->view->serverUrl() .
-								$this->view->baseUrl($thumb['path'])];
+							$data += [
+								'link_thumb' => $this->view->serverUrl() .
+									$this->view->baseUrl($thumb['path']),
+								'link_image' => $this->view->serverUrl() .
+									$this->view->baseUrl($row->link_image_path)
+							];
 						}
 					}
 
@@ -2107,7 +2129,7 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user, ['link'=>true]);
+				->search($searchParameters + ['limit' => 15], $user, ['link'=>true,'image'=>true]);
 
 			if (count($result))
 			{
@@ -2144,8 +2166,10 @@ class MobileController extends Zend_Controller_Action
 					if ($row->image_id)
 					{
 						$thumb = My_Query::getThumb($row, '448x320', 'news');
-						$data['images'] = $this->view->serverUrl() .
+						$data['thumb'] = $this->view->serverUrl() .
 							$this->view->baseUrl($thumb['path']);
+						$data['image'] = $this->view->serverUrl() .
+							$this->view->baseUrl($row->image_path);
 					}
 
 					if ($row->link_id)
@@ -2170,8 +2194,12 @@ class MobileController extends Zend_Controller_Action
 						if ($row->link_image_id != null)
 						{
 							$thumb = My_Query::getThumb($row, '448x320', 'link');
-							$data += ['link_image' => $this->view->serverUrl() .
-								$this->view->baseUrl($thumb['path'])];
+							$data += [
+								'link_thumb' => $this->view->serverUrl() .
+									$this->view->baseUrl($thumb['path']),
+								'link_image' => $this->view->serverUrl() .
+									$this->view->baseUrl($row->link_image_path)
+							];
 						}
 					}
 
@@ -2434,7 +2462,7 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Function to add like to a news.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function postLikeAction()
