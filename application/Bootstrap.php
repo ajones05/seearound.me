@@ -171,6 +171,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 	protected function _initLog()
 	{
+		if (PHP_SAPI == 'cli')
+		{
+			return null;
+		}
+
 		$options = $this->getOption('resources');
 		$logger = Zend_Log::factory($options['log']);
 		$logger->addPriority('exception', 8);
@@ -189,7 +194,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
     /**
      * Init save last visit timestamp
-     * 
+     *
      * @return void
      */
     public function _initSaveLastVisitTimestamp()
