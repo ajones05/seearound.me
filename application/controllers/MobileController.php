@@ -1585,6 +1585,7 @@ class MobileController extends Zend_Controller_Action
 			if ($linkExist != null)
 			{
 				$response['link_post_id'] = $linkExist->news_id;
+				$response['link'] = $linkExist->link;
 			}
 		}
 		catch (Exception $e)
