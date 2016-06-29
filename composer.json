@@ -5,6 +5,7 @@
 		"respect/validation" : "1.*",
 		"mobiledetect/mobiledetectlib": "^2.8",
 		"embed/embed": "2.6.1",
-		"wp-cli/php-cli-tools": "0.*"
+		"wp-cli/php-cli-tools": "0.*",
+		"j7mbo/twitter-api-php": "dev-master"
 	}
 }

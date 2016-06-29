@@ -29,6 +29,15 @@ $application = new Zend_Application(
 
 $application->bootstrap();
 
+$config = Zend_Registry::get('config_global');
+
+$twitterApi = new TwitterAPIExchange([
+	'oauth_access_token' => $config->twitter->app->oauth_access_token,
+	'oauth_access_token_secret' => $config->twitter->app->oauth_access_token_secret,
+	'consumer_key' => $config->twitter->app->consumer_key,
+	'consumer_secret' => $config->twitter->app->consumer_secret
+]);
+
 $postModel = new Application_Model_News;
 $postSocialModel = new Application_Model_PostSocial;
 
@@ -45,8 +54,12 @@ $oaklandPost = $postModel->fetchRow(
 
 if ($oaklandPost != null)
 {
+	$message = prepareContent($oaklandPost, '#Oakland');
+	$twitterApi->buildOauth('https://api.twitter.com/1.1/statuses/update.json', 'POST')
+	    ->setPostfields(['status' => $message])
+	    ->performRequest();
 	$postSocialModel->insert(['post_id' => $oaklandPost->id]);
-	echo My_Cli::success(prepareContent($oaklandPost, '#Oakland'));
+	echo My_Cli::success($message);
 }
 
 $berkeleyPost = $postModel->fetchRow(
