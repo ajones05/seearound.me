@@ -1084,8 +1084,9 @@ class PostController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
+			$limit = 30;
 			$model = new Application_Model_Comments;
-			$comments = $model->findAllByNewsId($id, $model->news_limit, $start);
+			$comments = $model->findAllByNewsId($id, $limit, $start);
 
 			$response = ['status' => 1];
 
@@ -1101,7 +1102,7 @@ class PostController extends Zend_Controller_Action
 					]);
 				}
 
-				$count = max($post->comment - ($start + $model->news_limit), 0);
+				$count = max($post->comment - ($start + $limit), 0);
 
 				if ($count > 0)
 				{

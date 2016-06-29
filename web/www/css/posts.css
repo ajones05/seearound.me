@@ -667,12 +667,6 @@ body.touch .posts-container .posts {
 	display: inline-block;
 	width: 100%;
 }
-.post-comments__more {
-	margin-bottom: 10px;	
-}
-.post-comments__more a {
-	margin-left: 27px;
-}
 .post-comment__body {
 	display: inline-block;
 	max-width: 317px;
@@ -827,7 +821,7 @@ body.touch .posts-container .posts {
 .ui-tooltip.postTooltip h4 {
 	font-size: 16px;
 	font-weight: 400;
-	color: #4276cd; 
+	color: #4276cd;
 	word-wrap: break-word;
 	margin: 0;
 }

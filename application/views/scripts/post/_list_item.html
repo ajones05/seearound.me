@@ -120,15 +120,6 @@ if ($this->post->comment)
 		));
 	}
 }
-if ($this->post->comment > $commentsLimit):
-?>
-<div class="post-comments__more">
-<a href="#">
-<img width="36" height="7" src="<?php echo $this->baseUrl("www/images/template/comment-read-more.png"); ?>" alt="more" />
-</a>
-</div>
-<?php
-endif;
 echo $this->partial('post/_comment_new.html', array(
 	'user' => $this->user,
 	'hidden' => $hideComments

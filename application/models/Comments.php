@@ -39,11 +39,6 @@ class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
 class Application_Model_Comments extends Zend_Db_Table_Abstract
 {
 	/**
-	 * @var	integer
-	 */
-	public $news_limit = 30;
-
-	/**
 	 * @var	Application_Model_Comments
 	 */
 	protected static $_instance;
@@ -84,7 +79,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 			self::$_instance = new self();
 
-		}		
+		}
 
 		return self::$_instance;
 
@@ -115,7 +110,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 				->from('comments', array('count(*) as comment_count'))
 				->where('news_id=?', $news_id)
 				->where('isdeleted =?', 0)
-		); 
+		);
 
 		if ($result)
 		{
@@ -152,7 +147,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 	public static function viewMoreLabel($count, $limit = 30)
 	{
-		$label = 'View ';
+		$label = 'Show ';
 
 		if ($count <= $limit)
 		{
@@ -206,7 +201,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		$db = self::getInstance();
 
 		$query = $db->select()->where('id =?', $id);
-		
+
 		if ($deleted !== null)
 		{
 			$query->where('isdeleted =?', $deleted);

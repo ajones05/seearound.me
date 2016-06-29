@@ -1074,9 +1074,9 @@ function postItem_renderContent(id, postContainer){
 		});
 	});
 
-	$('.view-comments,.post-comments__more a', postContainer).click(function(e){
+	$('.view-comments', postContainer).click(function(e){
 		e.preventDefault();
-		$('.view-comments,.post-comments__more', postContainer).hide();
+		$('.view-comments', postContainer).hide();
 		ajaxJson({
 			url: baseUrl+'post/comments',
 			data: {
@@ -1096,7 +1096,6 @@ function postItem_renderContent(id, postContainer){
 
 				if (response.label){
 					$('.view-comments', postContainer).html(response.label).show();
-					$('.post-comments__more', postContainer).show();
 				}
 			}
 		});
@@ -1289,9 +1288,8 @@ function postItem_renderContent(id, postContainer){
 					done: function(response){
 						e.preventDefault();
 						target.val('').css({height:''}).attr('disabled', false).focus();
-						var loadMore = $('.post-comments__more', postContainer);
-						comment_render($(response.html).insertBefore(loadMore.size() ?
-							loadMore : $('.post-comment__new', postContainer)));
+						comment_render($(response.html).insertBefore(
+							$('.post-comment__new', postContainer)));
 					},
 					fail: function(data, textStatus, jqXHR){
 						target.attr('disabled', false);
