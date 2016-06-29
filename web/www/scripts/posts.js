@@ -2,8 +2,8 @@ var isList=isList||false,isLogin=isLogin||false,isTouch=false,
 mainMap,centerPosition,areaCircle,googleMapsCustomMarker,googleMapsAreaCircle,
 userPosition,loadXhr,
 postData=postData||[],postMarkers={},postMarkersCluster={},
-defaultMinZoom=13,defaultMaxZoom=15,renderRadius=opts.radius?opts.radius:0.8,
-defaultZoom=mapZoom(),postLimit=15,groupDistance=0.018939,
+defaultMinZoom=13,defaultMaxZoom=15,renderRadius=opts.radius?opts.radius:1.5,
+defaultZoom=14,postLimit=15,groupDistance=0.018939,
 disableScroll=false,markerClick=false,
 postIcon={
 	url: assetsBaseUrl+'www/images/template/post-icon35x50.png',
@@ -299,7 +299,6 @@ function renderView_callback(){
 				});
 
 				$(window).on('resize', function(){
-					defaultZoom=mapZoom();
 					mainMap.setZoom(defaultZoom);
 					mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
 					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()), getRadius());
@@ -310,9 +309,9 @@ function renderView_callback(){
 				});
 
 				$('#slider').slider({
-					max: 1.5,
-					min: 0.5,
-					step: 0.1,
+					max: 2.0,
+					min: 0.25,
+					step: 0.05,
 					value: renderRadius,
 					slide: function(event, ui){
 						areaCircle.changeCenter(areaCircle.center, ui.value);
@@ -405,7 +404,7 @@ function renderView_callback(){
 						text = $(this).text();
 					e.preventDefault();
 					$('option', dropdown).filter(function(){
-						return $(this).text() == text; 
+						return $(this).text() == text;
 					}).prop('selected', true).change();
 					$('.dropdown-toggle span:first-child', dropdown).text(text);
 				});
@@ -1643,10 +1642,6 @@ function newPost_save(position,place){
 	});
 }
 
-function mapZoom(){
-	return window.innerWidth > 1400 ? 15 : 14;
-}
-
 function postList_change(){
 	$('html, body').animate({scrollTop: '0px'}, 300);
 	postList_reset();
@@ -2036,7 +2031,7 @@ function setCookie(name, value, days){
     var d = new Date();
     d.setTime(d.getTime() + (days * 86400000));
     document.cookie = name+'='+value+'; expires='+d.toUTCString();
-} 
+}
 
 // TODO: move to common js
 function getCookie(name){

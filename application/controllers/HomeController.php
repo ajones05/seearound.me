@@ -289,7 +289,7 @@ class HomeController extends Zend_Controller_Action
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
 				'longitude' => $this->_request->getPost('longitude'),
-				'radius' => $this->_request->getPost('radius', 0.8),
+				'radius' => $this->_request->getPost('radius', 1.5),
 				'keywords' => $this->_request->getPost('keywords'),
 			];
 

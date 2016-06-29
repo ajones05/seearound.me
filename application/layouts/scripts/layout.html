@@ -87,7 +87,7 @@ if ($this->hideRight)
 				<dd>
 					<ul style="display: none;">
 						<li>View All</li>
-						<li filter="0">Mine Only</li> 
+						<li filter="0">Mine Only</li>
 						<li filter="1">My Interests</li>
 						<li filter="2">Following</li>
 					</ul>
@@ -119,7 +119,7 @@ if ($this->hideRight)
 			<?php if (!empty($this->displayMapSlider)) { ?>
 			<div class="sliderBackground">
 				<div>
-					<span id="radious"><?php echo $request->get('radius', 0.8); ?></span>
+					<span id="radious"><?php echo $request->getParam('radius', 0.8); ?></span>
 					<span>Miles</span>
 				</div>
 				<div id="slider"></div>
@@ -134,7 +134,7 @@ if ($this->hideRight)
 		<?php include '_layout_footer.html'; ?>
 	</div>
 </div>
-<?php } else { ?>            
+<?php } else { ?>
 <?php include '_layout_footer.html'; ?>
 <?php } ?>
 </div>

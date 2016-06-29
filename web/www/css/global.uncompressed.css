@@ -1829,9 +1829,10 @@ body .link-meta .meta-content {
     background-color: #878787;
     border: medium none;
     border-radius: 5px;
-    float: left;
+    float: right;
     height: 6px;
     margin-top: 8px;
+    margin-right: 8px;
     width: 330px;
 }
 #slider .ui-slider-handle {

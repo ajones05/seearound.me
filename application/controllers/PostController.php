@@ -152,7 +152,8 @@ class PostController extends Zend_Controller_Action
 
 		$posts = (new Application_Model_News)->search(array_merge(
 			$searchParameters,
-			['limit' => 15, 'radius' => $point ? 0.018939 : 0.8]
+			['limit' => 15, 'radius' => $point ? 0.018939 :
+				My_ArrayHelper::getProp($searchParameters, 'radius', 1.5)]
 		), $user, ['link'=>true]);
 
 		if (count($posts))
@@ -238,7 +239,7 @@ class PostController extends Zend_Controller_Action
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
 				'longitude' => $this->_request->getPost('longitude'),
-				'radius' => $this->_request->getPost('radius', 0.8),
+				'radius' => $this->_request->getPost('radius', 1.5),
 				'keywords' => $this->_request->getPost('keywords'),
 				'filter' => $this->_request->getPost('filter'),
 				'start' => $this->_request->getPost('start', 0)
@@ -502,7 +503,7 @@ class PostController extends Zend_Controller_Action
 				$result = $model->search([
 					'latitude' => $address->latitude,
 					'longitude' => $address->longitude,
-					'radius' => 0.8,
+					'radius' => 1.5,
 					'limit' => 14,
 					'exclude_id' => [$post->id]
 				], $user, ['link'=>true]);

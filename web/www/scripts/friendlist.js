@@ -74,9 +74,9 @@ var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersClu
 
 		$("#slider")
 			.slider({
-				max: 1.5,
-				min: 0.5,
-				step: 0.1,
+				max: 2.0,
+				min: 0.25,
+				step: 0.05,
 				value: getRadius(),
 				animate: true
 			})

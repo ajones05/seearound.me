@@ -1972,7 +1972,7 @@ class MobileController extends Zend_Controller_Action
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
 				'longitude' => $this->_request->getPost('longitude'),
-				'radius' => $this->_request->getPost('radious', 1),
+				'radius' => $this->_request->getPost('radious', 1.5),
 				'start' => $this->_request->getPost('start', 0)
 			];
 
@@ -2107,7 +2107,7 @@ class MobileController extends Zend_Controller_Action
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
 				'longitude' => $this->_request->getPost('longitude'),
-				'radius' => $this->_request->getPost('radious', 0.8),
+				'radius' => $this->_request->getPost('radious', 1.5),
 				'keywords' => $this->_request->getPost('searchText'),
 				'filter' => $this->_request->getPost('filter'),
 				'start' => $this->_request->getPost('start', 0)

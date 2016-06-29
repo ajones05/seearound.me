@@ -77,7 +77,7 @@ class Application_Form_PostSearch extends Zend_Form
 
 		try
 		{
-			v::optional(v::floatVal()->between(0.5, 1.5))
+			v::optional(v::floatVal()->between(0.25, 2))
 				->assert(My_ArrayHelper::getProp($data, 'radius'));
 		}
 		catch (ValidationException $exception)
