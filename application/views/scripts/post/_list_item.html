@@ -57,6 +57,15 @@ else
 	$ownerName = $this->post->owner_name;
 	$ownerThumb = My_Query::getThumb($this->post, '55x55', 'owner', true);
 }
+
+// TODO: remove after confirm fixeng task 27
+$postScore = '';
+
+if ($user_id != null && $this->user->is_admin == 1)
+{
+	$postScore .= ' <span style="color:red;font-weight:bold;">[' .
+		$this->post->score . ']</span>';
+}
 ?>
 <div class="post <?php if ($this->hidden) echo ' hidden';?>" data-id="<?php echo $this->post->id; ?>">
 <a href="<?php echo $profileUrl; ?>" class="user_avatar">
@@ -64,7 +73,7 @@ else
 </a>
 <a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($ownerName); ?></a>
 <a href="<?php echo $link; ?>" class="post-time"
-<?php echo $timeAttr; ?>><?php echo $timeVal; ?></a>
+<?php echo $timeAttr; ?>><?php echo $timeVal; ?></a><?php echo $postScore; // TODO: remove after confirm fixeng task 27 ?>
 <div class="vote"<?php if (!$canVote): ?> disabled<?php endif; ?>>
 <div class="_3_copy"><?php echo $this->post->vote; ?></div>
 <div class="icon">
