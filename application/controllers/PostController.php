@@ -858,7 +858,7 @@ class PostController extends Zend_Controller_Action
 
 			if ($user == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$id = $this->_request->getPost('id');
@@ -871,7 +871,8 @@ class PostController extends Zend_Controller_Action
 
 			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
-				throw new RuntimeException('Incorrect post ID', -1);
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($id, true));
 			}
 
 			$vote = $this->_request->getPost('vote');
@@ -879,44 +880,35 @@ class PostController extends Zend_Controller_Action
 			if (!v::intVal()->oneOf(v::equals(-1),v::equals(1))->validate($vote))
 			{
 				throw new RuntimeException('Incorrect vote value: ' .
-					var_export($vote, true), -1);
+					var_export($vote, true));
 			}
 
 			$model = new Application_Model_Voting;
 
 			if (!$model->canVote($user, $post))
 			{
-				throw new RuntimeException('You cannot vote this post', -1);
+				throw new RuntimeException('You cannot vote this post');
 			}
 
 			$userVote = $model->findVote($post->id, $user->id);
 
 			if (!$user->is_admin && $userVote)
 			{
-				$userVote->updated_at = new Zend_Db_Expr('NOW()');
-				$userVote->canceled = 1;
-				$userVote->save();
-
-				if ($post->vote == 0)
-				{
-					$lastVote = $model->findVote($post->id);
-
-					if ($lastVote && $lastVote->vote)
-					{
-						$post->vote = $lastVote->vote;
-						$post->save();
-					}
-				}
-				else
-				{
-					$post->vote = max(0, $post->vote - $userVote->vote);
-					$post->save();
-				}
+				$model->cancelVote($userVote);
+				$post->vote -= $userVote->vote;
+				$updatePost = true;
 			}
 
 			if ($user->is_admin || !$userVote || $userVote->vote != $vote)
 			{
-				$model->saveVotingData($vote, $user->id, $post);
+				$model->insert([
+					'vote' => $vote,
+					'user_id' => $user->id,
+					'news_id' => $post->id
+				]);
+
+				$post->vote += $vote;
+				$updatePost = true;
 				$activeVote = $vote;
 			}
 			else
@@ -924,20 +916,25 @@ class PostController extends Zend_Controller_Action
 				$activeVote = 0;
 			}
 
-			$response = array(
+			if ($updatePost)
+			{
+				$post->save();
+			}
+
+			$response = [
 				'status' => 1,
 				'vote' => $post->vote,
 				'active' => $activeVote
-			);
+			];
 		}
 		catch (Exception $e)
 		{
 			My_Log::exception($e);
-			$response = array(
+			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_helper->json($response);

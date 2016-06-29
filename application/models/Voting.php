@@ -26,30 +26,6 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
     ];
 
 	/**
-	 * Saves voting data.
-	 *
-	 * @param	integer $vote
-	 * @param	integer $user_id
-	 * @param	Application_Model_NewsRow $news
-	 * @return	Zend_Db_Table_Abstract
-	 */
-    public function saveVotingData($vote, $user_id, Application_Model_NewsRow &$news)
-	{
-		$row = $this->createRow(array(
-			'vote' => $vote,
-			'user_id' => $user_id,
-			'news_id' => $news->id
-		));
-
-		$row->save();
-
-		$news->vote = max(0, $news->vote + $vote);
-		$news->save();
-
-		return $row;
-    }
-
-	/**
 	 * Returns vote row by user ID and post ID.
 	 *
 	 * @param	integer $post
@@ -101,5 +77,19 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 			$model->select()->where('id=?', $id)
 		);
 		return $result;
+	}
+
+	/**
+	 * Cancel vote.
+	 *
+	 * @param	Zend_Db_Table_Row $vote
+	 * return	Zend_Db_Table_Row
+	 */
+	public function cancelVote($vote)
+	{
+		$vote->updated_at = new Zend_Db_Expr('NOW()');
+		$vote->canceled = 1;
+		$vote->save();
+		return $vote;
 	}
 }
