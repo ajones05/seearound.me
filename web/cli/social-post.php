@@ -46,7 +46,7 @@ $oaklandPost = $postModel->fetchRow(
 if ($oaklandPost != null)
 {
 	$postSocialModel->insert(['post_id' => $oaklandPost->id]);
-	echo My_Cli::success('#Oakland http://www.seearound.me/post/' . $oaklandPost->id);
+	echo My_Cli::success(prepareContent($oaklandPost, '#Oakland'));
 }
 
 $berkeleyPost = $postModel->fetchRow(
@@ -63,7 +63,7 @@ $berkeleyPost = $postModel->fetchRow(
 if ($berkeleyPost != null)
 {
 	$postSocialModel->insert(['post_id' => $berkeleyPost->id]);
-	echo My_Cli::success('#Berkeley http://www.seearound.me/post/' . $berkeleyPost->id);
+	echo My_Cli::success(prepareContent($berkeleyPost, '#Berkeley'));
 }
 
 $sfPost = $postModel->fetchRow(
@@ -80,5 +80,11 @@ $sfPost = $postModel->fetchRow(
 if ($sfPost != null)
 {
 	$postSocialModel->insert(['post_id' => $sfPost->id]);
-	echo My_Cli::success('#sf http://www.seearound.me/post/' . $sfPost->id);
+	echo My_Cli::success(prepareContent($sfPost, '#sf'));
+}
+
+function prepareContent($post, $hashtag)
+{
+	return My_StringHelper::stringLimit($hashtag . ' ' . $post->news, 117, '...') .
+		' http://www.seearound.me/post/' . $post->id;
 }
