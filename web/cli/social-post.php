@@ -30,16 +30,10 @@ $application = new Zend_Application(
 $application->bootstrap();
 
 $config = Zend_Registry::get('config_global');
-
-$twitterApi = new TwitterAPIExchange([
-	'oauth_access_token' => $config->twitter->app->oauth_access_token,
-	'oauth_access_token_secret' => $config->twitter->app->oauth_access_token_secret,
-	'consumer_key' => $config->twitter->app->consumer_key,
-	'consumer_secret' => $config->twitter->app->consumer_secret
-]);
-
 $postModel = new Application_Model_News;
 $postSocialModel = new Application_Model_PostSocial;
+$baseUrl = $config->server->request_scheme . '://' .
+	$config->server->http_host;
 
 $oaklandPost = $postModel->fetchRow(
 	$postModel->publicSelect()
@@ -54,10 +48,9 @@ $oaklandPost = $postModel->fetchRow(
 
 if ($oaklandPost != null)
 {
-	$message = prepareContent($oaklandPost, '#Oakland');
-	$twitterApi->buildOauth('https://api.twitter.com/1.1/statuses/update.json', 'POST')
-	    ->setPostfields(['status' => $message])
-	    ->performRequest();
+	$message = My_StringHelper::stringLimit($oaklandPost->news, 108, '...') .
+		' ' . $baseUrl . '/post/' . $oaklandPost->id . ' #Oakland';
+	postToTwitter($message, 'oakland', $config);
 	$postSocialModel->insert(['post_id' => $oaklandPost->id]);
 	echo My_Cli::success($message);
 }
@@ -75,8 +68,11 @@ $berkeleyPost = $postModel->fetchRow(
 
 if ($berkeleyPost != null)
 {
+	$message = My_StringHelper::stringLimit($berkeleyPost->news, 107, '...') .
+		' ' . $baseUrl . '/post/' . $berkeleyPost->id . ' #Berkeley';
+	postToTwitter($message, 'berkeley', $config);
 	$postSocialModel->insert(['post_id' => $berkeleyPost->id]);
-	echo My_Cli::success(prepareContent($berkeleyPost, '#Berkeley'));
+	echo My_Cli::success($message);
 }
 
 $sfPost = $postModel->fetchRow(
@@ -92,12 +88,23 @@ $sfPost = $postModel->fetchRow(
 
 if ($sfPost != null)
 {
+	$message = My_StringHelper::stringLimit($sfPost->news, 113, '...') .
+		' ' . $baseUrl . '/post/' . $sfPost->id . ' #SF';
+	postToTwitter($message, 'sf', $config);
 	$postSocialModel->insert(['post_id' => $sfPost->id]);
-	echo My_Cli::success(prepareContent($sfPost, '#sf'));
+	echo My_Cli::success($message);
 }
 
-function prepareContent($post, $hashtag)
+function postToTwitter($message, $app, $config)
 {
-	return My_StringHelper::stringLimit($hashtag . ' ' . $post->news, 117, '...') .
-		' http://www.seearound.me/post/' . $post->id;
+	$client = new TwitterAPIExchange([
+		'oauth_access_token' => $config->twitter->{$app}->token,
+		'oauth_access_token_secret' => $config->twitter->{$app}->token_secret,
+		'consumer_key' => $config->twitter->{$app}->api_key,
+		'consumer_secret' => $config->twitter->{$app}->api_secret
+	]);
+	$response = $client->buildOauth('https://api.twitter.com/1.1/statuses/update.json', 'POST')
+	  ->setPostfields(['status' => $message])
+	  ->performRequest();
+	return $response;
 }
