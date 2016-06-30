@@ -157,8 +157,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 		$query = parent::select()->setIntegrityCheck(false)
 			->from('news', $postFields)
-			->where('news.isdeleted=0')
 			->join(['a' => 'address'], 'a.id=news.address_id', $addressFields);
+
+		if (!array_key_exists('deleted', $options) || !$options['deleted'])
+		{
+			$query->where('news.isdeleted=0');
+		}
 
 		My_Query::setThumbsQuery($query, [[448, 320], [960, 960]], 'news');
 
@@ -330,8 +334,20 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	{
 		$model = new self;
 		$join = My_ArrayHelper::getProp($options, 'join', true);
-		$query = $join ? $model->publicSelect($options) :
-			$model->select()->where('isdeleted=0');
+
+		if ($join)
+		{
+			$query = $model->publicSelect($options);
+		}
+		else
+		{
+			$query = $model->select();
+
+			if (!array_key_exists('deleted', $options) || !$options['deleted'])
+			{
+				$query->where('news.isdeleted=0');
+			}
+		}
 		$result = $model->fetchRow($query->where('news.id=?', $id));
 		return $result;
 	}

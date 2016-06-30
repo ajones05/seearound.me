@@ -1,4 +1,5 @@
-var isList=isList||false,isLogin=isLogin||false,isTouch=false,
+var isList=isList||false,isPost=typeof post !== 'undefined' ? true : false,
+isLogin=isLogin||false,isTouch=false,
 mainMap,centerPosition,areaCircle,googleMapsCustomMarker,googleMapsAreaCircle,
 userPosition,loadXhr,
 postData=postData||[],postMarkers={},postMarkersCluster={},
@@ -140,9 +141,9 @@ require(['facebook-sdk'], function(){
 });
 
 function renderView_callback(){
-	centerPosition = isList ?
-		new google.maps.LatLng(opts.latitude,opts.longitude):
-		new google.maps.LatLng(post.lat,post.lng);
+	centerPosition = isPost ?
+		new google.maps.LatLng(post.lat,post.lng):
+		new google.maps.LatLng(opts.latitude,opts.longitude);
 	mainMap = new google.maps.Map(document.getElementById('map_canvas'), {
 		zoom: isList?defaultZoom:15,
 		minZoom: defaultMinZoom,
@@ -158,6 +159,9 @@ function renderView_callback(){
 
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
 		mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
+		if (!isList && !isPost){
+			return false;
+		}
 		require(['jquery','jquery-ui'], function(){
 			require(['textarea_autosize']);
 			$(function(){

@@ -26,11 +26,28 @@ class PostController extends Zend_Controller_Action
 				var_export($id, true));
 		}
 
-		if (!Application_Model_News::checkId($id, $post, ['link'=>true]))
-        {
+		$this->view->layout()->setLayout('posts');
+		$this->view->searchForm = new Application_Form_PostSearch;
+		$this->view->user = $user;
+
+		if (!Application_Model_News::checkId($id, $post, ['link'=>true,'deleted'=>true]))
+		{
 			throw new RuntimeException('Incorrect post ID: ' .
 				var_export($id, true));
-        }
+		}
+
+		if ($post->isdeleted)
+		{
+			$this->_helper->viewRenderer->setNoRender(true);
+			$geolocation = My_Ip::geolocation();
+			$this->view->headScript()->appendScript('var opts=' . json_encode([
+					'latitude' => $geolocation[0],
+					'longitude' => $geolocation[1]
+			], JSON_FORCE_OBJECT));
+
+			echo $this->view->partial('post/_item_empty.html');
+			return true;
+		}
 
 		$ownerThumb = My_Query::getThumb($post, '55x55', 'owner', true);
 		$headScript = 'var opts=' . json_encode(['latitude' => $post->latitude,
@@ -53,9 +70,7 @@ class PostController extends Zend_Controller_Action
 			]);
 		}
 
-		$this->view->user = $user;
 		$this->view->post = $post;
-		$this->view->searchForm = new Application_Form_PostSearch;
 		$this->view->headScript()->appendScript($headScript . ';');
 		$this->view->doctype('XHTML1_RDFA');
 		$this->view->headMeta()
@@ -84,7 +99,6 @@ class PostController extends Zend_Controller_Action
 			->setProperty('og:image:height', $imageHeight);
 
 		$this->view->addClass = ['post'];
-		$this->view->layout()->setLayout('posts');
 	}
 
 	/**
