@@ -471,7 +471,7 @@ class ContactsController extends Zend_Controller_Action
 
 			$total = $this->_request->getPost('total');
 
-			if (!v::intVal()->equals(1)->validate($total))
+			if (!v::optional(v::intVal()->equals(1))->validate($total))
 			{
 				throw new RuntimeException('Incorrect total value: ' .
 					var_export($total, true));

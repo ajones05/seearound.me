@@ -302,7 +302,7 @@ function moreFriends(){
 
 			for (var x in response.friends){
 				$("#friendList").append(
-					$('<div/>', {'class': 'invtFrndList', 'id': 'user-' + response.friends[x].id}).append(
+					$('<div/>').addClass('invtFrndList').append(
 						$('<ul/>', {'class': 'invtFrndRow'}).append(
 							$('<li/>', {'class': 'img'}).append(
 								$('<a/>', {href: baseUrl + 'home/profile/user/' + response.friends[x].id}).append(
@@ -315,26 +315,29 @@ function moreFriends(){
 							),
 							$('<li/>', {'class': 'message btnCol'}).append(
 								$('<img/>', {src: baseUrl + 'www/images/envelope-icon.gif'}).click(function(){
-									userMessageDialog($(this).closest('.invtFrndList').attr('id').replace('user-', ''));
+									var userData=$(this).closest('.invtFrndList').data('user');
+									userMessageDialog(userData.id);
 								})
 							),
 							$('<li/>', {'class': 'delete btnCol'}).append(
 								$('<img/>', {src: baseUrl + 'www/images/delete-icon.png'}).click(function(){
-									if (!confirm("Are you sure to delete this friend?")){
+									if ($(this).attr('disabled')){
 										return false;
 									}
-
-									var target = $(this).closest('.invtFrndList').attr('disabled', true),
-										id = target.attr('id').replace('user-', '');
-
+									var userRow=$(this).closest('.invtFrndList'),
+										userData=userRow.data('user');
+									if (!confirm('Are you sure you want to unfollow '+userData.name+'?')){
+										return false;
+									}
+									$(this).attr('disabled',true);
 									ajaxJson({
 										url: baseUrl + 'contacts/friend',
 										data: {
-											user: id,
+											user: userData.id,
 											action: 'reject'
 										},
 										done: function(){
-											target.remove();
+											userRow.remove();
 											friends_count--;
 											loadFriendNews();
 										}
@@ -344,7 +347,10 @@ function moreFriends(){
 							$('<div/>', {'class': 'clr'})
 						),
 						$('<div/>', {'class': 'clr'})
-					),
+					).data('user', {
+							id:response.friends[x].id,
+							name:response.friends[x].name
+					}),
 					$('<div/>', {'class': 'clr'})
 				);
 
