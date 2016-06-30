@@ -7,7 +7,7 @@ $(function(){
 			appId: facebook_appId,
 			xfbml: true,
 			cookie: true,
-			version: 'v2.5'
+			version: 'v2.6'
 		});
 	};
 
