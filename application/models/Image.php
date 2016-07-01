@@ -102,18 +102,52 @@ class Application_Model_Image extends Zend_Db_Table_Abstract
 		)
 	);
 
-    /**
-     * Save image.
-     *
-     * @var Zend_Db_Table_Row_Abstract
-     */
-	public function save($path)
+  /**
+   * Save image.
+   *
+   * @param	string $path
+   * @param	string $name
+   * @param	array $thumbs
+   * @return Zend_Db_Table_Row_Abstract
+   */
+/*
+		$image->save('www/upload', $name, [
+		 [26, 26, 'thumb26x26', 2],
+		 [55, 55, 'thumb55x55', 2],
+		 [320, 320, 'uploads'],
+		]);
+*/
+	public function save($path, $name, array $thumbs=[])
 	{
-		$row = $this->createRow();
-		$row->path = $path;
-		list($row->width, $row->height) = getimagesize(ROOT_PATH_WEB . '/' . $path);
-		$row->save(true);
+		$image = $this->createRow(['path' => $path . '/' . $name]);
+		list($image->width, $image->height) =
+			getimagesize(ROOT_PATH_WEB . '/' . $image->path);
+		$image->save(true);
 
-		return $row;
+		if ($thumbs != null)
+		{
+			$createThumbs = [];
+
+			foreach ($thumbs as $thumb)
+			{
+				$createThumbs[] = [
+						$thumb[0][0], $thumb[0][1],
+						ROOT_PATH_WEB . '/' . $thumb[1] . '/' . $name,
+						My_ArrayHelper::getProp($thumb, 2)
+				];
+			}
+
+			My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path,
+				$createThumbs);
+
+			$thumbModel = new Application_Model_ImageThumb;
+
+			foreach ($thumbs as $thumb)
+			{
+				$thumbModel->save($thumb[1] . '/' . $name, $image, $thumb[0]);
+			}
+		}
+
+		return $image;
 	}
 }

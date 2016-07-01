@@ -562,22 +562,11 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 							throw new Exception('Failed to copy file ' . $pictureUrl);
 						}
 
-						$image = (new Application_Model_Image)->save('www/upload/' . $name);
-
-						$thumb26x26 = 'thumb26x26/' . $name;
-						$thumb55x55 = 'thumb55x55/' . $name;
-						$thumb320x320 = 'uploads/' . $name;
-
-						My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, [
-							[26, 26, ROOT_PATH_WEB . '/' . $thumb26x26, 2],
-							[55, 55, ROOT_PATH_WEB . '/' . $thumb55x55, 2],
-							[320, 320, ROOT_PATH_WEB . '/' . $thumb320x320]
+						$image = (new Application_Model_Image)->save('www/upload', $name, [
+							[[26,26], 'thumb26x26', 2],
+							[[55,55], 'thumb55x55', 2],
+							[[320,320], 'uploads']
 						]);
-
-						$thumbModel = new Application_Model_ImageThumb;
-						$thumbModel->save($thumb26x26, $image, [26, 26]);
-						$thumbModel->save($thumb55x55, $image, [55, 55]);
-						$thumbModel->save($thumb320x320, $image, [320, 320]);
 
 						$user->image_id = $image->id;
 					}

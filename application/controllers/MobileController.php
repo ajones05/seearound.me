@@ -199,8 +199,8 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$form = new Application_Form_Registration;
 			$data = $this->_request->getPost();
+			$form = new Application_Form_Registration;
 
 			if (!$form->isValid($data))
 			{
@@ -213,6 +213,46 @@ class MobileController extends Zend_Controller_Action
 			{
 				throw new RuntimeException(
 					implode("\n", $addressForm->getErrorMessages()));
+			}
+
+			$upload = new Zend_File_Transfer;
+			$response = ['status' => 'SUCCESS'];
+
+			if (count($upload->getFileInfo()))
+			{
+				$upload->setValidators([
+					['Extension', false, ['jpg', 'jpeg', 'png', 'gif']],
+					['MimeType', false, ['image/jpeg', 'image/png', 'image/gif']],
+					['Count', false, 1]
+				]);
+
+				if (!$upload->isValid('image'))
+				{
+					throw new RuntimeException(implode('. ', $upload->getMessages()));
+				}
+
+				$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
+
+				do
+				{
+					$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
+					$full_path = ROOT_PATH_WEB . '/www/upload/' . $name;
+				}
+				while (file_exists($full_path));
+
+				$upload->addFilter('Rename', $full_path);
+				$upload->receive();
+
+				$image = (new Application_Model_Image)->save('www/upload', $name, [
+					[[26,26], 'thumb26x26', 2],
+					[[55,55], 'thumb55x55', 2],
+					[[320,320], 'uploads']
+				]);
+
+				$data['image_id'] = $image->id;
+
+				$response['thumb'] = $this->view->serverUrl() .
+						$this->view->baseUrl('uploads/' . $name);
 			}
 
 			$user = (new Application_Model_User)->register(
@@ -234,10 +274,7 @@ class MobileController extends Zend_Controller_Action
 				'ip_address' => $_SERVER['REMOTE_ADDR']
 			]);
 
-			$response = array(
-				'status' => 'SUCCESS',
-				'login_id' => $login_id
-			);
+			$response['login_id'] = $login_id;
 		}
 		catch (Exception $e)
 		{
@@ -1863,24 +1900,13 @@ class MobileController extends Zend_Controller_Action
 							->current()->deleteImage();
 					}
 
-					$image = (new Application_Model_Image)->save('www/upload/' . $data['image']);
-					$user_data['image_id'] = $image->id;
-
-					$thumb26x26 = 'thumb26x26/' . $data['image'];
-					$thumb55x55 = 'thumb55x55/' . $data['image'];
-					$thumb320x320 = 'uploads/' . $data['image'];
-
-					My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, [
-						[26, 26, ROOT_PATH_WEB . '/' . $thumb26x26, 2],
-						[55, 55, ROOT_PATH_WEB . '/' . $thumb55x55, 2],
-						[320, 320, ROOT_PATH_WEB . '/' . $thumb320x320]
+					$image = (new Application_Model_Image)->save('www/upload', $data['image'], [
+						[[26,26], 'thumb26x26', 2],
+						[[55,55], 'thumb55x55', 2],
+						[[320,320], 'uploads']
 					]);
-
-					$thumbModel = new Application_Model_ImageThumb;
-					$thumbModel->save($thumb26x26, $image, [26, 26]);
-					$thumbModel->save($thumb55x55, $image, [55, 55]);
-					$thumb = $thumbModel->save($thumb320x320, $image, [320, 320]);
-					$profileImage = $thumb->path;
+					$user_data['image_id'] = $image->id;
+					$profileImage = 'uploads/' . $data['image'];
 				}
 				else
 				{

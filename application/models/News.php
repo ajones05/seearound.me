@@ -413,23 +413,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			}
 			elseif (!empty($data['image']))
 			{
-				$image = $imageModel->save('uploads/' . $data['image']);
+				$image = $imageModel->save('uploads', $data['image'], [
+					[[320,320], 'tbnewsimages'],
+					[[448,320], 'thumb448x320', 2],
+					[[960,960], 'newsimages']
+				]);
+
 				$post->image_id = $image->id;
-
-				$thumb320x320 = 'tbnewsimages/' . $data['image'];
-				$thumb448x320 = 'thumb448x320/' . $data['image'];
-				$thumb960x960 = 'newsimages/' . $data['image'];
-
-				My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
-					array(320, 320, ROOT_PATH_WEB . '/' . $thumb320x320),
-					array(448, 320, ROOT_PATH_WEB . '/' . $thumb448x320, 2),
-					array(960, 960, ROOT_PATH_WEB . '/' . $thumb960x960)
-				));
-
-				$thumbModel = new Application_Model_ImageThumb;
-				$thumbModel->save($thumb320x320, $image, array(320, 320));
-				$thumbModel->save($thumb448x320, $image, array(448, 320));
-				$thumbModel->save($thumb960x960, $image, array(960, 960));
 			}
 
 			$post->save();
