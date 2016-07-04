@@ -11,7 +11,8 @@ $this->headLink()
 
 $headScripts = 'var baseUrl=' . json_encode($this->serverUrl() . $this->baseUrl('/')) . ',' .
 	'assetsBaseUrl=' . json_encode($this->serverUrl() . My_Layout::assetUrl('', $this)) . ',' .
-	'facebook_appId=' . json_encode($config->facebook->app->id);
+	'facebook_appId=' . json_encode($config->facebook->app->id) . ',' .
+	'facebook_apiVer=' . json_encode($config->facebook->api->version);
 
 if ($this->user)
 {

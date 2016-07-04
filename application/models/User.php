@@ -486,23 +486,21 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * User authentication by facebook API.
 	 *
-	 * @param	Facebook\FacebookSession $session
+	 * @param	Facebook\Facebook $facebookApi
 	 * @return	Application_Model_UserRow
 	 */
-	public function facebookAuthentication(Facebook\FacebookSession $session)
+	public function facebookAuthentication(Facebook\Facebook $facebookApi)
 	{
-		$me = (new Facebook\FacebookRequest(
-		  $session, 'GET', '/me'
-		))->execute()->getGraphObject(Facebook\GraphUser::className());
-
-		$email = $me->getEmail();
+		$userResponse = $facebookApi->get('/me?fields=id,name,email,gender');
+		$userNode = $userResponse->getGraphNode();
+		$email = $userNode->getField('email');
 
 		if (!$email)
 		{
 			throw new Exception('Email not activated');
 		}
 
-		$network_id = $me->getId();
+		$network_id = $userNode->getField('id');
 
 		$user = $this->findByNetworkId($network_id);
 
@@ -527,17 +525,15 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 				$user = $this->createRow([
 					'address_id' => $address->id,
 					'Network_id' => $network_id,
-					'Name' => $me->getName(),
+					'Name' => $userNode->getField('name'),
 					'Email_id' => $email,
 					'Status' => 'active',
 					'Creation_date'=> new Zend_Db_Expr('NOW()')
 				]);
 
-				$picture = (new Facebook\FacebookRequest(
-					$session, 'GET', '/me/picture', array('type' => 'large', 'redirect' => false)
-				))->execute()->getGraphObject();
-
-				$pictureUrl = $picture->getProperty('url');
+				$pictureResponse = $facebookApi->get('/me/picture?type=large&redirect=false');
+				$pictureNode = $pictureResponse->getGraphNode();
+				$pictureUrl = $pictureNode->getField('url');
 
 				if (trim($pictureUrl) !== '')
 				{
@@ -577,10 +573,10 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 				$user->save();
 
-				Application_Model_Profile::getInstance()->insert(array(
+				(new Application_Model_Profile)->insert([
 					'user_id' => $user->id,
-					'Gender' => ucfirst($me->getGender())
-				));
+					'Gender' => ucfirst($userNode->getField('gender'))
+				]);
 
 				(new Application_Model_Invitestatus)->insert([
 					'user_id' => $user->id,

@@ -180,18 +180,12 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function fbAuthAction()
 	{
-		$config = Zend_Registry::get('config_global');
-		Facebook\FacebookSession::setDefaultApplication($config->facebook->app->id, $config->facebook->app->secret);
+		$facebookApi = My_Facebook::getInstance();
+		$facebookHelper = $facebookApi->getJavaScriptHelper();
+		$accessToken = $facebookHelper->getAccessToken();
+		$facebookApi->setDefaultAccessToken($accessToken);
 
-		$session = (new Facebook\FacebookJavaScriptLoginHelper())->getSession();
-
-		if (!$session)
-		{
-			throw new RuntimeException('Incorrect facebook access token');
-		}
-
-		$user = (new Application_Model_User)->facebookAuthentication($session);
-
+		$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
 		$login_id = (new Application_Model_Loginstatus)->insert(array(
 			'user_id' => $user->id,
 			'login_time' => new Zend_Db_Expr('NOW()'),

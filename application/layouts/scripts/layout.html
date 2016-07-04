@@ -1,5 +1,6 @@
 <?php
 $auth = Zend_Auth::getInstance()->getIdentity();
+$config = Zend_Registry::get('config_global');
 $request = Zend_Controller_Front::getInstance()->getRequest();
 $config = Zend_Registry::get('config_global');
 
@@ -23,7 +24,8 @@ $this->headScript()
 	->appendScript(
 		"var isLogin = " . json_encode((boolean) $auth) . ";\n" .
 		"var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
-		"var facebook_appId = " . json_encode(Zend_Registry::get('config_global')->facebook->app->id) . ";\n" .
+		"var facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
+		"var facebook_apiVer = " . json_encode($config->facebook->api->version) . ";\n" .
 		"var user_id = " . json_encode($auth ? $user->id : '') . ";\n" .
 		"var userName = " . json_encode($auth ? $user->Name : '') . ";\n" .
 		"var imagePath = " . json_encode($this->baseUrl($image)) . ";\n" .

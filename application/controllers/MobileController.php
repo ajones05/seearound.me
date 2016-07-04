@@ -130,19 +130,17 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$token = $this->_request->getPost('token');
+			$accessToken = $this->_request->getPost('token');
 
-			if (trim($token) === '')
+			if (trim($accessToken) === '')
 			{
-				throw new RuntimeException('Facebook access token cannot be blank', -1);
+				throw new RuntimeException('Facebook access token cannot be blank');
 			}
 
-			$config = Zend_Registry::get('config_global');
-			Facebook\FacebookSession::setDefaultApplication($config->facebook->app->id, $config->facebook->app->secret);
-
-			$session = new Facebook\FacebookSession($token);
-			$user = (new Application_Model_User)->facebookAuthentication($session);
-
+			$facebookApi = My_Facebook::getInstance([
+				'default_access_token' => $accessToken
+			]);
+			$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
 			$login_id = (new Application_Model_Loginstatus)->insert([
 				'user_id' => $user->id,
 				'login_time' => new Zend_Db_Expr('NOW()'),

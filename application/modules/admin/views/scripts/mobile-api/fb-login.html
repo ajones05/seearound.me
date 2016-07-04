@@ -1,3 +1,6 @@
+<?php
+$config = Zend_Registry::get('config_global');
+?>
 <h2>mobile/fb-login</h2>
 <ol class="breadcrumb">
 	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
@@ -27,10 +30,10 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilefb-log
 <script>
 window.fbAsyncInit=function(){
 	FB.init({
-		appId: <?php echo json_encode(Zend_Registry::get('config_global')->facebook->app->id); ?>,
+		appId: <?php echo json_encode($config->facebook->app->id); ?>,
 		xfbml: true,
 		cookie: true,
-		version: 'v2.5'
+		version: '<?php echo $config->facebook->api->version; ?>'
 	});
 };
 (function(d, s, id){
