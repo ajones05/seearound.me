@@ -511,15 +511,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 								}
 							}
 
-							$image = $imageModel->save('uploads/' . $name);
-							$thumb448x320 = 'thumb448x320/' . $name;
-
-							My_CommonUtils::createThumbs(ROOT_PATH_WEB . '/' . $image->path, array(
-								array(448, 320, ROOT_PATH_WEB . '/' . $thumb448x320, 2)
-							), $imageType);
-
-							(new Application_Model_ImageThumb)
-								->save($thumb448x320, $image, array(448, 320));
+							$image = $imageModel->save('uploads', $name, [
+								[[448,320], 'thumb448x320', 2]
+							]);
 
 							$newsLink->image_id = $image->id;
 						}
