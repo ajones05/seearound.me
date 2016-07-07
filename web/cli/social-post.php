@@ -50,18 +50,15 @@ $oaklandPost = $postModel->fetchRow(
 
 if ($oaklandPost != null)
 {
-	$messagePrefix = $baseUrl . '/post/' . $oaklandPost->id . ' #Oakland';
-
-	$twitterMessage = My_StringHelper::stringLimit($oaklandPost->news, 108, '...') .
-		' ' . $messagePrefix;
-	postToTwitter($twitterMessage, 'oakland', $config);
-
-	$message = $oaklandPost->news . ' ' . $messagePrefix;
+	$message = prepareMessageBody($oaklandPost, $baseUrl, '#Oakland');
 	$facebookApi->post(
 		'/' . $config->facebook->oakland->pageId . '/feed',
 		['message' => $message],
 		$config->facebook->oakland->accessToken
 	);
+
+	$twitterMessage = prepareMessageBody($oaklandPost, $baseUrl, '#Oakland', 108);
+	postToTwitter($twitterMessage, 'oakland', $config);
 
 	$postSocialModel->insert(['post_id' => $oaklandPost->id]);
 	echo My_Cli::success($message);
@@ -80,9 +77,10 @@ $berkeleyPost = $postModel->fetchRow(
 
 if ($berkeleyPost != null)
 {
-	$message = My_StringHelper::stringLimit($berkeleyPost->news, 107, '...') .
-		' ' . $baseUrl . '/post/' . $berkeleyPost->id . ' #Berkeley';
-	postToTwitter($message, 'berkeley', $config);
+	$message = prepareMessageBody($berkeleyPost, $baseUrl, '#Berkeley');
+	$twitterMessage = prepareMessageBody($berkeleyPost, $baseUrl, '#Berkeley', 107);
+	postToTwitter($twitterMessage, 'berkeley', $config);
+
 	$postSocialModel->insert(['post_id' => $berkeleyPost->id]);
 	echo My_Cli::success($message);
 }
@@ -100,11 +98,32 @@ $sfPost = $postModel->fetchRow(
 
 if ($sfPost != null)
 {
-	$message = My_StringHelper::stringLimit($sfPost->news, 113, '...') .
-		' ' . $baseUrl . '/post/' . $sfPost->id . ' #SF';
-	postToTwitter($message, 'sf', $config);
+	$message = prepareMessageBody($sfPost, $baseUrl, '#SF');
+	$twitterMessage = prepareMessageBody($sfPost, $baseUrl, '#SF', 113);
+	postToTwitter($twitterMessage, 'sf', $config);
+
 	$postSocialModel->insert(['post_id' => $sfPost->id]);
 	echo My_Cli::success($message);
+}
+
+function prepareMessageBody($post, $baseUrl, $hashTag, $limit=null)
+{
+	$body = trim(preg_replace('/' . My_CommonUtils::$link_regex . '/i', '',
+		$post->news));
+	$postUrl = $baseUrl . '/post/' . $post->id;
+
+	if ($body === '')
+	{
+		return $post->owner_name . ' shared a link from ' .
+			$hashTag . ': ' . $postUrl;
+	}
+
+	if ($limit != null)
+	{
+		$body = My_StringHelper::stringLimit($body, $limit, '...');
+	}
+
+	return $body . ' ' . $postUrl . ' ' . $hashTag;
 }
 
 function postToTwitter($message, $app, $config)
