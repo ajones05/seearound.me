@@ -30,6 +30,8 @@ $application = new Zend_Application(
 $application->bootstrap();
 
 $config = Zend_Registry::get('config_global');
+$facebookApi = My_Facebook::getInstance();
+
 $postModel = new Application_Model_News;
 $postSocialModel = new Application_Model_PostSocial;
 $baseUrl = $config->server->request_scheme . '://' .
@@ -48,9 +50,19 @@ $oaklandPost = $postModel->fetchRow(
 
 if ($oaklandPost != null)
 {
-	$message = My_StringHelper::stringLimit($oaklandPost->news, 108, '...') .
-		' ' . $baseUrl . '/post/' . $oaklandPost->id . ' #Oakland';
-	postToTwitter($message, 'oakland', $config);
+	$messagePrefix = $baseUrl . '/post/' . $oaklandPost->id . ' #Oakland';
+
+	$twitterMessage = My_StringHelper::stringLimit($oaklandPost->news, 108, '...') .
+		' ' . $messagePrefix;
+	postToTwitter($twitterMessage, 'oakland', $config);
+
+	$message = $oaklandPost->news . ' ' . $messagePrefix;
+	$facebookApi->post(
+		'/' . $config->facebook->oakland->pageId . '/feed',
+		['message' => $message],
+		$config->facebook->oakland->accessToken
+	);
+
 	$postSocialModel->insert(['post_id' => $oaklandPost->id]);
 	echo My_Cli::success($message);
 }
