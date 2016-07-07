@@ -470,7 +470,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
 			'Creation_date' => new Zend_Db_Expr('NOW()'),
 			'Conf_code' => My_ArrayHelper::getProp($data, 'Conf_code'),
-			'Status' => $data['Status']
+			'Status' => $data['Status'],
+			'image_id' => My_ArrayHelper::getProp($data, 'image_id')
 		]);
 		$user->save();
 
