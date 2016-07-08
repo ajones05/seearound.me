@@ -269,3 +269,18 @@ CREATE TABLE `conversation_message` (
 	FOREIGN KEY (`from_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE,
 	FOREIGN KEY (`to_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+--
+-- Table structure for table `setting`
+--
+CREATE TABLE `setting` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` TIMESTAMP,
+	`name` VARCHAR(255) NOT NULL,
+	`value` TEXT NOT NULL,
+	`description` VARCHAR(2000) NULL,
+	PRIMARY KEY (`id`),
+	INDEX(`name`),
+	UNIQUE(`name`)
+);
