@@ -25,4 +25,6 @@ INSERT INTO `image_thumb` (`image_id`, `path`, `width`, `height`, `thumb_width`,
 	-- Insert data for table `setting`
 	--
 INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description`) VALUES
-	(NOW(), NOW(), 'mediaversion', '', 'Media version /assets-XXX/media-file.path');
+	(NOW(), NOW(), 'mediaversion', '', 'Media version /assets-XXX/media-file.path'),
+	(NOW(), NOW(), 'server_requestScheme', '', '$_SERVER["request_scheme"]'),
+	(NOW(), NOW(), 'server_httpHost', '', '$_SERVER["http_host"]');

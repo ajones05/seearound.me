@@ -29,13 +29,17 @@ $application = new Zend_Application(
 
 $application->bootstrap();
 
+$settings =  (new Application_Model_Setting)->findValuesByName([
+	'server_requestScheme',
+	'server_httpHost'
+]);
 $config = Zend_Registry::get('config_global');
 $facebookApi = My_Facebook::getInstance();
 
 $postModel = new Application_Model_News;
 $postSocialModel = new Application_Model_PostSocial;
-$baseUrl = $config->server->request_scheme . '://' .
-	$config->server->http_host;
+$baseUrl = $settings['server_requestScheme'] . '://' .
+	$settings['server_httpHost'];
 
 $oaklandPost = $postModel->fetchRow(
 	$postModel->publicSelect()
