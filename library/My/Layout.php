@@ -5,6 +5,11 @@
 class My_Layout
 {
 	/**
+	 * @var	string
+	 */
+	protected static $_mediaversion = null;
+
+	/**
 	 * Renders favicon header data.
 	 *
 	 * @param	Zend_View $view
@@ -65,11 +70,15 @@ class My_Layout
 	 */
 	public static function assetUrl($url, Zend_View $view)
 	{
-		$config = Zend_Registry::get('config_global');
-
-		if (trim($config->mediaversion) !== '')
+		if (self::$_mediaversion === null)
 		{
-			$url = 'assets-' . $config->mediaversion . '/' . $url;
+			self::$_mediaversion = trim((new Application_Model_Setting)
+				->findValueByName('mediaversion'));
+		}
+
+		if (self::$_mediaversion !== '')
+		{
+			$url = 'assets-' . self::$_mediaversion . '/' . $url;
 		}
 
 		return $view->baseUrl($url);

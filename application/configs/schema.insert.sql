@@ -20,3 +20,9 @@ INSERT INTO `image` (`id`, `path`, `width`, `height`)
 --
 INSERT INTO `image_thumb` (`image_id`, `path`, `width`, `height`, `thumb_width`, `thumb_height`)
 	VALUES ('1', 'uploads/4yzgqvirgl.jpg', '320', '320', '320', '320');
+
+	--
+	-- Insert data for table `setting`
+	--
+INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description`) VALUES
+	(NOW(), NOW(), 'mediaversion', '', 'Media version /assets-XXX/media-file.path');
