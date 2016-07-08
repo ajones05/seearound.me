@@ -12,14 +12,19 @@ class My_Facebook
 	 */
 	public static function getInstance(array $options=[])
 	{
-		$config = isset($options['_config']) ? $options['_config'] :
-			Zend_Registry::get('config_global');
-		unset($options['_config']);
+		$settings = isset($options['_settings']) ? $options['_settings'] :
+			(new Application_Model_Setting)->findValuesByName([
+				'fb_apiVersion',
+				'fb_appId',
+				'fb_appSecret'
+			]);
+
+		unset($options['_settings']);
 
 		$fb = new Facebook\Facebook([
-			'app_id' => $config->facebook->app->id,
-			'app_secret' => $config->facebook->app->secret,
-			'default_graph_version' => $config->facebook->api->version
+			'app_id' => $settings['fb_appId'],
+			'app_secret' => $settings['fb_appSecret'],
+			'default_graph_version' => $settings['fb_apiVersion']
 		]+$options);
 
 		return $fb;
