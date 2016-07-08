@@ -283,4 +283,4 @@ CREATE TABLE `setting` (
 	PRIMARY KEY (`id`),
 	INDEX(`name`),
 	UNIQUE(`name`)
-);
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
