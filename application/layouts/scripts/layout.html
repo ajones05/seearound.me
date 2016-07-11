@@ -14,8 +14,6 @@ else
 	$image = My_ArrayHelper::getProp($config, 'user.thumb.55x55.path');
 }
 
-$geoip = My_Ip::geolocation();
-
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this))
 	->appendStylesheet(My_Layout::assetUrl('www/css/global.css', $this));
