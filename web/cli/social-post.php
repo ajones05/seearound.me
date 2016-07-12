@@ -59,7 +59,7 @@ $baseUrl = $settings['server_requestScheme'] . '://' .
 
 $oaklandPost = $postModel->fetchRow(
 	$postModel->publicSelect()
-		->where('created_date >= DATE_SUB(NOW(), INTERVAL 2 HOUR)')
+		->where('created_date >= DATE_SUB(NOW(), INTERVAL 5 HOUR)')
 		->where('(a.city="Oakland" OR a.city="Emeryville" OR a.city="Piedmont")')
 		->where('a.state="CA"')
 		->where('a.country="US"')
@@ -83,7 +83,7 @@ if ($oaklandPost != null)
 
 $berkeleyPost = $postModel->fetchRow(
 	$postModel->publicSelect()
-		->where('created_date >= DATE_SUB(NOW(), INTERVAL 2 HOUR)')
+		->where('created_date >= DATE_SUB(NOW(), INTERVAL 5 HOUR)')
 		->where('(a.city="Berkeley")')
 		->where('a.state="CA"')
 		->where('a.country="US"')
@@ -104,7 +104,7 @@ if ($berkeleyPost != null)
 
 $sfPost = $postModel->fetchRow(
 	$postModel->publicSelect()
-		->where('created_date >= DATE_SUB(NOW(), INTERVAL 2 HOUR)')
+		->where('created_date >= DATE_SUB(NOW(), INTERVAL 5 HOUR)')
 		->where('a.city="SF"')
 		->where('a.state="CA"')
 		->where('a.country="US"')
