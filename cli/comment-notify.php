@@ -1,6 +1,10 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+set_time_limit(0);
+
 defined('ROOT_PATH') 
-    || define('ROOT_PATH', dirname(dirname(dirname(__FILE__))));
+    || define('ROOT_PATH', dirname(dirname(__FILE__)));
 
 defined('ROOT_PATH_WEB') ||
 	define('ROOT_PATH_WEB', ROOT_PATH . '/web');
@@ -25,13 +29,10 @@ $application = new Zend_Application(
 
 $application->bootstrap();
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-set_time_limit(0);
-
-// TODO: refactoring
-$httpHost = (new Application_Model_Setting)->findValueByName('server_httpHost');
-$_SERVER['HTTP_HOST'] = $httpHost;
+$settings =  (new Application_Model_Setting)->findValuesByName([
+	'server_requestScheme',
+	'server_httpHost'
+]);
 
 $userModel = new Application_Model_User;
 $postModel = new Application_Model_News;
@@ -94,18 +95,22 @@ do
 				if ($comments->count())
 				{
 					My_Email::send(
-						array($user->Name => $user->Email_id),
+						[$user->Name => $user->Email_id],
 						$user->id == $post->user_id ?
 							'SeeAroundme comment on your post' :
 							'SeeAroundme comment on a post you commented on',
-						array(
+						[
 							'template' => 'comment-notify-comment',
-							'assign' => array(
+							'assign' => [
 								'post' => $post,
 								'user' => $user,
-								'comments' => $comments
-							)
-						)
+								'comments' => $comments,
+								'opts' => [
+									'baseUrl' => $settings['server_requestScheme'] . '://' .
+										$settings['server_httpHost'] . '/'
+								]
+							]
+						]
 					);
 
 					foreach ($comments as $comment)

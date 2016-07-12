@@ -1,5 +1,5 @@
 <?php
-$url = $this->serverUrl() . $this->baseUrl('post/' . $this->post->id);
+$url = $this->opts['baseUrl'] . 'post/' . $this->post->id;
 $label = count($this->comments) == 1 ?
 	$this->comments[0]->findDependentRowset('Application_Model_User')->current()->Name : 'Friends';
 

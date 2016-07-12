@@ -1,0 +1,64 @@
+[12-Jul-2016 05:52:50 UTC] PHP Fatal error:  Call to undefined method Zend_Layout::serverUrl() in /mnt/localhost/seearound.me/library/My/Email.php on line 60
+[12-Jul-2016 05:52:53 UTC] PHP Fatal error:  Call to undefined method Zend_Layout::serverUrl() in /mnt/localhost/seearound.me/library/My/Email.php on line 60
+[12-Jul-2016 07:29:17 UTC] PHP Fatal error:  Uncaught exception 'Zend_Loader_PluginLoader_Exception' with message 'Plugin by name 'InitView' was not found in the registry; used paths:
+Zend_View_Helper_: Zend/View/Helper/' in /mnt/localhost/seearound.me/library/Zend/Loader/PluginLoader.php:412
+Stack trace:
+#0 /mnt/localhost/seearound.me/library/Zend/View/Abstract.php(1182): Zend_Loader_PluginLoader->load('InitView')
+#1 /mnt/localhost/seearound.me/library/Zend/View/Abstract.php(618): Zend_View_Abstract->_getPlugin('helper', 'initView')
+#2 /mnt/localhost/seearound.me/library/Zend/View/Abstract.php(344): Zend_View_Abstract->getHelper('initView')
+#3 /mnt/localhost/seearound.me/library/My/Email.php(63): Zend_View_Abstract->__call('initView', Array)
+#4 /mnt/localhost/seearound.me/library/My/Email.php(63): Zend_View->initView()
+#5 /mnt/localhost/seearound.me/library/My/Email.php(32): My_Email::renderBody('comment-notify-...', Array)
+#6 /mnt/localhost/seearound.me/cli/comment-notify.php(114): My_Email::send(Array, 'SeeAroundme com...', Array)
+#7 {main}
+  thrown in /mnt/localhost/seearound.me/library/Zend/Loader/PluginLoader.php on line 412
+[12-Jul-2016 07:30:01 UTC] PHP Fatal error:  Call to undefined method Zend_Layout::initView() in /mnt/localhost/seearound.me/library/My/Email.php on line 69
+[12-Jul-2016 07:42:41 UTC] PHP Fatal error:  Call to a member function getModuleName() on null in /mnt/localhost/seearound.me/library/Zend/Controller/Action/Helper/ViewRenderer.php on line 226
+[12-Jul-2016 07:42:42 UTC] PHP Fatal error:  Call to a member function getModuleName() on null in /mnt/localhost/seearound.me/library/Zend/Controller/Action/Helper/ViewRenderer.php on line 226
+[12-Jul-2016 07:43:07 UTC] PHP Fatal error:  Call to undefined method Zend_Controller_Action_Helper_ViewRenderer::viewRenderer() in /mnt/localhost/seearound.me/library/My/Email.php on line 67
+[12-Jul-2016 07:43:08 UTC] PHP Fatal error:  Call to undefined method Zend_Controller_Action_Helper_ViewRenderer::viewRenderer() in /mnt/localhost/seearound.me/library/My/Email.php on line 67
+[12-Jul-2016 07:43:18 UTC] PHP Fatal error:  Call to undefined method Zend_Controller_Action_Helper_ViewRenderer::viewRenderer() in /mnt/localhost/seearound.me/library/My/Email.php on line 67
+[12-Jul-2016 07:43:33 UTC] PHP Fatal error:  Call to a member function getModuleName() on null in /mnt/localhost/seearound.me/library/Zend/Controller/Action/Helper/ViewRenderer.php on line 226
+[12-Jul-2016 07:56:43 UTC] PHP Catchable fatal error:  Object of class Zend_View could not be converted to string in /mnt/localhost/seearound.me/library/Zend/Filter/PregReplace.php on line 171
+[12-Jul-2016 08:04:33 UTC] PHP Fatal error:  Uncaught exception 'Zend_View_Exception' with message 'script 'comment-notify-comment' not found in path (/mnt/localhost/seearound.me/application/views/scripts/email/)' in /mnt/localhost/seearound.me/library/Zend/View/Abstract.php:988
+Stack trace:
+#0 /mnt/localhost/seearound.me/library/Zend/View/Abstract.php(884): Zend_View_Abstract->_script('comment-notify-...')
+#1 /mnt/localhost/seearound.me/library/My/Email.php(68): Zend_View_Abstract->render('comment-notify-...')
+#2 /mnt/localhost/seearound.me/library/My/Email.php(32): My_Email::renderBody('comment-notify-...', Array)
+#3 /mnt/localhost/seearound.me/cli/comment-notify.php(114): My_Email::send(Array, 'SeeAroundme com...', Array)
+#4 {main}
+  thrown in /mnt/localhost/seearound.me/library/Zend/View/Abstract.php on line 988
+[12-Jul-2016 08:05:15 UTC] PHP Parse error:  syntax error, unexpected ')' in /mnt/localhost/seearound.me/library/My/Email.php on line 70
+[12-Jul-2016 08:05:20 UTC] PHP Fatal error:  Uncaught exception 'Zend_View_Exception' with message 'script '<p>yuriy kurilyuk 2 has commented on your post.</p>
+<p>tyutyu</p>
+<p>view the comments for this post: <a href="http://www.seearound.me/post/2311">http://www.seearound.me/post/2311</a></p>
+.html' not found in path (/mnt/localhost/seearound.me/application/layouts/scripts/:/mnt/localhost/seearound.me/application/views/scripts/email/)' in /mnt/localhost/seearound.me/library/Zend/View/Abstract.php:988
+Stack trace:
+#0 /mnt/localhost/seearound.me/library/Zend/View/Abstract.php(884): Zend_View_Abstract->_script('<p>yuriy kurily...')
+#1 /mnt/localhost/seearound.me/library/Zend/Layout.php(796): Zend_View_Abstract->render('<p>yuriy kurily...')
+#2 /mnt/localhost/seearound.me/library/My/Email.php(70): Zend_Layout->render('<p>Yuriy Kurily...')
+#3 /mnt/localhost/seearound.me/library/My/Email.php(32): My_Email::renderBody('comment-notify-...', Array)
+#4 /mnt/localhost/seearound.me/cli/comment-notify.php(114): My_Email::send(Array, 'SeeAroundme com...', Array)
+ in /mnt/localhost/seearound.me/library/Zend/View/Abstract.php on line 988
+[12-Jul-2016 08:07:51 UTC] PHP Fatal error:  Uncaught exception 'Zend_View_Exception' with message 'script '<p>yuriy kurilyuk 2 has commented on your post.</p>
+<p>tyutyu</p>
+<p>view the comments for this post: <a href="http://www.seearound.me/post/2311">http://www.seearound.me/post/2311</a></p>
+.html' not found in path (/mnt/localhost/seearound.me/application/layouts/scripts/:/mnt/localhost/seearound.me/application/views/scripts/email/)' in /mnt/localhost/seearound.me/library/Zend/View/Abstract.php:988
+Stack trace:
+#0 /mnt/localhost/seearound.me/library/Zend/View/Abstract.php(884): Zend_View_Abstract->_script('<p>yuriy kurily...')
+#1 /mnt/localhost/seearound.me/library/Zend/Layout.php(796): Zend_View_Abstract->render('<p>yuriy kurily...')
+#2 /mnt/localhost/seearound.me/library/My/Email.php(70): Zend_Layout->render('<p>Yuriy Kurily...')
+#3 /mnt/localhost/seearound.me/library/My/Email.php(32): My_Email::renderBody('comment-notify-...', Array)
+#4 /mnt/localhost/seearound.me/cli/comment-notify.php(114): My_Email::send(Array, 'SeeAroundme com...', Array)
+ in /mnt/localhost/seearound.me/library/Zend/View/Abstract.php on line 988
+[12-Jul-2016 08:08:00 UTC] PHP Fatal error:  Uncaught exception 'Zend_View_Exception' with message 'script '<p>yuriy kurilyuk 2 has commented on your post.</p>
+<p>tyutyu</p>
+<p>view the comments for this post: <a href="http://www.seearound.me/post/2311">http://www.seearound.me/post/2311</a></p>
+.html' not found in path (/mnt/localhost/seearound.me/application/layouts/scripts/:/mnt/localhost/seearound.me/application/views/scripts/email/)' in /mnt/localhost/seearound.me/library/Zend/View/Abstract.php:988
+Stack trace:
+#0 /mnt/localhost/seearound.me/library/Zend/View/Abstract.php(884): Zend_View_Abstract->_script('<p>yuriy kurily...')
+#1 /mnt/localhost/seearound.me/library/Zend/Layout.php(796): Zend_View_Abstract->render('<p>yuriy kurily...')
+#2 /mnt/localhost/seearound.me/library/My/Email.php(70): Zend_Layout->render('<p>Yuriy Kurily...')
+#3 /mnt/localhost/seearound.me/library/My/Email.php(32): My_Email::renderBody('comment-notify-...', Array)
+#4 /mnt/localhost/seearound.me/cli/comment-notify.php(114): My_Email::send(Array, 'SeeAroundme com...', Array)
+ in /mnt/localhost/seearound.me/library/Zend/View/Abstract.php on line 988

@@ -53,10 +53,17 @@ class My_Email
 	{
 		$view = new Zend_View;
 		$view->setScriptPath(APPLICATION_PATH . '/views/scripts/email');
+
+		if (empty($assign['opts']['baseUrl']))
+		{
+			$assign['opts']['baseUrl'] = $view->serverUrl() . '/' . $view->baseUrl();
+		}
+
 		$view->assign($assign);
 
 		$layout = clone (new Zend_View_Helper_Layout)->layout();
 		$layout->setLayout('email');
+		$layout->setView($view);
 		$layout->content = $view->render($template . '.html');
 
 		return $layout->render();

@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 set_time_limit(0);
 
 defined('ROOT_PATH')
-    || define('ROOT_PATH', dirname(dirname(dirname(__FILE__))));
+    || define('ROOT_PATH', dirname(dirname(__FILE__)));
 
 defined('ROOT_PATH_WEB') ||
 	define('ROOT_PATH_WEB', ROOT_PATH . '/web');
