@@ -2919,7 +2919,10 @@ class MobileController extends Zend_Controller_Action
 	 */
 	protected function _logRequest($response)
 	{
-		$this->_logger->info($_SERVER['REQUEST_URI'] . "\n>> " . var_export($_REQUEST, true) . "\n<< " . var_export($response, true));
+		$this->_logger->info($_SERVER['REQUEST_URI'] .
+			"\n>> " . var_export($_REQUEST, true) .
+			"\n<< " . var_export($response, true) .
+			"\n\$_SERVER: " . var_export($_SERVER, true));
 	}
 
 	/**
