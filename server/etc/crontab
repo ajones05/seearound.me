@@ -13,3 +13,4 @@ MAILTO=root
 # |  |  |  |  |
 # *  *  *  *  * user-name  command to be executed
 */10 *  *  *  * apache     php /var/www/html/cli/comment-notify.php
+0   */5 *  *  * ec2-user php /var/www/html/web/cli/social-post.php
