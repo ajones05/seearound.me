@@ -59,12 +59,13 @@ $baseUrl = $settings['server_requestScheme'] . '://' .
 
 $oaklandPost = $postModel->fetchRow(
 	$postModel->publicSelect()
-		->where('created_date >= DATE_SUB(NOW(), INTERVAL 5 HOUR)')
-		->where('(a.city="Oakland" OR a.city="Emeryville" OR a.city="Piedmont")')
-		->where('a.state="CA"')
-		->where('a.country="US"')
 		->joinLeft(['ps' => 'post_social'], 'ps.post_id=news.id', '')
-		->where('ps.id IS NULL')
+		->where('news.created_date >= DATE_SUB(NOW(), INTERVAL 5 HOUR) AND ' .
+			'(news.comment > 0 OR news.vote > 0) AND ' .
+			'(a.city="Oakland" OR a.city="Emeryville" OR a.city="Piedmont") AND ' .
+			'a.state="CA" AND ' .
+			'a.country="US" AND ' .
+			'ps.id IS NULL')
 		->order([$postModel->postScore() . ' DESC', 'news.id DESC'])
 );
 
@@ -83,12 +84,13 @@ if ($oaklandPost != null)
 
 $berkeleyPost = $postModel->fetchRow(
 	$postModel->publicSelect()
-		->where('created_date >= DATE_SUB(NOW(), INTERVAL 5 HOUR)')
-		->where('(a.city="Berkeley")')
-		->where('a.state="CA"')
-		->where('a.country="US"')
 		->joinLeft(['ps' => 'post_social'], 'ps.post_id=news.id', '')
-		->where('ps.id IS NULL')
+		->where('created_date >= DATE_SUB(NOW(), INTERVAL 5 HOUR) AND ' .
+			'(news.comment > 0 OR news.vote > 0) AND ' .
+			'a.city="Berkeley" AND ' .
+			'a.state="CA" AND ' .
+			'a.country="US" AND ' .
+			'ps.id IS NULL')
 		->order([$postModel->postScore() . ' DESC', 'news.id DESC'])
 );
 
@@ -104,12 +106,13 @@ if ($berkeleyPost != null)
 
 $sfPost = $postModel->fetchRow(
 	$postModel->publicSelect()
-		->where('created_date >= DATE_SUB(NOW(), INTERVAL 5 HOUR)')
-		->where('a.city="SF"')
-		->where('a.state="CA"')
-		->where('a.country="US"')
 		->joinLeft(['ps' => 'post_social'], 'ps.post_id=news.id', '')
-		->where('ps.id IS NULL')
+		->where('created_date >= DATE_SUB(NOW(), INTERVAL 5 HOUR) AND ' .
+			'(news.comment > 0 OR news.vote > 0) AND ' .
+			'a.city="SF" AND ' .
+			'a.state="CA" AND ' .
+			'a.country="US" AND ' .
+			'ps.id IS NULL')
 		->order([$postModel->postScore() . ' DESC', 'news.id DESC'])
 );
 
