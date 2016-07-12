@@ -237,8 +237,8 @@ class HomeController extends Zend_Controller_Action
 			$this->view->isFriend = $isFriend;
 		}
 
-		// $this->view->headLink()
-			// ->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
+		$this->view->headLink()
+			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
 
 		$addressFormat = Application_Model_Address::format($profile, ['street'=>false]);
 		$this->view->addressFormat = $addressFormat;
@@ -251,23 +251,11 @@ class HomeController extends Zend_Controller_Action
 				'latitude' => $profile->latitude,
 				'longitude' => $profile->longitude
 			]) . ';')
-			// ->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
-			;
+			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view));
 
-		// $config = Zend_Registry::get('config_global');
-		// My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
-				// 'key=' . $config->google->maps->key . '&sensor=false&v=3&callback=initMap', $this->view);
-
-		$this->view->layoutOpts = [
-			'center' => [$profile->latitude, $profile->longitude],
-			// TODO: for posts list 14
-			'zoom' => 15
-		];
-		$this->view->addClass = ['profile'];
-
-		$this->view->layout()->setLayout('map');
-		// $this->_helper->viewRenderer->setNoRender(true);
-		// return true;
+		$config = Zend_Registry::get('config_global');
+		My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
+				'key=' . $config->google->maps->key . '&sensor=false&v=3&callback=initMap', $this->view);
 	}
 
 	/**
