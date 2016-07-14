@@ -51,11 +51,11 @@ class PostController extends Zend_Controller_Action
 
 		$ownerThumb = My_Query::getThumb($post, '55x55', 'owner', true);
 		$headScript = 'var opts=' . json_encode(['latitude' => $post->latitude,
-			'longitude' => $post->longitude], JSON_FORCE_OBJECT) . ',' .
-			'owner=' . json_encode([
+			'longitude' => $post->longitude], JSON_FORCE_OBJECT) .
+			',owner=' . json_encode([
 				'image' => $this->view->baseUrl($ownerThumb['path'])
-			]) . ',' .
-			'post=' . json_encode([
+			]) .
+			',post=' . json_encode([
 				'id'=>$post->id,
 				'lat'=>$post->latitude,
 				'lng'=>$post->longitude,
@@ -67,6 +67,10 @@ class PostController extends Zend_Controller_Action
 			$headScript .= ',user=' . json_encode([
 				'name' => $user->Name,
 				'image' => $this->view->baseUrl($user->getThumb('55x55')['path'])
+			]) .
+			',settings=' . json_encode([
+				'bodyMaxLength' => (new Application_Model_Setting)
+					->findValueByName('post_bodyMaxLength')
 			]);
 		}
 
@@ -206,10 +210,14 @@ class PostController extends Zend_Controller_Action
 				'name' => $user->Name,
 				'image' => $this->view->baseUrl($user->getThumb('55x55')['path']),
 				'location' => [$user->latitude, $user->longitude]
-			]) . ',' .
-			'isList=true,' .
-			'opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) . ',' .
-			'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';'
+			]) .
+			',isList=true' .
+			',opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) .
+			',timizoneList=' . json_encode(My_CommonUtils::$timezone) .
+			',settings=' . json_encode([
+				'bodyMaxLength' => (new Application_Model_Setting)
+					->findValueByName('post_bodyMaxLength')
+			]) . ';'
 		);
 
 		$this->view->addClass = ['posts'];

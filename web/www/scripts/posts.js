@@ -1121,19 +1121,7 @@ function postItem_renderContent(id, postContainer){
 				var editForm = $('<textarea>', {rows:1,name:'news'})
 					.appendTo($('.post_text', postContainer).empty())
 					.val(response.body)
-					.bind('input paste keypress', function(){
-						var body = $(this).val();
-						if (/[<>]/.test(body)){
-							$(this).val(body.replace(/[<>]/, ''));
-							return false;
-						}
-						if (body.length > 500){
-							$(this).val(body.substring(0, 499));
-							alert("Sorry! You can not enter more then 500 charactes.");
-							return false;
-						}
-						return true;
-					})
+					.bind('input paste keypress',validatePost)
 					.textareaAutoSize()
 					.focus();
 
@@ -1400,6 +1388,20 @@ function keyCode(event){
 	return event.keyCode || event.which;
 }
 
+function validatePost(){
+	var body=$(this).val();
+	if (/[<>]/.test(body)){
+		$(this).val(body.replace(/[<>]/, ''));
+		return false;
+	}
+	if (body.length > settings.bodyMaxLength){
+		$(this).val(body.substring(0,settings.bodyMaxLength));
+		alert('Sorry! You can not enter more then '+settings.bodyMaxLength+
+			' charactes.');
+	}
+	return true;
+}
+
 function newPost_dialog(){
 	var userBlock=$('<div/>').addClass('user')
 		.append($('<img/>',{width:43,height:43,src:user.image}),
@@ -1407,17 +1409,7 @@ function newPost_dialog(){
 	var postBlockFl=$('<textarea/>',{name:'news',
 				placeholder:'Share something about a location...'})
 		.textareaAutoSize()
-		.bind('input paste keypress', function(){
-			var body = $(this).val();
-			if (/[<>]/.test(body)){
-				$(this).val(body.replace(/[<>]/, ''));
-				return false;
-			}
-			if (body.length > 500){
-				$(this).val(body.substring(0, 499));
-				alert('Sorry! You can not enter more then 500 charactes.');
-			}
-		})
+		.bind('input paste keypress',validatePost)
 		.focus(function(){
 			var bodyEl=$(this);
 			bodyEl.attr('placeholder-data',bodyEl.attr('placeholder'))

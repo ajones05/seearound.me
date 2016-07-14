@@ -44,4 +44,5 @@ INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description
 	(NOW(), NOW(), 'twitter_sfToken', '', 'Twitter San Srancisco page token'),
 	(NOW(), NOW(), 'twitter_sfTokenSecret', '', 'Twitter San Srancisco page token secret'),
 	(NOW(), NOW(), 'twitter_sfApiKey', '', 'Twitter San Srancisco page api key'),
-	(NOW(), NOW(), 'twitter_sfApiSecret', '', 'Twitter San Srancisco page api secret');
+	(NOW(), NOW(), 'twitter_sfApiSecret', '', 'Twitter San Srancisco page api secret'),
+	(NOW(), NOW(), 'post_bodyMaxLength', '', 'Max length for post body');

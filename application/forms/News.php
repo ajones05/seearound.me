@@ -33,9 +33,12 @@ class Application_Form_News extends Zend_Form
 		$scenario = $this->getScenario();
 		$valid = parent::isValid($data);
 
+		$bodyMaxLength = (new Application_Model_Setting)
+			->findValueByName('post_bodyMaxLength');
+
 		try
 		{
-			v::stringType()->length(1, 500)->regex('/[^<>]/')
+			v::stringType()->length(1, $bodyMaxLength)->regex('/[^<>]/')
 				->assert(My_ArrayHelper::getProp($data, 'news'));
 		}
 		catch (Exception $e)

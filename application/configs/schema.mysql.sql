@@ -131,6 +131,7 @@ ALTER TABLE `news`
 	DROP `latitude`,
 	DROP `longitude`,
 	DROP `Address`;
+ALTER TABLE `news` MODIFY `news` text;
 
 --
 -- Table structure for table `news_link`
