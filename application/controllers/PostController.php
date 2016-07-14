@@ -453,11 +453,33 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$userModel = new Application_Model_User;
+			$user = $userModel->getAuth();
 
 			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::optional(v::intVal())->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value');
+			}
+
+			if (trim($user_id) !== '')
+			{
+				if (!$user->is_admin)
+				{
+					throw new RuntimeException('You are not authorized to access the parameter user_id');
+				}
+
+				if (!$userModel->checkId($user_id, $customUser))
+				{
+					throw new RuntimeException('Incorrect user ID: ' .
+						var_export($user_id, true));
+				}
 			}
 
 			$reset = $this->_request->getPost('reset');
@@ -491,8 +513,9 @@ class PostController extends Zend_Controller_Action
 			$address->save();
 
 			$model = new Application_Model_News;
+			$postUser = $user_id ? $customUser : $user;
 			$post = $model->save($postForm->getValues() +
-				['user_id' => $user->id, 'address_id' => $address->id]);
+				['user_id' => $postUser->id, 'address_id' => $address->id]);
 			// TODO: refactoring
 			$post = $model->findById($post->id, ['link'=>true]);
 
@@ -505,7 +528,7 @@ class PostController extends Zend_Controller_Action
 						$address->longitude,
 						$this->view->partial('post/_list_item.html', [
 							'post' => $post,
-							'owner' => $user,
+							'owner' => $postUser,
 							'user' => $user
 						])
 					]
@@ -1297,5 +1320,51 @@ class PostController extends Zend_Controller_Action
 		}
 
 		$this->_helper->json($response);
+	}
+
+	/**
+	 * Post option dialog action.
+	 *
+	 * @return void
+	 */
+	public function postOptionsAction()
+	{
+		try
+		{
+			$userModel = new Application_Model_User;
+			$user = $userModel->getAuth();
+
+			if ($user == null || !$user->is_admin)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$user_id = $this->_request->getParam('user_id');
+
+			if (!v::optional(v::intVal())->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect user ID value');
+			}
+
+			if (trim($user_id) !== '')
+			{
+				if (!$userModel->checkId($user_id, $customUser))
+				{
+					throw new RuntimeException('Incorrect user ID: ' .
+						var_export($user_id, true));
+				}
+
+				$this->view->customUser = $customUser;
+			}
+
+			$this->view->layout()->setLayout('iframe');
+			$this->view->headLink()->appendStylesheet(My_Layout::assetUrl(
+				'bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this->view));
+		}
+		catch (Exception $e)
+		{
+			die($e instanceof RuntimeException ? $e->getMessage() :
+				'Internal Server Error');
+		}
 	}
 }

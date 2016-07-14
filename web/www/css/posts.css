@@ -360,6 +360,15 @@ body.touch .posts-container .posts {
 	margin-top: 2px;
     margin-left: 53px;
 }
+.post-new__dialog .options {
+	float: left;
+	cursor: pointer;
+	color: #cc3333;
+	font-weight: bold;
+}
+.post-new__dialog .options:hover {
+	text-decoration: underline;
+}
 .post-new__dialog .action {
 	margin-top: 4px;
 	display: inline-block;
@@ -951,7 +960,10 @@ body.touch .posts-container .posts {
 /**
  * jQuery ui dialog custom template
  */
-.dialog.ui-widget-content {
+ .dialog.fixed {
+	 position: fixed;
+ }
+ .dialog.ui-widget-content {
 	background: none;
 	border: none;
 }

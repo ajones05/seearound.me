@@ -1401,150 +1401,194 @@ function keyCode(event){
 }
 
 function newPost_dialog(){
-	var newDialog = $('<div/>').addClass('post-new__dialog')
+	var userBlock=$('<div/>').addClass('user')
+		.append($('<img/>',{width:43,height:43,src:user.image}),
+			$('<p/>').text(user.name));
+	var postBlockFl=$('<textarea/>',{name:'news',
+				placeholder:'Share something about a location...'})
+		.textareaAutoSize()
+		.bind('input paste keypress', function(){
+			var body = $(this).val();
+			if (/[<>]/.test(body)){
+				$(this).val(body.replace(/[<>]/, ''));
+				return false;
+			}
+			if (body.length > 500){
+				$(this).val(body.substring(0, 499));
+				alert('Sorry! You can not enter more then 500 charactes.');
+			}
+		})
+		.focus(function(){
+			var bodyEl=$(this);
+			bodyEl.attr('placeholder-data',bodyEl.attr('placeholder'))
+				.removeAttr('placeholder');
+		})
+		.blur(function(){
+			var bodyEl=$(this);
+			bodyEl.attr('placeholder',bodyEl.attr('placeholder-data'))
+				.removeAttr('placeholder-data');
+		});
+	var postBlock=$('<div/>').addClass('edit').append(postBlockFl);
+	var actionBlock=$('<div/>').addClass('action')
 		.append(
-			$('<form/>').addClass('wrapper')
-				.append(
-					$('<div/>').addClass('user')
-						.append($('<img/>')
-							.attr({width:43,height:43,src:user.image}))
-						.append($('<p/>').text(user.name)),
-					$('<div/>').addClass('edit')
-						.append($('<textarea/>')
-							.attr({name:'news',placeholder:'Share something about a location...'})
-							.textareaAutoSize()
-							.bind('input paste keypress', function(){
-								var body = $(this).val();
-								if (/[<>]/.test(body)){
-									$(this).val(body.replace(/[<>]/, ''));
-									return false;
-								}
-								if (body.length > 500){
-									$(this).val(body.substring(0, 499));
-									alert('Sorry! You can not enter more then 500 charactes.');
-								}
-							})
-							.focus(function(){
-								var bodyField = $('textarea', newDialog);
-								bodyField.attr('placeholder-data', bodyField.attr('placeholder'))
-									.removeAttr('placeholder');
-							})
-							.blur(function(){
-								var bodyField = $('textarea', newDialog);
-								bodyField.attr('placeholder', bodyField.attr('placeholder-data'))
-									.removeAttr('placeholder-data');
-							})
-						),
-					$('<div/>').addClass('action')
-						.append(
-							$('<img/>')
-								.attr({width:27,height:20,
-									src:assetsBaseUrl+'www/images/icon-camera.png'})
-								.click(function(){
-									$('[type=file]',newDialog).click();
-								}),
-							$('<input/>').hide()
-								.attr({type:'file',name:'image',accept:'image/*',size:'1'})
-								.change(function(){
-									$('.image',newDialog).remove();
-									if ($.trim($(this).val()) === ''){
-										return true;
-									}
+			$('<img/>',{width:27,height:20,
+					src:assetsBaseUrl+'www/images/icon-camera.png'})
+				.click(function(){
+					$(this).closest('form').find('[type=file]').click();
+				}),
+			$('<input/>',{type:'file',name:'image',accept:'image/*',size:'1'})
+				.hide()
+				.change(function(){
+					var targetEl=$(this),
+						containerEl=targetEl.parent();
+					containerEl.find('.image').remove();
 
-									if ($.inArray(this.files[0]['type'],['image/gif','image/jpeg','image/png'])<0){
-										alert('Invalid file type');
-										$(this).val('');
-										return false;
-									}
+					if ($.trim(targetEl.val()) === ''){
+						return true;
+					}
 
-									var imageContainer=$('<div/>');
-									if (typeof window.FileReader !== 'undefined'){
-										var reader=new FileReader();
-										reader.onload=function(e){
-											imageContainer.prepend($('<img/>').addClass('preview')
-												.attr('src', e.target.result));
-										}
-										reader.readAsDataURL(this.files[0]);
-									} else {
-										imageContainer.html($(this).val());
-									}
-									$(this).parent().prepend($('<div/>').addClass('image').append(imageContainer
-										.append(
-											$('<img/>').addClass('delete')
-												.attr({width:12,height:12,
-													src:assetsBaseUrl+'www/images/delete-icon12x12.png'})
-												.click(function(){
-													$('.image',newDialog).remove();
-													$('[type=file]',newDialog).val('');
-												})
-										)
-									));
-								}),
-							$('<input/>').attr({type:'submit'}).val('Post')
-						)
-				).submit(function(e){
-					e.preventDefault();
-
-					var bodyField = $('textarea', newDialog),
-						body = bodyField.val();
-					if ($.trim(body) === ''){
-						bodyField.focus();
+					if ($.inArray(this.files[0]['type'],['image/gif','image/jpeg','image/png'])<0){
+						alert('Invalid file type');
+						targetEl.val('');
 						return false;
 					}
 
-					$('textarea,input', newDialog).attr('disabled', true);
+					var imageContainer=$('<div/>');
+					if (typeof window.FileReader !== 'undefined'){
+						var reader=new FileReader();
+						reader.onload=function(e){
+							imageContainer.prepend($('<img/>').addClass('preview')
+								.attr('src', e.target.result));
+						}
+						reader.readAsDataURL(this.files[0]);
+					} else {
+						imageContainer.html(targetEl.val());
+					}
+					containerEl.prepend($('<div/>').addClass('image').append(imageContainer
+						.append(
+							$('<img/>',{width:12,height:12,
+								src:assetsBaseUrl+'www/images/delete-icon12x12.png'})
+								.addClass('delete')
+								.click(function(){
+									$('.image',containerEl).remove();
+									$('[type=file]',containerEl).val('');
+								})
+						)
+					));
+				}),
+			$('<input/>',{type:'submit'}).val('Post')
+		);
+	var newDialog=$('<div/>').addClass('post-new__dialog');
+	var formBlock=$('<form/>').addClass('wrapper').submit(function(e){
+		e.preventDefault();
 
-					ajaxJson({
-						url: baseUrl+'post/before-save',
-						data: {body:body},
-						done: function(response){
-							if (response.post_id){
-								$('<div/>').appendTo('body')
-									.text('Another user has already shared that same link: '+
-										'do you want to see that post?')
-									.dialog({
-										width: 450,
-										modal:true,
-										buttons: [{
-											text:'Cancel',
-											click:function(){
-												$(this).dialog('close');
-											}
-										},{
-											text:'See post',
-											id:'view-post',
-											click:function(){return true; }
-										},{
-											text:'Post anyway',
-											click:function(){
-												newPost_addressDialog(newDialog);
-												$(this).dialog('close');
-											}
-										}],
-										beforeClose: function(event, ui){
-											$('textarea,input', newDialog).attr('disabled',false);
-											$(event.target).dialog('destroy').remove();
-										},
-										open:function(event,ui){
-											$('#view-post').wrap($('<a/>',{
-												href:baseUrl+'post/'+response.post_id,
-												target:'_blank'
-											}));
-										}
-									});
-							} else {
-								newPost_addressDialog(newDialog);
+		var body=postBlockFl.val();
+		if ($.trim(body) === ''){
+			postBlockFl.focus();
+			return false;
+		}
+
+		var formFields=$(this).find('textarea,input').attr('disabled',true);
+
+		ajaxJson({
+			url: baseUrl+'post/before-save',
+			data: {body:body},
+			done: function(response){
+				if (response.post_id){
+					$('<div/>').appendTo('body')
+						.text('Another user has already shared that same link: '+
+							'do you want to see that post?')
+						.dialog({
+							width: 450,
+							modal:true,
+							buttons: [{
+								text:'Cancel',
+								click:function(){
+									$(this).dialog('close');
+								}
+							},{
+								text:'See post',
+								id:'view-post',
+								click:function(){return true; }
+							},{
+								text:'Post anyway',
+								click:function(){
+									newPost_addressDialog(newDialog);
+									$(this).dialog('close');
+								}
+							}],
+							beforeClose: function(event,ui){
+								formFields.attr('disabled',false);
+								$(event.target).dialog('destroy').remove();
+							},
+							open:function(event,ui){
+								$('#view-post').wrap($('<a/>',{
+									href:baseUrl+'post/'+response.post_id,
+									target:'_blank'
+								}));
+							}
+						});
+				} else {
+					newPost_addressDialog(newDialog);
+				}
+			},
+			fail: function(){
+				formFields.attr('disabled',false);
+			}
+		});
+	});
+
+	formBlock.append(userBlock,postBlock);
+
+	if (isAdmin){
+		$('<div/>').addClass('options').text('options')
+			.appendTo(formBlock)
+			.on('click', function(){
+				var self=$(this);
+				if (self.attr('disabled')){
+					return false;
+				}
+				var urlParams='',
+					formData=$('textarea,input[type=hidden]',formBlock).filter(function(){
+						return $.trim($(this).val())!=='';
+					});
+
+				if (formData.size()){
+					urlParams+='?'+formData.serialize();
+				}
+
+				self.attr('disabled',true);
+				$('<div/>').appendTo($('body'))
+					.append(
+						$('<div/>').text('Loading...'),
+						$('<iframe/>',{
+							src:baseUrl+'post/post-options'+urlParams,
+							frameborder:0,
+							width:'100%',
+							id:'post-options'
+						})
+					).dialog({
+						modal:true,
+						resizable:false,
+						drag:false,
+						width:500,
+						dialogClass:'dialog fixed new-post-dialog',
+						buttons:{
+							OK:function(){
+								var iframeBody=$(this).find('iframe').contents();
+								$('form',iframeBody).submit();
 							}
 						},
-						fail: function(){
-							$('textarea,input', newDialog).attr('disabled', false);
+						beforeClose: function(event, ui){
+							$(this).dialog('destroy').remove();
+							self.attr('disabled',false);
 						}
 					});
-				})
-		)
-		.appendTo('body')
-		.fadeIn(150);
-	$('textarea', newDialog).focus();
+			});
+	}
+	formBlock.append(actionBlock);
+	newDialog.append(formBlock).appendTo('body').fadeIn(150);
+	$(postBlockFl).focus();
 }
 
 function newPost_addressDialog(dialog){
@@ -1574,7 +1618,12 @@ function newPost_save(position,place){
 		reset = (getDistance([centerPosition.lat(),centerPosition.lng()],
 			[position.lat(),position.lng()]) > getRadius()),
 		data = new FormData();
-	data.append('news', $('[name=news]', form).val());
+
+	form.find('textarea,input[type=hidden]').each(function(){
+		var el=$(this);
+		data.append(el.attr('name'),el.val());
+	});
+
 	data.append('latitude', position.lat());
 	data.append('longitude', position.lng());
 

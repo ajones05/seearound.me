@@ -13,6 +13,7 @@ ALTER TABLE `user_data` ADD `address_id` INT(11) NOT NULL AFTER `id`;
 ALTER TABLE `user_data` ADD FOREIGN KEY (`address_id`) REFERENCES `address`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 CREATE TRIGGER user_before_del BEFORE DELETE ON user_data
 	FOR EACH ROW DELETE FROM address WHERE address.id=OLD.address_id;
+ALTER TABLE `user_data` CONVERT TO CHARACTER SET utf8;
 
 --
 -- Table structure for table `user_confirm`

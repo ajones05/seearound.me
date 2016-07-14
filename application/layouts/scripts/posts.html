@@ -17,6 +17,11 @@ $headScripts = 'var baseUrl=' . json_encode($this->serverUrl() . $this->baseUrl(
 if ($this->user)
 {
 	$headScripts .= ',isLogin=true';
+
+	if ($this->user->is_admin)
+	{
+		$headScripts .= ',isAdmin=true';
+	}
 }
 
 $this->headScript()

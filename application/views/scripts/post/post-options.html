@@ -1,0 +1,66 @@
+<?php
+$userId = isset($this->customUser) ? $this->customUser->id : '';
+$userLabel = isset($this->customUser) ? $this->customUser->Name .
+	' <' . $this->customUser->Email_id . '>' .
+	' (' . $this->customUser->id . ')' : '';
+?>
+<style>
+input[type=text]{
+	width:99%;
+}
+</style>
+<form>
+	<div><label for="userLabel">User:</label></div>
+	<div>
+		<input type="text" name id="userLabel" value="<?php echo $userLabel; ?>">
+		<input type="hidden" id="userId" value="<?php echo $userId; ?>">
+	</div>
+</form>
+<script>
+var body=$('iframe#post-options').contents(),
+	dialog=$('.new-post-dialog .ui-dialog-content'),
+	newPostForm=$('.post-new__dialog form');
+dialog.find('>div').remove();
+$('#userLabel',body).autocomplete({
+	delay:0,
+	minLength:2,
+	change:function(event,ui){
+		if (ui.item==null){
+			$(this,body).add('#userId').val('');
+		}
+	},
+	search:function(){
+		$('#userId',body).val('');
+	},
+	source:function(request,response){
+		window.parent.ajaxJson(window.parent.baseUrl+'user/autocomplete',{
+			data:{keywords:request.term},
+			success:function(data){
+				response(data.data||[]);
+			}
+		});
+	},
+	select:function(event,ui){
+		$(this).val(ui.item.label);
+		$('#userId',body).val(ui.item.value);
+		return false;
+	}
+});
+$('form',body).on('submit',function(e){
+	e.preventDefault();
+	var userId=$('#userId',body).val();
+	if ($.trim(userId)!==''){
+		var userIdField=$('[name=user_id]',newPostForm);
+		if (!userIdField.size()){
+			userIdField=$('<input/>',{
+				type:'hidden',
+				name:'user_id'
+			}).appendTo(newPostForm);
+		}
+		userIdField.val(userId);
+	} else {
+		$('[name=user_id]',newPostForm).remove();
+	}
+	dialog.dialog('close');
+});
+</script>
