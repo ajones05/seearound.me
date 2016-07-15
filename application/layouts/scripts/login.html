@@ -1,7 +1,8 @@
 <?php
 $settings = (new Application_Model_Setting)->findValuesByName([
 	'fb_apiVersion', 'fb_appId',
-	'google_analyticsAccount'
+	'google_analyticsAccount',
+	'site_titlePrefix'
 ]);
 
 $config = Zend_Registry::get('config_global');

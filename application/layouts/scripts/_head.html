@@ -11,7 +11,8 @@ ga('send', 'pageview');
 JAVASCRIPT
 );
 
-$this->headTitle()->setSeparator(' - ')->prepend(Zend_Registry::get('config_global')->head->title);
+$this->headTitle()->setSeparator(' - ')
+	->prepend($settings['site_titlePrefix']);
 
 echo $this->headTitle() . $this->headMeta() .
 	$this->headLink() . $this->headScript();

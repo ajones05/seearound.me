@@ -1,7 +1,8 @@
 <?php
 $settings = (new Application_Model_Setting)->findValuesByName([
 	'fb_apiVersion', 'fb_appId',
-	'google_analyticsAccount', 'google_mapsKey'
+	'google_analyticsAccount', 'google_mapsKey',
+	'site_titlePrefix'
 ]);
 
 $config = Zend_Registry::get('config_global');
@@ -39,7 +40,7 @@ $this->headScript()
 		'text/javascript', array('defer' => 'defer',
 		'data-main' => My_Layout::assetUrl('www/scripts/posts', $this)));
 
-$this->headTitle()->setSeparator(' - ')->prepend($config->head->title);
+$this->headTitle()->setSeparator(' - ')->prepend($settings['site_titlePrefix']);
 
 $addClass = $this->addClass ?: [];
 

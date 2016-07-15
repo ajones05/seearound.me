@@ -1,6 +1,7 @@
 <?php
 $settings = (new Application_Model_Setting)->findValuesByName([
-	'google_analyticsAccount'
+	'google_analyticsAccount',
+	'site_titlePrefix'
 ]);
 
 $this->doctype('<!DOCTYPE html>');
