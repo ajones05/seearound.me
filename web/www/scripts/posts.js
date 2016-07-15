@@ -1,4 +1,5 @@
-var isList=isList||false,isPost=typeof post !== 'undefined' ? true : false,
+var isList=isList||false,isAdmin=isAdmin||false,
+isPost=typeof post !== 'undefined' ? true : false,
 isLogin=isLogin||false,isTouch=false,
 mainMap,centerPosition,areaCircle,googleMapsCustomMarker,googleMapsAreaCircle,
 userPosition,loadXhr,
