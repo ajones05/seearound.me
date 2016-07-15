@@ -37,6 +37,10 @@ $settings =  (new Application_Model_Setting)->findValuesByName([
 	'fb_appSecret',
 	'fb_oaklandPageId',
 	'fb_oaklandAccessToken',
+	'fb_sfPageId',
+	'fb_sfAccessToken',
+	'fb_berkeleyPageId',
+	'fb_berkeleyAccessToken',
 	'twitter_oaklandToken',
 	'twitter_oaklandTokenSecret',
 	'twitter_oaklandApiKey',
@@ -97,6 +101,9 @@ $berkeleyPost = $postModel->fetchRow(
 if ($berkeleyPost != null)
 {
 	$message = prepareMessageBody($berkeleyPost, $baseUrl, '#Berkeley');
+	$facebookApi->post('/' . $settings['fb_berkeleyPageId'] . '/feed',
+		['message' => $message], $settings['fb_berkeleyAccessToken']);
+
 	$twitterMessage = prepareMessageBody($berkeleyPost, $baseUrl, '#Berkeley', 107);
 	postToTwitter($twitterMessage, 'berkeley', $settings);
 
@@ -119,6 +126,9 @@ $sfPost = $postModel->fetchRow(
 if ($sfPost != null)
 {
 	$message = prepareMessageBody($sfPost, $baseUrl, '#SF');
+	$facebookApi->post('/' . $settings['fb_sfPageId'] . '/feed',
+		['message' => $message], $settings['fb_sfAccessToken']);
+
 	$twitterMessage = prepareMessageBody($sfPost, $baseUrl, '#SF', 113);
 	postToTwitter($twitterMessage, 'sf', $settings);
 

@@ -45,4 +45,8 @@ INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description
 	(NOW(), NOW(), 'twitter_sfTokenSecret', '', 'Twitter San Srancisco page token secret'),
 	(NOW(), NOW(), 'twitter_sfApiKey', '', 'Twitter San Srancisco page api key'),
 	(NOW(), NOW(), 'twitter_sfApiSecret', '', 'Twitter San Srancisco page api secret'),
-	(NOW(), NOW(), 'post_bodyMaxLength', '', 'Max length for post body');
+	(NOW(), NOW(), 'post_bodyMaxLength', '', 'Max length for post body'),
+	(NOW(), NOW(), 'fb_sfPageId', '', 'Facebook San Srancisco page ID'),
+	(NOW(), NOW(), 'fb_sfAccessToken', '', 'Facebook San Srancisco page access token'),
+	(NOW(), NOW(), 'fb_berkeleyPageId', '', 'Facebook Berkeley page ID'),
+	(NOW(), NOW(), 'fb_berkeleyAccessToken', '', 'Facebook Berkeley page access token');
