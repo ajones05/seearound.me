@@ -26,7 +26,7 @@ $this->headScript()
 	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))
 	->appendFile(My_Layout::assetUrl('bower_components/bootstrap/dist/js/bootstrap.js', $this));
 
-$this->headTitle()->setSeparator(' - ')->prepend($settings['site_title']);
+$this->headTitle()->setSeparator(' - ')->prepend($settings['site_titlePrefix']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
