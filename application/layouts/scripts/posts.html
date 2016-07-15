@@ -1,7 +1,7 @@
 <?php
 $settings = (new Application_Model_Setting)->findValuesByName([
 	'fb_apiVersion', 'fb_appId',
-	'google_analyticsAccount'
+	'google_analyticsAccount', 'google_mapsKey'
 ]);
 
 $config = Zend_Registry::get('config_global');
@@ -14,10 +14,13 @@ $profileImage = $this->user ? $this->user->getThumb('26x26')['path'] :
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('www/css/posts.css', $this));
 
-$headScripts = 'var baseUrl=' . json_encode($this->serverUrl() . $this->baseUrl('/')) . ',' .
-	'assetsBaseUrl=' . json_encode($this->serverUrl() . My_Layout::assetUrl('', $this)) . ',' .
-	'facebook_appId=' . json_encode($settings['fb_appId']) . ',' .
-	'facebook_apiVer=' . json_encode($settings['fb_apiVersion']);
+$serverUrl = $this->serverUrl();
+
+$headScripts = 'var baseUrl=' . json_encode($serverUrl . $this->baseUrl('/')) .
+	',assetsBaseUrl=' . json_encode($serverUrl . My_Layout::assetUrl('', $this)) .
+	',facebook_appId=' . json_encode($settings['fb_appId']) .
+	',facebook_apiVer=' . json_encode($settings['fb_apiVersion']) .
+	',mapsKey=' . json_encode($settings['google_mapsKey']);
 
 if ($this->user)
 {

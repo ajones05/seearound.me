@@ -338,6 +338,10 @@ class ContactsController extends Zend_Controller_Action
 			$this->_redirect($this->view->baseUrl('/'));
 		}
 
+		$settings = (new Application_Model_Setting)->findValuesByName([
+			'google_mapsKey'
+		]);
+
 		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id, 1);
 
 		$this->view->headLink()
@@ -355,7 +359,7 @@ class ContactsController extends Zend_Controller_Action
 				]) . ',' .
 				'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
-				$config->google->maps->key)
+				$settings['google_mapsKey'])
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
 			->appendFile(My_Layout::assetUrl('www/scripts/friendlist.js', $this->view));
 

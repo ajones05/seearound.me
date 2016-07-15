@@ -39,6 +39,10 @@ class IndexController extends Zend_Controller_Action
 			return true;
 		}
 
+		$settings = (new Application_Model_Setting)->findValuesByName([
+			'google_mapsKey'
+		]);
+
 		$config = Zend_Registry::get('config_global');
 		$loginForm = new Application_Form_Login;
 		$addressForm = new Application_Form_Address;
@@ -170,7 +174,7 @@ class IndexController extends Zend_Controller_Action
 			->appendScript('var	geolocation=' . json_encode(My_Ip::geolocation()) . ',' .
 				'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
-				$config->google->maps->key);
+				$settings['google_mapsKey']);
 	}
 
 	/**

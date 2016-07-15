@@ -29,7 +29,8 @@ require.config({paths: {
 	'textarea_autosize': assetsBaseUrl+'bower_components/textarea-autosize/src/jquery.textarea_autosize',
 	'common': assetsBaseUrl+'www/scripts/commondev',
 	'facebook-sdk': 'http://connect.facebook.net/en_US/sdk',
-	'google.maps': 'https://maps.googleapis.com/maps/api/js?v=3&libraries=places&callback=renderView_callback'
+	'google.maps': 'https://maps.googleapis.com/maps/api/js?key='+mapsKey+
+		'&v=3&libraries=places&callback=renderView_callback'
 }});
 require(['google.maps']);
 require(['jquery', 'common'], function(){

@@ -43,6 +43,10 @@ class HomeController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action');
 		}
 
+		$settings = (new Application_Model_Setting)->findValuesByName([
+			'google_mapsKey'
+		]);
+
 		$profileForm = new Application_Form_Profile;
 		$addressModel = new Application_Model_Address;
 		$addressForm = new Application_Form_Address;
@@ -106,7 +110,7 @@ class HomeController extends Zend_Controller_Action
 			]) . ',' .
 			'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
-				$config->google->maps->key);
+				$settings['google_mapsKey']);
 
 		$this->view->profileForm = $profileForm;
 		$this->view->addressForm = $addressForm;
@@ -199,6 +203,10 @@ class HomeController extends Zend_Controller_Action
 			$this->view->user = $user;
 		}
 
+		$settings = (new Application_Model_Setting)->findValuesByName([
+			'google_mapsKey'
+		]);
+
 		$user_id = $this->_request->getParam('user');
 
 		if (!v::optional(v::intVal())->validate($user_id))
@@ -253,9 +261,8 @@ class HomeController extends Zend_Controller_Action
 			]) . ';')
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view));
 
-		$config = Zend_Registry::get('config_global');
 		My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
-				'key=' . $config->google->maps->key . '&sensor=false&v=3&callback=initMap', $this->view);
+				'key=' . $settings['google_mapsKey'] . '&v=3&callback=initMap', $this->view);
 	}
 
 	/**
