@@ -1,7 +1,7 @@
 <?php
 $settings = (new Application_Model_Setting)->findValuesByName([
-	'fb_apiVersion',
-	'fb_appId'
+	'fb_apiVersion', 'fb_appId',
+	'google_analyticsAccount'
 ]);
 
 $config = Zend_Registry::get('config_global');
@@ -171,7 +171,7 @@ $this->headLink() . $this->headScript(); ?></head>
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-ga('create', <?php echo json_encode($config->google->analytics->propertyId); ?>, 'auto');
+ga('create', <?php echo json_encode($settings['google_analyticsAccount']); ?>, 'auto');
 ga('send', 'pageview');
 </script>
 </body>
