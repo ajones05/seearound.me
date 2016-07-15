@@ -1,5 +1,8 @@
 <?php
-$config = Zend_Registry::get('config_global');
+$settings = (new Application_Model_Setting)->findValuesByName([
+	'fb_apiVersion',
+	'fb_appId'
+]);
 ?>
 <h2>mobile/fb-login</h2>
 <ol class="breadcrumb">
@@ -30,10 +33,10 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilefb-log
 <script>
 window.fbAsyncInit=function(){
 	FB.init({
-		appId: <?php echo json_encode($config->facebook->app->id); ?>,
+		appId: <?php echo json_encode($settings['fb_appId']); ?>,
 		xfbml: true,
 		cookie: true,
-		version: '<?php echo $config->facebook->api->version; ?>'
+		version: <?php echo json_encode($settings['fb_apiVersion']); ?>
 	});
 };
 (function(d, s, id){

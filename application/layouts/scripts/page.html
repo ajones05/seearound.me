@@ -1,7 +1,8 @@
 <?php
-$config = Zend_Registry::get('config_global');
-$request = Zend_Controller_Front::getInstance()->getRequest();
-$auth = Zend_Auth::getInstance()->getIdentity();
+$settings = (new Application_Model_Setting)->findValuesByName([
+	'fb_apiVersion',
+	'fb_appId'
+]);
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this))
@@ -9,10 +10,10 @@ $this->headLink()
 
 $this->headScript()
 	->appendScript(
-		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
-		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
-		"	var facebook_appId = " . json_encode($config->facebook->app->id) . ";\n" .
-		"	var facebook_apiVer = " . json_encode($config->facebook->api->version) . ";\n" .
+		'var isLogin=' . json_encode(Zend_Auth::getInstance()->hasIdentity()) .
+		',baseUrl=' . json_encode($this->serverUrl() . $this->baseUrl('/')) .
+		',facebook_appId=' . json_encode($settings['fb_appId']) .
+		',facebook_apiVer=' . json_encode($settings['fb_apiVersion']) .
 		My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700')
 	)
 	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))

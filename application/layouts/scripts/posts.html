@@ -1,4 +1,9 @@
 <?php
+$settings = (new Application_Model_Setting)->findValuesByName([
+	'fb_apiVersion',
+	'fb_appId'
+]);
+
 $config = Zend_Registry::get('config_global');
 
 My_Layout::renderFavicon($this);
@@ -11,8 +16,8 @@ $this->headLink()
 
 $headScripts = 'var baseUrl=' . json_encode($this->serverUrl() . $this->baseUrl('/')) . ',' .
 	'assetsBaseUrl=' . json_encode($this->serverUrl() . My_Layout::assetUrl('', $this)) . ',' .
-	'facebook_appId=' . json_encode($config->facebook->app->id) . ',' .
-	'facebook_apiVer=' . json_encode($config->facebook->api->version);
+	'facebook_appId=' . json_encode($settings['fb_appId']) . ',' .
+	'facebook_apiVer=' . json_encode($settings['fb_apiVersion']);
 
 if ($this->user)
 {
