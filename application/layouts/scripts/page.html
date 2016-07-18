@@ -14,7 +14,7 @@ $this->headScript()
 		'var isLogin=' . json_encode(Zend_Auth::getInstance()->hasIdentity()) .
 		',baseUrl=' . json_encode($this->serverUrl() . $this->baseUrl('/')) .
 		',facebook_appId=' . json_encode($settings['fb_appId']) .
-		',facebook_apiVer=' . json_encode($settings['fb_apiVersion']) .
+		',facebook_apiVer=' . json_encode($settings['fb_apiVersion']) . ';' .
 		My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700')
 	)
 	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))
