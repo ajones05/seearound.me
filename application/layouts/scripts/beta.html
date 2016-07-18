@@ -1,0 +1,40 @@
+<?php
+$settings = (new Application_Model_Setting)->findValuesByName([
+	'google_analyticsAccount',
+	'site_titlePrefix'
+]);
+
+$this->headLink()
+	->appendStylesheet(My_Layout::assetUrl('www/css/beta.css', $this));
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<?php include '_head.html'; ?>
+</head>
+<body>
+<div class="uprBar">
+<div class="loginHdr">
+<a href="<?php echo $this->baseUrl('/'); ?>">
+<img src="<?php echo $this->baseUrl('www/images/beta/logo-header.png'); ?>"
+alt="logo" width="200" height="46">
+</a>
+<a href="<?php echo $this->baseUrl('about'); ?>" class="about-link">About</a>
+</div>
+</div>
+<div class="mainContainer">
+<h1>See and Share What's Happening Near You <br>
+<span>A free, public, hyper-local community bulletin board</span></h1>
+<div class="signup-form">
+<form
+action="https://docs.google.com/forms/d/1Fgw1vHniMWGgiXvtyndkIXZtRYWEW4kXxuG1Gq2C8ok/formResponse"
+method="POST">
+<input type="email" name="entry.364269482" placeholder="Email address..." required>
+<input type="submit" value="Notify me!">
+</form>
+</div>
+<img src="<?php echo $this->baseUrl('www/images/beta/phones.png'); ?>"
+alt="" class="phones-bottom" width="500" height="491">
+</div>
+</body>
+</html>

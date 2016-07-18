@@ -39,6 +39,17 @@ class IndexController extends Zend_Controller_Action
 			return true;
 		}
 
+		$this->view->layout()->setLayout('beta');
+		$this->_helper->viewRenderer->setNoRender(true);
+	}
+
+	/**
+	 * Login action.
+	 *
+	 * @return void
+	 */
+	public function loginAction()
+	{
 		$settings = (new Application_Model_Setting)->findValuesByName([
 			'google_mapsKey'
 		]);

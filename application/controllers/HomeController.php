@@ -29,7 +29,7 @@ class HomeController extends Zend_Controller_Action
 			Zend_Session::forgetMe();
 		}
 
-		$this->_redirect($this->view->baseUrl('/'));
+		$this->_redirect($this->view->baseUrl('/login'));
 	}
 
     public function editProfileAction()

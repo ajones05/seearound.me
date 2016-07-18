@@ -151,7 +151,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				'login',
 				array(
 					'controller' => 'index',
-					'action' => 'index',
+					'action' => 'login',
 					'isLogin' => true
 				)
 			)
@@ -163,7 +163,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				'register',
 				array(
 					'controller' => 'index',
-					'action' => 'index'
+					'action' => 'login'
 				)
 			)
 		);
