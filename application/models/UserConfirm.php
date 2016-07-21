@@ -8,8 +8,8 @@ class Application_Model_UserConfirm extends Zend_Db_Table_Abstract
 	 * @var	array
 	 */
 	public static $type = [
-		'confirm_email' => 0,
-		'forgot_password' => 1
+		'registration' => 0,
+		'password' => 1
 	];
 
     /**
@@ -38,6 +38,33 @@ class Application_Model_UserConfirm extends Zend_Db_Table_Abstract
     ];
 
 	/**
+	 * Generates unique confirm code.
+	 *
+	 * @return string
+	 */
+	public function generateConfirmCode()
+	{
+		do
+		{
+			$code = My_CommonUtils::generateKey(12);
+		}
+		while ($this->findByCode($code) != null);
+
+		return $code;
+	}
+
+	/**
+	 * Finds record by code.
+	 *
+	 * @param	string $code
+	 * return	mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
+	 */
+	public function findByCode($code)
+	{
+		return $this->fetchRow($this->select()->where('code=?', $code));
+	}
+
+	/**
 	 * Saves form.
 	 *
 	 * @param	array $data
@@ -45,54 +72,31 @@ class Application_Model_UserConfirm extends Zend_Db_Table_Abstract
 	 */
 	public function save(array $data)
 	{
-		$confirm = $this->createRow($data);
-		$confirm->deleted = 0;
-		$confirm->created_at = new Zend_Db_Expr('NOW()');
-
-		do
-		{
-			$confirm->code = My_CommonUtils::generateKey(12);
-		}
-		while ($this->findByCode($confirm->code) != null);
-
-		$this->updateDelete($confirm);
-
-		$confirm->save();
-
-		return $confirm;
+		$row = $this->createRow($data);
+		$row->deleted = 0;
+		$row->created_at =
+		$row->created_at = new Zend_Db_Expr('NOW()');
+		$row->code = $this->generateConfirmCode();
+		$row->save();
+		return $row;
 	}
 
 	/**
-	 * Updates rows deleted status.
+	 * Deletes user codes by user id and type.
 	 *
-	 * @param	Zend_Db_Table_Row_Abstract $confirm
+	 * @param	Zend_Db_Table_Row_Abstract $user
+	 * @param	integer $type
 	 * @return	integer
 	 */
-	public function updateDelete($confirm)
+	public function deleteUserCode($user, $type)
 	{
-		return $this->update(
-			['deleted' => 1, 'updated_at' => new Zend_Db_Expr('NOW()')],
-			'(user_id=' . $confirm->user_id . ' AND type_id=' .
-				$confirm->type_id . ' AND deleted=0)'
-		);
-	}
-
-	/**
-	 * Finds record by code.
-	 *
-	 * @param	string $code
-	 * @param	boolean $deleted
-	 * return	mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
-	 */
-	public function findByCode($code, $deleted = null)
-	{
-		$query = $this->select()->where('code=?', $code);
-
-		if ($deleted === false)
-		{
-			$query->where('deleted=0');
-		}
-
-		return $this->fetchRow($query);
+		return $this->update([
+			'deleted' => 1,
+			'updated_at' => new Zend_Db_Expr('NOW()')
+		], [
+			'user_id=?' => $user->id,
+			'type_id=?' => $type,
+			'deleted=?' => 0
+		]);
 	}
 }

@@ -7,9 +7,9 @@ use Respect\Validation\Validator as v;
 class MobileController extends Zend_Controller_Action
 {
 	/**
-	 * @var	Zend_Log
+	 * @var array Contains site settings
 	 */
-	protected $_logger;
+	protected $settings;
 
 	/**
 	 * Initialize object
@@ -18,20 +18,43 @@ class MobileController extends Zend_Controller_Action
 	 */
 	public function init()
 	{
-		$log_path = ROOT_PATH . '/log';
-		is_dir($log_path) || mkdir($log_path, 0700);
-		$writer = new Zend_Log_Writer_Stream($log_path . '/mobile_api_' . date('Y-m-d') . '.log');
-		$this->_logger = new Zend_Log($writer);
+		$this->settings = (new Application_Model_Setting)->findValuesByName([
+			'api_enable'
+		]);
 
 		$this->getResponse()->setHeader('Access-Control-Allow-Origin', '*');
+
+		if ($this->settings['api_enable'] == 0)
+		{
+			$this->_helper->json([
+					'status' => 0,
+					'message' => 'This site is down for maintenance'
+			]);
+		}
 	}
 
 	/**
-	 * Authenticate user action.
+	 * Proxy for undefined methods.  Default behavior is to throw an
+	 * exception on undefined methods, however this function can be
+	 * overridden to implement magic (dynamic) actions, or provide run-time
+	 * dispatching.
 	 *
+	 * @param  string $methodName
+	 * @param  array $args
 	 * @return void
+	 * @throws Zend_Controller_Action_Exception
 	 */
-	public function indexAction()
+	public function __call($methodName, $args)
+	{
+		$this->errorHandler('Incorrect action: ' .
+			preg_replace('/Action$/', '', $methodName));
+		$this->_helper->json(['status' => 0, 'message' => 'Incorrect request alias']);
+	}
+
+	/**
+	 * Implements "login" API action.
+	 */
+	public function loginAction()
 	{
 		try
 		{
@@ -54,36 +77,18 @@ class MobileController extends Zend_Controller_Action
 			$userModel = new Application_Model_User;
 			$user = $userModel->findByEmail($email);
 
-			// TODO: password_verify($password, $user->password_hash)
-			if (!$user || $user->Password !== hash('sha256', $password))
+			if (!$user || !password_verify($password, $user->password))
 			{
 				throw new RuntimeException('Incorrect user email or password');
 			}
 
-			if (!$user->password_hash)
-			{
-				$userModel->update(['password_hash' => password_hash($password, PASSWORD_BCRYPT)],
-					'id=' . $user->id);
-			}
-
 			if ($user->Status != 'active')
 			{
-				throw new RuntimeException('User is not active', -1);
+				throw new RuntimeException('User is not active');
 			}
 
-			$user->updateToken();
-
-			$login_id = (new Application_Model_Loginstatus)->insert([
-				'user_id' => $user->id,
-				'login_time' => new Zend_Db_Expr('NOW()'),
-				'visit_time' => new Zend_Db_Expr('NOW()'),
-				'ip_address' => $_SERVER['REMOTE_ADDR']
-			]);
-
-			if (date('N') == 1)
-			{
-				$user->updateInviteCount();
-			}
+			$login = (new Application_Model_Loginstatus)->save($user, true);
+			$user->updateInviteCount();
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -96,14 +101,12 @@ class MobileController extends Zend_Controller_Action
 					'Birth_date' => $user->Birth_date,
 					'Profile_image' => $this->view->serverUrl() .
 						$this->view->baseUrl($user->getThumb('320x320')['path']),
-					'Status' => $user->Status,
-					'Token' => $user->Token,
 					'address' => Application_Model_Address::format($user),
 					'latitude' => $user->latitude,
 					'longitude' => $user->longitude,
 					'Activities' => $user->activities(),
 					'Gender' => $user->gender(),
-					'login_id' => $login_id
+					'token' => $login->token
 				]
 			];
 		}
@@ -114,10 +117,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -140,18 +143,10 @@ class MobileController extends Zend_Controller_Action
 			$facebookApi = My_Facebook::getInstance([
 				'default_access_token' => $accessToken
 			]);
-			$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
-			$login_id = (new Application_Model_Loginstatus)->insert([
-				'user_id' => $user->id,
-				'login_time' => new Zend_Db_Expr('NOW()'),
-				'visit_time' => new Zend_Db_Expr('NOW()'),
-				'ip_address' => $_SERVER['REMOTE_ADDR']
-			]);
 
-			if (date('N') == 1)
-			{
-				$user->updateInviteCount();
-			}
+			$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
+			$login = (new Application_Model_Loginstatus)->save($user, true);
+			$user->updateInviteCount();
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -162,14 +157,12 @@ class MobileController extends Zend_Controller_Action
 					'Birth_date' => $user->Birth_date,
 					'Profile_image' => $this->view->serverUrl() .
 						$this->view->baseUrl($user->getThumb('320x320')['path']),
-					'Status' => $user->Status,
-					'Token' => $user->Token,
 					'address' => Application_Model_Address::format($user),
 					'latitude' => $user->latitude,
 					'longitude' => $user->longitude,
 					'Activities' => $user->activities(),
 					'Gender' => $user->gender(),
-					'login_id' => $login_id
+					'token' => $login->token
 				]
 			];
 		}
@@ -181,10 +174,10 @@ class MobileController extends Zend_Controller_Action
 					$e instanceof Facebook\FacebookAuthorizationException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -254,10 +247,9 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$user = (new Application_Model_User)->register(
-				array_merge($data,['Status' => 'active'])
+				$data + ['Status' => 'active']
 			);
-
-			$user->updateToken();
+			$login = (new Application_Model_Loginstatus)->save($user, true);
 
 			My_Email::send(
 				$user->Email_id,
@@ -265,14 +257,7 @@ class MobileController extends Zend_Controller_Action
 				array('template' => 'ws-registration')
 			);
 
-			$login_id = (new Application_Model_Loginstatus)->insert([
-				'user_id' => $user->id,
-				'login_time' => new Zend_Db_Expr('NOW()'),
-				'visit_time' => new Zend_Db_Expr('NOW()'),
-				'ip_address' => $_SERVER['REMOTE_ADDR']
-			]);
-
-			$response['login_id'] = $login_id;
+			$response['token'] = $login->token;
 		}
 		catch (Exception $e)
 		{
@@ -280,10 +265,10 @@ class MobileController extends Zend_Controller_Action
 				'status' => 'FAILED',
 				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
 			);
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -319,9 +304,10 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$confirmModel = new Application_Model_UserConfirm;
+			$confirmModel->deleteUserCode($user, $confirmModel::$type['password']);
 			$confirm = $confirmModel->save([
 				'user_id' => $user->id,
-				'type_id' => $confirmModel::$type['forgot_password']
+				'type_id' => $confirmModel::$type['password']
 			]);
 
 			My_Email::send(
@@ -339,9 +325,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -354,19 +341,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
+			$user = $this->getUserByToken();
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -380,7 +355,8 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'My Friend list rendered successfully'
 			];
 
-			$friends = (new Application_Model_Friends)->findAllByUserId($user->id, 100, $start);
+			$friends = (new Application_Model_Friends)
+				->findAllByUserId($user->id, 100, $start);
 
 			if (count($friends))
 			{
@@ -410,10 +386,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -426,19 +402,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user ID');
-			}
-
+			$user = $this->getUserByToken();
 			$receiver_id = $this->_request->getPost('receiver_id');
 
 			if (!v::intVal()->validate($receiver_id))
@@ -447,22 +411,28 @@ class MobileController extends Zend_Controller_Action
 					var_export($receiver_id, true));
 			}
 
-			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			if ($user->id == $receiver_id)
 			{
-				throw new RuntimeException('Incorrect follow user ID');
+				throw new RuntimeException('Receiver ID cannot be the same');
 			}
 
-			$model = new Application_Model_Friends;
+			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			{
+				throw new RuntimeException('Incorrect receiver user ID: ' .
+					var_export($receiver_id, true));
+			}
 
-			if ($model->isFriend($user, $receiver))
+			$friendModel = new Application_Model_Friends;
+
+			if ($friendModel->isFriend($user, $receiver))
 			{
 				throw new RuntimeException('User already in friend list');
 			}
 
-			$model->createRow([
+			$friendModel->createRow([
 				'sender_id' => $user->id,
 				'reciever_id' => $receiver->id,
-				'status' => $model->status['confirmed'],
+				'status' => $friendModel->status['confirmed'],
 				'source' => 'herespy'
 			])->updateStatus($user);
 
@@ -480,10 +450,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -496,19 +466,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user ID');
-			}
-
+			$user = $this->getUserByToken();
 			$receiver_id = $this->_request->getPost('receiver_id');
 
 			if (!v::intVal()->validate($receiver_id))
@@ -517,20 +475,26 @@ class MobileController extends Zend_Controller_Action
 					var_export($receiver_id, true));
 			}
 
-			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			if ($user->id == $receiver_id)
 			{
-				throw new RuntimeException('Incorrect follow user ID');
+				throw new RuntimeException('Receiver ID cannot be the same');
 			}
 
-			$model = new Application_Model_Friends;
-			$friend = $model->isFriend($user, $receiver);
+			if (!Application_Model_User::checkId($receiver_id, $receiver))
+			{
+				throw new RuntimeException('Incorrect receiver user ID: ' .
+					var_export($receiver_id, true));
+			}
+
+			$friendModel = new Application_Model_Friends;
+			$friend = $friendModel->isFriend($user, $receiver);
 
 			if (!$friend)
 			{
 				throw new RuntimeException('User not found in friend list');
 			}
 
-			$friend->status = $model->status['rejected'];
+			$friend->status = $friendModel->status['rejected'];
 			$friend->updateStatus($user);
 
 			$response = ['status' => 'SUCCESS'];
@@ -542,10 +506,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -554,11 +518,11 @@ class MobileController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-    public function getotheruserprofileAction()
-    {
+  public function getotheruserprofileAction()
+  {
 		try
 		{
-			$userModel = new Application_Model_User;
+			$user = $this->getUserByToken();
 			$other_user_id = $this->_request->getPost('other_user_id');
 
 			if (!v::intVal()->validate($other_user_id))
@@ -567,6 +531,12 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
+			if ($user->id == $other_user_id)
+			{
+				throw new RuntimeException('Other user ID cannot be the same');
+			}
+
+			$userModel = new Application_Model_User;
 			if (!$userModel->checkId($other_user_id, $profile))
 			{
 				throw new RuntimeException('Incorrect other user ID: ' .
@@ -575,6 +545,8 @@ class MobileController extends Zend_Controller_Action
 
 			$response = [
 				'status' => 'SUCCESS',
+				'friends' => (new Application_Model_Friends)
+					->isFriend($user, $profile) ? 1 : 0,
 				'result' => My_ArrayHelper::filter([
 					'id' => $profile->id,
 					'karma' => round($userModel->getKarma($profile->id)['karma'], 4),
@@ -587,30 +559,6 @@ class MobileController extends Zend_Controller_Action
 					'Birth_date' => $profile->Birth_date
 				])
 			];
-
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::optional(v::intVal())->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if ($user_id != null)
-			{
-				if ($user_id == $other_user_id)
-				{
-					throw new RuntimeException('Other user ID cannot be the same as your ID');
-				}
-
-				if (!Application_Model_User::checkId($user_id, $user))
-				{
-					throw new RuntimeException('Incorrect user ID: ' .
-						var_export($user_id, true));
-				}
-
-				$response['friends'] = (new Application_Model_Friends)->isFriend($user, $profile) ? 1 : 0;
-			}
 		}
 		catch (Exception $e)
 		{
@@ -619,10 +567,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -635,26 +583,18 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$sender_id = $this->_request->getPost('sender_id');
-
-			if (!v::intVal()->validate($sender_id))
-			{
-				throw new RuntimeException('Incorrect sender ID value: ' .
-					var_export($sender_id, true));
-			}
-
-			if (!Application_Model_User::checkId($sender_id, $user))
-			{
-				throw new RuntimeException('Incorrect sender ID: ' .
-					var_export($sender_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$receiver_id = $this->_request->getPost('reciever_id');
 
 			if (!v::intVal()->validate($receiver_id))
 			{
 				throw new RuntimeException('Incorrect receiver ID value: ' .
 					var_export($receiver_id, true));
+			}
+
+			if ($user->id == $receiver_id)
+			{
+				throw new RuntimeException('Receiver ID cannot be the same');
 			}
 
 			if (!Application_Model_User::checkId($receiver_id, $receiver))
@@ -752,10 +692,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -768,19 +708,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
+			$user = $this->getUserByToken();
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -820,7 +748,7 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'Message list Send Successfully'
 			];
 
-			if (count($messages))
+			if ($messages->count())
 			{
 				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
@@ -850,10 +778,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -866,21 +794,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			$userModel = new Application_Model_User;
-
-			if (!$userModel->checkId($user_id, $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
+			$user = $this->getUserByToken();
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -897,10 +811,13 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
-			if ($other_user_id && !$userModel->checkId($other_user_id, $other_user))
+			if ($other_user_id != null)
 			{
-				throw new RuntimeException('Incorrect other user ID: ' .
-					var_export($other_user_id, true));
+				if (!Application_Model_User::checkId($other_user_id, $other_user))
+				{
+					throw new RuntimeException('Incorrect other user ID: ' .
+						var_export($other_user_id, true));
+				}
 			}
 
 			$response = ['status' => 'SUCCESS'];
@@ -974,10 +891,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -990,24 +907,20 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
+			$user = $this->getUserByToken();
+			$start = $this->_request->getPost('start', 0);
 
-			if (!v::intVal()->validate($user_id))
+			if (!v::optional(v::intVal())->validate($start))
 			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action');
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
 			$id = $this->_request->getPost('id');
 
 			if (!v::intVal()->validate($id))
 			{
-				throw new RuntimeException('Incorrect ID value: ' .
+				throw new RuntimeException('Incorrect conversation ID value: ' .
 					var_export($id, true));
 			}
 
@@ -1015,20 +928,13 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$conversationModel->checkId($id, $conversation))
 			{
-				throw new RuntimeException('Incorrect conversation ID', -1);
+				throw new RuntimeException('Incorrect conversation ID: ' .
+					var_export($id, true));
 			}
 
 			if ($user->id != $conversation->to_id && $user->id != $conversation->from_id)
 			{
 				throw new RuntimeException('You have no permissions to access this action');
-			}
-
-			$start = $this->_request->getPost('start', 0);
-
-			if (!v::optional(v::intVal())->validate($start))
-			{
-				throw new RuntimeException('Incorrect start value: ' .
-					var_export($start, true));
 			}
 
 			$messageModel = new Application_Model_ConversationMessage;
@@ -1114,10 +1020,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => true || $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -1130,19 +1036,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
+			$user = $this->getUserByToken();
 			$post_id = $this->_request->getPost('post_id');
 
 			if (!v::stringType()->validate($post_id))
@@ -1158,7 +1052,7 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Post ID cannot be blank');
 			}
 
-			$conversationIds = array();
+			$conversationIds = [];
 			$conversationModel = new Application_Model_Conversation;
 
 			foreach ($ids as $id)
@@ -1168,7 +1062,7 @@ class MobileController extends Zend_Controller_Action
 				if (!$conversation)
 				{
 					throw new RuntimeException('Incorrect conversation ID: ' .
-						var_export($id, true), -1);
+						var_export($id, true));
 				}
 
 				switch ($user->id)
@@ -1186,26 +1080,26 @@ class MobileController extends Zend_Controller_Action
 			if (count($conversationIds))
 			{
 				$messageModel = new Application_Model_ConversationMessage;
-				$messageModel->update(array('is_read' => 1),
+				$messageModel->update(['is_read' => 1],
 					'is_first=1 AND conversation_id IN (' . implode(',', $conversationIds) . ')');
 			}
 
-			$response = array(
+			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'Read Inbox Message Successfully'
-			);
+			];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 'FAILED',
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
-			);
+			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -1218,19 +1112,13 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
+			$user = $this->getUserByToken();
+			$start = $this->_request->getPost('start', 0);
 
-			if (!v::intVal()->validate($user_id))
+			if (!v::optional(v::intVal())->validate($start))
 			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			$userModel = new Application_Model_User;
-
-			if (!$userModel->checkId($user_id, $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action');
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
 			$other_user_id = $this->_request->getPost('other_user_id');
@@ -1241,18 +1129,15 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
-			if (!$userModel->checkId($other_user_id, $other_user))
+			if ($user->id == $other_user_id)
+			{
+				throw new RuntimeException('Other user ID cannot be the same');
+			}
+
+			if (!Application_Model_User::checkId($other_user_id, $other_user))
 			{
 				throw new RuntimeException('Incorrect other user ID: ' .
 					var_export($other_user_id, true));
-			}
-
-			$start = $this->_request->getPost('start', 0);
-
-			if (!v::optional(v::intVal())->validate($start))
-			{
-				throw new RuntimeException('Incorrect start value: ' .
-					var_export($start, true));
 			}
 
 			$messageModel = new Application_Model_ConversationMessage;
@@ -1273,8 +1158,8 @@ class MobileController extends Zend_Controller_Action
 				])
 				->joinLeft(['c' => 'conversation'], 'c.id=cm.conversation_id', '')
 				->where('(c.to_id=?',  $user->id)
-				->where('c.from_id=?)', $other_user->id)
-				->orWhere('(c.to_id=?',  $other_user->id)
+				->where('c.from_id=?)', $other_user_id)
+				->orWhere('(c.to_id=?',  $other_user_id)
 				->where('c.from_id=?)', $user->id)
 				->joinLeft(['su' => 'user_data'], 'su.id=cm.from_id', '')
 				->joinLeft(['ru' => 'user_data'], 'ru.id=cm.to_id', '')
@@ -1324,10 +1209,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -1340,20 +1225,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user ID: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$post_id = $this->_request->getPost('post_id');
 
 			if (!v::intVal()->validate($post_id))
@@ -1362,7 +1234,8 @@ class MobileController extends Zend_Controller_Action
 					var_export($post_id, true));
 			}
 
-			if (!Application_Model_News::checkId($post_id, $post, ['link'=>true,'image'=>true]))
+			if (!Application_Model_News::checkId($post_id, $post,
+						['link'=>true,'image'=>true]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($post_id, true));
@@ -1379,9 +1252,6 @@ class MobileController extends Zend_Controller_Action
 					'user_id' => $post->user_id,
 					'news' => $post->news,
 					'created_date' => My_Time::time_ago($post->created_date),
-					'updated_date' => (new DateTime($post->updated_date))
-						->setTimezone($user->getTimezone())
-						->format(My_Time::SQL),
 					'latitude' => $post->latitude,
 					'longitude' => $post->longitude,
 					'Address' => Application_Model_Address::format($post) ?: $post->address,
@@ -1439,10 +1309,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -1455,22 +1325,16 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
+			$user = $this->getUserByToken();
 			$data = $this->_request->getPost();
 			$postForm = new Application_Form_News;
 			$postForm->setScenario('new');
+
+			// TODO: change post body field name
+			if (isset($data['body']))
+			{
+				$data['news'] = $data['body'];
+			}
 
 			if (!$postForm->isValid($data))
 			{
@@ -1552,10 +1416,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -1568,20 +1432,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user ID: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$data = $this->_request->getPost();
 
 			// TODO: change post body field name
@@ -1630,9 +1481,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -1645,20 +1497,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user ID: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$post_id = $this->_request->getPost('post_id');
 
 			if (!v::intVal()->validate($post_id))
@@ -1776,10 +1615,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -1792,20 +1631,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user ID: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$post_id = $this->_request->getPost('post_id');
 
 			if (!v::intVal()->validate($post_id))
@@ -1814,9 +1640,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($post_id, true));
 			}
 
-			$model = new Application_Model_News;
-
-			if (!$model->checkId($post_id, $post, ['join'=>false]))
+			if (!Application_Model_News::checkId($post_id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($post_id, true));
@@ -1839,9 +1663,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -1850,26 +1675,11 @@ class MobileController extends Zend_Controller_Action
 	 *
 	 * @return	void
 	 */
-    public function editProfileAction()
+  public function editProfileAction()
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			$userModel = new Application_Model_User;
-
-			if (!$userModel->checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user ID: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$form = new Application_Form_MobileProfile;
 
 			if (!$form->isValid($this->_request->getPost()))
@@ -1878,7 +1688,7 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$data = $form->getValues();
-
+			$userModel = new Application_Model_User;
 			$userModel->getDefaultAdapter()->beginTransaction();
 
 			try
@@ -1887,7 +1697,7 @@ class MobileController extends Zend_Controller_Action
 					'Name' => $data['name'],
 					'Birth_date' => trim($data['birth_date']) !== '' ?
 						(new DateTime($data['birth_date']))->format('Y-m-d') : null,
-					// 'Email_id' => $data['email']
+					'Email_id' => $data['email']
 				);
 
 				if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
@@ -1962,10 +1772,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
     }
 
@@ -1978,20 +1788,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('userId');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user id: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$searchForm = new Application_Form_PostSearch;
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
@@ -2029,12 +1826,6 @@ class MobileController extends Zend_Controller_Action
 						'user_id' => $row->user_id,
 						'news' => $row->news,
 						'created_date' => My_Time::time_ago($row->created_date),
-						'updated_date' => (new DateTime($row->updated_date))
-							->setTimezone($userTimezone)
-							->format(My_Time::SQL),
-						'isdeleted' => $row->isdeleted,
-						'isflag' => $row->isflag,
-						'isblock' => $row->isblock,
 						'latitude' => $row->latitude,
 						'longitude' => $row->longitude,
 						'Address' => Application_Model_Address::format($row) ?: $row->address,
@@ -2097,10 +1888,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -2113,20 +1904,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user id: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$searchForm = new Application_Form_PostSearch;
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
@@ -2171,12 +1949,6 @@ class MobileController extends Zend_Controller_Action
 						'user_id' => $row->user_id,
 						'news' => $row->news,
 						'created_date' => My_Time::time_ago($row->created_date),
-						'updated_date' => (new DateTime($row->updated_date))
-							->setTimezone($userTimezone)
-							->format(My_Time::SQL),
-						'isdeleted' => $row->isdeleted,
-						'isflag' => $row->isflag,
-						'isblock' => $row->isblock,
 						'latitude' => $row->latitude,
 						'longitude' => $row->longitude,
 						'Address' => Application_Model_Address::format($row) ?: $row->address,
@@ -2239,10 +2011,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -2251,22 +2023,17 @@ class MobileController extends Zend_Controller_Action
 	 *
 	 * @return	void
 	 */
-    public function getTotalCommentsAction()
+  public function getTotalCommentsAction()
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
+			$user = $this->getUserByToken();
+			$start = $this->_request->getPost('start', 0);
 
-			if (!v::intVal()->validate($user_id))
+			if (!v::optional(v::intVal())->min(0)->validate($start))
 			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user id: ' .
-					var_export($user_id, true));
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
 			$id = $this->_request->getPost('news_id');
@@ -2281,14 +2048,6 @@ class MobileController extends Zend_Controller_Action
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
-			}
-
-			$start = $this->_request->getPost('start', 0);
-
-			if (!v::optional(v::intVal())->min(0)->validate($start))
-			{
-				throw new RuntimeException('Incorrect start value: ' .
-					var_export($start, true));
 			}
 
 			$response = [
@@ -2330,10 +2089,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
     }
 
@@ -2342,24 +2101,11 @@ class MobileController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-    public function postCommentAction()
+  public function postCommentAction()
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user id: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$id = $this->_request->getPost('news_id');
 
 			if (!v::intVal()->validate($id))
@@ -2409,36 +2155,23 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
-     }
+  }
 
 	/**
 	 * Delete post comment action.
 	 *
 	 * @return void
 	 */
-    public function deleteCommentAction()
+  public function deleteCommentAction()
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user id: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$id = $this->_request->getPost('comment_id');
 
 			if (!v::intVal()->validate($id))
@@ -2479,9 +2212,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
+		$this->responseHandler($response);
 		$this->_helper->json($response);
      }
 
@@ -2494,18 +2228,13 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
+			$user = $this->getUserByToken();
+			$vote = $this->_request->getPost('vote');
 
-			if (!v::intVal()->validate($user_id))
+			if (!v::intVal()->oneOf(v::equals(-1),v::equals(1))->validate($vote))
 			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user id: ' .
-					var_export($user_id, true));
+				throw new RuntimeException('Incorrect vote value: ' .
+					var_export($vote, true));
 			}
 
 			$id = $this->_request->getPost('news_id');
@@ -2520,14 +2249,6 @@ class MobileController extends Zend_Controller_Action
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
-			}
-
-			$vote = $this->_request->getPost('vote');
-
-			if (!v::intVal()->oneOf(v::equals(-1),v::equals(1))->validate($vote))
-			{
-				throw new RuntimeException('Incorrect vote value: ' .
-					var_export($vote, true));
 			}
 
 			$model = new Application_Model_Voting;
@@ -2581,10 +2302,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			);
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -2597,20 +2318,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user id: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->min(0)->validate($start))
@@ -2753,10 +2461,10 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
@@ -2769,20 +2477,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user_id = $this->_request->getPost('user_id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			if (!Application_Model_User::checkId($user_id, $user))
-			{
-				throw new RuntimeException('Incorrect user id: ' .
-					var_export($user_id, true));
-			}
-
+			$user = $this->getUserByToken();
 			$id = $this->_request->getPost('id');
 
 			if (!v::intVal()->validate($id))
@@ -2903,26 +2598,37 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
+			$this->errorHandler($e);
 		}
 
-		$this->_logRequest($response);
-
+		$this->responseHandler($response);
 		$this->_helper->json($response);
 	}
 
 	/**
-	 * Writes to log rurrent request and response
+	 * Checks if access token is valid and finds user.
 	 *
-	 * @param	string	$response
-	 *
-	 * @return	void
+	 * @return Application_Model_UserRow
+	 * @throws RuntimeException
 	 */
-	protected function _logRequest($response)
+	protected function getUserByToken()
 	{
-		$this->_logger->info($_SERVER['REQUEST_URI'] .
-			"\n>> " . var_export($_REQUEST, true) .
-			"\n<< " . var_export($response, true) .
-			"\n\$_SERVER: " . var_export($_SERVER, true));
+		$token = $this->_request->getPost('token');
+
+		if (!v::stringType()->length(64,64)->validate($token))
+		{
+			throw new RuntimeException('Incorrect access token value: ' .
+				var_export($token, true));
+		}
+
+		$user = (new Application_Model_User)->findUserByToken($token);
+
+		if ($user == null || $user->Status != 'active')
+		{
+			throw new RuntimeException('You are not authorized to access this action');
+		}
+
+		return $user;
 	}
 
 	/**
@@ -2949,5 +2655,37 @@ class MobileController extends Zend_Controller_Action
 		}
 
 		throw new RuntimeException('Validate error: ' . implode(', ', $errors), -1);
+	}
+
+	/**
+	 * Error handler method.
+	 *
+	 * @param mixed $error Exception or string
+	 * @return void
+	 */
+	protected function errorHandler($error)
+	{
+		$logger = new Zend_Log(new Zend_Log_Writer_Stream(ROOT_PATH . '/log' .
+			'/api_error_' . date('Y-m-d') . '.log'));
+		$logger->info($_SERVER['REQUEST_URI'] .
+			"\n>> " . var_export($_REQUEST, true) .
+			"\n<< " . $error .
+			"\n\$_SERVER: " . var_export($_SERVER, true));
+	}
+
+	/**
+	 * Response handler method.
+	 *
+	 * @param array $response Response data
+	 * @return void
+	 */
+	protected function responseHandler($response)
+	{
+		$logger = new Zend_Log(new Zend_Log_Writer_Stream(ROOT_PATH . '/log' .
+			'/api_response_' . date('Y-m-d') . '.log'));
+		$logger->info($_SERVER['REQUEST_URI'] .
+			"\n>> " . var_export($_REQUEST, true) .
+			"\n<< " . var_export($response, true) .
+			"\n\$_SERVER: " . var_export($_SERVER, true));
 	}
 }

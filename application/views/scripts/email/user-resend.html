@@ -1,4 +1,4 @@
 <?php
-$url = $this->serverUrl() . $this->baseUrl('home/reg-confirm?id=' . $this->user->id . '&q=' . $this->user->Conf_code);
+$url = $this->serverUrl() . $this->baseUrl('confirm/' . $this->code);
 ?>
 <p>Your new activation link is: <a href="<?php echo $url; ?>"><?php echo $url; ?></a></p>

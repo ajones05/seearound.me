@@ -40,7 +40,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	{
 		$router = Zend_Controller_Front::getInstance()->getRouter();
 
-		if (count(Zend_Auth::getInstance()->getIdentity()))
+		if (Zend_Auth::getInstance()->hasIdentity())
 		{
 			$router->addRoute(
 				'/',
@@ -165,6 +165,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 					'controller' => 'index',
 					'action' => 'login'
 				)
+			)
+		);
+
+		$router->addRoute(
+			'confirm',
+			new Zend_Controller_Router_Route(
+				'confirm/:code',
+				['controller' => 'home', 'action' => 'reg-confirm'],
+				['code' => '[A-Z0-9]+']
 			)
 		);
 	}

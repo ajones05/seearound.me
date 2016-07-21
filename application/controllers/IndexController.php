@@ -83,31 +83,25 @@ class IndexController extends Zend_Controller_Action
 					$user = $userModel->findByEmail($loginForm->email->getValue());
 					$password = $loginForm->password->getValue();
 
-					// TODO: password_verify($password, $user->password_hash)
-					if ($user && $user->Password === hash('sha256', $password))
+					if ($user->password == null)
 					{
-						if (!$user->password_hash)
-						{
-							$userModel->update(['password_hash' => password_hash($password, PASSWORD_BCRYPT)],
-								'id=' . $user->id);
-						}
+						$this->_redirect('/forgot');
+					}
 
+					if ($user && password_verify($password, $user->password))
+					{
 						if ($user->Status !== 'active')
 						{
 							$this->_redirect($this->view->baseUrl('index/reg-success/id/' . $user->id));
 						}
 
-						$login_id = (new Application_Model_Loginstatus)->insert([
-							'user_id' => $user->id,
-							'login_time' => new Zend_Db_Expr('NOW()'),
-							'visit_time' => new Zend_Db_Expr('NOW()'),
-							'ip_address' => $_SERVER['REMOTE_ADDR']
-						]);
+						$login = (new Application_Model_Loginstatus)->save($user);
+						$user->updateInviteCount();
 
 						$auth = Zend_Auth::getInstance();
 						$auth->getStorage()->write([
 							'user_id' => $user->id,
-							'login_id' => $login_id
+							'login_id' => $login->id
 						]);
 
 						$remember = $loginForm->remember->getValue();
@@ -115,11 +109,6 @@ class IndexController extends Zend_Controller_Action
 							1209600 : // 2 weeks
 							604800 // 1 week
 						);
-
-						if (date('N') == 1)
-						{
-							$user->updateInviteCount();
-						}
 
 						$this->_redirect('/');
 					}
@@ -138,30 +127,28 @@ class IndexController extends Zend_Controller_Action
 				{
 					if ($validProfile)
 					{
-						$user = $userModel->register([
-							'Conf_code' => My_CommonUtils::generateCode(),
-							'Status' => 'inactive'
-						]+$data);
+						$user = $userModel->register(['Status'=>'inactive']+$data);
+
+						$confirmModel = new Application_Model_UserConfirm;
+						$confirm = $confirmModel->save([
+							'user_id' => $user->id,
+							'type_id' => $confirmModel::$type['registration']
+						]);
 
 						My_Email::send(
 							$user->Email_id,
 							'SeeAround.me Registration',
-							array(
+							[
 								'template' => 'registration',
-								'assign' => array('user' => $user)
-							)
+								'assign' => ['user' => $user, 'code' => $confirm->code]
+							]
 						);
 
-						$login_id = (new Application_Model_Loginstatus)->insert(array(
-							'user_id' => $user->id,
-							'login_time' => new Zend_Db_Expr('NOW()'),
-							'visit_time' => new Zend_Db_Expr('NOW()'),
-							'ip_address' => $_SERVER['REMOTE_ADDR'])
-						);
+						$login = (new Application_Model_Loginstatus)->save($user);
 
 						Zend_Auth::getInstance()->getStorage()->write(array(
 							"user_id" => $user->id,
-							"login_id" => $login_id
+							"login_id" => $login->id
 						));
 
 						$this->_redirect($this->view->baseUrl('/'));
@@ -201,21 +188,12 @@ class IndexController extends Zend_Controller_Action
 		$facebookApi->setDefaultAccessToken($accessToken);
 
 		$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
-		$login_id = (new Application_Model_Loginstatus)->insert(array(
-			'user_id' => $user->id,
-			'login_time' => new Zend_Db_Expr('NOW()'),
-			'visit_time' => new Zend_Db_Expr('NOW()'),
-			'ip_address' => $_SERVER['REMOTE_ADDR'])
-		);
-
-		if (date('N') == 1)
-		{
-			$user->updateInviteCount();
-		}
+		$login = (new Application_Model_Loginstatus)->save($user);
+		$user->updateInviteCount();
 
 		Zend_Auth::getInstance()->getStorage()->write(array(
 			'user_id' => $user->id,
-			'login_id' => $login_id
+			'login_id' => $login->id
 		));
 
 		$this->_redirect($this->view->baseUrl('/'));
@@ -270,26 +248,34 @@ class IndexController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
+			$confirmModel = new Application_Model_UserConfirm;
+			$confirmModel->deleteUserCode($user, $confirmModel::$type['registration']);
+			$confirm = $confirmModel->save([
+				'user_id' => $user->id,
+				'type_id' => $confirmModel::$type['registration']
+			]);
+
 			My_Email::send(
-				array($user->Name => $user->Email_id),
+				[$user->Name => $user->Email_id],
 				'Re-send activation link',
-				array(
+				[
 					'template' => 'user-resend',
-					'assign' => array('user' => $user)
-				)
+					'assign' => ['user' => $user, 'code' => $confirm->code]
+				]
 			);
 
-			$response = array('status' => 1);
+			$response = ['status' => 1];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'error' => array('message' => 'Internal Server Error')
-			);
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			];
 		}
 
-		die(Zend_Json_Encoder::encode($response));
+		$this->_helper->json($response);
 	}
 
 	/**
@@ -326,9 +312,10 @@ class IndexController extends Zend_Controller_Action
 				if (!$form->isErrors())
 				{
 					$confirmModel = new Application_Model_UserConfirm;
+					$confirmModel->deleteUserCode($user, $confirmModel::$type['password']);
 					$confirm = $confirmModel->save([
 						'user_id' => $user->id,
-						'type_id' => $confirmModel::$type['forgot_password']
+						'type_id' => $confirmModel::$type['password']
 					]);
 
 					My_Email::send(
@@ -372,10 +359,10 @@ class IndexController extends Zend_Controller_Action
 				var_export($code, true));
 		}
 
-		$confirmModel = new Application_Model_UserConfirm;
-		$confirm = $confirmModel->findByCode($code, false);
+		$userModel = new Application_Model_User;
+		$user = $userModel->findUserByPassCode($code);
 
-		if ($confirm == null)
+		if ($user == null)
 		{
 			throw new RuntimeException('Incorrect confirm code: ' .
 				var_export($code, true));
@@ -389,12 +376,11 @@ class IndexController extends Zend_Controller_Action
 
 			if ($form->isValid($data))
 			{
-				$user = $confirm->findDependentRowset('Application_Model_User')->current();
-				$user->Password = hash('sha256', $data['password']);
-				$user->password_hash = password_hash($data['password'], PASSWORD_BCRYPT);
+				$user->password = $userModel->encryptPassword($data['password']);
 				$user->save();
 
-				$confirmModel->updateDelete($confirm);
+				$confirmModel = new Application_Model_UserConfirm;
+				$confirmModel->deleteUserCode($user, $confirmModel::$type['password']);
 
 				$this->_redirect($this->view->baseUrl('change-password-success'));
 			}

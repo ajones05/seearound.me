@@ -14,6 +14,12 @@ ALTER TABLE `user_data` ADD FOREIGN KEY (`address_id`) REFERENCES `address`(`id`
 CREATE TRIGGER user_before_del BEFORE DELETE ON user_data
 	FOR EACH ROW DELETE FROM address WHERE address.id=OLD.address_id;
 ALTER TABLE `user_data` CONVERT TO CHARACTER SET utf8;
+ALTER TABLE `user_data` DROP `User_id`;
+ALTER TABLE `user_data` DROP `Token`;
+ALTER TABLE `user_data` DROP `Password`;
+ALTER TABLE `user_data` DROP `Old_email`;
+ALTER TABLE `user_data` DROP `Conf_code`;
+ALTER TABLE `user_data` CHANGE `password_hash` `password` VARCHAR(255) NULL;
 
 --
 -- Table structure for table `user_confirm`
@@ -106,6 +112,7 @@ ALTER TABLE `login_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCE
 ALTER TABLE `login_status` CHANGE `login_time` `login_time` TIMESTAMP NULL DEFAULT NULL;
 ALTER TABLE `login_status` CHANGE `logout_time` `logout_time` TIMESTAMP NULL DEFAULT NULL;
 ALTER TABLE `login_status` ADD `visit_time` TIMESTAMP NULL DEFAULT NULL AFTER `logout_time`;
+ALTER TABLE `login_status` ADD `token` VARCHAR(64) NULL;
 
 --
 -- Table structure for table `news`

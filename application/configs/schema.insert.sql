@@ -52,4 +52,5 @@ INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description
 	(NOW(), NOW(), 'fb_berkeleyAccessToken', '', 'Facebook Berkeley page access token'),
 	(NOW(), NOW(), 'google_analyticsAccount', '', 'Google analytics page property ID'),
 	(NOW(), NOW(), 'google_mapsKey', '', 'Google maps API key https://developers.google.com/maps/documentation/javascript/get-api-key'),
-	(NOW(), NOW(), 'site_titlePrefix', '', 'Site header title');
+	(NOW(), NOW(), 'site_titlePrefix', '', 'Site header title'),
+	(NOW(), NOW(), 'api_enable', '', 'Enable mobile api');

@@ -85,26 +85,17 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	}
 
 	/**
-	 * Updates user token.
-	 *
-	 * @return	string
-	 */
-	public function updateToken()
-	{
-		$token = md5(uniqid($this->Email_id, true));
-
-		(new Application_Model_User)->update(array('Token' => $token), 'id = ' . $this->id);
-
-		return $token;
-	}
-
-	/**
 	 * Updates user invite count.
 	 *
-	 * @return	integer
+	 * @return	boolean
 	 */
 	public function updateInviteCount()
 	{
+		if (date('N') != 1)
+		{
+			return false;
+		}
+
 		$userInvite = $this->findDependentRowset('Application_Model_Invitestatus')->current();
 
 		if (floor((time() - strtotime($userInvite->updated)) / 86400) >= 7)
@@ -125,7 +116,7 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 			}
 		}
 
-		return $userInvite->invite_count;
+		return true;
 	}
 
 	/**
@@ -360,6 +351,22 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	}
 
 	/**
+	 * Finds record by access token.
+	 *
+	 * @param	integer	$token
+	 * @return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 */
+	public function findUserByToken($token)
+	{
+		$result = $this->fetchRow(
+			$this->publicSelect()
+				->joinLeft(['ul' => 'login_status'], 'u.id=ul.user_id', '')
+				->where('ul.token=?', $token)
+		);
+		return $result;
+	}
+
+	/**
 	 * Returns auth user.
 	 *
 	 * return	mixed If success Application_Model_UserRow, otherwise NULL
@@ -400,21 +407,42 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	}
 
 	/**
-	 * Finds record by code.
+	 * Finds user by registration confirm code.
 	 *
-	 * @param	string	$code
-	 *
-	 * return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 * @param	string $code
+	 * @return	mixed	If success Application_Model_UserRow, otherwise NULL
 	 */
-	public static function findByCode($code)
+	public function findUserByRegCode($code)
 	{
-		$db = new self;
-
-		$result = $db->fetchRow(
-			$db->publicSelect()->where('u.Conf_code=?', $code)
+		return $this->fetchRow(
+			$this->select()
+				->from(['u' => 'user_data'])
+				->where('u.status="inactive"')
+				->join(['uc' => 'user_confirm'], 'u.id=uc.user_id', '')
+				->where('uc.code=?', $code)
+				->where('uc.deleted=?', 0)
+				->where('uc.type_id=?',
+					Application_Model_UserConfirm::$type['registration'])
 		);
+	}
 
-		return $result;
+	/**
+	 * Finds user by reset password confirm code.
+	 *
+	 * @param	string $code
+	 * @return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 */
+	public function findUserByPassCode($code)
+	{
+		return $this->fetchRow(
+			$this->select()
+				->from(['u' => 'user_data'])
+				->join(['uc' => 'user_confirm'], 'u.id=uc.user_id', '')
+				->where('uc.code=?', $code)
+				->where('uc.deleted=?', 0)
+				->where('uc.type_id=?',
+					Application_Model_UserConfirm::$type['password'])
+		);
 	}
 
 	/**
@@ -432,6 +460,17 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		);
 
 		return $result;
+	}
+
+	/**
+	 * Returns encrypted password.
+	 *
+	 * @param string $password
+	 * @return string
+	 */
+	public static function encryptPassword($password)
+	{
+		return password_hash($password, PASSWORD_BCRYPT);
 	}
 
 	/**
@@ -466,10 +505,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'address_id' => $address->id,
 			'Name' => $data['name'],
 			'Email_id' => $data['email'],
-			'Password' => hash('sha256', $data['password']),
-			'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
+			'password' => $this->encryptPassword($data['password']),
 			'Creation_date' => new Zend_Db_Expr('NOW()'),
-			'Conf_code' => My_ArrayHelper::getProp($data, 'Conf_code'),
 			'Status' => $data['Status'],
 			'image_id' => My_ArrayHelper::getProp($data, 'image_id')
 		]);

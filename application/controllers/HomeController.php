@@ -384,32 +384,25 @@ class HomeController extends Zend_Controller_Action
 
 		try
 		{
-			$user_id = $this->_request->getParam('id');
-
-			if (!v::intVal()->validate($user_id))
-			{
-				throw new RuntimeException('Incorrect user ID value: ' .
-					var_export($user_id, true));
-			}
-
-			$code = $this->_request->getParam('q');
+			$code = $this->_request->getParam('code');
 
 			if (!v::stringType()->validate($code))
 			{
-				throw new RuntimeException('Incorrect code value: ' .
+				throw new RuntimeException('Incorrect confirm code value: ' .
 					var_export($code, true));
 			}
 
 			$userModel = new Application_Model_User;
-			$user = $userModel->findByCode($code);
-
-			if (!$user || $user->id != $user_id || $user->Status != 'inactive')
+			$user = $userModel->findUserByRegCode($code);
+;
+			if ($user == null)
 			{
-				throw new RuntimeException('Incorrect user confirm code', -1);
+				throw new RuntimeException('Incorrect confirm code: ' .
+					var_export($code, true));
 			}
 
-			$userModel->update(['Status' => 'active', 'Conf_code' => ''],
-				'id=' . $user->id);
+			$user->Status = 'active';
+			$user->save();
 
 			$this->view->success = 'Email confirm success';
 		}
