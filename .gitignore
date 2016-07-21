@@ -1,13 +1,12 @@
 /web/newsimages/*
-!/web/newsimages/index.html
 /web/tbnewsimages/*
-!/web/tbnewsimages/index.html
 /web/uploads/*
-!/web/uploads/index.html
+!/web/uploads/4yzgqvirgl.jpg
 /web/www/upload/*
-!/web/www/upload/index.html
 /web/thumb26x26/*
+!/web/thumb26x26/img-prof200x200.jpg
 /web/thumb55x55/*
+!/web/thumb55x55/img-prof200x200.jpg
 /log/*
 /vendor/*
 /includes/*
