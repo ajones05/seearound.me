@@ -64,11 +64,12 @@ body {
 }
 .mainContainer {
 	position: relative;
-	height: 90vh;
+	height: 100vh;
 	min-height: 600px;
 	margin: 0 auto;
 	max-width: 1130px;
 	width: 100%;
+    margin-top: -80px;
 	alignment-adjust: center;
 }
 .mainContainer h1{
@@ -78,7 +79,7 @@ body {
     text-align: left;
     font-weight: bold;
     line-height: 1;
-    margin-top: 36px;
+    margin-top: 116px;
     margin-right: 92px;
 }
 .mainContainer h1 span{
