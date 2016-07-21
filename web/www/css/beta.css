@@ -44,10 +44,11 @@ body {
   z-index: 99;
 }
 .loginHdr {
-	width: 960px;
-	margin: 0 auto;
-	margin-bottom: -2px;
-}
+	max-width: 1130px;
+    margin: 0 auto;
+    margin-bottom: -2px;
+    width: 100%;
+} 
 .loginHdr img {
 	height: auto;
 	width: 200px;
@@ -58,52 +59,56 @@ body {
 	color: #fff;
 	font-size: 24px;
 	text-decoration: none;
-	margin-top: 34px;
+    margin-top: 34px;
+    margin-right: 16px;
 }
 .mainContainer {
 	position: relative;
-	height: 92vh;
+	height: 90vh;
 	min-height: 600px;
 	margin: 0 auto;
-	width: 960px;
+	max-width: 1130px;
+	width: 100%;
 	alignment-adjust: center;
 }
 .mainContainer h1{
-	font-size: 32px;
-	color: #fff;
-	float: right;
-	text-align: left;
-	font-weight: bold;
-	line-height: 1;
-	margin-top: 64px;
+	font-size: 38px;
+    color: #fff;
+    float: right;
+    text-align: left;
+    font-weight: bold;
+    line-height: 1;
+    margin-top: 36px;
+    margin-right: 92px;
 }
 .mainContainer h1 span{
 	font-weight: normal;
-	font-size: 22px;
+	font-size: 24px;
 }
 .phones-bottom {
 	position: absolute;
 	bottom: 0;
-	width: 500px;
+	width: 470px;
 }
 .signup-form {
-	width: 360px;
+	max-width: 548px;
+	width: 100%;
 	position: absolute;
 	right: 0;
-	bottom: 220px;
+	bottom: 184px;
 }
 .signup-form input {
-	color: #fff;
-	font-size: 24px;
-	padding: 0 10px;
-	outline: none;
-	height: 40px;
-	border-radius: 14px;
-	border:2px solid #fff;
+    color: #fff;
+    font-size: 20px;
+    padding: 0 10px;
+    outline: none;
+    height: 34px;
+    border-radius: 22px;
+    border: 6px solid #fff;
 }
 .signup-form input[type="email"] {
-	background: rgba(255,255,255,.5);
-	width: 180px;
+	background: rgba(255,255,255,.3);
+	width: 216px;
 	margin-right: 10px;
 }
 .signup-form input[type="submit"] {
@@ -111,6 +116,8 @@ body {
 	background: #00a8ff;
 	font-weight: bold;
 	border-color:#00a8ff;
+    height: 46px;
+    padding: 0 6px;
 }
 input[placeholder] {
 	text-overflow:ellipsis;
