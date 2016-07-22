@@ -1,11 +1,22 @@
 <?php
 $settings = (new Application_Model_Setting)->findValuesByName([
 	'google_analyticsAccount',
-	'site_titlePrefix'
+	'site_titlePrefix',
+	'meta_title', 'meta_description'
 ]);
+
+$this->doctype('XHTML1_RDFA');
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('www/css/beta.css', $this));
+
+$this->headMeta()
+	->setProperty('og:title', $settings['meta_title'])
+	->setProperty('og:description', $settings['meta_description'])
+	->setProperty('og:image', $this->serverUrl() .
+		My_Layout::assetUrl('www/images/logo-social.png', $this))
+	->setProperty('og:image:width', 278)
+	->setProperty('og:image:height', 278);
 ?>
 <!DOCTYPE html>
 <html lang="en">

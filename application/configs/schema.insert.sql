@@ -53,4 +53,6 @@ INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description
 	(NOW(), NOW(), 'google_analyticsAccount', '', 'Google analytics page property ID'),
 	(NOW(), NOW(), 'google_mapsKey', '', 'Google maps API key https://developers.google.com/maps/documentation/javascript/get-api-key'),
 	(NOW(), NOW(), 'site_titlePrefix', '', 'Site header title'),
-	(NOW(), NOW(), 'api_enable', '', 'Enable mobile api');
+	(NOW(), NOW(), 'api_enable', '', 'Enable mobile api'),
+	(NOW(), NOW(), 'meta_title', '', 'Default meta title'),
+	(NOW(), NOW(), 'meta_description', '', 'Default meta description');
