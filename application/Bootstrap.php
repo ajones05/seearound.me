@@ -246,4 +246,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			$userData->setExpirationSeconds(3);
 		}
     }
+
+	public function _initCache()
+	{
+		$cache = Zend_Cache::factory(
+			'Core',
+			'File', [
+				'lifetime' => 3600,
+				'automatic_serialization' => true
+			], ['cache_dir' => ROOT_PATH . '/cache']
+		);
+
+		Zend_Db_Table_Abstract::setDefaultMetadataCache($cache);
+	}
 }
