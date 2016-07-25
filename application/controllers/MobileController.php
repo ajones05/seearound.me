@@ -2285,9 +2285,13 @@ class MobileController extends Zend_Controller_Action
 
 			$userVote = $model->findVote($post->id, $user->id);
 
-			if (!$user->is_admin && $userVote)
+			if ($userVote != null)
 			{
 				$model->cancelVote($userVote);
+			}
+
+			if (!$user->is_admin && $userVote)
+			{
 				$post->vote -= $userVote->vote;
 				$updatePost = true;
 			}
@@ -2402,7 +2406,7 @@ class MobileController extends Zend_Controller_Action
 			]);
 			$select3->where('n.isdeleted=0 AND n.user_id=?', $user->id);
 			$select3->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
-			$select3->where('v.canceled=0 AND v.user_id<>?', $user->id);
+			$select3->where('v.active=1 AND v.user_id<>?', $user->id);
 			$select3->where('v.is_read=0 OR v.created_at>?', $maxDate);
 			$select3->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
 			$select3->group(['u.id', 'n.id']);

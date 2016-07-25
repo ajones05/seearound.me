@@ -32,19 +32,15 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 	 * @param	integer $user
 	 * @return	mixed Zend_Db_Table_Abstract on success, otherwise NULL
 	 */
-	public function findVote($post_id, $user_id = null)
+	public function findVote($post_id, $user_id)
 	{
-		$query = $this->select()
-			->where('canceled=0')
-			->where('news_id=?', $post_id)
-			->order('id DESC');
-
-		if ($user_id)
-		{
-			$query->where('user_id=?', $user_id);
-		}
-
-		return $this->fetchRow($query);
+		return $this->fetchRow(
+			$this->select()
+				->where('active=1')
+				->where('news_id=?', $post_id)
+				->where('user_id=?', $user_id)
+				->order('id DESC')
+		);
 	}
 
 	/**
@@ -88,7 +84,7 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 	public function cancelVote($vote)
 	{
 		$vote->updated_at = new Zend_Db_Expr('NOW()');
-		$vote->canceled = 1;
+		$vote->active = 0;
 		$vote->save();
 		return $vote;
 	}

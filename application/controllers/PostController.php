@@ -936,9 +936,13 @@ class PostController extends Zend_Controller_Action
 
 			$userVote = $model->findVote($post->id, $user->id);
 
-			if (!$user->is_admin && $userVote)
+			if ($userVote != null)
 			{
 				$model->cancelVote($userVote);
+			}
+
+			if (!$user->is_admin && $userVote)
+			{
 				$post->vote -= $userVote->vote;
 				$updatePost = true;
 			}

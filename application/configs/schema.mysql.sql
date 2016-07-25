@@ -219,6 +219,8 @@ ALTER TABLE `votings` CHANGE `vote` `vote` TINYINT(4) NOT NULL;
 ALTER TABLE `votings` ADD `canceled` TINYINT NOT NULL DEFAULT '0';
 ALTER TABLE `votings` ADD `is_read` BIT NOT NULL DEFAULT 0;
 ALTER TABLE `votings` CHANGE `is_read` `is_read` TINYINT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `votings` ADD `active` TINYINT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `votings` DROP `canceled`;
 
 --
 -- Table structure for table `facebook_temp_users`
