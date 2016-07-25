@@ -69,8 +69,7 @@ class PostController extends Zend_Controller_Action
 				'image' => $this->view->baseUrl($user->getThumb('55x55')['path'])
 			]) .
 			',settings=' . json_encode([
-				'bodyMaxLength' => (new Application_Model_Setting)
-					->findValueByName('post_bodyMaxLength')
+				'bodyMaxLength' => Application_Form_News::$bodyMaxLength
 			]);
 		}
 
@@ -215,8 +214,7 @@ class PostController extends Zend_Controller_Action
 			',opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) .
 			',timizoneList=' . json_encode(My_CommonUtils::$timezone) .
 			',settings=' . json_encode([
-				'bodyMaxLength' => (new Application_Model_Setting)
-					->findValueByName('post_bodyMaxLength')
+				'bodyMaxLength' => Application_Form_News::$bodyMaxLength
 			]) . ';'
 		);
 

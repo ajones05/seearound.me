@@ -12,6 +12,11 @@ class Application_Form_News extends Zend_Form
 	 */
 	private $_scenario;
 
+	/**
+	 * @var integer
+	 */
+	public static $bodyMaxLength = 1500;
+
     /**
      * Initialize form (used by extending classes)
      *
@@ -33,12 +38,9 @@ class Application_Form_News extends Zend_Form
 		$scenario = $this->getScenario();
 		$valid = parent::isValid($data);
 
-		$bodyMaxLength = (new Application_Model_Setting)
-			->findValueByName('post_bodyMaxLength');
-
 		try
 		{
-			v::stringType()->length(1, $bodyMaxLength)->regex('/[^<>]/')
+			v::stringType()->length(1, self::$bodyMaxLength)->regex('/[^<>]/')
 				->assert(My_ArrayHelper::getProp($data, 'news'));
 		}
 		catch (Exception $e)
