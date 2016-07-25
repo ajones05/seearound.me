@@ -251,10 +251,17 @@ class MobileController extends Zend_Controller_Action
 			);
 			$login = (new Application_Model_Loginstatus)->save($user, true);
 
+			$settings = (new Application_Model_Setting)->findValuesByName([
+				'email_fromName', 'email_fromAddress'
+			]);
+
 			My_Email::send(
 				$user->Email_id,
 				'seearound.me new Registration',
-				array('template' => 'ws-registration')
+				[
+					'template' => 'ws-registration',
+					'settings' => $settings
+				]
 			);
 
 			$response['token'] = $login->token;
@@ -310,10 +317,18 @@ class MobileController extends Zend_Controller_Action
 				'type_id' => $confirmModel::$type['password']
 			]);
 
+			$settings = (new Application_Model_Setting)->findValuesByName([
+				'email_fromName', 'email_fromAddress'
+			]);
+
 			My_Email::send(
 				$email,
 				'Forgot Password',
-				['template' => 'forgot-password', 'assign' => ['confirm' => $confirm]]
+				[
+					'template' => 'forgot-password',
+					'assign' => ['confirm' => $confirm],
+					'settings' => $settings
+				]
 			);
 
 			$response = ['status' => 'SUCCESS'];
@@ -436,9 +451,14 @@ class MobileController extends Zend_Controller_Action
 				'source' => 'herespy'
 			])->updateStatus($user);
 
+			$settings = (new Application_Model_Setting)->findValuesByName([
+				'email_fromName', 'email_fromAddress'
+			]);
+
 			My_Email::send($receiver->Email_id, 'New follower', [
 				'template' => 'friend-invitation',
-				'assign' => ['name' => $user->Name]
+				'assign' => ['name' => $user->Name],
+				'settings' => $settings
 			]);
 
 			$response = ['status' => 'SUCCESS'];
@@ -660,6 +680,10 @@ class MobileController extends Zend_Controller_Action
 				'is_first' => !$conversation_id ? 1 : 0
 			]);
 
+			$settings = (new Application_Model_Setting)->findValuesByName([
+				'email_fromName', 'email_fromAddress'
+			]);
+
 			My_Email::send(
 				[$receiver->Name => $receiver->Email_id],
 				$conversation->subject,
@@ -670,7 +694,8 @@ class MobileController extends Zend_Controller_Action
 						'receiver' => $receiver,
 						'subject' => $conversation->subject,
 						'message' => $message->body
-					]
+					],
+					'settings' => $settings
 				]
 			);
 

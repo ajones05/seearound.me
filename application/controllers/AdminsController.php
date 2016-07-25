@@ -20,6 +20,10 @@ class AdminsController extends Zend_Controller_Action
 
 			$select = $emailInvites->select()->where('self_email =?', $email);
 
+			$settings = (new Application_Model_Setting)->findValuesByName([
+				'email_fromName', 'email_fromAddress'
+			]);
+
 			if ($row = $emailInvites->fetchRow($select)) {
 				if ($status == 'approve') {
 					My_Email::send(
@@ -27,7 +31,8 @@ class AdminsController extends Zend_Controller_Action
 						'seearound.me Invitation',
 						array(
 							'template' => 'admin-invitation',
-							'assign' => array('invite' => $row)
+							'assign' => array('invite' => $row),
+							'settings' => $settings
 						)
 					);
 

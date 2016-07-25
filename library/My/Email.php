@@ -15,7 +15,10 @@ class My_Email
 	 */
 	public static function send($recipient, $subject, array $parameters = array())
 	{
-		$config = Zend_Registry::get('config_global');
+		$settings = isset($parameters['settings']) ? $parameters['settings'] :
+			(new Application_Model_Setting)->findValuesByName([
+				'email_fromName', 'email_fromAddress'
+			]);
 
 		if (!isset($parameters['body']))
 		{
@@ -33,7 +36,7 @@ class My_Email
 		}
 
 		$mail = new Zend_Mail('utf-8');
-		$mail->setFrom($config->email->from_email, $config->email->from_name);
+		$mail->setFrom($settings['email_fromAddress'], $settings['email_fromName']);
 		$mail->addTo($recipient);
 		$mail->setSubject($subject);
 		$mail->setBodyHtml($parameters['body']);

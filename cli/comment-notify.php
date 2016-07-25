@@ -30,8 +30,8 @@ $application = new Zend_Application(
 $application->bootstrap();
 
 $settings =  (new Application_Model_Setting)->findValuesByName([
-	'server_requestScheme',
-	'server_httpHost'
+	'server_requestScheme', 'server_httpHost',
+	'email_fromName', 'email_fromAddress'
 ]);
 
 $userModel = new Application_Model_User;
@@ -109,7 +109,8 @@ do
 									'baseUrl' => $settings['server_requestScheme'] . '://' .
 										$settings['server_httpHost'] . '/'
 								]
-							]
+							],
+							'settings' => $settings
 						]
 					);
 

@@ -78,6 +78,10 @@ class ContactsController extends Zend_Controller_Action
 			$userTable = new Application_Model_User;
 			$emailInvites = new Application_Model_Emailinvites;
 
+			$settings = (new Application_Model_Setting)->findValuesByName([
+				'email_fromName', 'email_fromAddress'
+			]);
+
 			foreach (array_slice($emails, 0, $user_invites->invite_count) as $email)
 			{
 				$email_user = $userTable->findByEmail($email);
@@ -89,7 +93,8 @@ class ContactsController extends Zend_Controller_Action
 						'seearound.me connect request',
 						array(
 							'template' => 'invite-1',
-							'assign' => array('user' => $user)
+							'assign' => array('user' => $user),
+							'settings' => $settings
 						)
 					);
 
@@ -98,7 +103,8 @@ class ContactsController extends Zend_Controller_Action
 						'User already registered',
 						array(
 							'template' => 'invite-2',
-							'assign' => array('user' => $email_user)
+							'assign' => array('user' => $email_user),
+							'settings' => $settings
 						)
 					);
 				}
@@ -121,7 +127,8 @@ class ContactsController extends Zend_Controller_Action
 							'assign' => array(
 								'user' => $user,
 								'code' => $code
-							)
+							),
+							'settings' => $settings
 						)
 					);
 
@@ -291,10 +298,18 @@ class ContactsController extends Zend_Controller_Action
 
 			$reciever_email = $userModel->recordForEmail($user->id, $facebook_user->id);
 
+			$settings = (new Application_Model_Setting)->findValuesByName([
+				'email_fromName', 'email_fromAddress'
+			]);
+
 			My_Email::send(
 				$reciever_email->recieverEmail,
 				'seearound.me connect request',
-				['template' => 'follow', 'assign' => ['user' => $user]]
+				[
+					'template' => 'follow',
+					'assign' => ['user' => $user],
+					'settings' => $settings
+				]
 			);
 
 			$friendsModel = new Application_Model_Friends;
@@ -499,9 +514,14 @@ class ContactsController extends Zend_Controller_Action
 						'source' => 'herespy'
 					])->updateStatus($user);
 
+					$settings = (new Application_Model_Setting)->findValuesByName([
+						'email_fromName', 'email_fromAddress'
+					]);
+
 					My_Email::send($receiver->Email_id, 'New follower', [
 						'template' => 'friend-invitation',
-						'assign' => ['name' => $user->Name]
+						'assign' => ['name' => $user->Name],
+						'settings' => $settings
 					]);
 					break;
 				case 'reject':

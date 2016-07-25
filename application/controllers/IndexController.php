@@ -51,7 +51,8 @@ class IndexController extends Zend_Controller_Action
 	public function loginAction()
 	{
 		$settings = (new Application_Model_Setting)->findValuesByName([
-			'google_mapsKey'
+			'google_mapsKey',
+			'email_fromName', 'email_fromAddress'
 		]);
 
 		$config = Zend_Registry::get('config_global');
@@ -140,7 +141,8 @@ class IndexController extends Zend_Controller_Action
 							'SeeAround.me Registration',
 							[
 								'template' => 'registration',
-								'assign' => ['user' => $user, 'code' => $confirm->code]
+								'assign' => ['user' => $user, 'code' => $confirm->code],
+								'settings' => $settings
 							]
 						);
 
@@ -255,12 +257,17 @@ class IndexController extends Zend_Controller_Action
 				'type_id' => $confirmModel::$type['registration']
 			]);
 
+			$settings = (new Application_Model_Setting)->findValuesByName([
+				'email_fromName', 'email_fromAddress'
+			]);
+
 			My_Email::send(
 				[$user->Name => $user->Email_id],
 				'Re-send activation link',
 				[
 					'template' => 'user-resend',
-					'assign' => ['user' => $user, 'code' => $confirm->code]
+					'assign' => ['user' => $user, 'code' => $confirm->code],
+					'settings' => $settings
 				]
 			);
 
@@ -318,10 +325,18 @@ class IndexController extends Zend_Controller_Action
 						'type_id' => $confirmModel::$type['password']
 					]);
 
+					$settings = (new Application_Model_Setting)->findValuesByName([
+						'email_fromName', 'email_fromAddress'
+					]);
+
 					My_Email::send(
 						$user->Email_id,
 						'Forgot Password',
-						['template' => 'forgot-password', 'assign' => ['confirm' => $confirm]]
+						[
+							'template' => 'forgot-password',
+							'assign' => ['confirm' => $confirm],
+							'settings' => $settings
+						]
 					);
 
 					$this->_redirect($this->view->baseUrl('forgot-success'));

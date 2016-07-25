@@ -55,4 +55,6 @@ INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description
 	(NOW(), NOW(), 'site_titlePrefix', '', 'Site header title'),
 	(NOW(), NOW(), 'api_enable', '', 'Enable mobile api'),
 	(NOW(), NOW(), 'meta_title', '', 'Default meta title'),
-	(NOW(), NOW(), 'meta_description', '', 'Default meta description');
+	(NOW(), NOW(), 'meta_description', '', 'Default meta description'),
+	(NOW(), NOW(), 'email_fromName', '', 'Default name for email'),
+	(NOW(), NOW(), 'email_fromAddress', '', 'Default email address');
