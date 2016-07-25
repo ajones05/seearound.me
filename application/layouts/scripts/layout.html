@@ -21,8 +21,8 @@ else
 }
 
 $this->headLink()
-	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this))
-	->appendStylesheet(My_Layout::assetUrl('www/css/global.css', $this));
+	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
+	->appendStylesheet(My_Layout::assetUrl('www/css/global.css'));
 
 $this->headScript()
 	->appendScript(
@@ -35,11 +35,11 @@ $this->headScript()
 		"var imagePath = " . json_encode($this->baseUrl($image)) . ";\n" .
 		My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700')
 	)
-	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))
-	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js', $this))
-	->appendFile(My_Layout::assetUrl('bower_components/jquery-validation/dist/jquery.validate.min.js', $this))
-	->appendFile(My_Layout::assetUrl('www/scripts/common.js', $this))
-	->appendFile(My_Layout::assetUrl('www/scripts/commondev.js', $this));
+	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js'))
+	->appendFile(My_Layout::assetUrl('bower_components/jquery-ui/jquery-ui.min.js'))
+	->appendFile(My_Layout::assetUrl('bower_components/jquery-validation/dist/jquery.validate.min.js'))
+	->appendFile(My_Layout::assetUrl('www/scripts/common.js'))
+	->appendFile(My_Layout::assetUrl('www/scripts/commondev.js'));
 
 if (empty($this->hideRight))
 {

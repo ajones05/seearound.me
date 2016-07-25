@@ -246,7 +246,7 @@ class HomeController extends Zend_Controller_Action
 		}
 
 		$this->view->headLink()
-			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
+			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$addressFormat = Application_Model_Address::format($profile, ['street'=>false]);
 		$this->view->addressFormat = $addressFormat;
@@ -259,7 +259,7 @@ class HomeController extends Zend_Controller_Action
 				'latitude' => $profile->latitude,
 				'longitude' => $profile->longitude
 			]) . ';')
-			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view));
+			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'));
 
 		My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
 				'key=' . $settings['google_mapsKey'] . '&v=3&callback=initMap', $this->view);

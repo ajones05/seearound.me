@@ -28,7 +28,7 @@ class ContactsController extends Zend_Controller_Action
 		$this->view->hideRight = true;
 
 		$this->view->headScript()
-			->appendFile(My_Layout::assetUrl('www/scripts/contactsindex.js', $this->view));
+			->appendFile(My_Layout::assetUrl('www/scripts/contactsindex.js'));
 	}
 
 	/**
@@ -360,7 +360,7 @@ class ContactsController extends Zend_Controller_Action
 		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id, 1);
 
 		$this->view->headLink()
-			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css', $this->view));
+			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
 
 		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
 
@@ -375,8 +375,8 @@ class ContactsController extends Zend_Controller_Action
 				'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
 				$settings['google_mapsKey'])
-			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js', $this->view))
-			->appendFile(My_Layout::assetUrl('www/scripts/friendlist.js', $this->view));
+			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
+			->appendFile(My_Layout::assetUrl('www/scripts/friendlist.js'));
 
         $this->view->homePageExist = true;
         $this->view->changeLocation = true;

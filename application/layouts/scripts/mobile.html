@@ -7,7 +7,7 @@ $settings = (new Application_Model_Setting)->findValuesByName([
 $this->doctype('<!DOCTYPE html>');
 
 $this->headLink()
-	->appendStylesheet(My_Layout::assetUrl('www/css/mobile.css', $this));
+	->appendStylesheet(My_Layout::assetUrl('www/css/mobile.css'));
 
 $this->headScript()
 	->appendScript(My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700'));

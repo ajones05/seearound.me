@@ -18,13 +18,13 @@ $this->headMeta('IE=edge', 'X-UA-Compatible', 'http-equiv')
 My_Layout::renderFavicon($this);
 
 $this->headLink()
-	->appendStylesheet(My_Layout::assetUrl('bower_components/bootstrap/dist/css/bootstrap.css', $this))
-	->appendStylesheet(My_Layout::assetUrl('bower_components/bootstrap/dist/css/bootstrap-theme.css', $this));
+	->appendStylesheet(My_Layout::assetUrl('bower_components/bootstrap/dist/css/bootstrap.css'))
+	->appendStylesheet(My_Layout::assetUrl('bower_components/bootstrap/dist/css/bootstrap-theme.css'));
 
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
-	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js', $this))
-	->appendFile(My_Layout::assetUrl('bower_components/bootstrap/dist/js/bootstrap.js', $this));
+	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js'))
+	->appendFile(My_Layout::assetUrl('bower_components/bootstrap/dist/js/bootstrap.js'));
 
 $this->headTitle()->setSeparator(' - ')->prepend($settings['site_titlePrefix']);
 ?>

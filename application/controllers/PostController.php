@@ -1372,7 +1372,7 @@ class PostController extends Zend_Controller_Action
 
 			$this->view->layout()->setLayout('iframe');
 			$this->view->headLink()->appendStylesheet(My_Layout::assetUrl(
-				'bower_components/jquery-ui/themes/base/jquery-ui.min.css', $this->view));
+				'bower_components/jquery-ui/themes/base/jquery-ui.min.css'));
 		}
 		catch (Exception $e)
 		{

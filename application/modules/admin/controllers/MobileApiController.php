@@ -42,7 +42,7 @@ class Admin_MobileApiController extends Zend_Controller_Action
 	public function __call($methodName, $args)
 	{
 		$this->view->headScript()
-			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js', $this->view));
+			->appendFile(My_Layout::assetUrl('www/scripts/mobile-api.js'));
 	}
 
 	/**

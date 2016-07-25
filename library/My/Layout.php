@@ -5,9 +5,9 @@
 class My_Layout
 {
 	/**
-	 * @var	string
+	 * @var string
 	 */
-	protected static $_mediaversion = null;
+	protected static $pasePath = null;
 
 	/**
 	 * Renders favicon header data.
@@ -26,7 +26,7 @@ class My_Layout
 		$view->headLink()
 			->headLink(array(
 				'rel' => 'icon',
-				'href' => self::assetUrl('www/images/favicon/favicon.ico', $view)
+				'href' => self::assetUrl('www/images/favicon/favicon.ico')
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'manifest',
@@ -34,29 +34,29 @@ class My_Layout
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'shortcut icon',
-				'href' => self::assetUrl('www/images/favicon/favicon-16x16.png', $view),
+				'href' => self::assetUrl('www/images/favicon/favicon-16x16.png'),
 				'type' => 'image/png',
 				'sizes' => '16x16'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'shortcut icon',
-				'href' => self::assetUrl('www/images/favicon/favicon-32x32.png', $view),
+				'href' => self::assetUrl('www/images/favicon/favicon-32x32.png'),
 				'type' => 'image/png',
 				'sizes' => '32x32'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => self::assetUrl('www/images/favicon/apple-touch-icon-72x72.png', $view),
+				'href' => self::assetUrl('www/images/favicon/apple-touch-icon-72x72.png'),
 				'sizes' => '72x72'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => self::assetUrl('www/images/favicon/apple-touch-icon-60x60.png', $view),
+				'href' => self::assetUrl('www/images/favicon/apple-touch-icon-60x60.png'),
 				'sizes' => '60x60'
 			), 'PREPEND')
 			->headLink(array(
 				'rel' => 'apple-touch-icon',
-				'href' => self::assetUrl('www/images/favicon/apple-touch-icon-57x57.png', $view),
+				'href' => self::assetUrl('www/images/favicon/apple-touch-icon-57x57.png'),
 				'sizes' => '57x57'
 			), 'PREPEND');
 	}
@@ -64,24 +64,24 @@ class My_Layout
 	/**
 	 * Returns media asset url.
 	 *
-	 * @param	string $url
-	 * @param	Zend_View $view
-	 * @reutrn	string
+	 * @param string $url
+	 * @return string
 	 */
-	public static function assetUrl($url, Zend_View $view)
+	public static function assetUrl($url='')
 	{
-		if (self::$_mediaversion === null)
+		if (self::$pasePath === null)
 		{
-			self::$_mediaversion = trim((new Application_Model_Setting)
-				->findValueByName('mediaversion'));
+			$config = Zend_Registry::get('config_global');
+
+			self::$pasePath = $config->resources->frontController->baseUrl;
+
+			if ($config->media->version !== '')
+			{
+				self::$pasePath .= 'assets-' . $config->media->version . '/';
+			}
 		}
 
-		if (self::$_mediaversion !== '')
-		{
-			$url = 'assets-' . self::$_mediaversion . '/' . $url;
-		}
-
-		return $view->baseUrl($url);
+		return self::$pasePath . $url;
 	}
 
 	/**

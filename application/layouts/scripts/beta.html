@@ -8,13 +8,13 @@ $settings = (new Application_Model_Setting)->findValuesByName([
 $this->doctype('XHTML1_RDFA');
 
 $this->headLink()
-	->appendStylesheet(My_Layout::assetUrl('www/css/beta.css', $this));
+	->appendStylesheet(My_Layout::assetUrl('www/css/beta.css'));
 
 $this->headMeta()
 	->setProperty('og:title', $settings['meta_title'])
 	->setProperty('og:description', $settings['meta_description'])
 	->setProperty('og:image', $this->serverUrl() .
-		My_Layout::assetUrl('www/images/logo-social.png', $this))
+		My_Layout::assetUrl('www/images/logo-social.png'))
 	->setProperty('og:image:width', 278)
 	->setProperty('og:image:height', 278);
 ?>

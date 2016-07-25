@@ -13,12 +13,12 @@ $profileImage = $this->user ? $this->user->getThumb('26x26')['path'] :
 	My_ArrayHelper::getProp($config, 'user.thumb.26x26.path');
 
 $this->headLink()
-	->appendStylesheet(My_Layout::assetUrl('www/css/posts.css', $this));
+	->appendStylesheet(My_Layout::assetUrl('www/css/posts.css'));
 
 $serverUrl = $this->serverUrl();
 
 $headScripts = 'var baseUrl=' . json_encode($serverUrl . $this->baseUrl('/')) .
-	',assetsBaseUrl=' . json_encode($serverUrl . My_Layout::assetUrl('', $this)) .
+	',assetsBaseUrl=' . json_encode($serverUrl . My_Layout::assetUrl()) .
 	',facebook_appId=' . json_encode($settings['fb_appId']) .
 	',facebook_apiVer=' . json_encode($settings['fb_apiVersion']) .
 	',mapsKey=' . json_encode($settings['google_mapsKey']);
@@ -36,9 +36,9 @@ if ($this->user)
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
 	->appendScript($headScripts . ';')
-	->appendFile(My_Layout::assetUrl('bower_components/requirejs/require.js', $this),
+	->appendFile(My_Layout::assetUrl('bower_components/requirejs/require.js'),
 		'text/javascript', array('defer' => 'defer',
-		'data-main' => My_Layout::assetUrl('www/scripts/posts', $this)));
+		'data-main' => My_Layout::assetUrl('www/scripts/posts')));
 
 $this->headTitle()->setSeparator(' - ')->prepend($settings['site_titlePrefix']);
 

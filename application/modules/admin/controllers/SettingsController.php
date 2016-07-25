@@ -141,7 +141,7 @@ class Admin_SettingsController extends Zend_Controller_Action
 
 		$this->view->form = $form;
 		$this->view->headScript('file', My_Layout::assetUrl(
-				'bower_components/jquery-validation/dist/jquery.validate.min.js', $this->view));
+				'bower_components/jquery-validation/dist/jquery.validate.min.js'));
   }
 
 	/**
