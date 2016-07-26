@@ -51,16 +51,16 @@ body {
 } 
 .loginHdr img {
 	height: auto;
-	width: 200px;
+	width: 168px;
 	margin: 8px 0px 8px 3px;
 }
 .about-link {
 	float: right;
 	color: #fff;
-	font-size: 24px;
+	font-size: 20px;
 	text-decoration: none;
-    margin-top: 34px;
-    margin-right: 16px;
+    margin-top: 28px;
+    margin-right: 8px;
 }
 .mainContainer {
 	position: relative;
@@ -79,7 +79,7 @@ body {
     text-align: left;
     font-weight: bold;
     line-height: 1;
-    margin-top: 116px;
+    margin-top: 110px;
     margin-right: 92px;
 }
 .mainContainer h1 span{
