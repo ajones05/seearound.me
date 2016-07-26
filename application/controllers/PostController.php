@@ -952,7 +952,8 @@ class PostController extends Zend_Controller_Action
 				$model->insert([
 					'vote' => $vote,
 					'user_id' => $user->id,
-					'news_id' => $post->id
+					'news_id' => $post->id,
+					'active' => 1
 				]);
 
 				$post->vote += $vote;
