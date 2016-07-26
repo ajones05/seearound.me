@@ -11,6 +11,24 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		Zend_Registry::set('env', APPLICATION_ENV);
 	}
 
+	public function _initCache()
+	{
+		if (PHP_SAPI == 'cli')
+		{
+			return false;
+		}
+
+		$cache = Zend_Cache::factory(
+			'Core',
+			'File', [
+				'lifetime' => 604800, // 1 week
+				'automatic_serialization' => true
+			], ['cache_dir' => ROOT_PATH . '/cache']
+		);
+
+		Zend_Db_Table_Abstract::setDefaultMetadataCache($cache);
+	}
+
 	protected function _initAutoload()
 	{
 		require_once ROOT_PATH . '/vendor/autoload.php';
@@ -190,24 +208,26 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$logger->addPriority('exception', 8);
 		Zend_Registry::set('logger', $logger);
 
-		// TODO: refactoring
-		$log_path = ROOT_PATH . '/log';
-		is_dir($log_path) || mkdir($log_path, 0700);
-		$log = $log_path . '/bootstrap_log_' . date('Y-m-d') . '.log';
+		$log = ROOT_PATH . '/log/bootstrap_log_' . date('Y-m-d') . '.log';
 		$writer = new Zend_Log_Writer_Stream($log);
-		chmod($log, 0777);
 		$logger = new Zend_Log($writer);
 
 		return $logger;
 	}
 
-    /**
-     * Init save last visit timestamp
-     *
-     * @return void
-     */
-    public function _initSaveLastVisitTimestamp()
-    {
+	/**
+	 * Init save last visit timestamp
+	 *
+	 * @return void
+	 */
+	public function _initSaveLastVisitTimestamp()
+	{
+		if (PHP_SAPI == 'cli' ||
+			preg_match('/^\/mobile(\/|$)/', $_SERVER['REQUEST_URI']))
+		{
+			return false;
+		}
+
 		$user = Application_Model_User::getAuth();
 
 		if ($user == null)
@@ -216,16 +236,18 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		}
 
 		$auth = Zend_Auth::getInstance()->getIdentity();
-		$status = (new Application_Model_Loginstatus)->find($auth['login_id'])->current();
 
-		if (!$status)
+		if (empty($auth['login_id']))
 		{
 			return false;
 		}
 
-		$status->visit_time = new Zend_Db_Expr('NOW()');
-		$status->save();
-    }
+		$db = Zend_Db_Table::getDefaultAdapter();
+		$db->update('login_status',
+			['visit_time' => new Zend_Db_Expr('NOW()')],
+			$db->quoteInto('id=?', $auth['login_id'])
+		);
+	}
 
     /**
      * Init update user data expiration.
@@ -246,17 +268,4 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			$userData->setExpirationSeconds(3);
 		}
     }
-
-	public function _initCache()
-	{
-		$cache = Zend_Cache::factory(
-			'Core',
-			'File', [
-				'lifetime' => 3600,
-				'automatic_serialization' => true
-			], ['cache_dir' => ROOT_PATH . '/cache']
-		);
-
-		Zend_Db_Table_Abstract::setDefaultMetadataCache($cache);
-	}
 }

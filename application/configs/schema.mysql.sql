@@ -1,3 +1,6 @@
+ALTER DATABASE `seearoun_seearoundme` COLLATE utf8_general_ci;
+ALTER DATABASE `seearoun_seearoundme` CHARSET utf8;
+
 --
 -- Table structure for table `user_data`
 --
@@ -139,6 +142,7 @@ ALTER TABLE `news`
 	DROP `longitude`,
 	DROP `Address`;
 ALTER TABLE `news` MODIFY `news` text;
+ALTER TABLE `news` COLLATE 'utf8_general_ci';
 
 --
 -- Table structure for table `news_link`

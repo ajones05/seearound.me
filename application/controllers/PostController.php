@@ -15,8 +15,7 @@ class PostController extends Zend_Controller_Action
 	public function viewAction()
 	{
 		$userModel = new Application_Model_User;
-		$auth = Zend_Auth::getInstance()->getIdentity();
-		$user = $auth ? $userModel->findById($auth['user_id']) : null;
+		$user = Application_Model_User::getAuth();
 
 		$id = $this->_request->getParam('id');
 
@@ -30,7 +29,15 @@ class PostController extends Zend_Controller_Action
 		$this->view->searchForm = new Application_Form_PostSearch;
 		$this->view->user = $user;
 
-		if (!Application_Model_News::checkId($id, $post, ['link'=>true,'deleted'=>true]))
+		$postOptions = ['link'=>true,'deleted'=>true];
+
+		if ($user != null)
+		{
+			$postOptions['user'] = $user;
+			$postOptions['userVote'] = true;
+		}
+
+		if (!Application_Model_News::checkId($id, $post, $postOptions))
 		{
 			throw new RuntimeException('Incorrect post ID: ' .
 				var_export($id, true));
@@ -171,7 +178,7 @@ class PostController extends Zend_Controller_Action
 			$searchParameters,
 			['limit' => 15, 'radius' => $point ? 0.018939 :
 				My_ArrayHelper::getProp($searchParameters, 'radius', 1.5)]
-		), $user, ['link'=>true]);
+		), $user, ['link'=>true,'userVote'=>true]);
 
 		if (count($posts))
 		{
@@ -179,15 +186,7 @@ class PostController extends Zend_Controller_Action
 
 			foreach ($posts as $post)
 			{
-				$data[$post->id] = [
-					$post->latitude,
-					$post->longitude,
-					$this->view->partial('post/_list_item.html', [
-						'post' => $post,
-						'user' => $user,
-						'limit' => 350
-					]
-				)];
+				$data[$post->id] = [$post->latitude, $post->longitude];
 			}
 
 			$this->view->posts = $posts;
@@ -274,7 +273,7 @@ class PostController extends Zend_Controller_Action
 			$result = (new Application_Model_News)->search(array_merge(
 				$searchParameters, ['limit' => 15, 'exclude_id' => $new,
 					'radius' => $point ? 0.018939 : $searchParameters['radius']]
-			), $user, ['link'=>true]);
+			), $user, ['link'=>true,'userVote'=>true]);
 
 			$response = ['status' => 1];
 
@@ -523,7 +522,7 @@ class PostController extends Zend_Controller_Action
 			$post = $model->save($postForm->getValues() +
 				['user_id' => $postUser->id, 'address_id' => $address->id]);
 			// TODO: refactoring
-			$post = $model->findById($post->id, ['link'=>true]);
+			$post = $model->findById($post->id, ['link'=>true,'userVote'=>true]);
 
 			$response = [
 				'status' => 1,
@@ -549,7 +548,7 @@ class PostController extends Zend_Controller_Action
 					'radius' => 1.5,
 					'limit' => 14,
 					'exclude_id' => [$post->id]
-				], $user, ['link'=>true]);
+				], $user, ['link'=>true,'userVote'=>true]);
 
 				foreach ($result as $post)
 				{
@@ -1139,7 +1138,11 @@ class PostController extends Zend_Controller_Action
 
 			$limit = 30;
 			$model = new Application_Model_Comments;
-			$comments = $model->findAllByNewsId($id, $limit, $start);
+			$comments = $model->findAllByNewsId($id, [
+				'limit' => $limit,
+				'start' => $start,
+				'owner_thumbs' => [[55,55]]
+			]);
 
 			$response = ['status' => 1];
 
@@ -1214,8 +1217,8 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('Validate error', -1);
 			}
 
-			// TODO: refactoring
-			$comment = (new Application_Model_Comments)->save($form, $post, $user);
+			$comment = (new Application_Model_Comments)
+				->save($form, $post, $user);
 
 			$response = [
 				'status' => 1,
@@ -1223,7 +1226,8 @@ class PostController extends Zend_Controller_Action
 				'html' => My_ViewHelper::render('post/_comment', [
 					'user' => $user,
 					'comment' => $comment,
-					'post' => $post
+					'post' => $post,
+					'is_new' => true
 				])
 			];
 		}

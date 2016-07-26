@@ -139,21 +139,18 @@ class Application_Model_News extends Zend_Db_Table_Abstract
     ]
 	];
 
-	/*
-     * Returns an instance of a Zend_Db_Table_Select object.
+	/**
+	 * Returns an instance of a Zend_Db_Table_Select object.
 	 *
-	 * @param	array $options
-     * @return Zend_Db_Table_Select
-     */
-    public function publicSelect(array $options = [])
-    {
+	 * @param array $options
+	 * @return Zend_Db_Table_Select
+	 */
+	 public function publicSelect(array $options = [])
+	 {
 		$isCount = My_ArrayHelper::getProp($options, 'count', false);
 		$addressFields = $isCount ? '' : ['address', 'latitude', 'longitude',
 			'street_name', 'street_number', 'city', 'state', 'country', 'zip'];
 		$postFields = $isCount ? ['count' => 'COUNT(news.id)'] : ['news.*'];
-
-		// TODO: remove after confirm fixeng task 27
-		$postFields += ['score' => $this->postScore()];
 
 		$query = parent::select()->setIntegrityCheck(false)
 			->from('news', $postFields)
@@ -195,6 +192,19 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			]);
 		}
 
+		if (!empty($options['user']))
+		{
+			if (!empty($options['userVote']))
+			{
+				$query->joinLeft(
+					['v' => 'votings'],
+					'(v.news_id=news.id AND v.active=1 AND ' .
+						'v.user_id=' . $options['user']->id . ')',
+					['user_vote' => 'vote']
+				);
+			}
+		}
+
 		return $query;
     }
 
@@ -208,7 +218,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 */
 	public function searchQuery(array $parameters, Application_Model_UserRow $user, array $options = [])
 	{
-		$query = $this->publicSelect($options);
+		// TODO: refactoring
+		$query = $this->publicSelect($options+['user'=>$user]);
 		$isCount = My_ArrayHelper::getProp($options, 'count', false);
 
 		if (trim(My_ArrayHelper::getProp($parameters, 'keywords')) !== '')

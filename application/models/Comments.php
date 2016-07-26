@@ -97,52 +97,27 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
     }
 
 	/**
-	 * Returns comments count by news ID.
-	 *
-	 * @param	integer	$news_id
-	 *
-	 * @return	integer
-	 */
-	public function getCountByNewsId($news_id)
-	{
-		$result = $this->fetchRow(
-			$this->select()
-				->from('comments', array('count(*) as comment_count'))
-				->where('news_id=?', $news_id)
-				->where('isdeleted =?', 0)
-		);
-
-		if ($result)
-		{
-			return $result->comment_count;
-		}
-
-		return 0;
-	}
-
-	/**
 	 * Finds records by news ID.
 	 *
-	 * @param	integer	$news_id
-	 * @param	integer	$limit
-	 * @param	integer	$limitstart
-	 *
-	 * @return	array
+	 * @param integer $news_id
+	 * @param array $options
+	 * @return array
 	 */
-	public function findAllByNewsId($news_id, $limit, $limitstart = 0)
+	public function findAllByNewsId($news_id, array $options)
 	{
-		return $this->fetchAll(
-			$this->select()
-				->from($this, 'comments.*')
-				->where('news_id=?', $news_id)
-				->where('isdeleted =?', 0)
-				->joinLeft('user_data', 'comments.user_id = user_data.id', '')
-				->where('user_data.id IS NOT NULL')
-				->where('user_data.status =?', 'active')
-				->order('comments.id DESC')
-				->group('comments.id')
-				->limit($limit, $limitstart)
-		);
+		$query = $this->select()
+			->setIntegrityCheck(false)
+			->from(['c' => 'comments'])
+			->where('c.news_id=?', $news_id)
+			->where('c.isdeleted=?', 0)
+			->join(['owner' => 'user_data'], 'owner.id=c.user_id',
+				['owner_name' => 'Name'])
+			->order('c.id DESC')
+			->group('c.id')
+			->limit($options['limit'], My_ArrayHelper::getProp($options,'start',0));
+		My_Query::setThumbsQuery($query, $options['owner_thumbs'], 'owner');
+
+		return $this->fetchAll($query);
 	}
 
 	public static function viewMoreLabel($count, $limit = 30)

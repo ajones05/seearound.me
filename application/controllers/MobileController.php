@@ -2080,29 +2080,30 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'Comments rendred successfully',
 			];
 
-			$comments = (new Application_Model_Comments)
-				->findAllByNewsId($post->id, 10, $start);
+			$comments = (new Application_Model_Comments)->findAllByNewsId($post->id,[
+				'limit' => 10,
+				'start' => $start,
+				'owner_thumbs' => [[320,320]]
+			]);
 
-			if (count($comments))
+			if ($comments->count())
 			{
 				$userTimezone = $user->getTimezone();
 				foreach ($comments as $comment)
 				{
-					// TODO: merge
-					$owner = Application_Model_User::findById($comment->user_id);
-
+					$ownerThumb = My_Query::getThumb($comment, '320x320', 'owner', true);
 					$response['result'][] = [
-                        'id' => $comment->id,
-                        'news_id' => $post->id,
-                        'comment' => $comment->comment,
-                        'user_name' => $owner->Name,
-                        'user_id' => $owner->id,
-                        'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($owner->getThumb('320x320')['path']),
+						'id' => $comment->id,
+						'news_id' => $post->id,
+						'comment' => $comment->comment,
+						'user_name' => $comment->owner_name,
+						'user_id' => $comment->user_id,
+						'Profile_image' => $this->view->serverUrl() .
+							$this->view->baseUrl($ownerThumb['path']),
 						'commTime' => (new DateTime($comment->created_at))
 							->setTimezone($userTimezone)
 							->format(My_Time::SQL),
-                        'totalComments' => $post->comment
+						'totalComments' => $post->comment
 					];
 				}
 			}
@@ -2119,7 +2120,7 @@ class MobileController extends Zend_Controller_Action
 
 		$this->responseHandler($response);
 		$this->_helper->json($response);
-    }
+	}
 
 	/**
 	 * Post news comment action.

@@ -4,8 +4,18 @@ $user_id = $this->user ? $this->user->id : null;
 $profileUrl = $this->user ?
 	$this->baseUrl('home/profile/user/' . $this->post->user_id) : '#';
 $commentsModel = new Application_Model_Comments;
-$comments = $commentsModel->findAllByNewsId($this->post->id, $commentsLimit);
-$hideComments = !$this->post->comment || !My_ArrayHelper::search(array('news_id' => $this->post->id), $comments->toArray(), 1);
+
+$hideComments = true;
+
+if ($this->post->comment > 0)
+{
+	$comments = $commentsModel->findAllByNewsId($this->post->id, [
+		'limit' => $commentsLimit,
+		'owner_thumbs' => [[55,55]]
+	]);
+	$hideComments = !My_ArrayHelper::search(['news_id' => $this->post->id],
+		$comments->toArray(), 1);
+}
 
 if ($this->post->image_id)
 {
@@ -13,23 +23,11 @@ if ($this->post->image_id)
 	$thumb448x320 = My_Query::getThumb($this->post, '448x320', 'news');
 }
 
-$userVote = 0;
-$voteModel = new Application_Model_Voting;
-$canVote = $voteModel->canVote($this->user, $this->post);
-
-if ($canVote && !$this->is_new)
-{
-	// TODO: merge with post query
-	$vote = $voteModel->findVote($this->post->id, $this->user->id);
-
-	if ($vote)
-	{
-		$userVote = $vote->vote;
-	}
-}
+$userVote = !$this->is_new ? My_ArrayHelper::getProp($this->post, 'user_vote') : null;
+$canVote = (new Application_Model_Voting)
+	->canVote($this->user, $this->post);
 
 $link = $this->baseUrl('post/' . $this->post->id);
-
 
 $timeAttr = '';
 $timeVal = '';
@@ -57,15 +55,6 @@ else
 	$ownerName = $this->post->owner_name;
 	$ownerThumb = My_Query::getThumb($this->post, '55x55', 'owner', true);
 }
-
-// TODO: remove after confirm fixeng task 27
-$postScore = '';
-
-if ($user_id != null && $this->user->is_admin == 1)
-{
-	$postScore .= ' <span style="color:red;font-weight:bold;">[' .
-		$this->post->score . ']</span>';
-}
 ?>
 <div class="post <?php if ($this->hidden) echo ' hidden';?>" data-id="<?php echo $this->post->id; ?>">
 <a href="<?php echo $profileUrl; ?>" class="user_avatar">
@@ -73,7 +62,7 @@ if ($user_id != null && $this->user->is_admin == 1)
 </a>
 <a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($ownerName); ?></a>
 <a href="<?php echo $link; ?>" class="post-time"
-<?php echo $timeAttr; ?>><?php echo $timeVal; ?></a><?php echo $postScore; // TODO: remove after confirm fixeng task 27 ?>
+<?php echo $timeAttr; ?>><?php echo $timeVal; ?></a>
 <div class="vote"<?php if (!$canVote): ?> disabled<?php endif; ?>>
 <div class="_3_copy"><?php echo $this->post->vote; ?></div>
 <div class="icon">
@@ -108,22 +97,22 @@ data-height="<?php echo $thumb960x960['height']; ?>">
 </div>
 <div class="post-coments">
 <?php
-if ($this->post->comment)
+if ($this->post->comment > 0)
 {
-	for ($i = count($comments) - 1; $i >= 0; $i--)
+	for ($i = $comments->count() - 1; $i >= 0; $i--)
 	{
-		echo $this->partial('post/_comment.html', array(
+		echo $this->partial('post/_comment.html', [
 			'user' => $this->user,
 			'comment' => $comments[$i],
 			'post' => $this->post,
 			'limit' => 250
-		));
+		]);
 	}
 }
-echo $this->partial('post/_comment_new.html', array(
+echo $this->partial('post/_comment_new.html', [
 	'user' => $this->user,
 	'hidden' => $hideComments
-));
+]);
 ?>
 </div>
 </div>
