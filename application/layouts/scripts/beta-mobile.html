@@ -1,0 +1,50 @@
+<?php
+$settings = (new Application_Model_Setting)->findValuesByName([
+	'google_analyticsAccount',
+	'site_titlePrefix',
+	'meta_title', 'meta_description'
+]);
+
+$this->doctype('XHTML1_RDFA');
+
+$this->headLink()
+	->appendStylesheet(My_Layout::assetUrl('www/css/beta-mobile.css'));
+
+$this->headMeta('width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no', 'viewport')
+	->setProperty('og:title', $settings['meta_title'])
+	->setProperty('og:description', $settings['meta_description'])
+	->setProperty('og:image', $this->serverUrl() .
+		My_Layout::assetUrl('www/images/logo-social.png'))
+	->setProperty('og:image:width', 278)
+	->setProperty('og:image:height', 278);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<?php include '_head.html'; ?>
+</head>
+<body>
+<div class="wraper-mobile">
+<img src="<?php echo $this->baseUrl('www/images/beta/logo-mobile.png'); ?>"
+alt="" class="logo-mobile">
+<h1>See and Share What's Happening Near You</h1>
+<div class="signup-form">
+<form
+action="https://docs.google.com/forms/d/1Fgw1vHniMWGgiXvtyndkIXZtRYWEW4kXxuG1Gq2C8ok/formResponse"
+method="POST">
+<input type="email" name="entry.364269482" placeholder="Email address..." required>
+<input type="submit" value="Notify me!">
+</form>
+</div>
+<img src="<?php echo $this->baseUrl('www/images/beta/phone-upper.png'); ?>"
+alt="" class="phone-img">
+<p>A free, public, hyper-local community bulletin board</p>
+<img src="<?php echo $this->baseUrl('www/images/beta/phone-lower.png'); ?>"
+alt="" class="phone-img lower-img">
+<div class="references">
+<h2>Join other people already sharing about topics like...</h2>
+</div>
+</div>
+</body>
+</html>

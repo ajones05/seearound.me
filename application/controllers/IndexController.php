@@ -31,15 +31,14 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		if ((new Mobile_Detect)->isMobile())
-		{
-			$this->view->layout()->setLayout('mobile');
-			$this->_helper->viewRenderer->setViewSuffix('mobile.html');
+		$layout = 'beta';
 
-			return true;
+		if (My_CommonUtils::isMobile())
+		{
+			$layout .= '-mobile';
 		}
 
-		$this->view->layout()->setLayout('beta');
+		$this->view->layout()->setLayout($layout);
 		$this->_helper->viewRenderer->setNoRender(true);
 	}
 

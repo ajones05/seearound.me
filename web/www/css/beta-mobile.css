@@ -1,0 +1,111 @@
+body {
+	margin: 0;
+	padding: 0;
+}
+.signup-form {
+	text-align: center;
+	margin-top: 260px;
+}
+.signup-form input {
+	color: #fff;
+	font-size: 24px;
+	padding: 0 10px;
+	outline: none;
+	height: 40px;
+	border-radius: 14px;
+	border:2px solid #fff;
+}
+.signup-form input[type="email"] {
+	background: rgba(255,255,255,.5);
+	width: 180px;
+	margin-right: 10px;
+}
+.signup-form input[type="submit"] {
+	text-align: center;
+	background: #00a8ff;
+	font-weight: bold;
+	border-color:#00a8ff;
+	height: 44px;
+}
+input[placeholder] {
+	text-overflow: ellipsis;
+}
+input::-moz-placeholder {
+	text-overflow:ellipsis;
+}
+input:-moz-placeholder {
+	text-overflow: ellipsis;
+}
+input:-ms-input-placeholder {
+	text-overflow:ellipsis;
+}
+::-webkit-input-placeholder {
+	color:#fff;
+}
+::-moz-placeholder {
+	color:#fff;
+}
+:-moz-placeholder {
+	color:#fff;
+}
+:-ms-input-placeholder {
+	color:#fff;
+}
+:focus::-webkit-input-placeholder {
+	color: transparent;
+}
+:focus::-moz-placeholder {
+	color: transparent;
+}
+:focus:-moz-placeholder {
+	color: transparent;
+}
+:focus:-ms-input-placeholder {
+	color: transparent;
+}
+.wraper-mobile {
+	background: #12192a url('../images/beta/mobile-bg.jpg') no-repeat center top/100% auto;
+}
+.wraper-mobile h1 {
+	font-size: 38px;
+	color: #fff;
+	font-weight: bold;
+	line-height: 1;
+	max-width: 360px;
+	margin: 34px auto;
+}
+.wraper-mobile .logo-mobile {
+	display: block;
+	margin: 0 auto;
+	max-width: 406px;
+	width: 60%;
+	padding-top: 15px;
+}
+.wraper-mobile img.phone-img {
+	margin:90px auto 0;
+	width:92%;
+	max-width:750px;
+	display: block;
+}
+.wraper-mobile img.phone-img.lower-img {
+	margin-top:0;
+}
+.wraper-mobile p{
+	font-size: 32px;
+	color: #fff;
+	font-weight: bold;
+	line-height: 1;
+	max-width: 360px;
+	margin: 34px auto;
+}
+.wraper-mobile .references {
+	background-color: #fff;
+	width: 100%;
+	margin-top: -176px;
+	position: relative;
+	padding: 15px 0;
+}
+.wraper-mobile .references h2 {
+	margin: 0 auto 15px;
+	max-width: 360px;
+}

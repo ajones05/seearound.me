@@ -507,4 +507,16 @@ class My_CommonUtils
 			}
 		}
 	}
+
+	/**
+	 * Checks if user device is mobile.
+	 *
+	 * @return boolean
+	 */
+	public static function isMobile()
+	{
+		$mobile = Zend_Controller_Front::getInstance()
+			->getRequest()->getParam('mobile');
+		return $mobile || (new Mobile_Detect)->isMobile();
+	}
 }
