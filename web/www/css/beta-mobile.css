@@ -1,23 +1,55 @@
-body {
+@font-face {
+	font-family: 'Lato-Regular';
+	src: url('fonts/Lato-Regular.eot');
+	src: local('☺'),
+		url('fonts/Lato-Regular.woff') format('woff'),
+		url('fonts/Lato-Regular.ttf') format('truetype'),
+		url('fonts/Lato-Regular.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
 	margin: 0;
 	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+}
+body {
+	background: url(../images/beta/signup-bg.jpg) center top no-repeat;
+	background-size: cover;
+    font: normal 12px Lato-Regular;
+	color: #afafaf;
+	padding-top: 80px;
+	line-height: 1;
 }
 .signup-form {
 	text-align: center;
 	margin-top: 260px;
 }
 .signup-form input {
-	color: #fff;
-	font-size: 24px;
-	padding: 0 10px;
-	outline: none;
-	height: 40px;
-	border-radius: 14px;
-	border:2px solid #fff;
+    color: #fff;
+    font-size: 5vw;
+    outline: none;
+    padding: 1% 3%;
+    border-radius: 14px;
+    border: 2px solid #fff;
 }
 .signup-form input[type="email"] {
 	background: rgba(255,255,255,.5);
-	width: 180px;
+    width: 40%;
 	margin-right: 10px;
 }
 .signup-form input[type="submit"] {
@@ -25,7 +57,6 @@ body {
 	background: #00a8ff;
 	font-weight: bold;
 	border-color:#00a8ff;
-	height: 44px;
 }
 input[placeholder] {
 	text-overflow: ellipsis;
@@ -67,12 +98,11 @@ input:-ms-input-placeholder {
 	background: #12192a url('../images/beta/mobile-bg.jpg') no-repeat center top/100% auto;
 }
 .wraper-mobile h1 {
-	font-size: 38px;
-	color: #fff;
-	font-weight: bold;
-	line-height: 1;
-	max-width: 360px;
-	margin: 34px auto;
+    font-size: 9vw;
+    color: #fff;
+    font-weight: bold;
+    line-height: 1;
+    text-align: center;
 }
 .wraper-mobile .logo-mobile {
 	display: block;
@@ -91,12 +121,12 @@ input:-ms-input-placeholder {
 	margin-top:0;
 }
 .wraper-mobile p{
-	font-size: 32px;
-	color: #fff;
-	font-weight: bold;
-	line-height: 1;
-	max-width: 360px;
-	margin: 34px auto;
+    font-size: 8vw;
+    color: #fff;
+    font-weight: bold;
+    line-height: 1;
+    text-align: center;
+    margin: 34px auto;
 }
 .wraper-mobile .references {
 	background-color: #fff;
@@ -106,6 +136,7 @@ input:-ms-input-placeholder {
 	padding: 15px 0;
 }
 .wraper-mobile .references h2 {
-	margin: 0 auto 15px;
-	max-width: 360px;
+    margin: 0 auto 15px;
+    max-width: 86%;
+    font-size: 6vw;
 }
