@@ -278,9 +278,7 @@ class MessageController extends Zend_Controller_Action
 				'is_first' => 1
 			));
 
-			$settings = (new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			$settings = Application_Model_Setting::getInstance();
 
 			My_Email::send(
 				array($receiver->Name => $receiver->Email_id),

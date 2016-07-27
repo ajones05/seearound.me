@@ -43,10 +43,7 @@ class HomeController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action');
 		}
 
-		$settings = (new Application_Model_Setting)->findValuesByName([
-			'google_mapsKey'
-		]);
-
+		$settings = Application_Model_Setting::getInstance();
 		$profileForm = new Application_Form_Profile;
 		$addressModel = new Application_Model_Address;
 		$addressForm = new Application_Form_Address;
@@ -203,10 +200,7 @@ class HomeController extends Zend_Controller_Action
 			$this->view->user = $user;
 		}
 
-		$settings = (new Application_Model_Setting)->findValuesByName([
-			'google_mapsKey'
-		]);
-
+		$settings = Application_Model_Setting::getInstance();
 		$user_id = $this->_request->getParam('user');
 
 		if (!v::optional(v::intVal())->validate($user_id))

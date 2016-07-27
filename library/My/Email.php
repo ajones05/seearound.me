@@ -16,9 +16,7 @@ class My_Email
 	public static function send($recipient, $subject, array $parameters = array())
 	{
 		$settings = isset($parameters['settings']) ? $parameters['settings'] :
-			(new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			Application_Model_Setting::getInstance();
 
 		if (!isset($parameters['body']))
 		{

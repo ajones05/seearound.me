@@ -1,7 +1,5 @@
 <?php
-$settings = (new Application_Model_Setting)->findValuesByName([
-	'site_titlePrefix'
-]);
+$settings = Application_Model_Setting::getInstance();
 $config = Zend_Registry::get('config_global');
 $isAdmin = $this->user ? $this->user->is_admin : 0;
 $keywords = My_ArrayHelper::getProp($this->layoutOpts, 'search.keywords');

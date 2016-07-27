@@ -127,6 +127,8 @@ class Admin_SettingsController extends Zend_Controller_Action
 				$setting->updated_at = new Zend_Db_Expr('NOW()');
 				$setting->save();
 
+				Zend_Registry::get('cache')->remove('settings');
+
 				$this->_redirect('admin/settings');
 			}
 		}
@@ -166,6 +168,8 @@ class Admin_SettingsController extends Zend_Controller_Action
 		}
 
 		$setting->delete();
+
+		Zend_Registry::get('cache')->remove('settings');
 
 		$this->_redirect('admin/settings');
   }

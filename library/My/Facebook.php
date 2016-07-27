@@ -13,11 +13,7 @@ class My_Facebook
 	public static function getInstance(array $options=[])
 	{
 		$settings = isset($options['_settings']) ? $options['_settings'] :
-			(new Application_Model_Setting)->findValuesByName([
-				'fb_apiVersion',
-				'fb_appId',
-				'fb_appSecret'
-			]);
+			Application_Model_Setting::getInstance();
 
 		unset($options['_settings']);
 

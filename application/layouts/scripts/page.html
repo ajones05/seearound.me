@@ -1,9 +1,5 @@
 <?php
-$settings = (new Application_Model_Setting)->findValuesByName([
-	'fb_apiVersion', 'fb_appId',
-	'google_analyticsAccount',
-	'site_titlePrefix'
-]);
+$settings = Application_Model_Setting::getInstance();
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))

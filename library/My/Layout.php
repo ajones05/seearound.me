@@ -65,19 +65,22 @@ class My_Layout
 	 * Returns media asset url.
 	 *
 	 * @param string $url
+	 * @param array $settings
 	 * @return string
 	 */
-	public static function assetUrl($url='')
+	public static function assetUrl($url='', array $settings=[])
 	{
 		if (self::$pasePath === null)
 		{
 			$config = Zend_Registry::get('config_global');
+			$settings = $settings != null ? $settings :
+				Application_Model_Setting::getInstance();
 
 			self::$pasePath = $config->resources->frontController->baseUrl;
 
-			if ($config->media->version !== '')
+			if ($settings['mediaversion'] !== '')
 			{
-				self::$pasePath .= 'assets-' . $config->media->version . '/';
+				self::$pasePath .= 'assets-' . $settings['mediaversion'] . '/';
 			}
 		}
 

@@ -29,11 +29,7 @@ $application = new Zend_Application(
 
 $application->bootstrap();
 
-$settings =  (new Application_Model_Setting)->findValuesByName([
-	'server_requestScheme', 'server_httpHost',
-	'email_fromName', 'email_fromAddress'
-]);
-
+$settings =  Application_Model_Setting::getInstance();
 $userModel = new Application_Model_User;
 $postModel = new Application_Model_News;
 $commentModel = new Application_Model_Comments;

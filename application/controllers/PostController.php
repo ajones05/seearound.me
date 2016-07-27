@@ -1074,9 +1074,7 @@ class PostController extends Zend_Controller_Action
 					var_export($body, true));
 			}
 
-			$settings = (new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			$settings = Application_Model_Setting::getInstance();
 
 			My_Email::send($email, 'Interesting local news', [
 				'template' => 'post-share',

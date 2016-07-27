@@ -5,50 +5,50 @@
 class Application_Model_Setting extends Zend_Db_Table_Abstract
 {
 	/**
-   * The table name.
-   *
-   * @var string
-   */
-  protected $_name = 'setting';
+	 * The table name.
+	 *
+	 * @var string
+	 */
+	 protected $_name = 'setting';
 
 	/**
-	 * Finds record by name.
+	 * The table name.
 	 *
-	 * @param	string $name Name.
-	 * @return	object Record found. Null if none is found.
+	 * @var string
 	 */
-	public function findValueByName($name)
-	{
-		$row = $this->fetchRow($this->select()->where('name=?',$name));
-		return $row ? $row->value : null;
-	}
+	protected static $_instance;
 
 	/**
-	 * Finds records by names.
+	 * Returns settings list instance.
 	 *
-	 * @param	string $names Names.
-	 * @return	array
+	 * @return array
 	 */
-	public function findValuesByName(array $names=[])
+	public static function getInstance()
 	{
-		$query = $this->select();
-
-		foreach ($names as  $name)
+		if (self::$_instance === null)
 		{
-			$query->orWhere('name=?', $name);
-		}
+			$cache = Zend_Registry::get('cache');
+			$settings = $cache->load('settings');
 
-		$result = [];
-		$rows = $this->fetchAll($query);
-
-		if ($rows != null)
-		{
-			foreach ($rows as $row)
+			if ($settings == null)
 			{
-				$result[$row->name] = $row->value;
+				$model = new self;
+				$result = $model->fetchAll($model->select()
+					->from('setting', ['name', 'value']));
+
+				$settings = [];
+
+				foreach ($result as $setting)
+				{
+					$settings[$setting->name] = $setting->value;
+				}
+
+				$cache->save($settings, 'settings');
 			}
+
+			self::$_instance = $settings;
 		}
 
-		return $result;
+		return self::$_instance;
 	}
 }

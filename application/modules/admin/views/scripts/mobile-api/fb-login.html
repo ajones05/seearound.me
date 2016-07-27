@@ -1,8 +1,5 @@
 <?php
-$settings = (new Application_Model_Setting)->findValuesByName([
-	'fb_apiVersion',
-	'fb_appId'
-]);
+$settings = Application_Model_Setting::getInstance();
 ?>
 <h2>mobile/fb-login</h2>
 <ol class="breadcrumb">

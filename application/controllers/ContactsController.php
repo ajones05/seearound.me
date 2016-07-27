@@ -77,10 +77,7 @@ class ContactsController extends Zend_Controller_Action
 
 			$userTable = new Application_Model_User;
 			$emailInvites = new Application_Model_Emailinvites;
-
-			$settings = (new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			$settings = Application_Model_Setting::getInstance();
 
 			foreach (array_slice($emails, 0, $user_invites->invite_count) as $email)
 			{
@@ -297,10 +294,7 @@ class ContactsController extends Zend_Controller_Action
 			}
 
 			$reciever_email = $userModel->recordForEmail($user->id, $facebook_user->id);
-
-			$settings = (new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			$settings = Application_Model_Setting::getInstance();
 
 			My_Email::send(
 				$reciever_email->recieverEmail,
@@ -353,9 +347,7 @@ class ContactsController extends Zend_Controller_Action
 			$this->_redirect($this->view->baseUrl('/'));
 		}
 
-		$settings = (new Application_Model_Setting)->findValuesByName([
-			'google_mapsKey'
-		]);
+		$settings = Application_Model_Setting::getInstance();
 
 		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id, 1);
 
@@ -514,9 +506,7 @@ class ContactsController extends Zend_Controller_Action
 						'source' => 'herespy'
 					])->updateStatus($user);
 
-					$settings = (new Application_Model_Setting)->findValuesByName([
-						'email_fromName', 'email_fromAddress'
-					]);
+					$settings = Application_Model_Setting::getInstance();
 
 					My_Email::send($receiver->Email_id, 'New follower', [
 						'template' => 'friend-invitation',

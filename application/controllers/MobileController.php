@@ -18,9 +18,7 @@ class MobileController extends Zend_Controller_Action
 	 */
 	public function init()
 	{
-		$this->settings = (new Application_Model_Setting)->findValuesByName([
-			'api_enable'
-		]);
+		$this->settings = Application_Model_Setting::getInstance();
 
 		$this->getResponse()->setHeader('Access-Control-Allow-Origin', '*');
 
@@ -251,9 +249,7 @@ class MobileController extends Zend_Controller_Action
 			);
 			$login = (new Application_Model_Loginstatus)->save($user, true);
 
-			$settings = (new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			$settings = Application_Model_Setting::getInstance();
 
 			My_Email::send(
 				$user->Email_id,
@@ -317,9 +313,7 @@ class MobileController extends Zend_Controller_Action
 				'type_id' => $confirmModel::$type['password']
 			]);
 
-			$settings = (new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			$settings = Application_Model_Setting::getInstance();
 
 			My_Email::send(
 				$email,
@@ -451,9 +445,7 @@ class MobileController extends Zend_Controller_Action
 				'source' => 'herespy'
 			])->updateStatus($user);
 
-			$settings = (new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			$settings = Application_Model_Setting::getInstance();
 
 			My_Email::send($receiver->Email_id, 'New follower', [
 				'template' => 'friend-invitation',
@@ -680,9 +672,7 @@ class MobileController extends Zend_Controller_Action
 				'is_first' => !$conversation_id ? 1 : 0
 			]);
 
-			$settings = (new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			$settings = Application_Model_Setting::getInstance();
 
 			My_Email::send(
 				[$receiver->Name => $receiver->Email_id],

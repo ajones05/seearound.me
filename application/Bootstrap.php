@@ -13,20 +13,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 	public function _initCache()
 	{
-		if (PHP_SAPI == 'cli')
-		{
-			return false;
-		}
-
 		$cache = Zend_Cache::factory(
 			'Core',
 			'File', [
 				'lifetime' => 604800, // 1 week
 				'automatic_serialization' => true
-			], ['cache_dir' => ROOT_PATH . '/cache']
+			], [
+				'cache_dir' => ROOT_PATH . '/cache',
+				'cache_file_umask' => 0664
+			]
 		);
 
 		Zend_Db_Table_Abstract::setDefaultMetadataCache($cache);
+		Zend_Registry::set('cache', $cache);
 	}
 
 	protected function _initAutoload()

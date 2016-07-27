@@ -49,11 +49,7 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function loginAction()
 	{
-		$settings = (new Application_Model_Setting)->findValuesByName([
-			'google_mapsKey',
-			'email_fromName', 'email_fromAddress'
-		]);
-
+		$settings = Application_Model_Setting::getInstance();
 		$config = Zend_Registry::get('config_global');
 		$loginForm = new Application_Form_Login;
 		$addressForm = new Application_Form_Address;
@@ -256,9 +252,7 @@ class IndexController extends Zend_Controller_Action
 				'type_id' => $confirmModel::$type['registration']
 			]);
 
-			$settings = (new Application_Model_Setting)->findValuesByName([
-				'email_fromName', 'email_fromAddress'
-			]);
+			$settings = Application_Model_Setting::getInstance();
 
 			My_Email::send(
 				[$user->Name => $user->Email_id],
@@ -324,9 +318,7 @@ class IndexController extends Zend_Controller_Action
 						'type_id' => $confirmModel::$type['password']
 					]);
 
-					$settings = (new Application_Model_Setting)->findValuesByName([
-						'email_fromName', 'email_fromAddress'
-					]);
+					$settings = Application_Model_Setting::getInstance();
 
 					My_Email::send(
 						$user->Email_id,

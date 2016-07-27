@@ -29,31 +29,7 @@ $application = new Zend_Application(
 
 $application->bootstrap();
 
-$settings =  (new Application_Model_Setting)->findValuesByName([
-	'server_requestScheme',
-	'server_httpHost',
-	'fb_apiVersion',
-	'fb_appId',
-	'fb_appSecret',
-	'fb_oaklandPageId',
-	'fb_oaklandAccessToken',
-	'fb_sfPageId',
-	'fb_sfAccessToken',
-	'fb_berkeleyPageId',
-	'fb_berkeleyAccessToken',
-	'twitter_oaklandToken',
-	'twitter_oaklandTokenSecret',
-	'twitter_oaklandApiKey',
-	'twitter_oaklandApiSecret',
-	'twitter_berkeleyToken',
-	'twitter_berkeleyTokenSecret',
-	'twitter_berkeleyApiKey',
-	'twitter_berkeleyApiSecret',
-	'twitter_sfToken',
-	'twitter_sfTokenSecret',
-	'twitter_sfApiKey',
-	'twitter_sfApiSecret'
-]);
+$settings =  Application_Model_Setting::getInstance();
 
 $facebookApi = My_Facebook::getInstance(['_settings'=>$settings]);
 $postModel = new Application_Model_News;
