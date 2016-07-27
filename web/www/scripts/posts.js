@@ -28,7 +28,7 @@ require.config({paths: {
 	'jquery-validate': assetsBaseUrl+'bower_components/jquery-validation/dist/jquery.validate.min',
 	'textarea_autosize': assetsBaseUrl+'bower_components/textarea-autosize/src/jquery.textarea_autosize',
 	'common': assetsBaseUrl+'www/scripts/commondev',
-	'facebook-sdk': 'http://connect.facebook.net/en_US/sdk',
+	'facebook-sdk': 'https://connect.facebook.net/en_US/sdk',
 	'google.maps': 'https://maps.googleapis.com/maps/api/js?key='+mapsKey+
 		'&v=3&libraries=places&callback=renderView_callback'
 }});
