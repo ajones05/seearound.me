@@ -131,7 +131,7 @@ input:-ms-input-placeholder {
 .wraper-mobile .references {
 	background-color: #fff;
 	width: 100%;
-	margin-top: -176px;
+    margin-top: -28%;
 	position: relative;
 	padding: 15px 0;
 }
