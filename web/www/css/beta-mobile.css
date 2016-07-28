@@ -28,11 +28,8 @@ time, mark, audio, video {
 	font: inherit;
 }
 body {
-	background: url(../images/beta/signup-bg.jpg) center top no-repeat;
 	background-size: cover;
     font: normal 12px Lato-Regular;
-	color: #afafaf;
-	padding-top: 80px;
 	line-height: 1;
 }
 .signup-form {
@@ -95,7 +92,7 @@ input:-ms-input-placeholder {
 	color: transparent;
 }
 .wraper-mobile {
-	background: #12192a url('../images/beta/mobile-bg.jpg') no-repeat center top/100% auto;
+	background: #12192a url('images/mobile-bg.jpg') no-repeat center top/100% auto;
 }
 .wraper-mobile h1 {
     font-size: 9vw;
@@ -129,14 +126,35 @@ input:-ms-input-placeholder {
     margin: 34px auto;
 }
 .wraper-mobile .references {
-	background-color: #fff;
-	width: 100%;
+	    background-color: #fff;
+    width: 86%;
     margin-top: -28%;
-	position: relative;
-	padding: 15px 0;
+    position: relative;
+    padding: 15px 7% 8%;
 }
 .wraper-mobile .references h2 {
     margin: 0 auto 15px;
-    max-width: 86%;
-    font-size: 6vw;
+    font-size: 8vw;
+}
+
+.wraper-mobile .references .line{
+	   color: #000;
+    line-height: 5em;
+    clear: both;
+    font-size: 5vw;
+}
+.wraper-mobile .references .line img{width:28%;}
+.wraper-mobile .references .line:nth-child(even){
+	text-align: left;
+}
+.wraper-mobile .references .line:nth-child(odd){
+	text-align: right;
+}
+.wraper-mobile .references .line:nth-child(even) img{
+	float: left;
+	margin-right: 15px;
+}
+.wraper-mobile .references .line:nth-child(odd) img{
+	float: right;
+	margin-left: 15px;
 }
