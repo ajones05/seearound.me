@@ -1240,13 +1240,11 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			if (!Application_Model_News::checkId($post_id, $post,
-						['link'=>true]))
+						['link'=>true,'user'=>$user,'userVote'=>true]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($post_id, true));
 			}
-
-			$userLike = (new Application_Model_Voting)->findVote($post->id, $user->id);
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -1260,7 +1258,7 @@ class MobileController extends Zend_Controller_Action
 					'Address' => Application_Model_Address::format($post) ?: $post->address,
 					'comment_count' => $post->comment,
 					'vote' => $post->vote,
-					'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
+					'isLikedByUser' => $post->user_vote !== null ? $post->user_vote : '0',
 					'Name' => $post->owner_name,
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($post, '320x320', ['alias' => 'owner_']))
@@ -1298,7 +1296,7 @@ class MobileController extends Zend_Controller_Action
 				{
 					$response['post']['link_thumb'] = $this->view->serverUrl() .
 						$this->view->baseUrl(Application_Model_NewsLink::getThumb($post,
-							'448x320' ['alias' => 'link_']));
+							'448x320', ['alias' => 'link_']));
 					$response['post']['link_image'] = $this->view->serverUrl() .
 						$this->view->baseUrl(Application_Model_NewsLink::getImage($post,
 							['alias' => 'link_']));
@@ -1605,7 +1603,7 @@ class MobileController extends Zend_Controller_Action
 				{
 					$response['post']['link_thumb'] = $this->view->serverUrl() .
 						$this->view->baseUrl(Application_Model_NewsLink::getThumb($post,
-							'448x320' ['alias' => 'link_']));
+							'448x320', ['alias' => 'link_']));
 					$response['post']['link_image'] = $this->view->serverUrl() .
 						$this->view->baseUrl(Application_Model_NewsLink::getImage($post,
 							['alias' => 'link_']));
@@ -1814,17 +1812,15 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user, ['link'=>true]);
+				->search($searchParameters + ['limit' => 15], $user,
+					['link'=>true,'user'=>$user,'userVote'=>true]);
 
 			if (count($result))
 			{
 				$userTimezone = $user->getTimezone();
-				$votingTable = new Application_Model_Voting;
 
 				foreach ($result as $row)
 				{
-					$userLike = $votingTable->findVote($row->id, $user->id);
-
 					$data = [
 						'id' => $row->id,
 						'user_id' => $row->user_id,
@@ -1835,7 +1831,7 @@ class MobileController extends Zend_Controller_Action
 						'Address' => Application_Model_Address::format($row) ?: $row->address,
 						'comment_count' => $row->comment,
 						'vote' => $row->vote,
-						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
+						'isLikedByUser' => $row->user_vote !== null ? $row->user_vote : '0',
 						'Name' => $row->owner_name,
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_']))
@@ -1873,7 +1869,7 @@ class MobileController extends Zend_Controller_Action
 							$data += [
 								'link_thumb' => $this->view->serverUrl() .
 									$this->view->baseUrl(Application_Model_NewsLink::getThumb($row,
-										'448x320' ['alias' => 'link_'])),
+										'448x320', ['alias' => 'link_'])),
 								'link_image' => $this->view->serverUrl() .
 									$this->view->baseUrl(Application_Model_NewsLink::getImage($row,
 										['alias' => 'link_']))
@@ -1936,17 +1932,15 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user, ['link'=>true]);
+				->search($searchParameters + ['limit' => 15], $user,
+					['link'=>true,'user'=>$user,'userVote'=>true]);
 
 			if (count($result))
 			{
 				$userTimezone = $user->getTimezone();
-				$votingTable = new Application_Model_Voting;
 
 				foreach ($result as $row)
 				{
-					$userLike = $votingTable->findVote($row->id, $user->id);
-
 					$data = [
 						'id' => $row->id,
 						'user_id' => $row->user_id,
@@ -1957,7 +1951,7 @@ class MobileController extends Zend_Controller_Action
 						'Address' => Application_Model_Address::format($row) ?: $row->address,
 						'comment_count' => $row->comment,
 						'vote' => $row->vote,
-						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
+						'isLikedByUser' => $row->user_vote !== null ? $row->user_vote : '0',
 						'Name' => $row->owner_name,
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_']))
@@ -1995,7 +1989,7 @@ class MobileController extends Zend_Controller_Action
 							$data += [
 								'link_thumb' => $this->view->serverUrl() .
 									$this->view->baseUrl(Application_Model_NewsLink::getThumb($row,
-										'448x320' ['alias' => 'link_'])),
+										'448x320', ['alias' => 'link_'])),
 								'link_image' => $this->view->serverUrl() .
 									$this->view->baseUrl(Application_Model_NewsLink::getImage($row,
 										['alias' => 'link_']))
