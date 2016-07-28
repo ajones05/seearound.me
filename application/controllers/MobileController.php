@@ -98,7 +98,8 @@ class MobileController extends Zend_Controller_Action
 					'Email_id' => $user->Email_id,
 					'Birth_date' => $user->Birth_date,
 					'Profile_image' => $this->view->serverUrl() .
-						$this->view->baseUrl($user->getThumb('320x320')['path']),
+						$this->view->baseUrl(
+							Application_Model_User::getThumb($user, '320x320')),
 					'address' => Application_Model_Address::format($user),
 					'latitude' => $user->latitude,
 					'longitude' => $user->longitude,
@@ -153,8 +154,8 @@ class MobileController extends Zend_Controller_Action
 					'Name' => $user->Name,
 					'Email_id' => $user->Email_id,
 					'Birth_date' => $user->Birth_date,
-					'Profile_image' => $this->view->serverUrl() .
-						$this->view->baseUrl($user->getThumb('320x320')['path']),
+					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+						Application_Model_User::getThumb($user, '320x320')),
 					'address' => Application_Model_Address::format($user),
 					'latitude' => $user->latitude,
 					'longitude' => $user->longitude,
@@ -239,6 +240,7 @@ class MobileController extends Zend_Controller_Action
 				]);
 
 				$data['image_id'] = $image->id;
+				$data['image_name'] = $name;
 
 				$response['thumb'] = $this->view->serverUrl() .
 						$this->view->baseUrl('uploads/' . $name);
@@ -379,8 +381,8 @@ class MobileController extends Zend_Controller_Action
 						'id' => $friendUser->id,
 						'Name' => $friendUser->Name,
 						'Email_id' => $friendUser->Email_id,
-						'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($friendUser->getThumb('320x320')['path']),
+						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($friendUser, '320x320')),
 						'Birth_date' => $friendUser->Birth_date,
 						'Gender' => $friendUser->gender(),
 						'Activities' => $friendUser->activities()
@@ -563,8 +565,8 @@ class MobileController extends Zend_Controller_Action
 					'id' => $profile->id,
 					'karma' => round($userModel->getKarma($profile->id)['karma'], 4),
 					'Name' => $profile->Name,
-					'Profile_image' => $this->view->serverUrl() .
-						$this->view->baseUrl($profile->getThumb('320x320')['path']),
+					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+						Application_Model_User::getThumb($profile, '320x320')),
 					'Email_id' => $profile->Email_id,
 					'Gender' => $profile->gender(),
 					'Activities' => $profile->activities(),
@@ -755,7 +757,6 @@ class MobileController extends Zend_Controller_Action
 				->order('c.created_at DESC')
 				->limit(100, $start);
 
-			My_Query::setThumbsQuery($query, [[320, 320]], 'u');
 			$messages = $model->fetchAll($query);
 
 			$response = [
@@ -768,7 +769,6 @@ class MobileController extends Zend_Controller_Action
 				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
 				{
-					$thumb = My_Query::getThumb($message, '320x320', 'u', true);
 					$response['result'][] = [
 						'id' => $message->id,
 						'sender_id' => $message->user_id,
@@ -780,8 +780,8 @@ class MobileController extends Zend_Controller_Action
 						'reciever_read' => 0,
 						'Name' => $message->user_name,
 						'Email_id' => $message->user_email,
-						'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($thumb['path'])
+						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320', ['alias' => 'u_']))
 					];
 				}
 			}
@@ -873,7 +873,6 @@ class MobileController extends Zend_Controller_Action
 				$response['message'] = 'Message list Send Successfully';
 			}
 
-			My_Query::setThumbsQuery($query, [[320, 320]], 'u');
 			$messages = $model->fetchAll($query);
 
 			if (count($messages))
@@ -881,7 +880,6 @@ class MobileController extends Zend_Controller_Action
 				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
 				{
-					$thumb = My_Query::getThumb($message, '320x320', 'u', true);
 					$response['result'][] = [
 						'id' => $message->id,
 						'sender_id' => $message->user_id,
@@ -893,8 +891,8 @@ class MobileController extends Zend_Controller_Action
 						'reciever_read' => $message->is_read,
 						'Name' => $message->user_name,
 						'Email_id' => $message->user_email,
-						'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($thumb['path'])
+						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320', ['alias' => 'u_']))
 					];
 				}
 			}
@@ -975,8 +973,6 @@ class MobileController extends Zend_Controller_Action
 				->order('cm.created_at DESC')
 				->limit(10, $start);
 
-			My_Query::setThumbsQuery($query, [[320, 320]], 'su');
-			My_Query::setThumbsQuery($query, [[320, 320]], 'ru');
 			$messages = $messageModel->fetchAll($query);
 
 			$updateCondition = [];
@@ -994,8 +990,6 @@ class MobileController extends Zend_Controller_Action
 				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
 				{
-					$senderThumb = My_Query::getThumb($message, '320x320', 'su', true);
-					$receiverThumb = My_Query::getThumb($message, '320x320', 'ru', true);
 					$response['result'][] = [
 						'id' => $message->id,
 						'body' => $message->body,
@@ -1005,13 +999,13 @@ class MobileController extends Zend_Controller_Action
 						'sender_id' => $message->sender_id,
 						'sender_name' => $message->sender_name,
 						'sender_email' => $message->sender_email,
-						'sender_image' =>  $this->view->serverUrl() .
-							$this->view->baseUrl($senderThumb['path']),
+						'sender_image' =>  $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320', ['alias' => 'su_'])),
 						'receiver_id' => $message->receiver_id,
 						'receiver_name' => $message->receiver_name,
 						'receiver_email' => $message->receiver_email,
-						'receiver_image' =>  $this->view->serverUrl() .
-							$this->view->baseUrl($receiverThumb['path']),
+						'receiver_image' =>  $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320', ['alias' => 'ru_'])),
 						'is_read' => $message->is_read
 					];
 
@@ -1182,8 +1176,6 @@ class MobileController extends Zend_Controller_Action
 				->order('cm.created_at DESC')
 				->limit(10, $start);
 
-			My_Query::setThumbsQuery($query, [[320, 320]], 'su');
-			My_Query::setThumbsQuery($query, [[320, 320]], 'ru');
 			$messages = $messageModel->fetchAll($query);
 
 			$response = ['status' => 'SUCCESS'];
@@ -1193,8 +1185,6 @@ class MobileController extends Zend_Controller_Action
 				$userTimezone = $user->getTimezone();
 				foreach ($messages as $message)
 				{
-					$senderThumb = My_Query::getThumb($message, '320x320', 'su', true);
-					$receiverThumb = My_Query::getThumb($message, '320x320', 'ru', true);
 					$response['result'][] = [
 						'id' => $message->id,
 						'subject' => $message->subject,
@@ -1206,13 +1196,13 @@ class MobileController extends Zend_Controller_Action
 						'sender_id' => $message->sender_id,
 						'sender_name' => $message->sender_name,
 						'sender_email' => $message->sender_email,
-						'sender_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($senderThumb['path']),
+						'sender_image' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320', ['alias' => 'su_'])),
 						'receiver_id' => $message->receiver_id,
 						'receiver_name' => $message->receiver_name,
 						'receiver_email' => $message->receiver_email,
-						'receiver_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($receiverThumb['path']),
+						'receiver_image' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320', ['alias' => 'ru_']))
 					];
 				}
 			}
@@ -1250,15 +1240,13 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			if (!Application_Model_News::checkId($post_id, $post,
-						['link'=>true,'image'=>true]))
+						['link'=>true]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($post_id, true));
 			}
 
-			$userLike = (new Application_Model_Voting)
-				->findVote($post->id, $user->id);
-			$ownerThumb = My_Query::getThumb($post, '320x320', 'owner', true);
+			$userLike = (new Application_Model_Voting)->findVote($post->id, $user->id);
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -1274,18 +1262,17 @@ class MobileController extends Zend_Controller_Action
 					'vote' => $post->vote,
 					'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
 					'Name' => $post->owner_name,
-					'Profile_image' => $this->view->serverUrl() .
-						$this->view->baseUrl($ownerThumb['path'])
+					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+						Application_Model_User::getThumb($post, '320x320', ['alias' => 'owner_']))
 				]
 			];
 
 			if ($post->image_id)
 			{
-				$thumb = My_Query::getThumb($post, '448x320', 'news');
 				$response['post']['image'] = $this->view->serverUrl() .
-					$this->view->baseUrl($post['image_path']);
+					$this->view->baseUrl(Application_Model_News::getImage($post));
 				$response['post']['thumb'] = $this->view->serverUrl() .
-					$this->view->baseUrl($thumb['path']);
+					$this->view->baseUrl(Application_Model_News::getThumb($post, '448x320'));
 			}
 
 			if ($post->link_id != null)
@@ -1309,14 +1296,15 @@ class MobileController extends Zend_Controller_Action
 
 				if ($post->link_image_id != null)
 				{
-					$thumb = My_Query::getThumb($post, '448x320', 'link');
 					$response['post']['link_thumb'] = $this->view->serverUrl() .
-						$this->view->baseUrl($thumb['path']);
+						$this->view->baseUrl(Application_Model_NewsLink::getThumb($post,
+							'448x320' ['alias' => 'link_']));
 					$response['post']['link_image'] = $this->view->serverUrl() .
-						$this->view->baseUrl($post->link_image_path);
+						$this->view->baseUrl(Application_Model_NewsLink::getImage($post,
+							['alias' => 'link_']));
 				}
 			}
-        }
+		}
 		catch (Exception $e)
 		{
 			$response = [
@@ -1615,11 +1603,12 @@ class MobileController extends Zend_Controller_Action
 
 				if ($post->link_image_id != null)
 				{
-					$thumb = My_Query::getThumb($post, '448x320', 'link');
 					$response['post']['link_thumb'] = $this->view->serverUrl() .
-						$this->view->baseUrl($thumb['path']);
+						$this->view->baseUrl(Application_Model_NewsLink::getThumb($post,
+							'448x320' ['alias' => 'link_']));
 					$response['post']['link_image'] = $this->view->serverUrl() .
-						$this->view->baseUrl($post->link_image_path);
+						$this->view->baseUrl(Application_Model_NewsLink::getImage($post,
+							['alias' => 'link_']));
 				}
 			}
 		}
@@ -1729,11 +1718,12 @@ class MobileController extends Zend_Controller_Action
 						[[320,320], 'uploads']
 					]);
 					$user_data['image_id'] = $image->id;
+					$user_data['image_name'] = $data['image'];
 					$profileImage = 'uploads/' . $data['image'];
 				}
 				else
 				{
-					$profileImage = $user->getThumb('320x320')['path'];
+					$profileImage = Application_Model_User::getThumb($user, '320x320');
 				}
 
 				$userModel->update($user_data, 'id=' . $user->id);
@@ -1824,7 +1814,7 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user, ['link'=>true,'image'=>true]);
+				->search($searchParameters + ['limit' => 15], $user, ['link'=>true]);
 
 			if (count($result))
 			{
@@ -1834,7 +1824,6 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as $row)
 				{
 					$userLike = $votingTable->findVote($row->id, $user->id);
-					$ownerThumb = My_Query::getThumb($row, '320x320', 'owner', true);
 
 					$data = [
 						'id' => $row->id,
@@ -1848,17 +1837,16 @@ class MobileController extends Zend_Controller_Action
 						'vote' => $row->vote,
 						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
 						'Name' => $row->owner_name,
-						'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($ownerThumb['path'])
+						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_']))
 					];
 
 					if ($row->image_id)
 					{
-						$thumb = My_Query::getThumb($row, '448x320', 'news');
 						$data['thumb'] = $this->view->serverUrl() .
-							$this->view->baseUrl($thumb['path']);
+							$this->view->baseUrl(Application_Model_News::getThumb($row, '448x320'));
 						$data['image'] = $this->view->serverUrl() .
-							$this->view->baseUrl($row->image_path);
+							$this->view->baseUrl(Application_Model_News::getImage($row));
 					}
 
 					if ($row->link_id)
@@ -1882,12 +1870,13 @@ class MobileController extends Zend_Controller_Action
 
 						if ($row->link_image_id != null)
 						{
-							$thumb = My_Query::getThumb($row, '448x320', 'link');
 							$data += [
 								'link_thumb' => $this->view->serverUrl() .
-									$this->view->baseUrl($thumb['path']),
+									$this->view->baseUrl(Application_Model_NewsLink::getThumb($row,
+										'448x320' ['alias' => 'link_'])),
 								'link_image' => $this->view->serverUrl() .
-									$this->view->baseUrl($row->link_image_path)
+									$this->view->baseUrl(Application_Model_NewsLink::getImage($row,
+										['alias' => 'link_']))
 							];
 						}
 					}
@@ -1947,7 +1936,7 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user, ['link'=>true,'image'=>true]);
+				->search($searchParameters + ['limit' => 15], $user, ['link'=>true]);
 
 			if (count($result))
 			{
@@ -1957,7 +1946,6 @@ class MobileController extends Zend_Controller_Action
 				foreach ($result as $row)
 				{
 					$userLike = $votingTable->findVote($row->id, $user->id);
-					$ownerThumb = My_Query::getThumb($row, '320x320', 'owner', true);
 
 					$data = [
 						'id' => $row->id,
@@ -1971,17 +1959,16 @@ class MobileController extends Zend_Controller_Action
 						'vote' => $row->vote,
 						'isLikedByUser' => $userLike !== null ? $userLike->vote : '0',
 						'Name' => $row->owner_name,
-						'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($ownerThumb['path'])
+						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_']))
 					];
 
 					if ($row->image_id)
 					{
-						$thumb = My_Query::getThumb($row, '448x320', 'news');
 						$data['thumb'] = $this->view->serverUrl() .
-							$this->view->baseUrl($thumb['path']);
+							$this->view->baseUrl(Application_Model_News::getThumb($row, '448x320'));
 						$data['image'] = $this->view->serverUrl() .
-							$this->view->baseUrl($row->image_path);
+							$this->view->baseUrl(Application_Model_News::getImage($row));
 					}
 
 					if ($row->link_id)
@@ -2005,12 +1992,13 @@ class MobileController extends Zend_Controller_Action
 
 						if ($row->link_image_id != null)
 						{
-							$thumb = My_Query::getThumb($row, '448x320', 'link');
 							$data += [
 								'link_thumb' => $this->view->serverUrl() .
-									$this->view->baseUrl($thumb['path']),
+									$this->view->baseUrl(Application_Model_NewsLink::getThumb($row,
+										'448x320' ['alias' => 'link_'])),
 								'link_image' => $this->view->serverUrl() .
-									$this->view->baseUrl($row->link_image_path)
+									$this->view->baseUrl(Application_Model_NewsLink::getImage($row,
+										['alias' => 'link_']))
 							];
 						}
 					}
@@ -2081,15 +2069,14 @@ class MobileController extends Zend_Controller_Action
 				$userTimezone = $user->getTimezone();
 				foreach ($comments as $comment)
 				{
-					$ownerThumb = My_Query::getThumb($comment, '320x320', 'owner', true);
 					$response['result'][] = [
 						'id' => $comment->id,
 						'news_id' => $post->id,
 						'comment' => $comment->comment,
 						'user_name' => $comment->owner_name,
 						'user_id' => $comment->user_id,
-						'Profile_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($ownerThumb['path']),
+						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($comment, '320x320', ['alias' => 'owner_'])),
 						'commTime' => (new DateTime($comment->created_at))
 							->setTimezone($userTimezone)
 							->format(My_Time::SQL),
@@ -2155,8 +2142,8 @@ class MobileController extends Zend_Controller_Action
 					'comment' => $comment->comment,
 					'user_name' => $user->Name,
 					'user_id' => $user->id,
-					'Profile_image' => $this->view->serverUrl() .
-						$this->view->baseUrl($user->getThumb('320x320')['path']),
+					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
+						Application_Model_User::getThumb($user, '320x320')),
 					'commTime' => (new DateTime($comment->created_at))
 						->setTimezone($user->getTimezone())
 						->format(My_Time::SQL),
@@ -2369,7 +2356,6 @@ class MobileController extends Zend_Controller_Action
 			$select1->joinLeft(['fl' => 'friend_log'],
 				'fl.friend_id=f.id AND fl.status_id=f.status', '');
 			$select1->joinLeft(['u' => 'user_data'], 'u.id=fl.user_id', '');
-			My_Query::setThumbsQuery($select1, [[320, 320]], 'u');
 
 			$select2 = $db->select();
 			$select2->from(['cm' => 'conversation_message'], [
@@ -2384,7 +2370,6 @@ class MobileController extends Zend_Controller_Action
 			$select2->where('cm.to_id=?', $user->id, $maxDate);
 			$select2->where('cm.is_read=0 OR cm.created_at>?', $maxDate);
 			$select2->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '');
-			My_Query::setThumbsQuery($select2, [[320, 320]], 'u');
 
 			$select3 = $db->select();
 			$select3->from(['n' => 'news'], [
@@ -2402,7 +2387,6 @@ class MobileController extends Zend_Controller_Action
 			$select3->where('v.is_read=0 OR v.created_at>?', $maxDate);
 			$select3->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
 			$select3->group(['u.id', 'n.id']);
-			My_Query::setThumbsQuery($select3, [[320, 320]], 'u');
 
 			$select4 = $db->select();
 			$select4->from(['n' => 'news'], [
@@ -2419,7 +2403,6 @@ class MobileController extends Zend_Controller_Action
 			$select4->where('c.isdeleted=0 AND c.user_id<>?', $user->id);
 			$select4->where('c.is_read=0 OR c.created_at>?', $maxDate);
 			$select4->joinLeft(['u' => 'user_data'], 'u.id=c.user_id', '');
-			My_Query::setThumbsQuery($select4, [[320, 320]], 'u');
 
 			$select = $db->select()
 				->union([$select1, $select2, $select3, $select4],
@@ -2435,7 +2418,6 @@ class MobileController extends Zend_Controller_Action
 
 				foreach ($result as $row)
 				{
-					$thumb = My_Query::getThumb($row, '320x320', 'u', true);
 					$data = [
 						'id' => $row['id'],
 						'type' => $row['type'],
@@ -2445,8 +2427,8 @@ class MobileController extends Zend_Controller_Action
 							->format(My_Time::SQL),
 						'user_id' => $row['user_id'],
 						'user_name' => $row['user_name'],
-						'user_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($thumb['path'])
+						'user_image' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($row, '320x320', ['alias' => 'u_']))
 					];
 
 					switch ($row['type'])

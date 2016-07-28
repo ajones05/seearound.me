@@ -1,19 +1,9 @@
 <?php
 $settings = Application_Model_Setting::getInstance();
-$auth = Zend_Auth::getInstance()->getIdentity();
 $config = Zend_Registry::get('config_global');
 $request = Zend_Controller_Front::getInstance()->getRequest();
-$config = Zend_Registry::get('config_global');
-
-if ($auth)
-{
-	$user = Application_Model_User::findById($auth['user_id']);
-	$image = $user->getThumb('55x55')['path'];
-}
-else
-{
-	$image = My_ArrayHelper::getProp($config, 'user.thumb.55x55.path');
-}
+$user = Application_Model_User::getAuth();
+$image = Application_Model_User::getThumb($user, '55x55');
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
@@ -21,12 +11,12 @@ $this->headLink()
 
 $this->headScript()
 	->appendScript(
-		"var isLogin = " . json_encode((boolean) $auth) . ";\n" .
+		"var isLogin = " . ($user ? 1 : 0) . ";\n" .
 		"var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
 		"var facebook_appId=" . json_encode($settings['fb_appId']) . ";\n" .
 		"var facebook_apiVer=" . json_encode($settings['fb_apiVersion']) . ";\n" .
-		"var user_id = " . json_encode($auth ? $user->id : '') . ";\n" .
-		"var userName = " . json_encode($auth ? $user->Name : '') . ";\n" .
+		"var user_id = " . json_encode($user ? $user->id : '') . ";\n" .
+		"var userName = " . json_encode($user ? $user->Name : '') . ";\n" .
 		"var imagePath = " . json_encode($this->baseUrl($image)) . ";\n" .
 		My_Layout::deferLoadCss('//fonts.googleapis.com/css?family=Lato:400,700')
 	)

@@ -2,6 +2,18 @@
 
 class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 {
+	/**
+	 * @var string
+	 */
+	public static $imagePath = 'uploads';
+
+	/**
+	 * @var array
+	 */
+	public static $thumbPath = [
+		'448x320' => 'thumb448x320'
+	];
+
     /**
      * The table name.
      *
@@ -62,5 +74,44 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 				->where('p.isdeleted=0')
 		);
 		return $result;
+	}
+
+	/**
+	 * Returnds link thumbail path.
+	 *
+	 * @param mixed $row
+	 * @param string $thumb Thumbnail dimensions WIDTHxHEIGHT
+	 * @param array $options
+	 * @return mixed String on success, otherwise NULL
+	 */
+	public static function getThumb($row, $thumb, array $options=[])
+	{
+		$imageField = My_ArrayHelper::getProp($options, 'alias') . 'image_name';
+
+		if (empty($row[$imageField]))
+		{
+			return null;
+		}
+
+		return self::$thumbPath[$thumb] . '/' . $row[$imageField];
+	}
+
+	/**
+	 * Returnds link image path.
+	 *
+	 * @param mixed $row
+	 * @param array $options
+	 * @return mixed String on success, otherwise NULL
+	 */
+	public static function getImage($row, array $options=[])
+	{
+		$imageField = My_ArrayHelper::getProp($options, 'alias') . 'image_name';
+
+		if (empty($row[$imageField]))
+		{
+			return null;
+		}
+
+		return self::$imagePath . '/' . $row[$imageField];
 	}
 }

@@ -1,3 +1,6 @@
+<?php
+$thumb = Application_Model_User::getThumb($this->user, '55x55');
+?>
 <script type="text/javascript">
 	$(function(){
 		var formData = formData||{},
@@ -148,7 +151,7 @@
 		<div class="profile-img">
 			<a style="z-index:9999;" href="<?php echo $this->baseUrl("home/profile"); ?>">
 				<span id="image_upload_field">
-					<img src="<?php echo $this->baseUrl($this->user->getThumb('55x55')['path']); ?>" class="imgProf">
+					<img src="<?php echo $this->baseUrl($thumb); ?>" class="imgProf">
 				</span>
 			</a> 
 		</div>

@@ -78,6 +78,20 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 */
 	protected static $_instance;
 
+	/**
+	 * @var string
+	 */
+	public static $imagePath = 'uploads';
+
+	/**
+	 * @var array
+	 */
+	public static $thumbPath = [
+		'320x320' => 'tbnewsimages',
+		'448x320' => 'thumb448x320',
+		'960x960' => 'newsimages'
+	];
+
     /**
      * The table name.
      *
@@ -161,35 +175,33 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			$query->where('news.isdeleted=0');
 		}
 
-		My_Query::setThumbsQuery($query, [[448, 320], [960, 960]], 'news');
+		if (!empty($options['thumbs']))
+		{
+			My_Query::setThumbsQuery($query, $options['thumbs'], 'news');
+		}
 
 		if (!$isCount)
 		{
-			$query->join(['owner' => 'user_data'], 'owner.id=news.user_id', ['owner_name' => 'Name']);
-			My_Query::setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]], 'owner');
+			$query->join(['owner' => 'user_data'], 'owner.id=news.user_id',
+				['owner_name' => 'Name', 'owner_image_name' => 'image_name']);
 		}
 
 		if (!empty($options['link']))
 		{
-			$query->joinLeft(['link' => 'news_link'], 'link.news_id=news.id', ['link_id' => 'id',
-				'link_link' => 'link', 'link_title' => 'title', 'link_description' => 'description',
-				'link_author' => 'author', 'link_image_id' => 'image_id']);
-			My_Query::setThumbsQuery($query, [[448, 320]], 'link');
-
-			$query->joinLeft(['li' => 'image'], 'li.id=link.image_id', [
-					'link_image_path' => 'path',
-					'link_image_width' => 'width',
-					'link_image_height' => 'height'
+			$query->joinLeft(['link' => 'news_link'], 'link.news_id=news.id', [
+				'link_id' => 'id',
+				'link_link' => 'link',
+				'link_title' => 'title',
+				'link_description' => 'description',
+				'link_author' => 'author',
+				'link_image_id' => 'image_id',
+				'link_image_name' => 'image_name'
 			]);
-		}
 
-		if (!empty($options['image']))
-		{
-			$query->joinLeft(['i' => 'image'], 'i.id=news.image_id', [
-					'image_path' => 'path',
-					'image_width' => 'width',
-					'image_height' => 'height'
-			]);
+			if (!empty($options['link']['thumbs']))
+			{
+				My_Query::setThumbsQuery($query, $options['link']['thumbs'], 'link');
+			}
 		}
 
 		if (!empty($options['user']))
@@ -431,6 +443,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				]);
 
 				$post->image_id = $image->id;
+				$post->image_name = $data['image'];
 			}
 
 			$post->save();
@@ -527,6 +540,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 							]);
 
 							$newsLink->image_id = $image->id;
+							$newsLink->image_name = $name;
 						}
 						catch (Exception $e)
 						{
@@ -562,5 +576,44 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	{
 		return '((news.vote+news.comment+4)/' .
 			'((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+12)^1.4))*10000';
+	}
+
+	/**
+	 * Returnds post thumbail path.
+	 *
+	 * @param mixed $row
+	 * @param string $thumb Thumbnail dimensions WIDTHxHEIGHT
+	 * @param array $options
+	 * @return mixed String on success, otherwise NULL
+	 */
+	public static function getThumb($row, $thumb, array $options=[])
+	{
+		$imageField = My_ArrayHelper::getProp($options, 'alias') . 'image_name';
+
+		if (empty($row[$imageField]))
+		{
+			return null;
+		}
+
+		return self::$thumbPath[$thumb] . '/' . $row[$imageField];
+	}
+
+	/**
+	 * Returnds post image path.
+	 *
+	 * @param mixed $row
+	 * @param array $options
+	 * @return mixed String on success, otherwise NULL
+	 */
+	public static function getImage($row, array $options=[])
+	{
+		$imageField = My_ArrayHelper::getProp($options, 'alias') . 'image_name';
+
+		if (empty($row[$imageField]))
+		{
+			return null;
+		}
+
+		return self::$imagePath . '/' . $row[$imageField];
 	}
 }

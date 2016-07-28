@@ -29,7 +29,11 @@ class PostController extends Zend_Controller_Action
 		$this->view->searchForm = new Application_Form_PostSearch;
 		$this->view->user = $user;
 
-		$postOptions = ['link'=>true,'deleted'=>true];
+		$postOptions = [
+			'link' => ['thumbs'=>[[448,320]]],
+			'deleted' => true,
+			'thumbs' => [[448,320],[960,960]]
+		];
 
 		if ($user != null)
 		{
@@ -56,11 +60,13 @@ class PostController extends Zend_Controller_Action
 			return true;
 		}
 
-		$ownerThumb = My_Query::getThumb($post, '55x55', 'owner', true);
+		$ownerThumb = Application_Model_User::getThumb($post, '55x55',
+			['alias' => 'owner_']);
+
 		$headScript = 'var opts=' . json_encode(['latitude' => $post->latitude,
 			'longitude' => $post->longitude], JSON_FORCE_OBJECT) .
 			',owner=' . json_encode([
-				'image' => $this->view->baseUrl($ownerThumb['path'])
+				'image' => $this->view->baseUrl($ownerThumb)
 			]) .
 			',post=' . json_encode([
 				'id'=>$post->id,
@@ -73,7 +79,8 @@ class PostController extends Zend_Controller_Action
 		{
 			$headScript .= ',user=' . json_encode([
 				'name' => $user->Name,
-				'image' => $this->view->baseUrl($user->getThumb('55x55')['path'])
+				'image' => $this->view->baseUrl(
+					Application_Model_User::getThumb($user, '55x55'))
 			]) .
 			',settings=' . json_encode([
 				'bodyMaxLength' => Application_Form_News::$bodyMaxLength
@@ -90,8 +97,8 @@ class PostController extends Zend_Controller_Action
 
 		if ($post->image_id != null || $post->link_image_id != null)
 		{
-			$thumb = $post->image_id ? My_Query::getThumb($post, '448x320', 'news') :
-				My_Query::getThumb($post, '448x320', 'link');
+			$thumb = $post->image_id ? My_Query::getThumb($post, [448,320], 'news') :
+				My_Query::getThumb($post, [448,320], 'link');
 			$imagePath = $thumb['path'];
 			$imageWidth = $thumb['width'];
 			$imageHeight = $thumb['height'];
@@ -178,7 +185,11 @@ class PostController extends Zend_Controller_Action
 			$searchParameters,
 			['limit' => 15, 'radius' => $point ? 0.018939 :
 				My_ArrayHelper::getProp($searchParameters, 'radius', 1.5)]
-		), $user, ['link'=>true,'userVote'=>true]);
+		), $user, [
+			'link' => ['thumbs'=>[[448,320]]],
+			'userVote' => true,
+			'thumbs' => [[448,320],[960,960]]
+		]);
 
 		if (count($posts))
 		{
@@ -206,7 +217,8 @@ class PostController extends Zend_Controller_Action
 		$this->view->headScript()->appendScript(
 			'var user=' . json_encode([
 				'name' => $user->Name,
-				'image' => $this->view->baseUrl($user->getThumb('55x55')['path']),
+				'image' => $this->view->baseUrl(
+					Application_Model_User::getThumb($user, '55x55')),
 				'location' => [$user->latitude, $user->longitude]
 			]) .
 			',isList=true' .
@@ -273,7 +285,11 @@ class PostController extends Zend_Controller_Action
 			$result = (new Application_Model_News)->search(array_merge(
 				$searchParameters, ['limit' => 15, 'exclude_id' => $new,
 					'radius' => $point ? 0.018939 : $searchParameters['radius']]
-			), $user, ['link'=>true,'userVote'=>true]);
+			), $user, [
+				'link' => ['thumbs'=>[[448,320]]],
+				'userVote' => true,
+				'thumbs' => [[448,320],[960,960]]
+			]);
 
 			$response = ['status' => 1];
 
@@ -522,7 +538,11 @@ class PostController extends Zend_Controller_Action
 			$post = $model->save($postForm->getValues() +
 				['user_id' => $postUser->id, 'address_id' => $address->id]);
 			// TODO: refactoring
-			$post = $model->findById($post->id, ['link'=>true,'userVote'=>true]);
+			$post = $model->findById($post->id, [
+				'link' => ['thumbs'=>[[448,320]]],
+				'userVote' => true,
+				'thumbs' => [[448,320],[960,960]]
+			]);
 
 			$response = [
 				'status' => 1,
@@ -548,7 +568,11 @@ class PostController extends Zend_Controller_Action
 					'radius' => 1.5,
 					'limit' => 14,
 					'exclude_id' => [$post->id]
-				], $user, ['link'=>true,'userVote'=>true]);
+				], $user, [
+					'link' => ['thumbs'=>[[448,320]]],
+					'userVote' => true,
+					'thumbs' => [[448,320],[960,960]]
+				]);
 
 				foreach ($result as $post)
 				{
@@ -751,7 +775,7 @@ class PostController extends Zend_Controller_Action
 
 			$post = $model->save(['news' => $data['news']], $post);
 			// TODO: refactoring
-			$post = $model->findById($post->id, ['link'=>true]);
+			$post = $model->findById($post->id, ['link'=>['thumbs'=>[[448,320]]]]);
 
 			$response = [
 				'status' => 1,
@@ -1005,7 +1029,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, ['link'=>true]))
+			if (!Application_Model_News::checkId($id, $post, ['link'=>['thumbs'=>[[448,320]]]]))
 			{
 				throw new RuntimeException('Incorrect post ID');
 			}

@@ -6,14 +6,16 @@
 <?php
 $userTimezone = $this->user->getTimezone();
 foreach($this->paginator as $message):
-$createdAt = (new DateTime($message->created_at))
-	->setTimezone($userTimezone);
+	$createdAt = (new DateTime($message->created_at))
+		->setTimezone($userTimezone);
+	$userThumb = Application_Model_User::getThumb($message, '55x55',
+		['alias' => 'u_']);
 ?>
 	<ul>
 		<li id="row_<?php echo $message->id; ?>" class="message-list<?php if (!$message->is_read) echo ' highLight'; ?>">
 			<div class="main-message-wrapper">
 				<div class="message-frist">
-					<img src="<?php echo $this->baseUrl(My_Query::getThumb($message, '55x55', 'u', true)['path']); ?>">
+					<img src="<?php echo $this->baseUrl($userThumb); ?>">
 				</div>
 				<div class="message-second">
 					<span class="name"><?php echo $message->user_name; ?></span>

@@ -1,5 +1,8 @@
+<?php
+$userThumb = Application_Model_User::getThumb($this->user, '55x55');
+?>
 <div class="tooltip-content">
-<img src="<?php echo $this->baseUrl($this->user->getThumb('55x55')['path']); ?>" />
+<img src="<?php echo $this->baseUrl($userThumb); ?>">
 <h4><?php echo $this->user->Name; ?></h4>
 <div class="tooltip-body">This is me!</div>
 </div>

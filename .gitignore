@@ -1,12 +1,12 @@
 /web/newsimages/*
 /web/tbnewsimages/*
 /web/uploads/*
-!/web/uploads/4yzgqvirgl.jpg
+!/web/uploads/default.jpg
 /web/www/upload/*
 /web/thumb26x26/*
-!/web/thumb26x26/img-prof200x200.jpg
+!/web/thumb26x26/default.jpg
 /web/thumb55x55/*
-!/web/thumb55x55/img-prof200x200.jpg
+!/web/thumb55x55/default.jpg
 /log/*
 /vendor/*
 /includes/*

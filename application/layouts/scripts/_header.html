@@ -1,5 +1,6 @@
 <?php
 $user = Application_Model_User::getAuth();
+$userImage = Application_Model_User::getThumb($user, '26x26');
 $request = Zend_Controller_Front::getInstance()->getRequest();
 
 $error = isset($this->login_form) ? true : false;
@@ -51,7 +52,7 @@ if ($error)
 					</li>
 					<li class="last">
 						<a href="#" id="myProfLink">
-							<img src="<?php echo $this->baseUrl($user->getThumb('26x26')['path']); ?>" class="imgProf_Header">
+							<img src="<?php echo $this->baseUrl($userImage); ?>" class="imgProf_Header">
 							<span style="color:#5d5d5d;">My Profile</span>
 						</a>
 						<div class="clr"></div>

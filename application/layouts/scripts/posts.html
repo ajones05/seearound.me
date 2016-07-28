@@ -1,11 +1,8 @@
 <?php
 $settings = Application_Model_Setting::getInstance();
-$config = Zend_Registry::get('config_global');
+$profileImage = Application_Model_User::getThumb($this->user, '26x26');
 
 My_Layout::renderFavicon($this);
-
-$profileImage = $this->user ? $this->user->getThumb('26x26')['path'] :
-	My_ArrayHelper::getProp($config, 'user.thumb.26x26.path');
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('www/css/posts.css'));

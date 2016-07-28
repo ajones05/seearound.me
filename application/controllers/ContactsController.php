@@ -416,7 +416,8 @@ class ContactsController extends Zend_Controller_Action
 
 					$response['friends'][] = [
 						'id' => $friendUser->id,
-						'image' => $this->view->baseUrl($friendUser->getThumb('55x55')['path']),
+						'image' => $this->view->baseUrl(
+							Application_Model_User::getThumb($friendUser, '55x55')),
 						'name' => $friendUser->Name,
 						'address' => Application_Model_Address::format($friendUser),
 						'latitude' => $friendUser->latitude,
@@ -644,9 +645,11 @@ class ContactsController extends Zend_Controller_Action
 					$sender = Application_Model_User::findById($friend->sender_id);
 
 					$data[] = [
-						'image' => $this->view->baseUrl($sender->getThumb('55x55')['path']),
 						'name' => $sender->Name,
-						'link' => $this->view->baseUrl("home/profile/user/" . $sender->id)
+						'image' => $this->view->baseUrl(
+							Application_Model_User::getThumb($sender, '55x55')),
+						'link' => $this->view->baseUrl('home/profile/user/' .
+							$friend->sender_id)
 					];
 				}
 
@@ -721,7 +724,8 @@ class ContactsController extends Zend_Controller_Action
 					$response['result'][] = [
 						'id' => $_user->id,
 						'name' => $_user->Name,
-						'image' => $this->view->baseUrl($_user->getThumb('55x55')['path']),
+						'image' => $this->view->baseUrl(
+							Application_Model_User::getThumb($_user, '55x55')),
 						'address' => Application_Model_Address::format($_user)
 					];
 				}

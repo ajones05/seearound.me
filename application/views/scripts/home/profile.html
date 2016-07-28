@@ -5,13 +5,14 @@ $karmaTitle = 'User posts: ' . $this->karma['post'] . '<br/>' .
 	'User comments on other posts: ' . $this->karma['comment_other'];
 $age = $this->profile->Birth_date ?
 	(new DateTime($this->profile->Birth_date))->diff(new DateTime())->y : null;
+$thumb = Application_Model_User::getThumb($this->profile, '55x55');
 ?>
 <div class="profile">
 <div class="leftCol">
 	<div class="profDtl">
 		<div class="profile-img">
 			<span id="image_upload_field">
-				<img src="<?php echo $this->baseUrl($this->profile->getThumb('55x55')['path']); ?>">
+				<img src="<?php echo $this->baseUrl($thumb); ?>">
 			</span>
 		</div>
 		<div class="profile-describe">

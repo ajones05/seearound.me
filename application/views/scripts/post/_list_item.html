@@ -19,8 +19,8 @@ if ($this->post->comment > 0)
 
 if ($this->post->image_id)
 {
-	$thumb960x960 = My_Query::getThumb($this->post, '960x960', 'news');
-	$thumb448x320 = My_Query::getThumb($this->post, '448x320', 'news');
+	$thumb960x960 = My_Query::getThumb($this->post, [960,960], 'news');
+	$thumb448x320 = My_Query::getThumb($this->post, [448,320], 'news');
 }
 
 $userVote = !$this->is_new ? My_ArrayHelper::getProp($this->post, 'user_vote') : null;
@@ -48,17 +48,18 @@ else
 if ($this->owner)
 {
 	$ownerName = $this->owner->Name;
-	$ownerThumb = $this->owner->getThumb('55x55');
+	$ownerThumb = Application_Model_User::getThumb($this->owner, '55x55');
 }
 else
 {
 	$ownerName = $this->post->owner_name;
-	$ownerThumb = My_Query::getThumb($this->post, '55x55', 'owner', true);
+	$ownerThumb = Application_Model_User::getThumb($this->post, '55x55',
+		['alias' => 'owner_']);
 }
 ?>
 <div class="post <?php if ($this->hidden) echo ' hidden';?>" data-id="<?php echo $this->post->id; ?>">
 <a href="<?php echo $profileUrl; ?>" class="user_avatar">
-<img src="<?php echo $this->baseUrl($ownerThumb['path']); ?>">
+<img src="<?php echo $this->baseUrl($ownerThumb); ?>">
 </a>
 <a href="<?php echo $profileUrl; ?>" class="user_name"><?php echo ucfirst($ownerName); ?></a>
 <a href="<?php echo $link; ?>" class="post-time"

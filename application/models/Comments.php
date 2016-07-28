@@ -111,11 +111,10 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 			->where('c.news_id=?', $news_id)
 			->where('c.isdeleted=?', 0)
 			->join(['owner' => 'user_data'], 'owner.id=c.user_id',
-				['owner_name' => 'Name'])
+				['owner_name' => 'Name', 'owner_image_name' => 'image_name'])
 			->order('c.id DESC')
 			->group('c.id')
 			->limit($options['limit'], My_ArrayHelper::getProp($options,'start',0));
-		My_Query::setThumbsQuery($query, $options['owner_thumbs'], 'owner');
 
 		return $this->fetchAll($query);
 	}

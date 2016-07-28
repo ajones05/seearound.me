@@ -152,6 +152,15 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	protected static $_auth;
 
 	/**
+	 * @var array
+	 */
+	public static $thumbPath = [
+		'26x26' => 'thumb26x26',
+		'55x55' => 'thumb55x55',
+		'320x320' => 'uploads'
+	];
+
+	/**
 	 * @var	string
 	 */
     protected $_name = 'user_data';
@@ -241,7 +250,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			->joinLeft(['a' => 'address'], 'a.id=u.address_id', [
 				'address', 'latitude', 'longitude', 'street_name',
 				'street_number', 'city', 'state', 'country', 'zip', 'timezone']);
-		My_Query::setThumbsQuery($query, [[26, 26],[55, 55],[320, 320]], 'u');
 
 		return $query;
     }
@@ -603,6 +611,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 						]);
 
 						$user->image_id = $image->id;
+						$user->image_name = $name;
 					}
 					catch (Exception $e)
 					{
@@ -752,5 +761,33 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 				(.25 * ($selfStasts['vote'] + $selfStasts['comment'])) +
 				$otherStats['count'] * .25
 		];
+	}
+
+	/**
+	 * Returnds user thumbail path.
+	 *
+	 * @param mixed $row
+	 * @param string $thumb Thumbnail dimensions WIDTHxHEIGHT
+	 * @param array $options
+	 * @return mixed String on success, otherwise NULL
+	 */
+	public static function getThumb($row, $thumb, array $options=[])
+	{
+		$imageField = My_ArrayHelper::getProp($options, 'alias') . 'image_name';
+
+		if (!empty($row[$imageField]))
+		{
+			$imageName = $row[$imageField];
+		}
+		elseif (!array_key_exists('default', $options) || $options['default'])
+		{
+			$imageName = 'default.jpg';
+		}
+		else
+		{
+			return null;
+		}
+
+		return self::$thumbPath[$thumb] . '/' . $imageName;
 	}
 }

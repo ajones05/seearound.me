@@ -164,7 +164,10 @@ class HomeController extends Zend_Controller_Action
 				[[320,320], 'uploads']
 			]);
 
-			$userModel->update(['image_id' => $image->id], 'id=' . $user->id);
+			$userModel->update([
+				'image_id' => $image->id,
+				'image_name' => $name
+			], 'id=' . $user->id);
 
 			$response = [
 				'status' => 1,
@@ -298,7 +301,8 @@ class HomeController extends Zend_Controller_Action
 			{
 				foreach ($result as $row)
 				{
-					$ownerThumb = My_Query::getThumb($row, '320x320', 'owner', true);
+					$ownerThumb = Application_Model_User::getThumb($row, '55x55',
+						['alias' => 'owner_']);
 					$response['result'][] = [
 						'id' => $row->id,
 						'news' => My_StringHelper::stringLimit($row->news, 100, '...'),
@@ -307,7 +311,7 @@ class HomeController extends Zend_Controller_Action
 						'user' => [
 							'id' => $row->user_id,
 							'name' => $row->owner_name,
-							'image' => $this->view->baseUrl($ownerThumb['path']),
+							'image' => $this->view->baseUrl($ownerThumb),
 						]
 					];
 				}

@@ -23,6 +23,7 @@ ALTER TABLE `user_data` DROP `Password`;
 ALTER TABLE `user_data` DROP `Old_email`;
 ALTER TABLE `user_data` DROP `Conf_code`;
 ALTER TABLE `user_data` CHANGE `password_hash` `password` VARCHAR(255) NULL;
+ALTER TABLE `user_data` ADD `image_name` varchar(255) null after `image_id`;
 
 --
 -- Table structure for table `user_confirm`
@@ -143,6 +144,7 @@ ALTER TABLE `news`
 	DROP `Address`;
 ALTER TABLE `news` MODIFY `news` text;
 ALTER TABLE `news` COLLATE 'utf8_general_ci';
+ALTER TABLE `news` ADD `image_name` varchar(255) null after `image_id`;
 
 --
 -- Table structure for table `news_link`
@@ -167,6 +169,7 @@ ALTER TABLE `news_link` DROP `image_height`;
 ALTER TABLE `news_link` ADD `image_id` INT(11) NULL;
 ALTER TABLE `news_link` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE `news_link` ADD `link_trim` VARCHAR(2000) NOT NULL AFTER `link`;
+ALTER TABLE `news_link` ADD `image_name` varchar(255) null after `image_id`;
 
 --
 -- Table structure for table `post_social`

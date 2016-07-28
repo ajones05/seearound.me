@@ -43,14 +43,13 @@ class My_Query
 	 * Returns image thumb.
 	 *
 	 * @param	mixed $data Array or Object
-	 * @param	string $thumb "{WIDTH}x{HEIGHT}"
+	 * @param	array $thumb [{WIDTH},{HEIGHT}]
 	 * @param	string $alias
-	 * @param	boolean $default
 	 * @return	array
 	 */
-	public static function getThumb($data, $thumb, $alias, $default = false)
+	public static function getThumb($data, array $thumb, $alias)
 	{
-		$prefix = $alias . '_' . $thumb;
+		$prefix = $alias . '_' . $thumb[0] . 'x' . $thumb[1];
 
 		if (My_ArrayHelper::getProp($data, $alias . '_image_id'))
 		{
@@ -58,17 +57,6 @@ class My_Query
 				'path' => My_ArrayHelper::getProp($data, $prefix . '_path'),
 				'width' => My_ArrayHelper::getProp($data, $prefix . '_width'),
 				'height' => My_ArrayHelper::getProp($data, $prefix . '_height')
-			];
-		}
-
-		if ($default)
-		{
-			$config = Zend_Registry::get('config_global');
-
-			return [
-				'path' => $config->user->thumb->{$thumb}->path,
-				'width' => $config->user->thumb->{$thumb}->width,
-				'height' => $config->user->thumb->{$thumb}->height
 			];
 		}
 

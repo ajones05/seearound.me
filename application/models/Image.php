@@ -102,21 +102,14 @@ class Application_Model_Image extends Zend_Db_Table_Abstract
 		)
 	);
 
-  /**
-   * Save image.
-   *
-   * @param	string $path
-   * @param	string $name
-   * @param	array $thumbs
-   * @return Zend_Db_Table_Row_Abstract
-   */
-/*
-		$image->save('www/upload', $name, [
-		 [26, 26, 'thumb26x26', 2],
-		 [55, 55, 'thumb55x55', 2],
-		 [320, 320, 'uploads'],
-		]);
-*/
+	/**
+	 * Save image.
+	 *
+	 * @param	string $path
+	 * @param	string $name
+	 * @param	array $thumbs
+	 * @return Zend_Db_Table_Row_Abstract
+	 */
 	public function save($path, $name, array $thumbs=[])
 	{
 		$image = $this->createRow(['path' => $path . '/' . $name]);
