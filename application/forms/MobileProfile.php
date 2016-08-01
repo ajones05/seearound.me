@@ -103,7 +103,8 @@ class Application_Form_MobileProfile extends Zend_Form
 		{
 			$upload->setValidators(array(
 				array('Extension', false, array('jpg', 'jpeg', 'png', 'gif')),
-				array('MimeType', false, array('image/jpeg', 'image/png', 'image/gif')),
+				array('MimeType', false, array('image/jpeg', 'image/png', 'image/gif'),
+					array('magicFile' => false)),
 				array('Count', false, 1)
 			));
 

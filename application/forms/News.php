@@ -73,7 +73,8 @@ class Application_Form_News extends Zend_Form
 			{
 				$upload->setValidators([
 					['Extension', false, ['jpg', 'jpeg', 'png', 'gif']],
-					['MimeType', false, ['image/jpeg', 'image/png', 'image/gif']],
+					['MimeType', false, ['image/jpeg', 'image/png', 'image/gif'],
+						['magicFile' => false]],
 					['Count', false, 2]
 				]);
 

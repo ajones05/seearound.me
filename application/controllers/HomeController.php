@@ -131,7 +131,8 @@ class HomeController extends Zend_Controller_Action
 			$upload = new Zend_File_Transfer;
 			$upload->setValidators(array(
 				array('Extension', false, array('jpg', 'jpeg', 'png', 'gif')),
-				array('MimeType', false, array('image/jpeg', 'image/png', 'image/gif')),
+				array('MimeType', false, array('image/jpeg', 'image/png', 'image/gif'),
+					array('magicFile' => false)),
 				array('Count', false, 1)
 			));
 

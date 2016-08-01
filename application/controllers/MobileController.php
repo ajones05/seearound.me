@@ -212,7 +212,8 @@ class MobileController extends Zend_Controller_Action
 			{
 				$upload->setValidators([
 					['Extension', false, ['jpg', 'jpeg', 'png', 'gif']],
-					['MimeType', false, ['image/jpeg', 'image/png', 'image/gif']],
+					['MimeType', false, ['image/jpeg', 'image/png', 'image/gif'],
+						['magicFile' => false]],
 					['Count', false, 1]
 				]);
 
@@ -268,7 +269,8 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = array(
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			);
 			$this->errorHandler($e);
 		}
@@ -1026,7 +1028,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = [
 				'status' => 'FAILED',
-				'message' => true || $e instanceof RuntimeException ?
+				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
 			$this->errorHandler($e);
@@ -1252,7 +1254,7 @@ class MobileController extends Zend_Controller_Action
 					'id' => $post->id,
 					'user_id' => $post->user_id,
 					'news' => $post->news,
-					'created_date' => My_Time::time_ago($post->created_date),
+					'created_date' => My_Time::time_ago($post->created_date, ["ago" => true]),
 					'latitude' => $post->latitude,
 					'longitude' => $post->longitude,
 					'Address' => Application_Model_Address::format($post) ?: $post->address,
@@ -1825,7 +1827,7 @@ class MobileController extends Zend_Controller_Action
 						'id' => $row->id,
 						'user_id' => $row->user_id,
 						'news' => $row->news,
-						'created_date' => My_Time::time_ago($row->created_date),
+						'created_date' => My_Time::time_ago($row->created_date, ["ago" => true]),
 						'latitude' => $row->latitude,
 						'longitude' => $row->longitude,
 						'Address' => Application_Model_Address::format($row) ?: $row->address,
@@ -1945,7 +1947,7 @@ class MobileController extends Zend_Controller_Action
 						'id' => $row->id,
 						'user_id' => $row->user_id,
 						'news' => $row->news,
-						'created_date' => My_Time::time_ago($row->created_date),
+						'created_date' => My_Time::time_ago($row->created_date, ["ago" => true]),
 						'latitude' => $row->latitude,
 						'longitude' => $row->longitude,
 						'Address' => Application_Model_Address::format($row) ?: $row->address,
@@ -2503,7 +2505,7 @@ class MobileController extends Zend_Controller_Action
 							var_export($id, true));
 					}
 
-					if ($user_id != $friendRequest->reciever_id)
+					if ($user->id != $friendRequest->reciever_id)
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
@@ -2521,7 +2523,7 @@ class MobileController extends Zend_Controller_Action
 							var_export($id, true));
 					}
 
-					if ($user_id != $message->to_id)
+					if ($user->id != $message->to_id)
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
@@ -2547,7 +2549,7 @@ class MobileController extends Zend_Controller_Action
 							var_export($id, true));
 					}
 
-					if ($user_id == $vote->user_id || $user_id != $post->user_id)
+					if ($user->id == $vote->user_id || $user->id != $post->user_id)
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
@@ -2573,7 +2575,7 @@ class MobileController extends Zend_Controller_Action
 							var_export($id, true));
 					}
 
-					if ($user_id == $comment->user_id || $user_id != $post->user_id)
+					if ($user->id == $comment->user_id || $user->id != $post->user_id)
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
