@@ -243,7 +243,7 @@ class MobileController extends Zend_Controller_Action
 				$data['image_id'] = $image->id;
 				$data['image_name'] = $name;
 
-				$response['thumb'] = $this->view->serverUrl() .
+				$response['data']['thumb'] = $this->view->serverUrl() .
 						$this->view->baseUrl('uploads/' . $name);
 			}
 
@@ -263,7 +263,7 @@ class MobileController extends Zend_Controller_Action
 				]
 			);
 
-			$response['token'] = $login->token;
+			$response['data']['token'] = $login->token;
 		}
 		catch (Exception $e)
 		{
