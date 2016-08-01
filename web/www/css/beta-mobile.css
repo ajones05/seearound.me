@@ -92,7 +92,7 @@ input:-ms-input-placeholder {
 	color: transparent;
 }
 .wraper-mobile {
-	background: #12192a url('../images/data/mobile-bg.jpg') no-repeat center top/100% auto;
+	background: #12192a url('../images/beta/mobile-bg.jpg') no-repeat center top/100% auto;
 }
 .wraper-mobile h1 {
     font-size: 9vw;
