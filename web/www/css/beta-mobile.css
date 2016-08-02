@@ -54,6 +54,7 @@ body {
 	background: #00a8ff;
 	font-weight: bold;
 	border-color:#00a8ff;
+	-webkit-appearance: inherit;
 }
 input[placeholder] {
 	text-overflow: ellipsis;
