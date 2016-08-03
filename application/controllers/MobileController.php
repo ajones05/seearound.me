@@ -2072,7 +2072,7 @@ class MobileController extends Zend_Controller_Action
 							->setTimezone($userTimezone)
 							->format(My_Time::SQL),
 						'totalComments' => $post->comment,
-						'canEdit' => Application_Model_Comments::canEdit($comment, $user)
+						'canEdit' => Application_Model_Comments::canEdit($comment, $post, $user)
 					];
 				}
 			}
