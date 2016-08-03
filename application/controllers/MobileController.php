@@ -1265,7 +1265,8 @@ class MobileController extends Zend_Controller_Action
 					'isLikedByUser' => $post->user_vote !== null ? $post->user_vote : '0',
 					'Name' => $post->owner_name,
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
-						Application_Model_User::getThumb($post, '320x320', ['alias' => 'owner_']))
+						Application_Model_User::getThumb($post, '320x320', ['alias' => 'owner_'])),
+					'canEdit' => Application_Model_News::canEdit($post, $user)
 				]
 			];
 
@@ -1519,7 +1520,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($post_id, true));
 			}
 
-			if ($user->id != $post->user_id)
+			if (!Application_Model_News::canEdit($post, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -1652,7 +1653,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($post_id, true));
 			}
 
-			if ($user->id != $post->user_id)
+			if (!Application_Model_News::canEdit($post, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -1828,7 +1829,8 @@ class MobileController extends Zend_Controller_Action
 						'isLikedByUser' => $row->user_vote !== null ? $row->user_vote : '0',
 						'Name' => $row->owner_name,
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
-							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_']))
+							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
+						'canEdit' => Application_Model_News::canEdit($row, $user)
 					];
 
 					if ($row->image_id)
@@ -1948,7 +1950,8 @@ class MobileController extends Zend_Controller_Action
 						'isLikedByUser' => $row->user_vote !== null ? $row->user_vote : '0',
 						'Name' => $row->owner_name,
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
-							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_']))
+							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
+						'canEdit' => Application_Model_News::canEdit($row, $user)
 					];
 
 					if ($row->image_id)
@@ -2068,7 +2071,8 @@ class MobileController extends Zend_Controller_Action
 						'commTime' => (new DateTime($comment->created_at))
 							->setTimezone($userTimezone)
 							->format(My_Time::SQL),
-						'totalComments' => $post->comment
+						'totalComments' => $post->comment,
+						'canEdit' => Application_Model_Comments::canEdit($comment, $post, $user)
 					];
 				}
 			}
@@ -2187,7 +2191,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if ($user->id != $comment->user_id && $user->id != $post->user_id)
+			if (!Application_Model_Comments::canEdit($comment, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}

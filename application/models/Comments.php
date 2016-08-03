@@ -227,4 +227,18 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 		return true;
 	}
+
+	/**
+	 * Checkd if user can edit comment.
+	 *
+	 * @param mixed $comment
+	 * @param mixed $post
+	 * @param mixed $user
+	 * @return boolean
+	 */
+	public static function canEdit($comment, $post, $user)
+	{
+		return $user['id'] == $comment['user_id'] ||
+			$user['id'] == $post['user_id'] ? 1 : 0;
+	}
 }

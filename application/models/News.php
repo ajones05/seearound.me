@@ -571,6 +571,18 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	}
 
 	/**
+	 * Checkd if user can edit post.
+	 *
+	 * @param mixed $post
+	 * @param mixed $user
+	 * @return boolean
+	 */
+	public static function canEdit($post, $user)
+	{
+		return $post['user_id'] == $user['id'] ? 1 : 0;
+	}
+
+	/**
 	 * Returns most interesting order.
 	 *
 	 */
