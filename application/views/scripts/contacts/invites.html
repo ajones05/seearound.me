@@ -16,7 +16,7 @@
 			<div class="fbFrndsMain" style="text-align:left;padding:10px;">
 				<form id="inviteForm" method="post">
 					<span style="margin-left: -9px;color: #4993EF;">My Message</span><br>
-					<textarea style="margin-left: -1px;border: 1px solid black;margin-top: 5px;" id="messageText" cols="36" rows="3"><?php echo Zend_Registry::get('config_global')->email->email_invite_message; ?></textarea><br><br>
+					<textarea style="margin-left: -1px;border: 1px solid black;margin-top: 5px;" id="messageText" cols="36" rows="3"><?php echo $this->settings['email_inviteBody']; ?></textarea><br><br>
 					<span style="margin-left: -9px;color: #4993EF;">My friends' emails ( Separated by comma )</span><br>
 					<textarea style="margin-left: -1px;border: 1px solid black;margin-top: 5px;" id="emails" name="emails" cols="36" rows="2" placeholder="Enter emails address"></textarea><br>
 					<input style="margin-top: 10px;margin-left: -1px;float: left;" class="btnBlueRpt" type="submit" value="Send">
