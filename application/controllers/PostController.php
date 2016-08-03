@@ -632,7 +632,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if ($user->id != $post->user_id)
+			if (!Application_Model_News::canEdit($post, $user))
 			{
 				throw new RuntimeException('You have not access for this action');
 			}
@@ -757,7 +757,7 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect post ID');
 			}
 
-			if ($user->id != $post->user_id)
+			if (!Application_Model_News::canEdit($post, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -825,7 +825,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if ($user->id != $post->user_id)
+			if (!Application_Model_News::canEdit($post, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -889,7 +889,7 @@ class PostController extends Zend_Controller_Action
 				throw new Exception('Incorrect post ID.');
 			}
 
-			if ($post->user_id != $user->id)
+			if (!Application_Model_News::canEdit($post, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -1302,7 +1302,7 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('News does not exist', -1);
 			}
 
-			if ($user->id != $comment->user_id && $user->id != $news->user_id)
+			if (!Application_Model_Comments::canEdit($comment, $news, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
