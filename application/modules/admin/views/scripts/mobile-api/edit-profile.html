@@ -1,3 +1,6 @@
+<?php
+$publicProfile = $this->request->getParam('public_profile');
+?>
 <h2>mobile/edit-profile</h2>
 <ol class="breadcrumb">
 	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
@@ -47,10 +50,10 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileedit-p
 		<label class="control-label col-sm-2" for="public_profile">Public [public_profile]:</label>
 		<div class="col-sm-10">
 			<div class="radio">
-				<label><input type="radio" name="public_profile"<?php if ($this->request->getParam('public_profile')) echo ' checked'; ?>>Yes</label>
+				<label><input type="radio" name="public_profile" value="1"<?php if ($publicProfile) echo ' checked'; ?>>Yes</label>
 			</div>
 			<div class="radio">
-				<label><input type="radio" name="public_profile"<?php if ($this->request->getParam('public_profile') === '0') echo ' checked'; ?>>No</label>
+				<label><input type="radio" name="public_profile" value="0"<?php if (!$publicProfile) echo ' checked'; ?>>No</label>
 			</div>
 		</div>
 	</div>

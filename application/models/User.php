@@ -5,86 +5,6 @@
 class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 {
 	/**
-	 * Returns list of user interests.
-	 *
-	 * @return	array
-	 */
-	public function parseInterests()
-	{
-		$result = array();
-
-		$activities = trim($this->activities());
-
-		if ($activities !== '')
-		{
-			$interest = explode(',', $activities);
-
-			foreach ($interest as $_interest)
-			{
-				$_interest = trim($_interest, ' \"\'');
-							
-				if ($_interest !== '')
-				{
-					$result[] = $_interest;
-				}
-			}
-		}
-
-		return $result;
-	}
-
-	/**
-	 * Returns user public profile value.
-	 *
-	 * @return	integer
-	 */
-	public function getPublicProfile()
-	{
-		$profile = $this->findDependentRowset('Application_Model_UserProfile')->current();
-
-		if ($profile)
-		{
-			return $profile->public_profile;
-		}
-
-		return 0;
-	}
-
-	/**
-	 * Returns user's gender.
-	 *
-	 * @return	mixed
-	 */
-	public function gender()
-	{
-		$profile = $this->findDependentRowset('Application_Model_UserProfile')->current();
-
-		if ($profile)
-		{
-			return $profile->Gender;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns user's activities.
-	 *
-	 * @return	mixed
-	 */
-	public function activities()
-	{
-		$profile = $this->findDependentRowset('Application_Model_UserProfile')->current();
-
-		if ($profile)
-		{
-			return $profile->Activities;
-		}
-
-		return null;
-	}
-
-	/**
 	 * Updates user invite count.
 	 *
 	 * @return	boolean
@@ -120,17 +40,6 @@ class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
 	}
 
 	/**
-	 * Returns profile image thumb.
-	 *
-	 * @param	string $thumb "{WIDTH}x{HEIGHT}"
-	 * @return	array
-	 */
-	public function getThumb($thumb)
-	{
-		return My_Query::getThumb($this, $thumb, 'u', true);
-	}
-
-	/**
 	 * Returns user timezone.
 	 *
 	 * @return	DateTimeZone
@@ -161,6 +70,14 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	];
 
 	/**
+	 * @var array
+	 */
+	public static $genderId = [
+		'0' => 'Male',
+		'1' => 'Female'
+	];
+
+	/**
 	 * @var	string
 	 */
     protected $_name = 'user_data';
@@ -182,7 +99,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'Application_Model_Conversation',
 		'Application_Model_ConversationMessage',
 		'Application_Model_Friends',
-		'Application_Model_UserProfile',
 		'Application_Model_Invitestatus'
 	];
 
@@ -224,11 +140,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Friends',
 			'refColumns' => 'sender_id'
-		],
-		'Profile' => [
-			'columns' => 'id',
-			'refTableClass' => 'Application_Model_UserProfile',
-			'refColumns' => 'user_id'
 		],
 		'InviteStatus' => [
 			'columns' => 'id',
@@ -577,6 +488,13 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 					'Creation_date'=> new Zend_Db_Expr('NOW()')
 				]);
 
+				$gender = $userNode->getField('gender');
+
+				if (trim($gender) !== '')
+				{
+					$user->gender = array_search(ucfirst($gender), self::$genderId);
+				}
+
 				$pictureResponse = $facebookApi->get('/me/picture?type=large&redirect=false');
 				$pictureNode = $pictureResponse->getGraphNode();
 				$pictureUrl = $pictureNode->getField('url');
@@ -619,11 +537,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 				}
 
 				$user->save();
-
-				(new Application_Model_Profile)->insert([
-					'user_id' => $user->id,
-					'Gender' => ucfirst($userNode->getField('gender'))
-				]);
 
 				(new Application_Model_Invitestatus)->insert([
 					'user_id' => $user->id,
@@ -668,10 +581,13 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 		try
 		{
-			$user_data = array(
+			$user_data = [
 				'Name' => $data['name'],
-				// 'Email_id' => $data['email']
-			);
+				'Email_id' => $data['email'],
+				'public_profile' => $data['public_profile'],
+				'gender' => $data['gender'],
+				'activity' => $this->filterActivity($data['activities'])
+			];
 
 			if (!empty($data['birth_day']) && !empty($data['birth_month']) && !empty($data['birth_year']))
 			{
@@ -701,19 +617,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 			$address->save();
 
-			$profile = $user->findDependentRowset('Application_Model_UserProfile')->current();
-
-			if (!$profile)
-			{
-				$profile = (new Application_Model_UserProfile)
-					->createRow(['user_id' => $user->id]);
-			}
-
-			$profile->public_profile = $data['public_profile'];
-			$profile->Activities = $data['activities'];
-			$profile->Gender = $data['gender'];
-			$profile->save();
-		
 			$this->_db->commit();
 		}
 		catch (Exception $e)
@@ -724,6 +627,37 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		}
 
 		return true;
+	}
+
+	/**
+	 * Filters user activity data.
+	 *
+	 * @param	string $activities
+	 * @return string
+	 */
+	public function filterActivity($activities)
+	{
+		if (trim($activities) !== '')
+		{
+			$result = [];
+
+			foreach (explode(',', $activities) as $activity)
+			{
+				$activity = trim($activity);
+
+				if ($activity !== '')
+				{
+					$result[] = $activity;
+				}
+			}
+
+			if ($result != null)
+			{
+				return implode(', ', $result);
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -789,5 +723,16 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		}
 
 		return self::$thumbPath[$thumb] . '/' . $imageName;
+	}
+
+	/**
+	 * Returns user gender label.
+	 *
+	 * @param mixed $row
+	 * @return string
+	 */
+	public static function getGender($row)
+	{
+		return $row['gender'] !== null ? self::$genderId[$row['gender']] : '';
 	}
 }
