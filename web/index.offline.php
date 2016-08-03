@@ -1,3 +1,13 @@
+<?php
+if (preg_match('/^\/mobile(\/|\?|$)/', $_SERVER['REQUEST_URI']))
+{
+	header('Access-Control-Allow-Origin: *');
+	die(json_encode([
+		'status' => 0,
+		'message' => 'This site is down for maintenance'
+	]));
+}
+?>
 <html>
 <head>
 	<style>
