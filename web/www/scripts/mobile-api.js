@@ -12,6 +12,7 @@ $(function(){
 				type = $(this).attr('type');
 			switch (type){
 				case 'checkbox':
+				case 'radio':
 					if (!$(this).is(':checked')){
 						isValid=false;
 					}

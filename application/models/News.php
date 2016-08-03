@@ -251,8 +251,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					$order[] = $this->postScore() . ' DESC';
 					break;
 				case '1':
-					$interests = $user->parseInterests();
-					if (count($interests))
+					$interests = $user->activity != null ?
+						explode(', ', $user->activity) : null;
+
+					if ($interests != null)
 					{
 						$adapter = $this->getAdapter();
 

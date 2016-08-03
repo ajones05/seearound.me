@@ -47,17 +47,14 @@ class Application_Form_Profile extends Zend_Form
 			)
 		);
 
-        $this->addElement(
+		$this->addElement(
 			'select',
 			'gender',
-			array(
+			[
 				'label' => 'Gender',
 				'required' => false,
-				'multiOptions' => array(
-					'Male' => 'Male',
-					'Female' => 'Female'
-				)
-			)
+				'multiOptions' => Application_Model_User::$genderId
+			]
 		);
 
         $this->addElement(

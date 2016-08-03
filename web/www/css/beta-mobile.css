@@ -34,7 +34,7 @@ body {
 }
 .signup-form {
 	text-align: center;
-	margin-top: 260px;
+	margin-top: 120px;
 }
 .signup-form input {
     color: #fff;
@@ -54,6 +54,7 @@ body {
 	background: #00a8ff;
 	font-weight: bold;
 	border-color:#00a8ff;
+	-webkit-appearance: inherit;
 }
 input[placeholder] {
 	text-overflow: ellipsis;
@@ -107,10 +108,11 @@ input:-ms-input-placeholder {
 	max-width: 406px;
 	width: 60%;
 	padding-top: 15px;
+    margin-bottom: 18px;
 }
 .wraper-mobile img.phone-img {
-	margin:90px auto 0;
-	width:92%;
+	margin:50px auto 0;
+	width:100%;
 	max-width:750px;
 	display: block;
 }
@@ -152,9 +154,7 @@ input:-ms-input-placeholder {
 }
 .wraper-mobile .references .line:nth-child(even) img{
 	float: left;
-	margin-right: 15px;
 }
 .wraper-mobile .references .line:nth-child(odd) img{
 	float: right;
-	margin-left: 15px;
 }

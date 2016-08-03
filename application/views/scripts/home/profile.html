@@ -38,14 +38,14 @@ $thumb = Application_Model_User::getThumb($this->profile, '55x55');
 		<div class="clr"></div>
 	</li>
 	<?php endif; ?>
-    <li>
-        <label>Gender</label>
-        <span><?php echo $this->profile->gender(); ?></span>
-		<div class="clr"></div>
-    </li>
+<li>
+<label>Gender</label>
+<span><?php echo Application_Model_User::getGender($this->profile); ?></span>
+<div class="clr"></div>
+</li>
     <li>
 		<label>Interests</label>
-        <span><?php echo $this->profile->activities(); ?></span>
+        <span><?php echo $this->profile->activity; ?></span>
 		<div class="clr"></div>
     </li>
     <?php if ($this->addressFormat !== ''): ?>

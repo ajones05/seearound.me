@@ -103,8 +103,8 @@ class MobileController extends Zend_Controller_Action
 					'address' => Application_Model_Address::format($user),
 					'latitude' => $user->latitude,
 					'longitude' => $user->longitude,
-					'Activities' => $user->activities(),
-					'Gender' => $user->gender(),
+					'Activities' => $user->activity,
+					'Gender' => Application_Model_User::getGender($user),
 					'token' => $login->token
 				]
 			];
@@ -159,8 +159,8 @@ class MobileController extends Zend_Controller_Action
 					'address' => Application_Model_Address::format($user),
 					'latitude' => $user->latitude,
 					'longitude' => $user->longitude,
-					'Activities' => $user->activities(),
-					'Gender' => $user->gender(),
+					'Activities' => $user->activity,
+					'Gender' => Application_Model_User::getGender($user),
 					'token' => $login->token
 				]
 			];
@@ -386,8 +386,8 @@ class MobileController extends Zend_Controller_Action
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($friendUser, '320x320')),
 						'Birth_date' => $friendUser->Birth_date,
-						'Gender' => $friendUser->gender(),
-						'Activities' => $friendUser->activities()
+						'Gender' => Application_Model_User::getGender($friendUser),
+						'Activities' => $friendUser->activity
 					]);
 				}
 			}
@@ -570,8 +570,8 @@ class MobileController extends Zend_Controller_Action
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($profile, '320x320')),
 					'Email_id' => $profile->Email_id,
-					'Gender' => $profile->gender(),
-					'Activities' => $profile->activities(),
+					'Gender' => Application_Model_User::getGender($profile),
+					'Activities' => $profile->activity,
 					'Birth_date' => $profile->Birth_date
 				])
 			];
@@ -846,7 +846,8 @@ class MobileController extends Zend_Controller_Action
 					'c.subject',
 					'cm1.body',
 					'cm1.created_at',
-					'user_id' => 'u.id',
+					'sender_id' => 'c.from_id',
+					'receiver_id' => 'c.to_id',
 					'user_name' => 'u.Name',
 					'user_email' => 'u.Email_id',
 					'is_read' => 'IFNULL(cm3.is_read,1)'
@@ -884,7 +885,8 @@ class MobileController extends Zend_Controller_Action
 				{
 					$response['result'][] = [
 						'id' => $message->id,
-						'sender_id' => $message->user_id,
+						'sender_id' => $message->sender_id,
+						'receiver_id' => $message->receiver_id,
 						'subject' => $message->subject,
 						'message' => $message->body,
 						'created' => (new DateTime($message->created_at))
@@ -1697,12 +1699,15 @@ class MobileController extends Zend_Controller_Action
 
 			try
 			{
-				$user_data = array(
+				$user_data = [
 					'Name' => $data['name'],
 					'Birth_date' => trim($data['birth_date']) !== '' ?
 						(new DateTime($data['birth_date']))->format('Y-m-d') : null,
-					'Email_id' => $data['email']
-				);
+					'Email_id' => $data['email'],
+					'public_profile' => $data['public_profile'],
+					'gender' => $data['gender'],
+					'activity' => $userModel->filterActivity($data['activities'])
+				];
 
 				if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
 				{
@@ -1727,19 +1732,6 @@ class MobileController extends Zend_Controller_Action
 				}
 
 				$userModel->update($user_data, 'id=' . $user->id);
-
-				$profile = $user->findDependentRowset('Application_Model_UserProfile')->current();
-
-				if (!$profile)
-				{
-					$profile = (new Application_Model_UserProfile)->createRow(['user_id' => $user->id]);
-				}
-
-				$profile->public_profile = $data['public_profile'];
-				$profile->Activities = $data['activities'];
-				$profile->Gender = $data['gender'];
-				$profile->save();
-
 				$userModel->getDefaultAdapter()->commit();
 			}
 			catch (Exception $e)
@@ -1930,7 +1922,7 @@ class MobileController extends Zend_Controller_Action
 
 			if ($searchParameters['filter'] == 1)
 			{
-				$response['interest'] = count($user->parseInterests());
+				$response['interest'] = count(explode(', ', $user->activity));
 			}
 
 			$result = (new Application_Model_News)

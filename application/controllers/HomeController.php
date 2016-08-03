@@ -75,10 +75,10 @@ class HomeController extends Zend_Controller_Action
 			$addressForm->setDefaults($userAddress->toArray());
 			$profileForm->setDefaults([
 				'email' => $user->Email_id,
-				'public_profile' => $user->getPublicProfile(),
+				'public_profile' => $user->public_profile,
 				'name' => $user->Name,
-				'gender' => $user->gender(),
-				'activities' => $user->activities(),
+				'gender' => $user->gender,
+				'activities' => $user->activity,
 				'latitude' => $userAddress->latitude,
 				'longitude' => $userAddress->longitude,
 				'timezone' => $userAddress->timezone,

@@ -24,6 +24,9 @@ ALTER TABLE `user_data` DROP `Old_email`;
 ALTER TABLE `user_data` DROP `Conf_code`;
 ALTER TABLE `user_data` CHANGE `password_hash` `password` VARCHAR(255) NULL;
 ALTER TABLE `user_data` ADD `image_name` varchar(255) null after `image_id`;
+ALTER TABLE `user_data` ADD `public_profile` tinyint(1) not null default '0';
+ALTER TABLE `user_data` ADD `gender` tinyint(1) null;
+ALTER TABLE `user_data` ADD `activity` varchar(255) null;
 
 --
 -- Table structure for table `user_confirm`
@@ -62,6 +65,7 @@ ALTER TABLE `address` ADD `timezone` varchar(255) NULL;
 -- Table structure for table `user_profile`
 --
 ALTER TABLE `user_profile` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
+DROP TABLE `user_profile`;
 
 --
 -- Table structure for table `comments`
