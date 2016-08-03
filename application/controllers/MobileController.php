@@ -1922,11 +1922,6 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'Posts rendred successfully'
 			];
 
-			if ($searchParameters['filter'] == 1)
-			{
-				$response['interest'] = count(explode(', ', $user->activity));
-			}
-
 			$result = (new Application_Model_News)
 				->search($searchParameters + ['limit' => 15], $user,
 					['link'=>true,'user'=>$user,'userVote'=>true]);
