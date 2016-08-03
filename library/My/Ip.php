@@ -69,9 +69,9 @@ class My_Ip
 	/**
 	 * Returns user geolocation by IP address.
 	 *
-	 * @return	array
+	 * @return array
 	 */
-	public static function geolocation($default = true)
+	public static function geolocation()
 	{
 		$city = self::getCity();
 
@@ -97,12 +97,12 @@ class My_Ip
 			return array($city->location->latitude, $city->location->longitude, $addrress);
 		}
 
-		if ($default)
-		{
-			$config = Zend_Registry::get('config_global');
-			return array($config->geolocation->lat, $config->geolocation->lng, $config->geolocation->address);
-		}
+		$settings = Application_Model_Setting::getInstance();
 
-		return false;
+		return [
+				$settings['geo_lat'],
+				$settings['geo_lng'],
+				$settings['geo_address']
+		];
 	}
 }
