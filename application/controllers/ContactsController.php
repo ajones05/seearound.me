@@ -123,7 +123,7 @@ class ContactsController extends Zend_Controller_Action
 							'template' => 'invite-3',
 							'assign' => array(
 								'user' => $user,
-								'code' => $code
+								'code' => $code,
 								'settings' => $settings
 							),
 							'settings' => $settings

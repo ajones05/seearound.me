@@ -36,6 +36,18 @@ class Application_Model_Address extends Zend_Db_Table_Abstract
 	];
 
 	/**
+	 * Finds record by ID.
+	 *
+	 * @param integer $id
+	 * return mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
+	 */
+	public static function findById($id)
+	{
+		$model = new self;
+		return $model->fetchRow($model->select()->where('id=?', $id));
+	}
+
+	/**
 	 * Formats address string.
 	 *
 	 * @param	mixed $address

@@ -15,7 +15,7 @@ class PostController extends Zend_Controller_Action
 	public function viewAction()
 	{
 		$userModel = new Application_Model_User;
-		$user = Application_Model_User::getAuth();
+		$user = Application_Model_User::getAuth(true);
 
 		$id = $this->_request->getParam('id');
 
@@ -78,7 +78,7 @@ class PostController extends Zend_Controller_Action
 		if ($user)
 		{
 			$headScript .= ',user=' . json_encode([
-				'name' => $user->Name,
+				'name' => $user['Name'],
 				'image' => $this->view->baseUrl(
 					Application_Model_User::getThumb($user, '55x55'))
 			]) .
@@ -125,7 +125,7 @@ class PostController extends Zend_Controller_Action
 	 */
 	public function listAction()
 	{
-		$user = Application_Model_User::getAuth();
+		$user = Application_Model_User::getAuth(true);
 
 		if ($user == null)
 		{
@@ -160,7 +160,7 @@ class PostController extends Zend_Controller_Action
 		else
 		{
 			$center = $isValidData ? [$userData['latitude'], $userData['longitude']] :
-				[$user->latitude, $user->longitude];
+				[$user['latitude'], $user['longitude']];
 		}
 
 		$searchParameters = [
@@ -216,10 +216,10 @@ class PostController extends Zend_Controller_Action
 
 		$this->view->headScript()->appendScript(
 			'var user=' . json_encode([
-				'name' => $user->Name,
+				'name' => $user['Name'],
 				'image' => $this->view->baseUrl(
 					Application_Model_User::getThumb($user, '55x55')),
-				'location' => [$user->latitude, $user->longitude]
+				'location' => [$user['latitude'], $user['longitude']]
 			]) .
 			',isList=true' .
 			',opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) .
@@ -244,7 +244,7 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -351,7 +351,7 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -380,7 +380,7 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -475,7 +475,7 @@ class PostController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth();
+			$user = $userModel->getAuth(true);
 
 			if ($user == null)
 			{
@@ -491,7 +491,7 @@ class PostController extends Zend_Controller_Action
 
 			if (trim($user_id) !== '')
 			{
-				if (!$user->is_admin)
+				if (!$user['is_admin'])
 				{
 					throw new RuntimeException('You are not authorized to access the parameter user_id');
 				}
@@ -536,7 +536,7 @@ class PostController extends Zend_Controller_Action
 			$model = new Application_Model_News;
 			$postUser = $user_id ? $customUser : $user;
 			$post = $model->save($postForm->getValues() +
-				['user_id' => $postUser->id, 'address_id' => $address->id]);
+				['user_id' => $postUser['id'], 'address_id' => $address->id]);
 			// TODO: refactoring
 			$post = $model->findById($post->id, [
 				'link' => ['thumbs'=>[[448,320]]],
@@ -611,7 +611,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -666,7 +666,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -735,7 +735,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -804,7 +804,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -838,13 +838,14 @@ class PostController extends Zend_Controller_Action
 					implode("\n", $addressForm->getErrorMessages()));
 			}
 
-			$address = $post->findDependentRowset('Application_Model_Address')->current();
-			$address->setFromArray($addressForm->getValues());
-			$address->save();
+			$data = $addressForm->getValues();
+
+			(new Application_Model_Address)
+				->update($data, 'id=' . $post['address_id']);
 
 			$response = [
 				'status' => 1,
-				'address' => Application_Model_Address::format($address)
+				'address' => Application_Model_Address::format($data)
 			];
 		}
 		catch (Exception $e)
@@ -869,7 +870,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -894,8 +895,8 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$post->isdeleted = 1;
-			$post->save();
+			(new Application_Model_News)
+				->update(['isdeleted' => 1], 'id=' . $id);
 
 			$response = ['status' => 1];
 		}
@@ -921,7 +922,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -957,30 +958,30 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You cannot vote this post');
 			}
 
-			$userVote = $model->findVote($post->id, $user->id);
+			$userVote = $model->findVote($post->id, $user['id']);
 
 			if ($userVote != null)
 			{
 				$model->cancelVote($userVote);
 			}
 
-			if (!$user->is_admin && $userVote)
+			$updateVote = null;
+
+			if (!$user['is_admin'] && $userVote)
 			{
-				$post->vote -= $userVote->vote;
-				$updatePost = true;
+				$updateVote = $post->vote - $userVote->vote;
 			}
 
-			if ($user->is_admin || !$userVote || $userVote->vote != $vote)
+			if ($user['is_admin'] || !$userVote || $userVote->vote != $vote)
 			{
 				$model->insert([
 					'vote' => $vote,
-					'user_id' => $user->id,
+					'user_id' => $user['id'],
 					'news_id' => $post->id,
 					'active' => 1
 				]);
 
-				$post->vote += $vote;
-				$updatePost = true;
+				$updateVote = $post->vote + $vote;
 				$activeVote = $vote;
 			}
 			else
@@ -988,14 +989,15 @@ class PostController extends Zend_Controller_Action
 				$activeVote = 0;
 			}
 
-			if ($updatePost)
+			if ($updateVote !== null)
 			{
-				$post->save();
+				(new Application_Model_News)
+					->update(['vote' => $updateVote], 'id=' . $id);
 			}
 
 			$response = [
 				'status' => 1,
-				'vote' => $post->vote,
+				'vote' => $updateVote !== null ? $updateVote : $post->vote,
 				'active' => $activeVote
 			];
 		}
@@ -1031,7 +1033,8 @@ class PostController extends Zend_Controller_Action
 
 			if (!Application_Model_News::checkId($id, $post, ['link'=>['thumbs'=>[[448,320]]]]))
 			{
-				throw new RuntimeException('Incorrect post ID');
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($id, true));
 			}
 
 			$response = [
@@ -1061,7 +1064,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -1098,16 +1101,13 @@ class PostController extends Zend_Controller_Action
 					var_export($body, true));
 			}
 
-			$settings = Application_Model_Setting::getInstance();
-
 			My_Email::send($email, 'Interesting local news', [
 				'template' => 'post-share',
 				'assign' => [
 					'user' => $user,
 					'news' => $post,
 					'message' => $body,
-				],
-				'settings' => $settings
+				]
 			]);
 
 			$response = ['status' => 1];
@@ -1134,8 +1134,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$auth = Zend_Auth::getInstance()->getIdentity();
-			$user = $auth ? (new Application_Model_User)->findById($auth['user_id']) : null;
+			$user = Application_Model_User::getAuth(true);
 
 			$id = $this->_request->getPost('id');
 
@@ -1145,7 +1144,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post))
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID');
 			}
@@ -1198,7 +1197,7 @@ class PostController extends Zend_Controller_Action
 			];
 		}
 
-        $this->_helper->json($response);
+		$this->_helper->json($response);
 	}
 
 	/**
@@ -1210,7 +1209,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -1232,22 +1231,34 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$form = new Application_Form_Comment;
-			$data = $this->_request->getParams();
 
-			if (!$form->isValid($data))
+			if (!$form->isValid($this->_request->getPost()))
 			{
-				throw new RuntimeException('Validate error', -1);
+				throw new RuntimeException('Validate error');
 			}
 
-			$comment = (new Application_Model_Comments)
-				->save($form, $post, $user);
+			$data = $form->getValues();
+
+			$comment_id = (new Application_Model_Comments)->insert($data+[
+				'user_id' => $user['id'],
+				'news_id' => $post['id'],
+				'created_at' => new Zend_Db_Expr('NOW()'),
+				'updated_at' => new Zend_Db_Expr('NOW()')
+			]);
+
+			(new Application_Model_News)->update([
+				'comment' => $post['comment']+1
+			], 'id=' . $post['id']);
 
 			$response = [
 				'status' => 1,
-				// TODO: remove spaces, new line...
 				'html' => My_ViewHelper::render('post/_comment', [
 					'user' => $user,
-					'comment' => $comment,
+					'comment' => [
+						'id' => $comment_id,
+						'user_id' => $user['id'],
+						'comment' => $data['comment']
+					],
 					'post' => $post,
 					'is_new' => true
 				])
@@ -1271,11 +1282,11 @@ class PostController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-    public function deleteCommentAction()
+	public function deleteCommentAction()
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -1290,24 +1301,31 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_Comments::checkId($id, $comment, 0))
+			if (!Application_Model_Comments::checkId($id, $comment,
+				['post' => ['post_user_id' => 'user_id', 'post_comment' => 'comment']]))
 			{
-				throw new RuntimeException('Incorrect comment ID.');
+				throw new RuntimeException('Incorrect comment ID: ' .
+					var_export($id, true));
 			}
 
-			$news = $comment->findDependentRowset('Application_Model_News')->current();
+			$post = [
+				'user_id' => $comment['post_user_id'],
+				'comment' => $comment['post_comment']
+			];
 
-			if ($news->isdeleted)
-			{
-				throw new RuntimeException('News does not exist', -1);
-			}
-
-			if (!Application_Model_Comments::canEdit($comment, $news, $user))
+			if (!Application_Model_Comments::canEdit($comment, $post, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action', -1);
 			}
 
-			(new Application_Model_Comments)->deleteRow($comment, $news);
+			(new Application_Model_Comments)->update([
+				'isdeleted' => 1,
+				'updated_at' => new Zend_Db_Expr('NOW()')
+			], 'id=' . $comment['id']);
+
+			(new Application_Model_News)->update([
+				'comment' => $post['comment']-1
+			], 'id=' . $comment['news_id']);
 
 			$response = ['status' => 1];
 		}
@@ -1341,14 +1359,14 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_Comments::checkId($id, $comment, 0))
+			if (!Application_Model_Comments::checkId($id, $comment))
 			{
 				throw new RuntimeException('Incorrect comment ID');
 			}
 
 			$response = [
 				'status' => 1,
-				'html' => $comment->renderContent()
+				'html' => Application_Model_Comments::renderContent($comment)
 			];
 		}
 		catch (Exception $e)
@@ -1374,9 +1392,9 @@ class PostController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth();
+			$user = $userModel->getAuth(true);
 
-			if ($user == null || !$user->is_admin)
+			if ($user == null || !$user['is_admin'])
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}

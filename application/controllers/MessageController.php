@@ -50,8 +50,8 @@ class MessageController extends Zend_Controller_Action
 		$paginator->setCurrentPageNumber($page);
 		$paginator->setItemCountPerPage(14);
 
-		$this->view->user = $user;
-        $this->view->paginator = $paginator;
+		$this->view->userTimezone = Application_Model_User::getTimezone($user);
+		$this->view->paginator = $paginator;
 		$this->view->hideRight = true;
 
 		$this->view->headScript()->appendFile(My_Layout::assetUrl('www/scripts/messageindex.js'));
@@ -92,8 +92,8 @@ class MessageController extends Zend_Controller_Action
 		$paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
 		$paginator->setItemCountPerPage(14);
 
-		$this->view->user = $user;
-        $this->view->paginator = $paginator;
+		$this->view->userTimezone = Application_Model_User::getTimezone($user);
+		$this->view->paginator = $paginator;
 		$this->view->hideRight = true;
 
 		$this->view->headScript()->appendFile(My_Layout::assetUrl('www/scripts/messageindex.js'));
@@ -177,7 +177,7 @@ class MessageController extends Zend_Controller_Action
 
 			if ($messagesCount)
 			{
-				$userTimezone = $user->getTimezone();
+				$userTimezone = Application_Model_User::getTimezone($user);
 				foreach ($messages as $message)
 				{
 					$response['reply'][] = [
@@ -365,7 +365,7 @@ class MessageController extends Zend_Controller_Action
 			));
 
 			$createdAt = (new DateTime($message->created_at))
-				->setTimezone($user->getTimezone());
+				->setTimezone(Application_Model_User::getTimezone($user));
 
 			$response = [
 				'status' => 1,

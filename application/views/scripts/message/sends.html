@@ -4,10 +4,9 @@
 <?php if (count($this->paginator) > 0): ?>
 <div class="inboxSec">
 <?php
-$userTimezone = $this->user->getTimezone();
 foreach($this->paginator as $message):
 $createdAt = (new DateTime($message->created_at))
-	->setTimezone($userTimezone);
+	->setTimezone($this->userTimezone);
 ?>
 	<ul>
         <li id="row_<?php echo $message->id; ?>" class="message-list<?php if ($message->is_read) echo ' highLight'; ?>">

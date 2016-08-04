@@ -2,4 +2,4 @@
 $url = $this->serverUrl() . $this->baseUrl('post/' . $this->news->id);
 ?>
 <p>Hello!</p>
-<p><?php echo $this->user->Name; ?> from SeeAround.me shared a local update with you -- you can see the post details and location here <a href="<?php echo $url; ?>"><?php echo $url; ?></a></p>
+<p><?php echo $this->user['Name']; ?> from SeeAround.me shared a local update with you -- you can see the post details and location here <a href="<?php echo $url; ?>"><?php echo $url; ?></a></p>

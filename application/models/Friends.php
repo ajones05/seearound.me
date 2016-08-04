@@ -7,7 +7,7 @@ class Application_Model_FriendsRow extends Zend_Db_Table_Row_Abstract
 	/**
 	 * Saves row and write status log.
 	 *
-	 * @param	Application_Model_UserRow $user
+	 * @param mixed $user
 	 * @return	Application_Model_FriendsRow
 	 */
 	public function updateStatus($user)

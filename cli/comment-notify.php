@@ -78,13 +78,14 @@ do
 
 			foreach ($users as $user)
 			{
-				$commentQuery = $commentModel->publicSelect()->setIntegrityCheck(false)
-					->from($commentModel, 'comments.*')
-					->where('comments.notify =?', 0)
-					->where('comments.news_id =?', $post->id)
-					->where('comments.id > IFNULL((SELECT MAX(id) FROM comments c ' .
-						'WHERE c.news_id = ' . $post->id . ' AND c.user_id = ' . $user->id . ' AND c.isdeleted = 0), 0)')
-					->order('comments.created_at DESC');
+				$commentQuery = $commentModel->publicSelect()
+					->where('c.notify=0 AND ' .
+						'c.news_id=' . $post->id . ' AND ' .
+						'(c.id > IFNULL((SELECT MAX(id) FROM comments c1 WHERE ' .
+							'c1.news_id = ' . $post->id . ' AND ' .
+							'c1.user_id = ' . $user->id . ' AND ' .
+							'c1.isdeleted = 0), 0))')
+					->order('c.created_at DESC');
 
 				$comments = $commentModel->fetchAll($commentQuery->limit(15));
 

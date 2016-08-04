@@ -92,7 +92,7 @@ class IndexController extends Zend_Controller_Action
 						}
 
 						$login = (new Application_Model_Loginstatus)->save($user);
-						$user->updateInviteCount();
+						Application_Model_Invitestatus::updateCount($user);
 
 						$auth = Zend_Auth::getInstance();
 						$auth->getStorage()->write([
@@ -186,7 +186,7 @@ class IndexController extends Zend_Controller_Action
 
 		$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
 		$login = (new Application_Model_Loginstatus)->save($user);
-		$user->updateInviteCount();
+		Application_Model_Invitestatus::updateCount($user);
 
 		Zend_Auth::getInstance()->getStorage()->write(array(
 			'user_id' => $user->id,
@@ -387,7 +387,7 @@ class IndexController extends Zend_Controller_Action
 
 				$confirmModel = new Application_Model_UserConfirm;
 				$confirmModel->deleteUserCode($user, $confirmModel::$type['password']);
-
+				Zend_Registry::get('cache')->remove('user_' . $user['id']);
 				$this->_redirect($this->view->baseUrl('change-password-success'));
 			}
 		}

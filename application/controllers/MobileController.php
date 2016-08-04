@@ -86,7 +86,7 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$login = (new Application_Model_Loginstatus)->save($user, true);
-			$user->updateInviteCount();
+			Application_Model_Invitestatus::updateCount($user);
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -145,7 +145,7 @@ class MobileController extends Zend_Controller_Action
 
 			$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
 			$login = (new Application_Model_Loginstatus)->save($user, true);
-			$user->updateInviteCount();
+			Application_Model_Invitestatus::updateCount($user);
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -699,7 +699,7 @@ class MobileController extends Zend_Controller_Action
 				'result' => [
 					'id' => $conversation->id,
 					'created' => (new DateTime($conversation->created_at))
-						->setTimezone($user->getTimezone())
+						->setTimezone(Application_Model_User::getTimezone($user))
 						->format(My_Time::SQL)
 				]
 			];
@@ -768,7 +768,7 @@ class MobileController extends Zend_Controller_Action
 
 			if ($messages->count())
 			{
-				$userTimezone = $user->getTimezone();
+				$userTimezone = Application_Model_User::getTimezone($user);
 				foreach ($messages as $message)
 				{
 					$response['result'][] = [
@@ -880,7 +880,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($messages))
 			{
-				$userTimezone = $user->getTimezone();
+				$userTimezone = Application_Model_User::getTimezone($user);
 				foreach ($messages as $message)
 				{
 					$response['result'][] = [
@@ -991,7 +991,7 @@ class MobileController extends Zend_Controller_Action
 
 			if ($messages->count())
 			{
-				$userTimezone = $user->getTimezone();
+				$userTimezone = Application_Model_User::getTimezone($user);
 				foreach ($messages as $message)
 				{
 					$response['result'][] = [
@@ -1186,7 +1186,7 @@ class MobileController extends Zend_Controller_Action
 
 			if ($messages->count())
 			{
-				$userTimezone = $user->getTimezone();
+				$userTimezone = Application_Model_User::getTimezone($user);
 				foreach ($messages as $message)
 				{
 					$response['result'][] = [
@@ -1712,10 +1712,10 @@ class MobileController extends Zend_Controller_Action
 
 				if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
 				{
-					if ($user->image_id)
+					if ($user['image_id'])
 					{
-						$user->findDependentRowset('Application_Model_Image')
-							->current()->deleteImage();
+						Application_Model_Image::findById($user['image_id'])
+							->deleteImage();
 					}
 
 					$image = (new Application_Model_Image)->save('www/upload', $data['image'], [
@@ -1733,6 +1733,7 @@ class MobileController extends Zend_Controller_Action
 				}
 
 				$userModel->update($user_data, 'id=' . $user->id);
+				Zend_Registry::get('cache')->remove('user_' . $user['id']);
 				$userModel->getDefaultAdapter()->commit();
 			}
 			catch (Exception $e)
@@ -1812,7 +1813,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($result))
 			{
-				$userTimezone = $user->getTimezone();
+				$userTimezone = Application_Model_User::getTimezone($user);
 
 				foreach ($result as $row)
 				{
@@ -1928,7 +1929,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($result))
 			{
-				$userTimezone = $user->getTimezone();
+				$userTimezone = Application_Model_User::getTimezone($user);
 
 				foreach ($result as $row)
 				{
@@ -2052,7 +2053,7 @@ class MobileController extends Zend_Controller_Action
 
 			if ($comments->count())
 			{
-				$userTimezone = $user->getTimezone();
+				$userTimezone = Application_Model_User::getTimezone($user);
 				foreach ($comments as $comment)
 				{
 					$response['result'][] = [
@@ -2104,7 +2105,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $news, ['join'=>false]))
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
@@ -2117,24 +2118,36 @@ class MobileController extends Zend_Controller_Action
 				$this->_formValidateException($form);
 			}
 
-			// TODO: refactoring
-			$comment = (new Application_Model_Comments)->save($form, $news, $user);
+			$data = $form->getValues();
+
+			$comment_id = (new Application_Model_Comments)->insert($data+[
+				'user_id' => $user['id'],
+				'news_id' => $id,
+				'created_at' => new Zend_Db_Expr('NOW()'),
+				'updated_at' => new Zend_Db_Expr('NOW()')
+			]);
+
+			$postComments = $post['comment']+1;
+
+			(new Application_Model_News)->update([
+				'comment' => $postComments
+			], 'id=' . $id);
 
 			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'Comments Post Successfully',
 				'result' => [
-					'id' => $comment->id,
-					'news_id' => $news->id,
-					'comment' => $comment->comment,
-					'user_name' => $user->Name,
-					'user_id' => $user->id,
+					'id' => $comment_id,
+					'news_id' => $id,
+					'comment' => $data['comment'],
+					'user_name' => $user['Name'],
+					'user_id' => $user['id'],
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($user, '320x320')),
-					'commTime' => (new DateTime($comment->created_at))
-						->setTimezone($user->getTimezone())
+					'commTime' => (new DateTime)
+						->setTimezone(Application_Model_User::getTimezone($user))
 						->format(My_Time::SQL),
-					'totalComments' => $news->comment
+					'totalComments' => $postComments
 				]
 			];
 		}
@@ -2170,28 +2183,19 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			$model = new Application_Model_Comments;
-
-			if (!$model->checkId($id, $comment, 0))
+			if (!Application_Model_Comments::checkId($id, $comment,
+				['post' => ['post_user_id' => 'user_id']]))
 			{
 				throw new RuntimeException('Incorrect comment ID: ' .
 					var_export($id, true));
 			}
 
-			$post = $comment->findDependentRowset('Application_Model_News')->current();
+			$post = ['user_id' => $comment['post_user_id']];
 
-			if ($post->isdeleted)
-			{
-				throw new RuntimeException('Incorrect comment ID: ' .
-					var_export($id, true));
-			}
-
-			if (!Application_Model_Comments::canEdit($comment, $user))
+			if (!Application_Model_Comments::canEdit($comment, $post, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
-
-			$model->deleteRow($comment, $post);
 
 			$response = ['status' => 'SUCCESS'];
 		}
@@ -2401,7 +2405,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($result))
 			{
-				$userTimezone = $user->getTimezone();
+				$userTimezone = Application_Model_User::getTimezone($user);
 
 				foreach ($result as $row)
 				{
@@ -2549,30 +2553,20 @@ class MobileController extends Zend_Controller_Action
 					$vote->save();
 					break;
 				case 'comment':
-					$comment = (new Application_Model_Comments)
-						->findById($id, 0);
-
-					if ($comment == null)
+					if (!Application_Model_Comments::checkId($id, $comment,
+						['post' => ['post_user_id' => 'user_id']]))
 					{
 						throw new RuntimeException('Incorrect comment ID: ' .
 							var_export($id, true));
 					}
 
-					$post = $comment->findParentRow('Application_Model_News');
-
-					if ($post->isdeleted == 1)
-					{
-						throw new RuntimeException('Incorrect comment ID: ' .
-							var_export($id, true));
-					}
-
-					if ($user->id == $comment->user_id || $user->id != $post->user_id)
+					if ($user->id == $comment['user_id'] || $user->id != $comment['post_user_id'])
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
 
-					$comment->is_read = 1;
-					$comment->save();
+					(new Application_Model_Comments)
+						->update(['is_read' => 1], 'id=' . $id);
 					break;
 				default:
 					throw new RuntimeException('Incorrect notification type: ' .
@@ -2598,7 +2592,7 @@ class MobileController extends Zend_Controller_Action
 	/**
 	 * Checks if access token is valid and finds user.
 	 *
-	 * @return Application_Model_UserRow
+	 * @return Zend_Db_Table_Row_Abstract
 	 * @throws RuntimeException
 	 */
 	protected function getUserByToken()
@@ -2613,10 +2607,14 @@ class MobileController extends Zend_Controller_Action
 
 		$user = (new Application_Model_User)->findUserByToken($token);
 
-		if ($user == null || $user->Status != 'active')
+		if ($user == null || $user['Status'] != 'active')
 		{
 			throw new RuntimeException('You are not authorized to access this action');
 		}
+
+		(new Application_Model_Loginstatus)->update([
+			'visit_time' => new Zend_Db_Expr('NOW()')
+		], 'id=' . $user['login_id']);
 
 		return $user;
 	}
