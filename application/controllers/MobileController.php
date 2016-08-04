@@ -676,8 +676,6 @@ class MobileController extends Zend_Controller_Action
 				'is_first' => !$conversation_id ? 1 : 0
 			]);
 
-			$settings = Application_Model_Setting::getInstance();
-
 			My_Email::send(
 				[$receiver->Name => $receiver->Email_id],
 				$conversation->subject,
@@ -688,8 +686,7 @@ class MobileController extends Zend_Controller_Action
 						'receiver' => $receiver,
 						'subject' => $conversation->subject,
 						'message' => $message->body
-					],
-					'settings' => $settings
+					]
 				]
 			);
 
@@ -697,7 +694,8 @@ class MobileController extends Zend_Controller_Action
 				'status' => "SUCCESS",
 				'message' => "Message Send Successfully",
 				'result' => [
-					'id' => $conversation->id,
+					'message_id' => $message->id,
+					'conversation_id' => $conversation->id,
 					'created' => (new DateTime($conversation->created_at))
 						->setTimezone(Application_Model_User::getTimezone($user))
 						->format(My_Time::SQL)
@@ -830,6 +828,11 @@ class MobileController extends Zend_Controller_Action
 
 			if ($other_user_id != null)
 			{
+				if ($user->id == $other_user_id)
+				{
+					throw new RuntimeException('Other User ID cannot be the same');
+				}
+
 				if (!Application_Model_User::checkId($other_user_id, $other_user))
 				{
 					throw new RuntimeException('Incorrect other user ID: ' .
