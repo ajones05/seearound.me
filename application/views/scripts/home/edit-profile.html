@@ -231,7 +231,7 @@ $thumb = Application_Model_User::getThumb($this->user, '55x55');
 				?>
 			</dd>
 		</li>
-<?php if ($this->address->timezone == null): ?>
+<?php if ($this->user->timezone == null): ?>
 <li><?php echo $this->profileForm->timezone; ?></li>
 <?php else: ?>
 <input type="hidden" name="timezone" value="<?php echo $this->addressForm->timezone->getValue(); ?>">

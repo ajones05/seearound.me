@@ -1,6 +1,6 @@
 <?php
 $commentsLimit = 3;
-$user_id = $this->user ? $this->user->id : null;
+$user_id = $this->user ? $this->user['id'] : null;
 $profileUrl = $this->user ?
 	$this->baseUrl('home/profile/user/' . $this->post->user_id) : '#';
 $commentsModel = new Application_Model_Comments;
@@ -36,7 +36,7 @@ if ($this->user)
 {
 	$createdAt = new DateTime($this->post->created_date);
 	$timeVal = My_Time::time_ago($createdAt, ['ago' => true]);
-	$createdAt->setTimezone($this->user->getTimezone());
+	$createdAt->setTimezone(Application_Model_User::getTimezone($this->user));
 	$timeAttr = 'title="' . $createdAt->format(My_Time::OUTPUT) . '"';
 }
 else
@@ -47,7 +47,7 @@ else
 
 if ($this->owner)
 {
-	$ownerName = $this->owner->Name;
+	$ownerName = $this->owner['Name'];
 	$ownerThumb = Application_Model_User::getThumb($this->owner, '55x55');
 }
 else

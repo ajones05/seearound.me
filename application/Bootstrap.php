@@ -227,13 +227,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			return false;
 		}
 
-		$user = Application_Model_User::getAuth();
-
-		if ($user == null)
-		{
-			return false;
-		}
-
 		$auth = Zend_Auth::getInstance()->getIdentity();
 
 		if (empty($auth['login_id']))
@@ -241,11 +234,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			return false;
 		}
 
-		$db = Zend_Db_Table::getDefaultAdapter();
-		$db->update('login_status',
-			['visit_time' => new Zend_Db_Expr('NOW()')],
-			$db->quoteInto('id=?', $auth['login_id'])
-		);
+		(new Application_Model_Loginstatus)->update([
+			'visit_time' => new Zend_Db_Expr('NOW()')
+		], 'id=' . $auth['login_id']);
 	}
 
     /**

@@ -32,7 +32,12 @@ class HomeController extends Zend_Controller_Action
 		$this->_redirect($this->view->baseUrl('/login'));
 	}
 
-    public function editProfileAction()
+	/**
+	 * Edit profile action.
+	 *
+	 * @return void
+	 */
+	public function editProfileAction()
 	{
 		$config = Zend_Registry::get('config_global');
 		$userModel = new Application_Model_User;
@@ -47,7 +52,6 @@ class HomeController extends Zend_Controller_Action
 		$profileForm = new Application_Form_Profile;
 		$addressModel = new Application_Model_Address;
 		$addressForm = new Application_Form_Address;
-		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
 
 		if ($this->_request->isPost())
 		{
@@ -72,16 +76,25 @@ class HomeController extends Zend_Controller_Action
         }
 		else
 		{
-			$addressForm->setDefaults($userAddress->toArray());
+			$addressForm->setDefaults([
+				'latitude' => $user->latitude,
+				'longitude' => $user->longitude,
+				'street_name' => $user->street_name,
+				'street_number' => $user->street_number,
+				'city' => $user->city,
+				'state' => $user->state,
+				'country' => $user->country,
+				'zip' => $user->zip
+			]);
 			$profileForm->setDefaults([
 				'email' => $user->Email_id,
 				'public_profile' => $user->public_profile,
 				'name' => $user->Name,
 				'gender' => $user->gender,
 				'activities' => $user->activity,
-				'latitude' => $userAddress->latitude,
-				'longitude' => $userAddress->longitude,
-				'timezone' => $userAddress->timezone,
+				'latitude' => $user->latitude,
+				'longitude' => $user->longitude,
+				'timezone' => $user->timezone,
 			]);
 
 			if ($user->Birth_date != null)
@@ -95,15 +108,15 @@ class HomeController extends Zend_Controller_Action
 			}
 		}
 
-		$addressFormat = $addressModel->format($userAddress->toArray());
+		$addressFormat = $addressModel->format($user);
 		$this->view->addressFormat = $addressFormat;
 
 		$this->view->headScript()
 			->appendScript('var profileData=' . json_encode([
 				'address' => $addressFormat,
-				'latitude' => $userAddress->latitude,
-				'longitude' => $userAddress->longitude,
-				'timezone' => $userAddress->timezone
+				'latitude' => $user->latitude,
+				'longitude' => $user->longitude,
+				'timezone' => $user->timezone
 			]) . ',' .
 			'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
@@ -111,10 +124,9 @@ class HomeController extends Zend_Controller_Action
 
 		$this->view->profileForm = $profileForm;
 		$this->view->addressForm = $addressForm;
-		$this->view->address = $userAddress;
-        $this->view->user = $user;
-        $this->view->changeLocation = true;
-    }
+		$this->view->user = $user;
+		$this->view->changeLocation = true;
+	}
 
 	public function imageUploadAction()
 	{
@@ -153,10 +165,10 @@ class HomeController extends Zend_Controller_Action
 			$upload->addFilter('Rename', $full_path);
 			$upload->receive();
 
-			if ($user->image_id)
+			if ($user['image_id'])
 			{
-				$user->findDependentRowset('Application_Model_Image')
-					->current()->deleteImage();
+				Application_Model_Image::findById($user['image_id'])
+					->deleteImage();
 			}
 
 			$image = (new Application_Model_Image)->save('www/upload', $name, [
@@ -168,7 +180,7 @@ class HomeController extends Zend_Controller_Action
 			$userModel->update([
 				'image_id' => $image->id,
 				'image_name' => $name
-			], 'id=' . $user->id);
+			], 'id=' . $user['image_id']);
 
 			$response = [
 				'status' => 1,
@@ -393,16 +405,14 @@ class HomeController extends Zend_Controller_Action
 
 			$userModel = new Application_Model_User;
 			$user = $userModel->findUserByRegCode($code);
-;
+
 			if ($user == null)
 			{
 				throw new RuntimeException('Incorrect confirm code: ' .
 					var_export($code, true));
 			}
 
-			$user->Status = 'active';
-			$user->save();
-
+			$userModel->update(['Status' => 'active'], 'id=' . $user['id']);
 			$this->view->success = 'Email confirm success';
 		}
 		catch (RuntimeException $e)

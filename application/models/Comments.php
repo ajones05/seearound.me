@@ -1,100 +1,46 @@
 <?php
-
-class Application_Model_CommentsRow extends Zend_Db_Table_Row_Abstract
-{
-	/**
-	 * Renders comment content.
-	 *
-	 * @param	integer $limit
-	 *
-	 * @return string
-	 */
-	public function renderContent($limit = false)
-	{
-		$output = '';
-
-		for ($i = 0; $i < strlen($this->comment);)
-		{
-			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->comment, $i), $matches))
-			{
-				$output .= '<a href="' . htmlspecialchars(My_CommonUtils::renderLink($matches[0])) . '" target="_blank">' . $matches[0] . '</a>';
-				$i += strlen($matches[0]);
-			}
-			else
-			{
-				$output .= preg_replace('/\n/', '<br>', $this->comment[$i++]);
-			}
-
-			if ($limit && $i > $limit)
-			{
-				$output = trim($output) . '... <a href="#" class="moreButton">See more...</a>';
-				break;
-			}
-		}
-
-		return $output;
-	}
-}
-
+/**
+ * This is the model class for table "comments".
+ */
 class Application_Model_Comments extends Zend_Db_Table_Abstract
 {
 	/**
-	 * @var	Application_Model_Comments
+	 * The table name.
+	 * @var string
 	 */
-	protected static $_instance;
-
-    /**
-     * The table name.
-     *
-     * @var string
-     */
- 	protected $_name = 'comments';
-
-    /**
-     * Classname for row.
-     *
-     * @var string
-     */
-	protected $_rowClass = 'Application_Model_CommentsRow';
+	protected $_name = 'comments';
 
 	/**
 	 * @var	array
 	 */
-	protected $_referenceMap = array(
+	protected $_referenceMap = [
 		'User' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'user_id'
-        ],
+		],
 		'News' => [
 			'columns' => 'news_id',
 			'refTableClass' => 'Application_Model_News',
 			'refColumns' => 'id'
-        ]
-    );
-
-	public static function getInstance() {
-
-		if (null === self::$_instance) {
-
-			self::$_instance = new self();
-
-		}
-
-		return self::$_instance;
-
-	}
+		]
+	];
 
 	/**
-     * Returns an instance of a Zend_Db_Table_Select object.
-     *
-     * @param bool $withFromPart Whether or not to include the from part of the select based on the table
-     * @return Zend_Db_Table_Select
-     */
-    public function publicSelect($withFromPart = self::SELECT_WITHOUT_FROM_PART)
-    {
-        return parent::select($withFromPart)->where('comments.isdeleted =?', 0);
-    }
+	 * Returns an instance of a Zend_Db_Table_Select object.
+	 *
+	 * @param array $options
+	 * @return Zend_Db_Table_Select
+	 */
+	public function publicSelect(array $options=[])
+	{
+		return parent::select()
+			->setIntegrityCheck(false)
+			->from(['c' => 'comments'], 'c.*')
+			->join(['p' => 'news'], 'p.id=c.news_id',
+				My_ArrayHelper::getProp($options, 'post', ''))
+			->where('c.isdeleted=0 AND p.isdeleted=0');
+	}
 
 	/**
 	 * Finds records by news ID.
@@ -119,6 +65,94 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		return $this->fetchAll($query);
 	}
 
+	/**
+	 * Checks if comment id valid.
+	 *
+	 * @param integer $comment_id
+	 * @param mixed $comment
+	 * @param array $options
+	 * @return boolean
+	 */
+	public static function checkId($comment_id, &$comment, array $options=[])
+	{
+		if ($comment_id == null)
+		{
+			return false;
+		}
+
+		$comment = self::findById($comment_id, $options);
+
+		return $comment != null;
+	}
+
+	/**
+	 * Finds record by ID.
+	 *
+	 * @param integer $id
+	 * @param array $options
+	 * return	mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
+	 */
+	public static function findById($id, array $options=[])
+	{
+		$model = new self;
+		return $model->fetchRow($model->publicSelect($options)
+			->where('c.id=?', $id));
+	}
+
+	/**
+	 * Checkd if user can edit comment.
+	 *
+	 * @param mixed $comment
+	 * @param mixed $post
+	 * @param mixed $user
+	 * @return boolean
+	 */
+	public static function canEdit($comment, $post, $user)
+	{
+		return $user && ($user['id'] == $comment['user_id'] ||
+			$user['id'] == $post['user_id'] ? 1 : 0);
+	}
+
+	/**
+	 * Renders comment content.
+	 *
+	 * @param mixed $comment
+	 * @param integer $limit
+	 * @return string
+	 */
+	public static function renderContent($comment, $limit=false)
+	{
+		$output = '';
+
+		for ($i = 0; $i < strlen($comment['comment']);)
+		{
+			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($comment['comment'], $i), $matches))
+			{
+				$output .= '<a href="' . htmlspecialchars(My_CommonUtils::renderLink($matches[0])) . '" target="_blank">' . $matches[0] . '</a>';
+				$i += strlen($matches[0]);
+			}
+			else
+			{
+				$output .= preg_replace('/\n/', '<br>', $comment['comment'][$i++]);
+			}
+
+			if ($limit && $i > $limit)
+			{
+				$output = trim($output) . '... <a href="#" class="moreButton">See more...</a>';
+				break;
+			}
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Returns view more label.
+	 *
+	 * @param integer $count
+	 * @param integer $limit
+	 * @return string
+	 */
 	public static function viewMoreLabel($count, $limit = 30)
 	{
 		$label = 'Show ';
@@ -140,105 +174,5 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		}
 
 		return $label;
-	}
-
-	/**
-	 * Checks if comment id valid.
-	 *
-	 * @param	integer	$comment_id
-	 * @param	mixed	$comment
-	 * @param	mixed	$deleted
-	 *
-	 * @return	boolean
-	 */
-	public static function checkId($comment_id, &$comment, $deleted = null)
-	{
-		if ($comment_id == null)
-		{
-			return false;
-		}
-
-		$comment = self::findById($comment_id, $deleted);
-
-		return $comment != null;
-	}
-
-	/**
-	 * Finds record by ID.
-	 *
-	 * @param	integer	$id
-	 *
-	 * return	mixed	If success Application_Model_CommentsRow, otherwise NULL
-	 */
-	public static function findById($id, $deleted = null)
-	{
-		$db = self::getInstance();
-
-		$query = $db->select()->where('id =?', $id);
-
-		if ($deleted !== null)
-		{
-			$query->where('isdeleted =?', $deleted);
-		}
-
-		$result = $db->fetchRow($query);
-
-		return $result;
-	}
-
-	/**
-	 * Saves form.
-	 *
-	 * @param	Application_Form_Comment $form
-	 * @param	Application_Model_NewsRow $news
-	 * @param	Application_Model_UserRow $user
-	 * @return	Application_Model_CommentsRow
-	 */
-	public function save(Application_Form_Comment $form, Application_Model_NewsRow $news, Application_Model_UserRow $user)
-	{
-		$row = $this->createRow($form->getValues());
-		$row->user_id = $user->id;
-		$row->news_id = $news->id;
-		$row->created_at = new Zend_Db_Expr('NOW()');
-		$row->updated_at = new Zend_Db_Expr('NOW()');
-		$row->save();
-
-		$news->comment++;
-		$news->save();
-
-		return $row;
-	}
-
-	/**
-	 * Deletes row.
-	 *
-	 * @param	Application_Model_CommentsRow $comment
-	 * @param	Application_Model_NewsRow $news
-	 * @return	boolean
-	 */
-	public function deleteRow(Application_Model_CommentsRow $comment, Application_Model_NewsRow $news)
-	{
-		$comment->isdeleted = 1;
-		$comment->updated_at = new Zend_Db_Expr('NOW()');
-		$comment->save();
-
-		$news->comment--;
-		$news->save();
-
-		return true;
-	}
-
-	/**
-	 * Checkd if user can edit comment.
-	 *
-	 * @param mixed $comment
-	 * @param mixed $post
-	 * @param mixed $user
-	 * @return boolean
-	 */
-	public static function canEdit($comment, $post, $user)
-	{
-		return $user['id'] == $comment['user_id'] ||
-			$user['id'] == $post['user_id'] ? 1 : 0;
 	}
 }

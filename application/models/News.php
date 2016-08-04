@@ -211,7 +211,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				$query->joinLeft(
 					['v' => 'votings'],
 					'(v.news_id=news.id AND v.active=1 AND ' .
-						'v.user_id=' . $options['user']->id . ')',
+						'v.user_id=' . $options['user']['id'] . ')',
 					['user_vote' => 'vote']
 				);
 			}
@@ -224,11 +224,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * Returns search news query.
 	 *
 	 * @param	array $parameters
-	 * @param	Application_Model_UserRow $user
+	 * @param	mixed $user
 	 * @param	array $options
 	 * @return	Zend_Db_Table_Select
 	 */
-	public function searchQuery(array $parameters, Application_Model_UserRow $user, array $options = [])
+	public function searchQuery(array $parameters, $user, array $options = [])
 	{
 		// TODO: refactoring
 		$query = $this->publicSelect($options+['user'=>$user]);
@@ -247,12 +247,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			switch ($filter)
 			{
 				case '0':
-					$query->where('news.user_id=?', $user->id);
+					$query->where('news.user_id=?', $user['id']);
 					$order[] = $this->postScore() . ' DESC';
 					break;
 				case '1':
-					$interests = $user->activity != null ?
-						explode(', ', $user->activity) : null;
+					$interests = $user['activity'] != null ?
+						explode(', ', $user['activity']) : null;
 
 					if ($interests != null)
 					{
@@ -268,9 +268,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					$order[] = $this->postScore() . ' DESC';
 					break;
 				case '2':
-					$query->where('news.user_id<>?', $user->id);
-					$query->joinLeft(array('f1' => 'friends'), 'f1.sender_id=' . $user->id, '');
-					$query->joinLeft(array('f2' => 'friends'), 'f2.reciever_id=' . $user->id, '');
+					$query->where('news.user_id<>?', $user['id']);
+					$query->joinLeft(array('f1' => 'friends'), 'f1.sender_id=' . $user['id'], '');
+					$query->joinLeft(array('f2' => 'friends'), 'f2.reciever_id=' . $user['id'], '');
 					$query->where('((f1.status=1');
 					$query->where('news.user_id=f1.reciever_id)');
 					$query->orWhere('(f2.status=1');
@@ -311,16 +311,16 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		return $query;
 	}
 
- 	/**
- 	 * Search news by parameters.
- 	 *
- 	 * @param	array $parameters
- 	 * @param	Application_Model_UserRow $user
- 	 * @param	array $options
- 	 * @return	array
- 	 */
- 	public function search(array $parameters, Application_Model_UserRow $user, array $options=[])
- 	{
+	/**
+	 * Search news by parameters.
+	 *
+	 * @param	array $parameters
+	 * @param	mixed $user
+	 * @param	array $options
+	 * @return	array
+	 */
+	public function search(array $parameters, $user, array $options=[])
+	{
 		$query = $this->searchQuery($parameters, $user, $options);
 		$result = $this->fetchAll($query->limit($parameters['limit'],
 			My_ArrayHelper::getProp($parameters, 'start', 0)));

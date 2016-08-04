@@ -19,7 +19,7 @@ if ($this->user)
 {
 	$headScripts .= ',isLogin=true';
 
-	if ($this->user->is_admin)
+	if ($this->user['is_admin'])
 	{
 		$headScripts .= ',isAdmin=true';
 	}

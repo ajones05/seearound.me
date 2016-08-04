@@ -123,7 +123,8 @@ class ContactsController extends Zend_Controller_Action
 							'template' => 'invite-3',
 							'assign' => array(
 								'user' => $user,
-								'code' => $code
+								'code' => $code,
+								'settings' => $settings
 							),
 							'settings' => $settings
 						)
@@ -138,6 +139,7 @@ class ContactsController extends Zend_Controller_Action
 
 		$this->view->invite_success = $invite_success;
 		$this->view->invite_count = $user_invites->invite_count;
+		$this->view->settings = $settings;
 		$this->view->hideRight = true;
 	}
 

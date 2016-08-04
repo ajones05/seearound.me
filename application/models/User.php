@@ -1,62 +1,11 @@
 <?php
 /**
- * User row model class.
- */
-class Application_Model_UserRow extends Zend_Db_Table_Row_Abstract
-{
-	/**
-	 * Updates user invite count.
-	 *
-	 * @return	boolean
-	 */
-	public function updateInviteCount()
-	{
-		if (date('N') != 1)
-		{
-			return false;
-		}
-
-		$userInvite = $this->findDependentRowset('Application_Model_Invitestatus')->current();
-
-		if (floor((time() - strtotime($userInvite->updated)) / 86400) >= 7)
-		{
-			$loginStatusModel = new Application_Model_Loginstatus;
-			$result = $loginStatusModel->fetchRow(
-				$loginStatusModel->select()
-					->from($loginStatusModel, 'count(*) as count')
-					->where('user_id =?', $this->id)
-					->where('login_time>=DATE_SUB(NOW(),INTERVAL 7 DAY)')
-			);
-
-			if ($result && $result->count > 5)
-			{
-				$userInvite->invite_count += floor($result->count / 5);
-				$userInvite->updated = new Zend_Db_Expr('NOW()');
-				$userInvite->save();
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Returns user timezone.
-	 *
-	 * @return	DateTimeZone
-	 */
-	public function getTimezone()
-	{
-		return (new DateTimeZone($this->timezone ?: 'UTC'));
-	}
-}
-
-/**
  * User model class.
  */
 class Application_Model_User extends Zend_Db_Table_Abstract
 {
 	/**
-	 * @var	Application_Model_UserRow
+	 * @var	mixed
 	 */
 	protected static $_auth;
 
@@ -80,12 +29,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * @var	string
 	 */
-    protected $_name = 'user_data';
-
-	/**
-	 * @var	string
-	 */
-    protected $_rowClass = 'Application_Model_UserRow';
+	 protected $_name = 'user_data';
 
 	/**
 	 * @var	array
@@ -258,7 +202,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 *
 	 * @param	integer	$id
 	 *
-	 * return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 * return	mixed	If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
 	public static function findById($id)
 	{
@@ -273,13 +217,15 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * Finds record by access token.
 	 *
 	 * @param	integer	$token
-	 * @return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 * @return	mixed	If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
 	public function findUserByToken($token)
 	{
 		$result = $this->fetchRow(
 			$this->publicSelect()
-				->joinLeft(['ul' => 'login_status'], 'u.id=ul.user_id', '')
+				->joinLeft(['ul' => 'login_status'], 'u.id=ul.user_id', [
+					'login_id' => 'ul.id'
+				])
 				->where('ul.token=?', $token)
 		);
 		return $result;
@@ -288,9 +234,9 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * Returns auth user.
 	 *
-	 * return	mixed If success Application_Model_UserRow, otherwise NULL
+	 * return	mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
-	public static function getAuth()
+	public static function getAuth($loadCache=false)
 	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
 
@@ -301,7 +247,28 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 		if (self::$_auth == null)
 		{
-			self::$_auth = self::findById($auth['user_id']);
+			if (!$loadCache)
+			{
+				self::$_auth = self::findById($auth['user_id']);
+				return self::$_auth;
+			}
+
+			$cache = Zend_Registry::get('cache');
+			$user = $cache->load('user_' . $auth['user_id']);
+
+			if ($user == null)
+			{
+				$user = self::findById($auth['user_id']);
+
+				if ($user == null)
+				{
+					return false;
+				}
+
+				$cache->save($user->toArray(), 'user_' . $auth['user_id']);
+			}
+
+			self::$_auth = $user;
 		}
 
 		return self::$_auth;
@@ -312,7 +279,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 *
 	 * @param	string	$network_id
 	 *
-	 * return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 * return	mixed	If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
 	public static function findByNetworkId($network_id)
 	{
@@ -329,7 +296,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * Finds user by registration confirm code.
 	 *
 	 * @param	string $code
-	 * @return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 * @return	mixed	If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
 	public function findUserByRegCode($code)
 	{
@@ -349,7 +316,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * Finds user by reset password confirm code.
 	 *
 	 * @param	string $code
-	 * @return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 * @return	mixed	If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
 	public function findUserByPassCode($code)
 	{
@@ -369,7 +336,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 *
 	 * @param	string	$email
 	 *
-	 * return	mixed	If success Application_Model_UserRow, otherwise NULL
+	 * return	mixed	If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
 	public static function findByEmail($email)
 	{
@@ -396,7 +363,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * Register a new user.
 	 *
 	 * @param	array $data
-	 * @return	Application_Model_UserRow
+	 * @return	Zend_Db_Table_Row_Abstract
 	 */
 	public function register(array $data)
 	{
@@ -444,7 +411,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * User authentication by facebook API.
 	 *
 	 * @param	Facebook\Facebook $facebookApi
-	 * @return	Application_Model_UserRow
+	 * @return	Zend_Db_Table_Row_Abstract
 	 */
 	public function facebookAuthentication(Facebook\Facebook $facebookApi)
 	{
@@ -468,6 +435,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			if ($user)
 			{
 				$this->update(['Network_id' => $network_id], 'id=' . $user->id);
+				Zend_Registry::get('cache')->remove('user_' . $user['id']);
 			}
 			else
 			{
@@ -570,12 +538,12 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * Update the user data.
 	 *
-	 * @param	Application_Model_UserRow	$user
-	 * @param	array	$data
-	 *
-	 * @return	mixed	True on success, Exception on failure.
+	 * @param mixed $user
+	 * @param array $data
+	 * @return mixed True on success, Exception on failure.
+	 * @throws Exception
 	 */
-	public function updateProfile(Application_Model_UserRow $user, array $data)
+	public function updateProfile($user, array $data)
 	{
 		$this->_db->beginTransaction();
 
@@ -598,24 +566,22 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 				$user_data['Birth_date'] = null;
 			}
 
-			$this->update($user_data, $this->_db->quoteInto('id =?', $user->id));
+			$this->update($user_data, 'id=' . $user['id']);
 
-			$address = $user->findDependentRowset('Application_Model_Address')->current();
-			$address->latitude = $data['latitude'];
-			$address->longitude = $data['longitude'];
-			$address->street_name = My_ArrayHelper::getProp($data, 'street_name');
-			$address->street_number = My_ArrayHelper::getProp($data, 'street_number');
-			$address->city = My_ArrayHelper::getProp($data, 'city');
-			$address->state = My_ArrayHelper::getProp($data, 'state');
-			$address->country = My_ArrayHelper::getProp($data, 'country');
-			$address->zip = My_ArrayHelper::getProp($data, 'zip');
+			(new Application_Model_Address)->update([
+				'address' => null,
+				'latitude' => $data['latitude'],
+				'longitude' => $data['longitude'],
+				'street_name' => My_ArrayHelper::getProp($data, 'street_name'),
+				'street_number' => My_ArrayHelper::getProp($data, 'street_number'),
+				'city' => My_ArrayHelper::getProp($data, 'city'),
+				'state' => My_ArrayHelper::getProp($data, 'state'),
+				'country' => My_ArrayHelper::getProp($data, 'country'),
+				'zip' => My_ArrayHelper::getProp($data, 'zip'),
+				'timezone' => My_ArrayHelper::getProp($data, 'timezone', $user['timezone'])
+			], 'id=' . $user['address_id']);
 
-			if ($address->timezone == null && !empty($data['timezone']))
-			{
-				$address->timezone = $data['timezone'];
-			}
-
-			$address->save();
+			Zend_Registry::get('cache')->remove('user_' . $user['id']);
 
 			$this->_db->commit();
 		}
@@ -734,5 +700,16 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	public static function getGender($row)
 	{
 		return $row['gender'] !== null ? self::$genderId[$row['gender']] : '';
+	}
+
+	/**
+	 * Returns user timezone.
+	 *
+	 * @param nixed $user
+	 * @return DateTimeZone
+	 */
+	public static function getTimezone($user)
+	{
+		return (new DateTimeZone($user['timezone'] ?: 'UTC'));
 	}
 }

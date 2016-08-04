@@ -1,5 +1,5 @@
 <?php
-$userName = $this->user ? $this->user->Name : 'owner';
+$userName = $this->user ? $this->user['Name'] : 'owner';
 $userImage = Application_Model_User::getThumb($this->user, '55x55');
 ?>
 <div class="post-comment__new<?php if (!empty($this->hidden)) echo ' hidden'; ?>">
