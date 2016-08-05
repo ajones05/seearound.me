@@ -87,7 +87,7 @@ class MobileController extends Zend_Controller_Action
 
 			$accessToken = (new Application_Model_Loginstatus)->save($user, true);
 			Application_Model_Invitestatus::updateCount($user);
-			$this->saveUserCache($user, $accessToken);
+			$this->saveUserCache($user->toArray(), $accessToken);
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -151,16 +151,16 @@ class MobileController extends Zend_Controller_Action
 			$response = [
 				'status' => 'SUCCESS',
 				'result' => [
-					'id' => $user->id,
-					'Name' => $user->Name,
-					'Email_id' => $user->Email_id,
-					'Birth_date' => $user->Birth_date,
+					'id' => $user['id'],
+					'Name' => $user['Name'],
+					'Email_id' => $user['Email_id'],
+					'Birth_date' => My_ArrayHelper::getProp($user, 'Birth_date'),
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($user, '320x320')),
 					'address' => Application_Model_Address::format($user),
-					'latitude' => $user->latitude,
-					'longitude' => $user->longitude,
-					'Activities' => $user->activity,
+					'latitude' => $user['latitude'],
+					'longitude' => $user['longitude'],
+					'Activities' => My_ArrayHelper::getProp($user, 'activity'),
 					'Gender' => Application_Model_User::getGender($user),
 					'token' => $accessToken
 				]
@@ -439,19 +439,23 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('User already in friend list');
 			}
 
-			$friendModel->createRow([
-				'sender_id' => $user->id,
-				'reciever_id' => $receiver->id,
+			$friendId = $friendModel->insert([
+				'sender_id' => $user['id'],
+				'reciever_id' => $receiver['id'],
 				'status' => $friendModel->status['confirmed'],
 				'source' => 'herespy'
-			])->updateStatus($user);
+			]);
 
-			$settings = Application_Model_Setting::getInstance();
+			(new Application_Model_FriendLog)->insert([
+				'friend_id' => $friendId,
+				'user_id' => $user['id'],
+				'status_id' => $friendModel->status['confirmed']
+			]);
 
 			My_Email::send($receiver->Email_id, 'New follower', [
 				'template' => 'friend-invitation',
 				'assign' => ['name' => $user->Name],
-				'settings' => $settings
+				'settings' => $this->settings
 			]);
 
 			$response = ['status' => 'SUCCESS'];
@@ -507,8 +511,15 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('User not found in friend list');
 			}
 
-			$friend->status = $friendModel->status['rejected'];
-			$friend->updateStatus($user);
+			$friendModel->update([
+				'status' => $friendModel->status['rejected']
+			], 'id=' . $friend['id']);
+
+			(new Application_Model_FriendLog)->insert([
+				'friend_id' => $friend['id'],
+				'user_id' => $user['id'],
+				'status_id' => $friendModel->status['rejected']
+			]);
 
 			$response = ['status' => 'SUCCESS'];
 		}
@@ -2661,7 +2672,7 @@ class MobileController extends Zend_Controller_Action
 					throw new RuntimeException('You are not authorized to access this action');
 				}
 
-				$this->saveUserCache($user, $token, $cache);
+				$this->saveUserCache($user->toArray(), $token, $cache);
 			}
 		}
 		else

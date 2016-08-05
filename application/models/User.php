@@ -109,74 +109,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		return $query;
     }
 
-    public function recordForEmail($sender = null, $reciever = null, $isFb = false) 
-
-    {
-
-        $result = new stdClass();
-
-        if($sender && $reciever) {
-
-            if($isFb) {
-
-                $select = $this->select()
-
-                        ->where('id =?', $sender);
-
-                if($rows = $this->fetchRow($select)) {
-
-                    $result->senderName = $row->Name;
-
-                    $result->senderEmail = $row->Email_id;
-
-                }
-
-                $select = $this->select()
-
-                        ->where('Network_id =?', $reciever);                        
-
-                if($rows = $this->fetchRow($select)) {
-
-                    $result->recieverName = $row->Name;
-
-                    $result->recieverEmail = $row->Email_id;
-
-                } 
-
-            } else {
-
-                $select = $this->select()
-
-                        ->where('id =?', $sender);
-
-                if($rows = $this->fetchRow($select)) {
-
-                    $result->senderName = $rows->Name;
-
-                    $result->senderEmail = $rows->Email_id;
-
-                }
-
-                $select = $this->select()
-
-                        ->where('id =?', $reciever);                        
-
-                if($rows = $this->fetchRow($select)) {
-
-                    $result->recieverName = $rows->Name;
-
-                    $result->recieverEmail = $rows->Email_id;
-
-                }           
-
-            } 
-
-        }
-
-        return $result;
-
-    }
-
 	/**
 	 * Checks if user id valid.
 	 *
@@ -440,27 +372,27 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			else
 			{
 				$geolocation = My_Ip::geolocation();
-
-				$address = (new Application_Model_Address)->createRow([
+				$addressData = [
 					'latitude' => $geolocation[0],
 					'longitude' => $geolocation[1]
-				]);
-				$address->save();
+				];
 
-				$user = $this->createRow([
-					'address_id' => $address->id,
+				$addressId = (new Application_Model_Address)
+					->insert($addressData);
+
+				$user = [
+					'address_id' => $addressId,
 					'Network_id' => $network_id,
 					'Name' => $userNode->getField('name'),
 					'Email_id' => $email,
-					'Status' => 'active',
-					'Creation_date'=> new Zend_Db_Expr('NOW()')
-				]);
+					'Status' => 'active'
+				];
 
 				$gender = $userNode->getField('gender');
 
 				if (trim($gender) !== '')
 				{
-					$user->gender = array_search(ucfirst($gender), self::$genderId);
+					$user['gender'] = array_search(ucfirst($gender), self::$genderId);
 				}
 
 				$pictureResponse = $facebookApi->get('/me/picture?type=large&redirect=false');
@@ -496,37 +428,48 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 							[[320,320], 'uploads']
 						]);
 
-						$user->image_id = $image->id;
-						$user->image_name = $name;
+						$user['image_id'] = $image['id'];
+						$user['image_name'] = $name;
 					}
 					catch (Exception $e)
 					{
 					}
 				}
 
-				$user->save();
+				$user['id'] = $this->insert($user+[
+					'Creation_date'=> new Zend_Db_Expr('NOW()')
+				]);
+
+				$user += $addressData;
 
 				(new Application_Model_Invitestatus)->insert([
-					'user_id' => $user->id,
+					'user_id' => $user['id'],
 					'created' => new Zend_Db_Expr('NOW()')
 				]);
 
-				$users = Application_Model_Fbtempusers::getInstance()->findAllByNetworkId($network_id);
+				$users = Application_Model_Fbtempusers::findAllByNetworkId($network_id);
 
-				if (count($users))
+				if ($users != null)
 				{
-					$friendsModel = new Application_Model_Friends;
+					$friendModel = new Application_Model_Friends;
+					$friendLogModel = new Application_Model_FriendLog;
 
-					foreach($users as $tmp_user)
+					foreach($users as $tmpUser)
 					{
-						$friendsModel->createRow([
-							'sender_id' => $tmp_user->sender_id,
-							'reciever_id' => $user->id,
-							'status' => $friendsModel->status['confirmed'],
+						$friendId = $friendModel->insert([
+							'sender_id' => $tmpUser->sender_id,
+							'reciever_id' => $user['id'],
+							'status' => $friendModel->status['confirmed'],
 							'source' => 'herespy'
-						])->updateStatus($user);
+						]);
 
-						$tmp_user->delete();
+						$friendLogModel->insert([
+							'friend_id' => $friendId,
+							'user_id' => $user['id'],
+							'status_id' => $friendModel->status['confirmed']
+						]);
+
+						$tmpUser->delete();
 					}
 				}
 			}
@@ -672,7 +615,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function getGender($row)
 	{
-		return $row['gender'] !== null ? self::$genderId[$row['gender']] : '';
+		$gender = My_ArrayHelper::getProp($row, 'gender');
+		return $gender !== null ? self::$genderId[$gender] : '';
 	}
 
 	/**

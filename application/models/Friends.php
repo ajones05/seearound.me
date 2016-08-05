@@ -1,72 +1,41 @@
 <?php
 /**
- * Row class for friends.
- */
-class Application_Model_FriendsRow extends Zend_Db_Table_Row_Abstract
-{
-	/**
-	 * Saves row and write status log.
-	 *
-	 * @param mixed $user
-	 * @return	Application_Model_FriendsRow
-	 */
-	public function updateStatus($user)
-	{
-		parent::save();
-
-		(new Application_Model_FriendLog)->insert([
-			'friend_id' => $this->id,
-			'user_id' => $user->id,
-			'status_id' => $this->status
-		]);
-
-		return $this;
-	}
-}
-
-/**
  * Friends model class.
  */
 class Application_Model_Friends extends Zend_Db_Table_Abstract
 {
 	/**
 	 * Friend status.
-	 *
-	 * @var	array
+	 * @var array
 	 */
-	public $status = array(
+	public $status = [
 		'awaiting' => 0,
 		'confirmed' => 1,
 		'rejected' => 2,
-	);
+	];
 
 	/**
-	 * @var	string
+	 * Table name.
+	 * @var string
 	 */
 	protected $_name = 'friends';
 
-    /**
-     * Classname for row.
-     *
-     * @var string
-     */
-    protected $_rowClass = 'Application_Model_FriendsRow';
-
 	/**
-	 * @var	array
+	 * Associative array map of declarative referential integrity rules.
+	 * @var array
 	 */
-	protected $_referenceMap = array(
-		'FriendReceiver' => array(
+	protected $_referenceMap = [
+		'FriendReceiver' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'reciever_id'
-        ),
-		'FriendSender' => array(
+		],
+		'FriendSender' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'sender_id'
-        )
-    );
+		]
+	];
 
 	/**
 	 * Checks if users are friends.
@@ -127,28 +96,6 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 		}
 
 		return 0;
-	}
-
-	/**
-	 * Find records by receiver ID.
-	 *
-	 * @param	integer	$receiver_id
-	 * @param	integer	$status
-	 * @param	integer	$limit
-	 * @param	integer	$offset
-	 *
-	 * @return	array
-	 */
-	public function findAllByReceiverId($receiver_id, $status, $limit = null, $offset = null)
-	{
-		$result = $this->fetchAll(
-			$this->select()
-				->where('reciever_id=?', $receiver_id)
-				->where('status=?', $status)
-				->limit($limit, $offset)
-		);
-
-		return $result;
 	}
 
 	/**

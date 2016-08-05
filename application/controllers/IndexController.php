@@ -189,11 +189,11 @@ class IndexController extends Zend_Controller_Action
 		Application_Model_Invitestatus::updateCount($user);
 
 		Zend_Auth::getInstance()->getStorage()->write(array(
-			'user_id' => $user->id,
+			'user_id' => $user['id'],
 			'login_id' => $loginId
 		));
 
-		$this->_redirect($this->view->baseUrl('/'));
+		$this->_redirect('/');
 	}
 
 	/**
