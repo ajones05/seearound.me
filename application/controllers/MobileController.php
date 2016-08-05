@@ -295,8 +295,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($email, true));
 			}
 
-			$userModel = new Application_Model_User;
-			$user = $userModel->findByEmail($email);
+			$user = Application_Model_User::findByEmail($email);
 
 			if (!$user)
 			{
@@ -304,27 +303,30 @@ class MobileController extends Zend_Controller_Action
 					var_export($email, true));
 			}
 
-			if ($user->Status !== 'active')
+			if ($user['Status'] !== 'active')
 			{
 				throw new RuntimeException('This account is not active');
 			}
 
 			$confirmModel = new Application_Model_UserConfirm;
 			$confirmModel->deleteUserCode($user, $confirmModel::$type['password']);
-			$confirm = $confirmModel->save([
-				'user_id' => $user->id,
-				'type_id' => $confirmModel::$type['password']
-			]);
 
-			$settings = Application_Model_Setting::getInstance();
+			$confirmCode = $confirmModel->generateConfirmCode();
+			$confirmModel->insert([
+				'user_id' => $user['id'],
+				'type_id' => $confirmModel::$type['password'],
+				'code' => $confirmCode,
+				'deleted' => 0,
+				'created_at' => new Zend_Db_Expr('NOW()')
+			]);
 
 			My_Email::send(
 				$email,
 				'Forgot Password',
 				[
 					'template' => 'forgot-password',
-					'assign' => ['confirm' => $confirm],
-					'settings' => $settings
+					'assign' => ['code' => $confirmCode],
+					'settings' => $this->settings
 				]
 			);
 

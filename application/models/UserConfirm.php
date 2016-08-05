@@ -12,30 +12,29 @@ class Application_Model_UserConfirm extends Zend_Db_Table_Abstract
 		'password' => 1
 	];
 
-    /**
-     * The table name.
-     *
-     * @var string
-     */
-    protected $_name = 'user_confirm';
+	/**
+	 * The table name.
+	 * @var string
+	 */
+	protected $_name = 'user_confirm';
 
 	/**
 	 * @var	array
 	 */
-    protected $_dependentTables = [
+	 protected $_dependentTables = [
 		'Application_Model_User'
 	];
 
 	/**
 	 * @var	array
 	 */
-    protected $_referenceMap = [
+	 protected $_referenceMap = [
 		'User' => [
 			'columns' => 'user_id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'id'
 		]
-    ];
+	];
 
 	/**
 	 * Generates unique confirm code.
@@ -65,23 +64,6 @@ class Application_Model_UserConfirm extends Zend_Db_Table_Abstract
 	}
 
 	/**
-	 * Saves form.
-	 *
-	 * @param	array $data
-	 * @return	Zend_Db_Table_Row_Abstract
-	 */
-	public function save(array $data)
-	{
-		$row = $this->createRow($data);
-		$row->deleted = 0;
-		$row->created_at =
-		$row->created_at = new Zend_Db_Expr('NOW()');
-		$row->code = $this->generateConfirmCode();
-		$row->save();
-		return $row;
-	}
-
-	/**
 	 * Deletes user codes by user id and type.
 	 *
 	 * @param	Zend_Db_Table_Row_Abstract $user
@@ -94,7 +76,7 @@ class Application_Model_UserConfirm extends Zend_Db_Table_Abstract
 			'deleted' => 1,
 			'updated_at' => new Zend_Db_Expr('NOW()')
 		], [
-			'user_id=?' => $user->id,
+			'user_id=?' => $user['id'],
 			'type_id=?' => $type,
 			'deleted=?' => 0
 		]);

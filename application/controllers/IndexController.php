@@ -126,9 +126,13 @@ class IndexController extends Zend_Controller_Action
 						$user = $userModel->register(['Status'=>'inactive']+$data);
 
 						$confirmModel = new Application_Model_UserConfirm;
-						$confirm = $confirmModel->save([
+						$confirmCode = $confirmModel->generateConfirmCode();
+						$confirmModel->insert([
 							'user_id' => $user['id'],
-							'type_id' => $confirmModel::$type['registration']
+							'type_id' => $confirmModel::$type['registration'],
+							'code' => $confirmCode,
+							'deleted' => 0,
+							'created_at' => new Zend_Db_Expr('NOW()')
 						]);
 
 						My_Email::send(
@@ -136,7 +140,7 @@ class IndexController extends Zend_Controller_Action
 							'SeeAround.me Registration',
 							[
 								'template' => 'registration',
-								'assign' => ['code' => $confirm->code],
+								'assign' => ['code' => $confirmCode],
 								'settings' => $settings
 							]
 						);
@@ -239,7 +243,8 @@ class IndexController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_User::checkId($id, $user) || $user->Status != 'inactive')
+			if (!Application_Model_User::checkId($id, $user) ||
+				$user['Status'] != 'inactive')
 			{
 				throw new RuntimeException('Incorrect user ID: ' .
 					var_export($id, true));
@@ -247,20 +252,22 @@ class IndexController extends Zend_Controller_Action
 
 			$confirmModel = new Application_Model_UserConfirm;
 			$confirmModel->deleteUserCode($user, $confirmModel::$type['registration']);
-			$confirm = $confirmModel->save([
-				'user_id' => $user->id,
-				'type_id' => $confirmModel::$type['registration']
+
+			$confirmCode = $confirmModel->generateConfirmCode();
+			$confirmModel->insert([
+				'user_id' => $user['id'],
+				'type_id' => $confirmModel::$type['registration'],
+				'code' => $confirmCode,
+				'deleted' => 0,
+				'created_at' => new Zend_Db_Expr('NOW()')
 			]);
 
-			$settings = Application_Model_Setting::getInstance();
-
 			My_Email::send(
-				[$user->Name => $user->Email_id],
+				[$user['Name'] => $user['Email_id']],
 				'Re-send activation link',
 				[
 					'template' => 'user-resend',
-					'assign' => ['user' => $user, 'code' => $confirm->code],
-					'settings' => $settings
+					'assign' => ['user' => $user, 'code' => $confirmCode]
 				]
 			);
 
@@ -313,24 +320,26 @@ class IndexController extends Zend_Controller_Action
 				{
 					$confirmModel = new Application_Model_UserConfirm;
 					$confirmModel->deleteUserCode($user, $confirmModel::$type['password']);
-					$confirm = $confirmModel->save([
-						'user_id' => $user->id,
-						'type_id' => $confirmModel::$type['password']
+
+					$confirmCode = $confirmModel->generateConfirmCode();
+					$confirmModel->insert([
+						'user_id' => $user['id'],
+						'type_id' => $confirmModel::$type['password'],
+						'code' => $confirmCode,
+						'deleted' => 0,
+						'created_at' => new Zend_Db_Expr('NOW()')
 					]);
 
-					$settings = Application_Model_Setting::getInstance();
-
 					My_Email::send(
-						$user->Email_id,
+						$user['Email_id'],
 						'Forgot Password',
 						[
 							'template' => 'forgot-password',
-							'assign' => ['confirm' => $confirm],
-							'settings' => $settings
+							'assign' => ['code' => $confirmCode]
 						]
 					);
 
-					$this->_redirect($this->view->baseUrl('forgot-success'));
+					$this->_redirect('forgot-success');
 				}
 			}
 		}
@@ -389,7 +398,7 @@ class IndexController extends Zend_Controller_Action
 				$confirmModel = new Application_Model_UserConfirm;
 				$confirmModel->deleteUserCode($user, $confirmModel::$type['password']);
 
-				$this->_redirect($this->view->baseUrl('change-password-success'));
+				$this->_redirect('change-password-success');
 			}
 		}
 
