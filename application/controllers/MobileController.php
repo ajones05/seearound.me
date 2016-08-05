@@ -241,7 +241,7 @@ class MobileController extends Zend_Controller_Action
 					[[320,320], 'uploads']
 				]);
 
-				$data['image_id'] = $image->id;
+				$data['image_id'] = $image['id'];
 				$data['image_name'] = $name;
 
 				$response['data']['thumb'] = $this->view->serverUrl() .
@@ -1733,8 +1733,7 @@ class MobileController extends Zend_Controller_Action
 				{
 					if ($user['image_id'])
 					{
-						Application_Model_Image::findById($user['image_id'])
-							->deleteImage();
+						Application_Model_Image::findById($user['image_id'])->deleteImage();
 					}
 
 					$image = (new Application_Model_Image)->save('www/upload', $data['image'], [
@@ -1742,7 +1741,7 @@ class MobileController extends Zend_Controller_Action
 						[[55,55], 'thumb55x55', 2],
 						[[320,320], 'uploads']
 					]);
-					$user_data['image_id'] = $image->id;
+					$user_data['image_id'] = $image['id'];
 					$user_data['image_name'] = $data['image'];
 					$profileImage = 'uploads/' . $data['image'];
 				}

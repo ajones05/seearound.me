@@ -432,8 +432,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 			if ($post->image_id != null && !empty($data['delete_image']))
 			{
-				$post->findDependentRowset('Application_Model_Image')
-					->current()->deleteImage();
+				Application_Model_Image::findById($post['image_id'])->deleteImage();
 				$post->image_id = null;
 			}
 			elseif (!empty($data['image']))
@@ -444,7 +443,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					[[960,960], 'newsimages']
 				]);
 
-				$post->image_id = $image->id;
+				$post->image_id = $image['id'];
 				$post->image_name = $data['image'];
 			}
 

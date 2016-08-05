@@ -62,4 +62,29 @@ class My_Query
 
 		return false;
 	}
+
+	/**
+	 * Inserts multiple rows in one query.
+	 *
+	 * @param string $table
+	 * @param array $data
+	 * @return Zend_Db_Statement_Pdo
+	 */
+	public static function multipleInsert($table, array $data)
+	{
+		$db = Zend_Db_Table::getDefaultAdapter();
+		$values = [];
+		$fields = array_map([$db, 'quoteIdentifier'], array_keys($data[0]));
+		foreach ($data as $row)
+		{
+			foreach($row as &$value)
+			{
+				$value = $db->quote($value);
+			}
+			$values[] = '(' . implode(',', $row) . ')';
+		}
+
+		return $db->query('INSERT INTO ' . $db->quoteIdentifier($table) . ' ' .
+			'(' . implode(',', $fields) . ') VALUES ' . implode(',', $values));
+	}
 }
