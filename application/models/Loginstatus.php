@@ -39,25 +39,25 @@ class Application_Model_Loginstatus extends Zend_Db_Table_Abstract
 	/**
 	 * Saves login state.
 	 *
-	 * @param	Zend_Db_Table_Row_Abstract $user
-	 * @return Zend_Db_Table_Row_Abstract
+	 * @param mixed $user
+	 * @param boolean $token
+	 * @return mixed String if $token is true, otherwise integer
 	 */
 	public function save($user, $token=false)
 	{
-		$row = $this->createRow([
-			'user_id' => $user->id,
+		$data = [
+			'user_id' => $user['id'],
 			'login_time' => new Zend_Db_Expr('NOW()'),
 			'visit_time' => new Zend_Db_Expr('NOW()'),
 			'ip_address' => $_SERVER['REMOTE_ADDR']
-		]);
+		];
 
 		if ($token)
 		{
-			$row->token = $this->generateToken();
+			$data['token'] = $this->generateToken();
 		}
 
-		$row->save();
-
-		return $row;
+		$id = $this->insert($data);
+		return $token ? $data['token'] : $id;
 	}
 }

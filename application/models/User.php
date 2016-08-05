@@ -109,74 +109,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		return $query;
     }
 
-    public function recordForEmail($sender = null, $reciever = null, $isFb = false) 
-
-    {
-
-        $result = new stdClass();
-
-        if($sender && $reciever) {
-
-            if($isFb) {
-
-                $select = $this->select()
-
-                        ->where('id =?', $sender);
-
-                if($rows = $this->fetchRow($select)) {
-
-                    $result->senderName = $row->Name;
-
-                    $result->senderEmail = $row->Email_id;
-
-                }
-
-                $select = $this->select()
-
-                        ->where('Network_id =?', $reciever);                        
-
-                if($rows = $this->fetchRow($select)) {
-
-                    $result->recieverName = $row->Name;
-
-                    $result->recieverEmail = $row->Email_id;
-
-                } 
-
-            } else {
-
-                $select = $this->select()
-
-                        ->where('id =?', $sender);
-
-                if($rows = $this->fetchRow($select)) {
-
-                    $result->senderName = $rows->Name;
-
-                    $result->senderEmail = $rows->Email_id;
-
-                }
-
-                $select = $this->select()
-
-                        ->where('id =?', $reciever);                        
-
-                if($rows = $this->fetchRow($select)) {
-
-                    $result->recieverName = $rows->Name;
-
-                    $result->recieverEmail = $rows->Email_id;
-
-                }           
-
-            } 
-
-        }
-
-        return $result;
-
-    }
-
 	/**
 	 * Checks if user id valid.
 	 *
@@ -265,7 +197,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 					return false;
 				}
 
-				$cache->save($user->toArray(), 'user_' . $auth['user_id']);
+				$cache->save($user->toArray(), 'user_' . $auth['user_id'],
+					['user' . $auth['user_id']]);
 			}
 
 			self::$_auth = $user;
@@ -434,33 +367,32 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 			if ($user)
 			{
-				$this->update(['Network_id' => $network_id], 'id=' . $user->id);
-				Zend_Registry::get('cache')->remove('user_' . $user['id']);
+				$this->updateWithCache(['Network_id' => $network_id], $user);
 			}
 			else
 			{
 				$geolocation = My_Ip::geolocation();
-
-				$address = (new Application_Model_Address)->createRow([
+				$addressData = [
 					'latitude' => $geolocation[0],
 					'longitude' => $geolocation[1]
-				]);
-				$address->save();
+				];
 
-				$user = $this->createRow([
-					'address_id' => $address->id,
+				$addressId = (new Application_Model_Address)
+					->insert($addressData);
+
+				$user = [
+					'address_id' => $addressId,
 					'Network_id' => $network_id,
 					'Name' => $userNode->getField('name'),
 					'Email_id' => $email,
-					'Status' => 'active',
-					'Creation_date'=> new Zend_Db_Expr('NOW()')
-				]);
+					'Status' => 'active'
+				];
 
 				$gender = $userNode->getField('gender');
 
 				if (trim($gender) !== '')
 				{
-					$user->gender = array_search(ucfirst($gender), self::$genderId);
+					$user['gender'] = array_search(ucfirst($gender), self::$genderId);
 				}
 
 				$pictureResponse = $facebookApi->get('/me/picture?type=large&redirect=false');
@@ -496,37 +428,48 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 							[[320,320], 'uploads']
 						]);
 
-						$user->image_id = $image->id;
-						$user->image_name = $name;
+						$user['image_id'] = $image['id'];
+						$user['image_name'] = $name;
 					}
 					catch (Exception $e)
 					{
 					}
 				}
 
-				$user->save();
+				$user['id'] = $this->insert($user+[
+					'Creation_date'=> new Zend_Db_Expr('NOW()')
+				]);
+
+				$user += $addressData;
 
 				(new Application_Model_Invitestatus)->insert([
-					'user_id' => $user->id,
+					'user_id' => $user['id'],
 					'created' => new Zend_Db_Expr('NOW()')
 				]);
 
-				$users = Application_Model_Fbtempusers::getInstance()->findAllByNetworkId($network_id);
+				$users = Application_Model_Fbtempusers::findAllByNetworkId($network_id);
 
-				if (count($users))
+				if ($users != null)
 				{
-					$friendsModel = new Application_Model_Friends;
+					$friendModel = new Application_Model_Friends;
+					$friendLogModel = new Application_Model_FriendLog;
 
-					foreach($users as $tmp_user)
+					foreach($users as $tmpUser)
 					{
-						$friendsModel->createRow([
-							'sender_id' => $tmp_user->sender_id,
-							'reciever_id' => $user->id,
-							'status' => $friendsModel->status['confirmed'],
+						$friendId = $friendModel->insert([
+							'sender_id' => $tmpUser->sender_id,
+							'reciever_id' => $user['id'],
+							'status' => $friendModel->status['confirmed'],
 							'source' => 'herespy'
-						])->updateStatus($user);
+						]);
 
-						$tmp_user->delete();
+						$friendLogModel->insert([
+							'friend_id' => $friendId,
+							'user_id' => $user['id'],
+							'status_id' => $friendModel->status['confirmed']
+						]);
+
+						$tmpUser->delete();
 					}
 				}
 			}
@@ -566,7 +509,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 				$user_data['Birth_date'] = null;
 			}
 
-			$this->update($user_data, 'id=' . $user['id']);
+			$this->updateWithCache($user_data, $user);
 
 			(new Application_Model_Address)->update([
 				'address' => null,
@@ -580,8 +523,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 				'zip' => My_ArrayHelper::getProp($data, 'zip'),
 				'timezone' => My_ArrayHelper::getProp($data, 'timezone', $user['timezone'])
 			], 'id=' . $user['address_id']);
-
-			Zend_Registry::get('cache')->remove('user_' . $user['id']);
 
 			$this->_db->commit();
 		}
@@ -629,38 +570,13 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * Returns user karma.
 	 *
-	 * @param	integer $user_id
-	 * @return	array
+	 * @param mixed $user
+	 * @return array
 	 */
-	public function getKarma($user_id)
+	public static function getKarma($user)
 	{
-		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-
-		$selfStasts = $db->fetchRow($db->select()
-			->from(['n' => 'news'], [
-				'COUNT(n.id) AS post',
-				'IFNULL(SUM(n.comment), 0) as comment',
-				'IFNULL(SUM(n.vote), 0) as vote'
-			])
-			->where('n.isdeleted=0 AND n.user_id=' . $user_id)
-		);
-
-		$otherStats = $db->fetchRow($db->select()
-			->from(['c' => 'comments'], ['count(c.id) AS count'])
-			->where('c.isdeleted=0 AND c.user_id=' . $user_id)
-			->joinLeft(['n' => 'news'], 'n.id=c.news_id', '')
-			->where('n.user_id<>' . $user_id)
-		);
-
-		return [
-			'post' => $selfStasts['post'],
-			'comment' => $selfStasts['comment'],
-			'comment_other' => $otherStats['count'],
-			'vote' => $selfStasts['vote'],
-			'karma' => $selfStasts['post'] +
-				(.25 * ($selfStasts['vote'] + $selfStasts['comment'])) +
-				$otherStats['count'] * .25
-		];
+		return round($user['post'] + (.25 * ($user['vote'] + $user['comment'])) +
+				$user['comment_other'] * .25, 4);
 	}
 
 	/**
@@ -699,7 +615,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function getGender($row)
 	{
-		return $row['gender'] !== null ? self::$genderId[$row['gender']] : '';
+		$gender = My_ArrayHelper::getProp($row, 'gender');
+		return $gender !== null ? self::$genderId[$gender] : '';
 	}
 
 	/**
@@ -711,5 +628,24 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	public static function getTimezone($user)
 	{
 		return (new DateTimeZone($user['timezone'] ?: 'UTC'));
+	}
+
+	/**
+	 * Updates existing rows.
+	 *
+	 * @param array $data
+	 * @param mixed $user
+	 * @return integer
+	 */
+	public function updateWithCache(array $data, $user)
+	{
+		$result = $this->update($data, 'id=' . $user['id']);
+
+		Zend_Registry::get('cache')->clean(
+			Zend_Cache::CLEANING_MODE_MATCHING_ANY_TAG,
+			['user' . $user['id']]
+		);
+
+		return $result;
 	}
 }

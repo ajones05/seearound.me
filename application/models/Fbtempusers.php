@@ -9,15 +9,6 @@ class Application_Model_Fbtempusers extends Zend_Db_Table_Abstract {
     protected $_name = "facebook_temp_users";
     protected $_primary = "id";
     protected $_rowClass = "Application_Model_FbtsempusersRow";
-    protected static $_instance = null;
-    
-    public static function getInstance() 
-    {
-        if (null === self::$_instance) {
-            self::$_instance = new self();
-        }
-        return self::$_instance;
-    }   
 
     public function invite($data = array()) 
     {
@@ -39,23 +30,22 @@ class Application_Model_Fbtempusers extends Zend_Db_Table_Abstract {
 	/**
 	 * Finds records by receiver network ID.
 	 *
-	 * @param	string	$network_id
-	 * @param	integer	$sender_id
-	 *
-	 * return	array
+	 * @param string $network_id
+	 * @param integer $sender_id
+	 * return array
 	 */	
 	public static function findAllByNetworkId($network_id, $sender_id = null)
 	{
-		$db = self::getInstance();
-		$query = $db->select()->where('reciever_nw_id =?', $network_id);
+		$model = new self;
+		$query = $model->select()
+			->where('reciever_nw_id =?', $network_id)
+			->limit(100);
 
 		if ($sender_id)
 		{
 			$query->where('sender_id =?', $sender_id);
 		}
 
-		$result = $db->fetchAll($query);
-
-		return $result;
+		return $model->fetchAll($query);
 	}
 }

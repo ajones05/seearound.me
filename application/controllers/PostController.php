@@ -588,6 +588,10 @@ class PostController extends Zend_Controller_Action
 					];
 				}
 			}
+
+			(new Application_Model_User)->updateWithCache([
+				'post' => $user['post']+1
+			], $user);
 		}
 		catch (Exception $e)
 		{
@@ -898,6 +902,10 @@ class PostController extends Zend_Controller_Action
 			(new Application_Model_News)
 				->update(['isdeleted' => 1], 'id=' . $id);
 
+			(new Application_Model_User)->updateWithCache([
+				'post' => $user['post']-1
+			], $user);
+
 			$response = ['status' => 1];
 		}
 		catch (Exception $e)
@@ -993,6 +1001,10 @@ class PostController extends Zend_Controller_Action
 			{
 				(new Application_Model_News)
 					->update(['vote' => $updateVote], 'id=' . $id);
+
+				(new Application_Model_User)->updateWithCache([
+					'vote' => $user['vote']+$vote
+				], $user);
 			}
 
 			$response = [
@@ -1241,14 +1253,24 @@ class PostController extends Zend_Controller_Action
 
 			$comment_id = (new Application_Model_Comments)->insert($data+[
 				'user_id' => $user['id'],
-				'news_id' => $post['id'],
+				'news_id' => $post_id,
 				'created_at' => new Zend_Db_Expr('NOW()'),
 				'updated_at' => new Zend_Db_Expr('NOW()')
 			]);
 
 			(new Application_Model_News)->update([
 				'comment' => $post['comment']+1
-			], 'id=' . $post['id']);
+			], 'id=' . $post_id);
+
+			$updateUser = ['comment' => $user['comment']+1];
+
+			if ($post['user_id'] != $user['id'])
+			{
+				$updateUser['comment_other'] = $user['comment_other']+1;
+			}
+
+			(new Application_Model_User)
+				->updateWithCache($updateUser, $user);
 
 			$response = [
 				'status' => 1,
@@ -1315,7 +1337,7 @@ class PostController extends Zend_Controller_Action
 
 			if (!Application_Model_Comments::canEdit($comment, $post, $user))
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			(new Application_Model_Comments)->update([
@@ -1326,6 +1348,16 @@ class PostController extends Zend_Controller_Action
 			(new Application_Model_News)->update([
 				'comment' => $post['comment']-1
 			], 'id=' . $comment['news_id']);
+
+			$updateUser = ['comment' => $user['comment']-1];
+
+			if ($post['user_id'] != $user['id'])
+			{
+				$updateUser['comment_other'] = $user['comment_other']-1;
+			}
+
+			(new Application_Model_User)
+				->updateWithCache($updateUser, $user);
 
 			$response = ['status' => 1];
 		}

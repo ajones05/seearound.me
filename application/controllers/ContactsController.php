@@ -280,7 +280,7 @@ class ContactsController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$network_id = trim($this->_request->getPost("network_id"));
+			$network_id = trim($this->_request->getPost('network_id'));
 
 			if (!v::stringType()->validate($network_id))
 			{
@@ -288,38 +288,41 @@ class ContactsController extends Zend_Controller_Action
 					var_export($network_id, true));
 			}
 
-			$facebook_user = $userModel->findByNetworkId($network_id);
+			$facebookUser = $userModel->findByNetworkId($network_id);
 
-			if (!$facebook_user)
+			if ($facebookUser == null)
 			{
-				throw new RuntimeException('Incorrect network ID.', -1);
+				throw new RuntimeException('Incorrect Network ID: ' .
+					var_export($network_id, true));
 			}
 
-			$reciever_email = $userModel->recordForEmail($user->id, $facebook_user->id);
-			$settings = Application_Model_Setting::getInstance();
-
-			My_Email::send(
-				$reciever_email->recieverEmail,
-				'seearound.me connect request',
-				[
-					'template' => 'follow',
-					'assign' => ['user' => $user],
-					'settings' => $settings
-				]
-			);
-
-			$friendsModel = new Application_Model_Friends;
-			$friendStatus = $friendsModel->isFriend($user, $facebook_user);
+			$friendModel = new Application_Model_Friends;
+			$friendStatus = $friendModel->isFriend($user, $facebookUser);
 
 			if (!$friendStatus)
 			{
-				$friendsModel->createRow([
-					'sender_id' => $user->id,
-					'reciever_id' => $facebook_user->id,
-					'status' => $friendsModel->status['confirmed'],
+				$friendId = $friendModel->insert([
+					'sender_id' => $user['id'],
+					'reciever_id' => $facebookUser['id'],
+					'status' => $friendModel->status['confirmed'],
 					'source' => 'connect'
-				])->updateStatus($auth);
+				]);
+
+				(new Application_Model_FriendLog)->insert([
+					'friend_id' => $friendId,
+					'user_id' => $user['id'],
+					'status_id' => $friendModel->status['confirmed']
+				]);
 			}
+
+			My_Email::send(
+				$user['Email_id'],
+				'seearound.me connect request',
+				[
+					'template' => 'follow',
+					'assign' => ['user' => $user]
+				]
+			);
 
 			$response = ['status' => 1];
 		}
@@ -351,7 +354,7 @@ class ContactsController extends Zend_Controller_Action
 
 		$settings = Application_Model_Setting::getInstance();
 
-		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id, 1);
+		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id);
 
 		$this->view->headLink()
 			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
@@ -465,7 +468,7 @@ class ContactsController extends Zend_Controller_Action
 					var_export($receiver_id, true));
 			}
 
-			if ($receiver_id == $user->id)
+			if ($receiver_id == $user['id'])
 			{
 				throw new RuntimeException('Access denied');
 			}
@@ -491,8 +494,8 @@ class ContactsController extends Zend_Controller_Action
 					var_export($total, true));
 			}
 
-			$model = new Application_Model_Friends;
-			$friend = $model->isFriend($user, $receiver);
+			$friendModel = new Application_Model_Friends;
+			$friend = $friendModel->isFriend($user, $receiver);
 
 			switch ($action)
 			{
@@ -502,19 +505,22 @@ class ContactsController extends Zend_Controller_Action
 						throw new RuntimeException('User already in friend list');
 					}
 
-					$model->createRow([
-						'sender_id' => $user->id,
-						'reciever_id' => $receiver->id,
-						'status' => $model->status['confirmed'],
+					$friendId = $friendModel->insert([
+						'sender_id' => $user['id'],
+						'reciever_id' => $receiver['id'],
+						'status' => $friendModel->status['confirmed'],
 						'source' => 'herespy'
-					])->updateStatus($user);
+					]);
 
-					$settings = Application_Model_Setting::getInstance();
+					(new Application_Model_FriendLog)->insert([
+						'friend_id' => $friendId,
+						'user_id' => $user['id'],
+						'status_id' => $friendModel->status['confirmed']
+					]);
 
-					My_Email::send($receiver->Email_id, 'New follower', [
+					My_Email::send($receiver['Email_id'], 'New follower', [
 						'template' => 'friend-invitation',
-						'assign' => ['name' => $user->Name],
-						'settings' => $settings
+						'assign' => ['name' => $user['Name']]
 					]);
 					break;
 				case 'reject':
@@ -522,8 +528,16 @@ class ContactsController extends Zend_Controller_Action
 					{
 						throw new RuntimeException('User not found in friend list');
 					}
-					$friend->status = $model->status['rejected'];
-					$friend->updateStatus($user);
+
+					$friendModel->update([
+						'status' => $friendModel->status['rejected']
+					], 'id=' . $friend['id']);
+
+					(new Application_Model_FriendLog)->insert([
+						'friend_id' => $friend['id'],
+						'user_id' => $user['id'],
+						'status_id' => $friendModel->status['rejected']
+					]);
 					break;
 			}
 
@@ -531,11 +545,11 @@ class ContactsController extends Zend_Controller_Action
 
 			if ($total)
 			{
-				$response['total'] = $model->fetchRow(
-					$model->select()
-						->from($model, ['COUNT(*) as count'])
-						->where('reciever_id=?', $user->id)
-						->where('status=' . $model->status['confirmed'])
+				$response['total'] = $friendModel->fetchRow(
+					$friendModel->select()
+						->from($friendModel, ['COUNT(*) as count'])
+						->where('reciever_id=?', $user['id'])
+						->where('status=' . $friendModel->status['confirmed'])
 						->where('notify=0')
 				)->count;
 			}

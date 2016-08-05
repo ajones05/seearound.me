@@ -91,13 +91,13 @@ class IndexController extends Zend_Controller_Action
 							$this->_redirect($this->view->baseUrl('index/reg-success/id/' . $user->id));
 						}
 
-						$login = (new Application_Model_Loginstatus)->save($user);
+						$loginId = (new Application_Model_Loginstatus)->save($user);
 						Application_Model_Invitestatus::updateCount($user);
 
 						$auth = Zend_Auth::getInstance();
 						$auth->getStorage()->write([
 							'user_id' => $user->id,
-							'login_id' => $login->id
+							'login_id' => $loginId
 						]);
 
 						$remember = $loginForm->remember->getValue();
@@ -141,11 +141,11 @@ class IndexController extends Zend_Controller_Action
 							]
 						);
 
-						$login = (new Application_Model_Loginstatus)->save($user);
+						$loginId = (new Application_Model_Loginstatus)->save($user);
 
 						Zend_Auth::getInstance()->getStorage()->write(array(
 							"user_id" => $user->id,
-							"login_id" => $login->id
+							"login_id" => $loginId
 						));
 
 						$this->_redirect($this->view->baseUrl('/'));
@@ -185,15 +185,15 @@ class IndexController extends Zend_Controller_Action
 		$facebookApi->setDefaultAccessToken($accessToken);
 
 		$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
-		$login = (new Application_Model_Loginstatus)->save($user);
+		$loginId = (new Application_Model_Loginstatus)->save($user);
 		Application_Model_Invitestatus::updateCount($user);
 
 		Zend_Auth::getInstance()->getStorage()->write(array(
-			'user_id' => $user->id,
-			'login_id' => $login->id
+			'user_id' => $user['id'],
+			'login_id' => $loginId
 		));
 
-		$this->_redirect($this->view->baseUrl('/'));
+		$this->_redirect('/');
 	}
 
 	/**
@@ -382,12 +382,13 @@ class IndexController extends Zend_Controller_Action
 
 			if ($form->isValid($data))
 			{
-				$user->password = $userModel->encryptPassword($data['password']);
-				$user->save();
+				$userModel->updateWithCache([
+					'password' => $userModel->encryptPassword($data['password'])
+				], $user);
 
 				$confirmModel = new Application_Model_UserConfirm;
 				$confirmModel->deleteUserCode($user, $confirmModel::$type['password']);
-				Zend_Registry::get('cache')->remove('user_' . $user['id']);
+
 				$this->_redirect($this->view->baseUrl('change-password-success'));
 			}
 		}

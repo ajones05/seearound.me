@@ -75,37 +75,38 @@ class MobileController extends Zend_Controller_Action
 			$userModel = new Application_Model_User;
 			$user = $userModel->findByEmail($email);
 
-			if (!$user || !password_verify($password, $user->password))
+			if (!$user || !password_verify($password, $user['password']))
 			{
 				throw new RuntimeException('Incorrect user email or password');
 			}
 
-			if ($user->Status != 'active')
+			if ($user['Status'] != 'active')
 			{
 				throw new RuntimeException('User is not active');
 			}
 
-			$login = (new Application_Model_Loginstatus)->save($user, true);
+			$accessToken = (new Application_Model_Loginstatus)->save($user, true);
 			Application_Model_Invitestatus::updateCount($user);
+			$this->saveUserCache($user->toArray(), $accessToken);
 
 			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'AUTHENTICATED',
 				'result' => [
-					'id' => $user->id,
-					'karma' => round($userModel->getKarma($user->id)['karma'], 4),
-					'Name' => $user->Name,
-					'Email_id' => $user->Email_id,
-					'Birth_date' => $user->Birth_date,
+					'id' => $user['id'],
+					'karma' => Application_Model_User::getKarma($user),
+					'Name' => $user['Name'],
+					'Email_id' => $user['Email_id'],
+					'Birth_date' => $user['Birth_date'],
 					'Profile_image' => $this->view->serverUrl() .
 						$this->view->baseUrl(
 							Application_Model_User::getThumb($user, '320x320')),
 					'address' => Application_Model_Address::format($user),
-					'latitude' => $user->latitude,
-					'longitude' => $user->longitude,
-					'Activities' => $user->activity,
+					'latitude' => $user['latitude'],
+					'longitude' => $user['longitude'],
+					'Activities' => $user['activity'],
 					'Gender' => Application_Model_User::getGender($user),
-					'token' => $login->token
+					'token' => $accessToken
 				]
 			];
 		}
@@ -144,24 +145,24 @@ class MobileController extends Zend_Controller_Action
 			]);
 
 			$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
-			$login = (new Application_Model_Loginstatus)->save($user, true);
+			$accessToken = (new Application_Model_Loginstatus)->save($user, true);
 			Application_Model_Invitestatus::updateCount($user);
 
 			$response = [
 				'status' => 'SUCCESS',
 				'result' => [
-					'id' => $user->id,
-					'Name' => $user->Name,
-					'Email_id' => $user->Email_id,
-					'Birth_date' => $user->Birth_date,
+					'id' => $user['id'],
+					'Name' => $user['Name'],
+					'Email_id' => $user['Email_id'],
+					'Birth_date' => My_ArrayHelper::getProp($user, 'Birth_date'),
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($user, '320x320')),
 					'address' => Application_Model_Address::format($user),
-					'latitude' => $user->latitude,
-					'longitude' => $user->longitude,
-					'Activities' => $user->activity,
+					'latitude' => $user['latitude'],
+					'longitude' => $user['longitude'],
+					'Activities' => My_ArrayHelper::getProp($user, 'activity'),
 					'Gender' => Application_Model_User::getGender($user),
-					'token' => $login->token
+					'token' => $accessToken
 				]
 			];
 		}
@@ -247,23 +248,19 @@ class MobileController extends Zend_Controller_Action
 						$this->view->baseUrl('uploads/' . $name);
 			}
 
-			$user = (new Application_Model_User)->register(
-				$data + ['Status' => 'active']
-			);
-			$login = (new Application_Model_Loginstatus)->save($user, true);
-
-			$settings = Application_Model_Setting::getInstance();
+			$user = (new Application_Model_User)->register($data+['Status' => 'active']);
+			$accessToken = (new Application_Model_Loginstatus)->save($user, true);
 
 			My_Email::send(
 				$user->Email_id,
 				'seearound.me new Registration',
 				[
 					'template' => 'ws-registration',
-					'settings' => $settings
+					'settings' => $this->settings
 				]
 			);
 
-			$response['data']['token'] = $login->token;
+			$response['data']['token'] = $accessToken;
 		}
 		catch (Exception $e)
 		{
@@ -442,19 +439,23 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('User already in friend list');
 			}
 
-			$friendModel->createRow([
-				'sender_id' => $user->id,
-				'reciever_id' => $receiver->id,
+			$friendId = $friendModel->insert([
+				'sender_id' => $user['id'],
+				'reciever_id' => $receiver['id'],
 				'status' => $friendModel->status['confirmed'],
 				'source' => 'herespy'
-			])->updateStatus($user);
+			]);
 
-			$settings = Application_Model_Setting::getInstance();
+			(new Application_Model_FriendLog)->insert([
+				'friend_id' => $friendId,
+				'user_id' => $user['id'],
+				'status_id' => $friendModel->status['confirmed']
+			]);
 
 			My_Email::send($receiver->Email_id, 'New follower', [
 				'template' => 'friend-invitation',
 				'assign' => ['name' => $user->Name],
-				'settings' => $settings
+				'settings' => $this->settings
 			]);
 
 			$response = ['status' => 'SUCCESS'];
@@ -510,8 +511,15 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('User not found in friend list');
 			}
 
-			$friend->status = $friendModel->status['rejected'];
-			$friend->updateStatus($user);
+			$friendModel->update([
+				'status' => $friendModel->status['rejected']
+			], 'id=' . $friend['id']);
+
+			(new Application_Model_FriendLog)->insert([
+				'friend_id' => $friend['id'],
+				'user_id' => $user['id'],
+				'status_id' => $friendModel->status['rejected']
+			]);
 
 			$response = ['status' => 'SUCCESS'];
 		}
@@ -552,8 +560,7 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Other user ID cannot be the same');
 			}
 
-			$userModel = new Application_Model_User;
-			if (!$userModel->checkId($other_user_id, $profile))
+			if (!Application_Model_User::checkId($other_user_id, $profile))
 			{
 				throw new RuntimeException('Incorrect other user ID: ' .
 					var_export($other_user_id, true));
@@ -565,7 +572,7 @@ class MobileController extends Zend_Controller_Action
 					->isFriend($user, $profile) ? 1 : 0,
 				'result' => My_ArrayHelper::filter([
 					'id' => $profile->id,
-					'karma' => round($userModel->getKarma($profile->id)['karma'], 4),
+					'karma' => Application_Model_User::getKarma($profile),
 					'Name' => $profile->Name,
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($profile, '320x320')),
@@ -676,8 +683,6 @@ class MobileController extends Zend_Controller_Action
 				'is_first' => !$conversation_id ? 1 : 0
 			]);
 
-			$settings = Application_Model_Setting::getInstance();
-
 			My_Email::send(
 				[$receiver->Name => $receiver->Email_id],
 				$conversation->subject,
@@ -688,8 +693,7 @@ class MobileController extends Zend_Controller_Action
 						'receiver' => $receiver,
 						'subject' => $conversation->subject,
 						'message' => $message->body
-					],
-					'settings' => $settings
+					]
 				]
 			);
 
@@ -697,7 +701,8 @@ class MobileController extends Zend_Controller_Action
 				'status' => "SUCCESS",
 				'message' => "Message Send Successfully",
 				'result' => [
-					'id' => $conversation->id,
+					'message_id' => $message->id,
+					'conversation_id' => $conversation->id,
 					'created' => (new DateTime($conversation->created_at))
 						->setTimezone(Application_Model_User::getTimezone($user))
 						->format(My_Time::SQL)
@@ -830,6 +835,11 @@ class MobileController extends Zend_Controller_Action
 
 			if ($other_user_id != null)
 			{
+				if ($user->id == $other_user_id)
+				{
+					throw new RuntimeException('Other User ID cannot be the same');
+				}
+
 				if (!Application_Model_User::checkId($other_user_id, $other_user))
 				{
 					throw new RuntimeException('Incorrect other user ID: ' .
@@ -971,7 +981,6 @@ class MobileController extends Zend_Controller_Action
 					'receiver_email' => 'ru.Email_id'
 				])
 				->where('cm.conversation_id=?', $conversation->id)
-				->where('cm.is_first<>1')
 				->joinLeft(['su' => 'user_data'], 'su.id=cm.from_id', '')
 				->joinLeft(['ru' => 'user_data'], 'ru.id=cm.to_id', '')
 				->order('cm.created_at DESC')
@@ -1414,6 +1423,10 @@ class MobileController extends Zend_Controller_Action
 						$this->view->baseUrl($image->path)
 				];
 			}
+
+			(new Application_Model_User)->updateWithCache([
+				'post' => $user['post']+1
+			], $user);
 		}
 		catch (Exception $e)
 		{
@@ -1661,6 +1674,10 @@ class MobileController extends Zend_Controller_Action
 			$post->isdeleted = 1;
 			$post->save();
 
+			(new Application_Model_User)->updateWithCache([
+				'post' => $user['post']-1
+			], $user);
+
 			$response = ['status' => 'SUCCESS'];
 		}
 		catch (Exception $e)
@@ -1732,8 +1749,7 @@ class MobileController extends Zend_Controller_Action
 					$profileImage = Application_Model_User::getThumb($user, '320x320');
 				}
 
-				$userModel->update($user_data, 'id=' . $user->id);
-				Zend_Registry::get('cache')->remove('user_' . $user['id']);
+				$userModel->updateWithCache($user_data, $user);
 				$userModel->getDefaultAdapter()->commit();
 			}
 			catch (Exception $e)
@@ -1750,7 +1766,7 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'User profile has been updated successfully',
 				'result' => My_ArrayHelper::filter([
 					'user_id' => $user->id,
-					'karma' => round($userModel->getKarma($user->id)['karma'], 4),
+					'karma' => Application_Model_User::getKarma($user),
 					'Name' => $data['name'],
 					'Email_id' => $data['email'],
 					'address' => Application_Model_Address::format($userAddress->toArray()),
@@ -2092,11 +2108,11 @@ class MobileController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-  public function postCommentAction()
+	public function postCommentAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$id = $this->_request->getPost('news_id');
 
 			if (!v::intVal()->validate($id))
@@ -2132,6 +2148,16 @@ class MobileController extends Zend_Controller_Action
 			(new Application_Model_News)->update([
 				'comment' => $postComments
 			], 'id=' . $id);
+
+			$updateUser = ['comment' => $user['comment']+1];
+
+			if ($post['user_id'] != $user['id'])
+			{
+				$updateUser['comment_other'] = $user['comment_other']+1;
+			}
+
+			(new Application_Model_User)
+				->updateWithCache($updateUser, $user);
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -2174,7 +2200,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$id = $this->_request->getPost('comment_id');
 
 			if (!v::intVal()->validate($id))
@@ -2184,18 +2210,40 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			if (!Application_Model_Comments::checkId($id, $comment,
-				['post' => ['post_user_id' => 'user_id']]))
+				['post' => ['post_user_id' => 'user_id', 'post_comment' => 'comment']]))
 			{
 				throw new RuntimeException('Incorrect comment ID: ' .
 					var_export($id, true));
 			}
 
-			$post = ['user_id' => $comment['post_user_id']];
+			$post = [
+				'user_id' => $comment['post_user_id'],
+				'comment' => $comment['post_comment']
+			];
 
 			if (!Application_Model_Comments::canEdit($comment, $post, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
+
+			(new Application_Model_Comments)->update([
+				'isdeleted' => 1,
+				'updated_at' => new Zend_Db_Expr('NOW()')
+			], 'id=' . $comment['id']);
+
+			(new Application_Model_News)->update([
+				'comment' => $post['comment']-1
+			], 'id=' . $comment['news_id']);
+
+			$updateUser = ['comment' => $user['comment']-1];
+
+			if ($post['user_id'] != $user['id'])
+			{
+				$updateUser['comment_other'] = $user['comment_other']-1;
+			}
+
+			(new Application_Model_User)
+				->updateWithCache($updateUser, $user);
 
 			$response = ['status' => 'SUCCESS'];
 		}
@@ -2285,7 +2333,12 @@ class MobileController extends Zend_Controller_Action
 
 			if ($updatePost)
 			{
+				// TODO: refactoring!!!!
 				$post->save();
+
+				(new Application_Model_User)->updateWithCache([
+					'vote' => $user['vote']+$vote
+				], $user);
 			}
 
 			$response = [
@@ -2595,7 +2648,7 @@ class MobileController extends Zend_Controller_Action
 	 * @return Zend_Db_Table_Row_Abstract
 	 * @throws RuntimeException
 	 */
-	protected function getUserByToken()
+	protected function getUserByToken($loadCache=false)
 	{
 		$token = $this->_request->getPost('token');
 
@@ -2605,11 +2658,31 @@ class MobileController extends Zend_Controller_Action
 				var_export($token, true));
 		}
 
-		$user = (new Application_Model_User)->findUserByToken($token);
-
-		if ($user == null || $user['Status'] != 'active')
+		if ($loadCache)
 		{
-			throw new RuntimeException('You are not authorized to access this action');
+			$cache = Zend_Registry::get('cache');
+			$user = $cache->load('token_' . $token);
+
+			if ($user == null)
+			{
+				$user = $user = (new Application_Model_User)->findUserByToken($token);
+
+				if ($user == null || $user['Status'] != 'active')
+				{
+					throw new RuntimeException('You are not authorized to access this action');
+				}
+
+				$this->saveUserCache($user->toArray(), $token, $cache);
+			}
+		}
+		else
+		{
+			$user = (new Application_Model_User)->findUserByToken($token);
+
+			if ($user == null || $user['Status'] != 'active')
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
 		}
 
 		(new Application_Model_Loginstatus)->update([
@@ -2617,6 +2690,20 @@ class MobileController extends Zend_Controller_Action
 		], 'id=' . $user['login_id']);
 
 		return $user;
+	}
+
+	/**
+	 * Saves user data to cache.
+	 *
+	 * @param mixed $user
+	 * @param string $token
+	 * @param Zend_Cache $cache
+	 * @return void
+	 */
+	protected function saveUserCache($user, $token, $cache=null)
+	{
+		$cache = $cache ?: Zend_Registry::get('cache');
+		$cache->save($user, 'user_' . $token, ['user' . $user['id']]);
 	}
 
 	/**
