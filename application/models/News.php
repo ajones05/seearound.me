@@ -270,9 +270,9 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				case '2':
 					$query->where('news.user_id<>?', $user['id']);
 					$query->joinLeft(array('f1' => 'friends'), 'f1.sender_id=' . $user['id'], '');
-					$query->joinLeft(array('f2' => 'friends'), 'f2.reciever_id=' . $user['id'], '');
+					$query->joinLeft(array('f2' => 'friends'), 'f2.receiver_id=' . $user['id'], '');
 					$query->where('((f1.status=1');
-					$query->where('news.user_id=f1.reciever_id)');
+					$query->where('news.user_id=f1.receiver_id)');
 					$query->orWhere('(f2.status=1');
 					$query->where('news.user_id=f2.sender_id))');
 					$order[] = $this->postScore() . ' DESC';

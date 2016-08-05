@@ -90,11 +90,12 @@ ALTER TABLE `friends` ENGINE = InnoDB;
 ALTER TABLE `friends` CHANGE `sender_id` `sender_id` INT(10) NOT NULL;
 ALTER TABLE `friends` CHANGE `reciever_id` `reciever_id` INT(10) NOT NULL;
 ALTER TABLE `friends` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `friends` ADD FOREIGN KEY `user_data_fk_2`(`reciever_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
+ALTER TABLE `friends` ADD FOREIGN KEY (`receiver_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
 ALTER TABLE `friends` CHANGE `status` `status` SMALLINT NOT NULL DEFAULT '0';
 ALTER TABLE `friends` ADD `notify` TINYINT(1) NOT NULL DEFAULT '0' AFTER `udate`;
 ALTER TABLE `friends` DROP `udate`;
 ALTER TABLE `friends` DROP `cdate`;
+ALTER TABLE `friends` CHANGE `reciever_id` `receiver_id` int(10) not null;
 
 --
 -- Table structure for table `friend_log`

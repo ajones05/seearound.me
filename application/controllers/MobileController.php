@@ -295,8 +295,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($email, true));
 			}
 
-			$userModel = new Application_Model_User;
-			$user = $userModel->findByEmail($email);
+			$user = Application_Model_User::findByEmail($email);
 
 			if (!$user)
 			{
@@ -304,27 +303,30 @@ class MobileController extends Zend_Controller_Action
 					var_export($email, true));
 			}
 
-			if ($user->Status !== 'active')
+			if ($user['Status'] !== 'active')
 			{
 				throw new RuntimeException('This account is not active');
 			}
 
 			$confirmModel = new Application_Model_UserConfirm;
 			$confirmModel->deleteUserCode($user, $confirmModel::$type['password']);
-			$confirm = $confirmModel->save([
-				'user_id' => $user->id,
-				'type_id' => $confirmModel::$type['password']
-			]);
 
-			$settings = Application_Model_Setting::getInstance();
+			$confirmCode = $confirmModel->generateConfirmCode();
+			$confirmModel->insert([
+				'user_id' => $user['id'],
+				'type_id' => $confirmModel::$type['password'],
+				'code' => $confirmCode,
+				'deleted' => 0,
+				'created_at' => new Zend_Db_Expr('NOW()')
+			]);
 
 			My_Email::send(
 				$email,
 				'Forgot Password',
 				[
 					'template' => 'forgot-password',
-					'assign' => ['confirm' => $confirm],
-					'settings' => $settings
+					'assign' => ['code' => $confirmCode],
+					'settings' => $this->settings
 				]
 			);
 
@@ -353,7 +355,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -367,26 +369,26 @@ class MobileController extends Zend_Controller_Action
 				'message' => 'My Friend list rendered successfully'
 			];
 
-			$friends = (new Application_Model_Friends)
-				->findAllByUserId($user->id, 100, $start);
+			$friends = (new Application_Model_Friends)->findAllByUserId($user,
+				['limit' => 100, 'offset' => $start]);
 
-			if (count($friends))
+			if ($friends->count())
 			{
 				foreach ($friends as $friend)
 				{
-					$friendUserId = $friend->reciever_id == $user->id ? $friend->sender_id : $friend->reciever_id;
-					// TODO: merge
-					$friendUser = Application_Model_User::findById($friendUserId);
+					$alias = $friend['receiver_id'] == $user['id'] ?
+						'receiver_' : 'sender_';
 
-					$response['result'][] = My_ArrayHelper::filter([
-						'id' => $friendUser->id,
-						'Name' => $friendUser->Name,
-						'Email_id' => $friendUser->Email_id,
+					$response['result'][] = [
+						'id' => $friend[$alias.'id'],
+						'Name' => $friend[$alias.'name'],
+						'Email_id' => $friend[$alias.'email'],
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
-							Application_Model_User::getThumb($friendUser, '320x320')),
-						'Birth_date' => $friendUser->Birth_date,
-						'Gender' => Application_Model_User::getGender($friendUser),
-						'Activities' => $friendUser->activity
+							Application_Model_User::getThumb($friend,'320x320',['alias'=>$alias])),
+					] + My_ArrayHelper::filter([
+						'Birth_date' => $friend[$alias.'birthday'],
+						'Gender' => Application_Model_User::getGender($friend, $alias),
+						'Activities' => $friend[$alias.'activity']
 					]);
 				}
 			}
@@ -443,7 +445,7 @@ class MobileController extends Zend_Controller_Action
 
 			$friendId = $friendModel->insert([
 				'sender_id' => $user['id'],
-				'reciever_id' => $receiver['id'],
+				'receiver_id' => $receiver['id'],
 				'status' => $friendModel->status['confirmed'],
 				'source' => 'herespy'
 			]);
@@ -2396,7 +2398,7 @@ class MobileController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'f.notify'
 			]);
-			$select1->where('f.reciever_id=? AND f.status=1', $user->id);
+			$select1->where('f.receiver_id=? AND f.status=1', $user->id);
 			$select1->where('f.notify=0 OR fl.created_at>=?', $maxDate);
 			$select1->joinLeft(['fl' => 'friend_log'],
 				'fl.friend_id=f.id AND fl.status_id=f.status', '');
@@ -2554,7 +2556,7 @@ class MobileController extends Zend_Controller_Action
 							var_export($id, true));
 					}
 
-					if ($user->id != $friendRequest->reciever_id)
+					if ($user->id != $friendRequest->receiver_id)
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
@@ -2662,7 +2664,7 @@ class MobileController extends Zend_Controller_Action
 		if ($loadCache)
 		{
 			$cache = Zend_Registry::get('cache');
-			$user = $cache->load('token_' . $token);
+			$user = $cache->load('user_' . $token);
 
 			if ($user == null)
 			{

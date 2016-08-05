@@ -56,14 +56,15 @@ class Application_Model_Address extends Zend_Db_Table_Abstract
 	public static function format($address, array $options=['street'=>true])
 	{
 		$output = '';
+		$alias = My_arrayHelper::getProp($options, 'alias', '');
 
 		if (!empty($options['street']))
 		{
-			$street = trim(My_ArrayHelper::getProp($address, 'street_name'));
+			$street = trim(My_ArrayHelper::getProp($address, $alias.'street_name'));
 
 			if ($street !== '')
 			{
-				$number = trim(My_ArrayHelper::getProp($address, 'street_number'));
+				$number = trim(My_ArrayHelper::getProp($address, $alias.'street_number'));
 
 				if ($number !== '')
 				{
@@ -74,7 +75,7 @@ class Application_Model_Address extends Zend_Db_Table_Abstract
 			}
 		}
 
-		$city = trim(My_ArrayHelper::getProp($address, 'city'));
+		$city = trim(My_ArrayHelper::getProp($address, $alias.'city'));
 
 		if ($city !== '')
 		{
@@ -86,7 +87,7 @@ class Application_Model_Address extends Zend_Db_Table_Abstract
 			$output .= $city;
 		}
 
-		$state = trim(My_ArrayHelper::getProp($address, 'state'));
+		$state = trim(My_ArrayHelper::getProp($address, $alias.'state'));
 
 		if ($state !== '')
 		{
@@ -98,7 +99,7 @@ class Application_Model_Address extends Zend_Db_Table_Abstract
 			$output .= $state;
 		}
 
-		$zip = trim(My_ArrayHelper::getProp($address, 'zip'));
+		$zip = trim(My_ArrayHelper::getProp($address, $alias.'zip'));
 
 		if ($zip !== '')
 		{
@@ -114,7 +115,7 @@ class Application_Model_Address extends Zend_Db_Table_Abstract
 			$output .= $zip;
 		}
 
-		$country = trim(My_ArrayHelper::getProp($address, 'country'));
+		$country = trim(My_ArrayHelper::getProp($address, $alias.'country'));
 
 		if ($country !== '')
 		{
