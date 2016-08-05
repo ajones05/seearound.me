@@ -179,7 +179,7 @@ class HomeController extends Zend_Controller_Action
 			$userModel->update([
 				'image_id' => $image['id'],
 				'image_name' => $name
-			], 'id=' . $user['image_id']);
+			], 'id=' . $user['id']);
 
 			$response = [
 				'status' => 1,
