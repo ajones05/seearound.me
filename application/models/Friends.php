@@ -48,10 +48,10 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 	public function isFriend($user1, $user2)
 	{
 		return $this->fetchRow(
-			$this->select()
-				->where('status=' . $this->status['confirmed'])
-				->where('((sender_id=' . $user1->id . ' AND receiver_id=' . $user2->id . ')')
-				->orWhere('(sender_id=' . $user2->id . ' AND receiver_id=' . $user1->id . '))')
+			$this->select()->where('status=' . $this->status['confirmed'] . ' AND ' .
+				'((sender_id=' . $user1['id'] . ' AND receiver_id=' . $user2['id'] . ') OR ' .
+				'(sender_id=' . $user2['id'] . ' AND receiver_id=' . $user1['id'] . '))'
+			)
 		);
 	}
 

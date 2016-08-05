@@ -416,7 +416,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$receiver_id = $this->_request->getPost('receiver_id');
 
 			if (!v::intVal()->validate($receiver_id))
@@ -425,7 +425,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($receiver_id, true));
 			}
 
-			if ($user->id == $receiver_id)
+			if ($user['id'] == $receiver_id)
 			{
 				throw new RuntimeException('Receiver ID cannot be the same');
 			}
@@ -445,7 +445,7 @@ class MobileController extends Zend_Controller_Action
 
 			$friendId = $friendModel->insert([
 				'sender_id' => $user['id'],
-				'receiver_id' => $receiver['id'],
+				'receiver_id' => $receiver_id,
 				'status' => $friendModel->status['confirmed'],
 				'source' => 'herespy'
 			]);
@@ -456,9 +456,9 @@ class MobileController extends Zend_Controller_Action
 				'status_id' => $friendModel->status['confirmed']
 			]);
 
-			My_Email::send($receiver->Email_id, 'New follower', [
+			My_Email::send($receiver['Email_id'], 'New follower', [
 				'template' => 'friend-invitation',
-				'assign' => ['name' => $user->Name],
+				'assign' => ['name' => $user['Name']],
 				'settings' => $this->settings
 			]);
 
@@ -487,7 +487,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$receiver_id = $this->_request->getPost('receiver_id');
 
 			if (!v::intVal()->validate($receiver_id))
@@ -496,7 +496,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($receiver_id, true));
 			}
 
-			if ($user->id == $receiver_id)
+			if ($user['id'] == $receiver_id)
 			{
 				throw new RuntimeException('Receiver ID cannot be the same');
 			}
