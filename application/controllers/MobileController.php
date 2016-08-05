@@ -191,11 +191,11 @@ class MobileController extends Zend_Controller_Action
 		try
 		{
 			$data = $this->_request->getPost();
-			$form = new Application_Form_Registration;
+			$registrationForm = new Application_Form_Registration;
 
-			if (!$form->isValid($data))
+			if (!$registrationForm->isValid($data))
 			{
-				$this->_formValidateException($form);
+				$this->_formValidateException($registrationForm);
 			}
 
 			$addressForm = new Application_Form_Address;
@@ -248,11 +248,13 @@ class MobileController extends Zend_Controller_Action
 						$this->view->baseUrl('uploads/' . $name);
 			}
 
-			$user = (new Application_Model_User)->register($data+['Status' => 'active']);
-			$accessToken = (new Application_Model_Loginstatus)->save($user, true);
+			$user = (new Application_Model_User)
+				->register($data+['Status' => 'active']);
+			$accessToken = (new Application_Model_Loginstatus)
+				->save($user, true);
 
 			My_Email::send(
-				$user->Email_id,
+				$user['Email_id'],
 				'seearound.me new Registration',
 				[
 					'template' => 'ws-registration',
