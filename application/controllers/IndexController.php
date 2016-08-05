@@ -127,16 +127,16 @@ class IndexController extends Zend_Controller_Action
 
 						$confirmModel = new Application_Model_UserConfirm;
 						$confirm = $confirmModel->save([
-							'user_id' => $user->id,
+							'user_id' => $user['id'],
 							'type_id' => $confirmModel::$type['registration']
 						]);
 
 						My_Email::send(
-							$user->Email_id,
+							$user['Email_id'],
 							'SeeAround.me Registration',
 							[
 								'template' => 'registration',
-								'assign' => ['user' => $user, 'code' => $confirm->code],
+								'assign' => ['code' => $confirm->code],
 								'settings' => $settings
 							]
 						);
@@ -144,7 +144,7 @@ class IndexController extends Zend_Controller_Action
 						$loginId = (new Application_Model_Loginstatus)->save($user);
 
 						Zend_Auth::getInstance()->getStorage()->write(array(
-							"user_id" => $user->id,
+							"user_id" => $user['id'],
 							"login_id" => $loginId
 						));
 

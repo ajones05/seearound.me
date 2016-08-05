@@ -300,7 +300,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public function register(array $data)
 	{
-		$address = (new Application_Model_Address)->createRow([
+		$addressId = (new Application_Model_Address)->insert([
 			'latitude' => $data['latitude'],
 			'longitude' => $data['longitude'],
 			'street_name' => My_StringHelper::trimToNull(
@@ -318,21 +318,23 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'timezone' => My_StringHelper::trimToNull(
 				My_ArrayHelper::getProp($data, 'timezone'))
 		]);
-		$address->save();
 
-		$user = $this->createRow([
-			'address_id' => $address->id,
+		$user = [
 			'Name' => $data['name'],
 			'Email_id' => $data['email'],
 			'password' => $this->encryptPassword($data['password']),
-			'Creation_date' => new Zend_Db_Expr('NOW()'),
 			'Status' => $data['Status'],
-			'image_id' => My_ArrayHelper::getProp($data, 'image_id')
+			'image_id' => My_ArrayHelper::getProp($data, 'image_id'),
+			'image_name' => My_ArrayHelper::getProp($data, 'image_name')
+		];
+
+		$user['id'] = $this->insert($user + [
+			'address_id' => $addressId,
+			'Creation_date' => new Zend_Db_Expr('NOW()')
 		]);
-		$user->save();
 
 		(new Application_Model_Invitestatus)->insert([
-			'user_id' => $user->id,
+			'user_id' => $user['id'],
 			'invite_count' => 10,
 			'created' => new Zend_Db_Expr('NOW()')
 		]);
