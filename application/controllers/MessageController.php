@@ -210,7 +210,7 @@ class MessageController extends Zend_Controller_Action
 
 			$response['total'] = $messagesCount < $limit ? $messagesCount :
 				$messageModel->getReplyCount($conversation->id);
-        }
+		}
 		catch (Exception $e)
 		{
 			$response = array(
@@ -262,48 +262,49 @@ class MessageController extends Zend_Controller_Action
 
 			$data = $form->getValues();
 
-			$conversation = (new Application_Model_Conversation)->save(array(
-				'from_id' => $user->id,
-				'to_id' => $receiver->id,
+			$conversation_id = (new Application_Model_Conversation)->insert([
+				'created_at' => new Zend_Db_Expr('NOW()'),
+				'status' => new Zend_Db_Expr('0'),
+				'from_id' => $user['id'],
+				'to_id' => $receiver['id'],
 				'subject' => $data['subject']
-			));
+			]);
 
-			$message = (new Application_Model_ConversationMessage)->save(array(
-				'conversation_id' => $conversation->id,
-				'from_id' => $user->id,
-				'to_id' => $receiver->id,
+			(new Application_Model_ConversationMessage)->insert([
+				'conversation_id' => $conversation_id,
+				'from_id' => $user['id'],
+				'to_id' => $receiver['id'],
 				'body' => $data['message'],
-				'is_first' => 1
-			));
-
-			$settings = Application_Model_Setting::getInstance();
+				'is_first' => 1,
+				'is_read' => 0,
+				'created_at' => new Zend_Db_Expr('NOW()'),
+				'status' => 0
+			]);
 
 			My_Email::send(
-				array($receiver->Name => $receiver->Email_id),
+				[$receiver['Name'] => $receiver['Email_id']],
 				$data['subject'],
-				array(
+				[
 					'template' => 'message-notification',
-					'assign' => array(
+					'assign' => [
 						'sender' => $user,
-						'receiver' => $receiver,
 						'subject' => $data['subject'],
 						'message' => $data['message']
-					),
-					'settings' => $settings
-				)
+					]
+				]
 			);
 
-			$response = array('status' => 1);
+			$response = ['status' => 1];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'error' => array(
+				'error' => [
 					'message' => $e instanceof RuntimeException ?
 						$e->getMessage() : 'Internal Server Error'
-				)
-			);
+				]
+			];
 		}
 
 		$this->_helper->json($response);
@@ -355,27 +356,30 @@ class MessageController extends Zend_Controller_Action
 					var_export($body, true));
 			}
 
-			$messageModel = new Application_Model_ConversationMessage;
-			$message = $messageModel->save(array(
-				'conversation_id' => $conversation->id,
-				'from_id' => $user->id,
-				'to_id' => $user->id == $conversation->from_id ? $conversation->to_id :
-					$conversation->from_id,
-				'body' => $body,
-			));
+			$receiverId = $user['id'] == $conversation->from_id ? $conversation->to_id :
+				$conversation->from_id;
 
-			$createdAt = (new DateTime($message->created_at))
-				->setTimezone(Application_Model_User::getTimezone($user));
+			(new Application_Model_ConversationMessage)->insert([
+				'conversation_id' => $id,
+				'from_id' => $user['id'],
+				'to_id' => $receiverId,
+				'body' => $body,
+				'is_read' => 0,
+				'created_at' => new Zend_Db_Expr('NOW()'),
+				'status' => 0
+			]);
 
 			$response = [
 				'status' => 1,
 				'message' => [
-					'receiver_id' => $message->to_id,
+					'receiver_id' => $receiverId,
 					'receiver_read' => 0,
 					'reply_text' => $body,
-					'created' => $createdAt->format(My_Time::OUTPUT),
+					'created' => (new DateTime)->setTimezone(
+						Application_Model_User::getTimezone($user))
+						->format(My_Time::OUTPUT),
 					'sender' => [
-						'name' => $user->Name,
+						'name' => $user['Name'],
 						'image' => $this->view->baseUrl(
 							Application_Model_User::getThumb($user, '55x55'))
 					]

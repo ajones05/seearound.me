@@ -550,7 +550,7 @@ class MobileController extends Zend_Controller_Action
   {
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$other_user_id = $this->_request->getPost('other_user_id');
 
 			if (!v::intVal()->validate($other_user_id))
@@ -559,7 +559,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
-			if ($user->id == $other_user_id)
+			if ($user['id'] == $other_user_id)
 			{
 				throw new RuntimeException('Other user ID cannot be the same');
 			}
@@ -570,20 +570,22 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
+			$friendStatus = (new Application_Model_Friends)
+				->isFriend($user, $profile);
+
 			$response = [
 				'status' => 'SUCCESS',
-				'friends' => (new Application_Model_Friends)
-					->isFriend($user, $profile) ? 1 : 0,
+				'friends' => $friendStatus ? 1 : 0,
 				'result' => My_ArrayHelper::filter([
-					'id' => $profile->id,
+					'id' => $profile['id'],
 					'karma' => Application_Model_User::getKarma($profile),
-					'Name' => $profile->Name,
+					'Name' => $profile['Name'],
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($profile, '320x320')),
-					'Email_id' => $profile->Email_id,
+					'Email_id' => $profile['Email_id'],
 					'Gender' => Application_Model_User::getGender($profile),
-					'Activities' => $profile->activity,
-					'Birth_date' => $profile->Birth_date
+					'Activities' => $profile['activity'],
+					'Birth_date' => $profile['Birth_date']
 				])
 			];
 		}
@@ -610,7 +612,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$receiver_id = $this->_request->getPost('reciever_id');
 
 			if (!v::intVal()->validate($receiver_id))
@@ -619,7 +621,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($receiver_id, true));
 			}
 
-			if ($user->id == $receiver_id)
+			if ($user['id'] == $receiver_id)
 			{
 				throw new RuntimeException('Receiver ID cannot be the same');
 			}
@@ -647,6 +649,7 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$conversationModel = new Application_Model_Conversation;
+			$isNewConversation = $conversation_id == null;
 
 			if ($conversation_id)
 			{
@@ -656,8 +659,8 @@ class MobileController extends Zend_Controller_Action
 						var_export($conversation_id, true));
 				}
 
-				if ($conversation->from_id != $user->id && $conversation->to_id != $user->id ||
-					$conversation->from_id != $receiver->id && $conversation->to_id != $receiver->id)
+				if ($conversation->from_id != $user['id'] && $conversation->to_id != $user['id'] ||
+					$conversation->from_id != $receiver['id'] && $conversation->to_id != $receiver['id'])
 				{
 					throw new RuntimeException('You are not authorized to access this action');
 				}
@@ -672,43 +675,50 @@ class MobileController extends Zend_Controller_Action
 						var_export($subject, true));
 				}
 
-				$conversation = $conversationModel->save([
-					'from_id' => $user->id,
-					'to_id' => $receiver->id,
-					'subject' => $subject
+				$conversation_id = $conversationModel->insert([
+					'from_id' => $user['id'],
+					'to_id' => $receiver['id'],
+					'subject' => $subject,
+					'created_at' => new Zend_Db_Expr('NOW()'),
+					'status' => 0
 				]);
 			}
 
-			$message = (new Application_Model_ConversationMessage)->save([
-				'conversation_id' => $conversation->id,
-				'from_id' => $user->id,
-				'to_id' => $receiver->id,
+			$message_id = (new Application_Model_ConversationMessage)->insert([
+				'conversation_id' => $conversation_id,
+				'from_id' => $user['id'],
+				'to_id' => $receiver['id'],
 				'body' => $body,
-				'is_first' => !$conversation_id ? 1 : 0
+				'is_first' => $isNewConversation ? 1 : 0,
+				'is_read' => 0,
+				'created_at' => new Zend_Db_Expr('NOW()'),
+				'status' => 0
 			]);
 
+			$conversationSubject = $isNewConversation ? $subject : $conversation->subject;
+
 			My_Email::send(
-				[$receiver->Name => $receiver->Email_id],
-				$conversation->subject,
+				[$receiver['Name'] => $receiver['Email_id']],
+				$conversationSubject,
 				[
 					'template' => 'message-notification',
 					'assign' => [
 						'sender' => $user,
-						'receiver' => $receiver,
-						'subject' => $conversation->subject,
-						'message' => $message->body
+						'subject' => $conversationSubject,
+						'message' => $body
 					]
 				]
 			);
+
+			$createdAt = new DateTime(!$isNewConversation ? $conversation->created_at : '');
 
 			$response = [
 				'status' => "SUCCESS",
 				'message' => "Message Send Successfully",
 				'result' => [
-					'message_id' => $message->id,
-					'conversation_id' => $conversation->id,
-					'created' => (new DateTime($conversation->created_at))
-						->setTimezone(Application_Model_User::getTimezone($user))
+					'message_id' => $message_id,
+					'conversation_id' => $conversation_id,
+					'created' => $createdAt->setTimezone(Application_Model_User::getTimezone($user))
 						->format(My_Time::SQL)
 				]
 			];
@@ -736,7 +746,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -757,11 +767,11 @@ class MobileController extends Zend_Controller_Action
 					'user_name' => 'u.Name',
 					'user_email' => 'u.Email_id'
 				])
-				->where('c.to_id=?', $user->id)
+				->where('c.to_id=?', $user['id'])
 				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
 					'cm1.is_first=1)', '')
 				->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
-					'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
+					'cm3.is_read=0 AND cm3.to_id=' . $user['id'] . ')', '')
 				->where('cm3.id IS NOT NULL')
 				->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', '')
 				->group('c.id')
@@ -820,7 +830,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -839,7 +849,7 @@ class MobileController extends Zend_Controller_Action
 
 			if ($other_user_id != null)
 			{
-				if ($user->id == $other_user_id)
+				if ($user['id'] == $other_user_id)
 				{
 					throw new RuntimeException('Other User ID cannot be the same');
 				}
@@ -869,7 +879,7 @@ class MobileController extends Zend_Controller_Action
 				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
 					'cm1.is_first=1)', '')
 				->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
-					'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
+					'cm3.is_read=0 AND cm3.to_id=' . $user['id'] . ')', '')
 				->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', '')
 				->group('c.id')
 				->order('c.created_at DESC')
@@ -877,22 +887,20 @@ class MobileController extends Zend_Controller_Action
 
 			if ($other_user_id)
 			{
-				$query->where('(c.to_id=?',  $user->id)
-					->where('c.from_id=?)', $other_user->id)
-					->orWhere('(c.to_id=?',  $other_user->id)
-					->where('c.from_id=?)', $user->id);
+				$query->where('(c.to_id=' . $user['id'] . ' AND c.from_id=' . $other_user['id'] . ') OR ' .
+					'(c.to_id=' . $other_user['id'] . ' AND c.from_id=' . $user['id'] . ')');
 				$response['message'] = 'Inbox Message between two user rendered Successfully';
 			}
 			else
 			{
-				$query->where('(c.to_id=?',  $user->id)
-					->orWhere('c.from_id=?)', $user->id);
+				$query->where('c.to_id=' . $user['id'] . ' OR ' .
+					'c.from_id=' . $user['id']);
 				$response['message'] = 'Message list Send Successfully';
 			}
 
 			$messages = $model->fetchAll($query);
 
-			if (count($messages))
+			if ($messages->count())
 			{
 				$userTimezone = Application_Model_User::getTimezone($user);
 				foreach ($messages as $message)
@@ -938,7 +946,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -963,7 +971,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if ($user->id != $conversation->to_id && $user->id != $conversation->from_id)
+			if ($user['id'] != $conversation->to_id && $user['id'] != $conversation->from_id)
 			{
 				throw new RuntimeException('You have no permissions to access this action');
 			}
@@ -992,18 +1000,11 @@ class MobileController extends Zend_Controller_Action
 
 			$messages = $messageModel->fetchAll($query);
 
-			$updateCondition = [];
-
-			if ($conversation->to_id == $user->id)
-			{
-				$updateCondition[] = '(conversation_id=' . $conversation->id .
-					' AND is_first=1)';
-			}
-
 			$response = ['status' => 'SUCCESS'];
 
 			if ($messages->count())
 			{
+				$updateCondition = [];
 				$userTimezone = Application_Model_User::getTimezone($user);
 				foreach ($messages as $message)
 				{
@@ -1026,17 +1027,17 @@ class MobileController extends Zend_Controller_Action
 						'is_read' => $message->is_read
 					];
 
-					if ($message->to_id == $user->id)
+					if ($message->to_id == $user['id'])
 					{
 						$updateCondition[] = 'id=' . $message->id;
 					}
 				}
-			}
 
-			if (count($updateCondition))
-			{
-				$messageModel->update(['is_read' => 1],
-					implode(' OR ', $updateCondition));
+				if (count($updateCondition))
+				{
+					$messageModel->update(['is_read' => 1],
+						implode(' OR ', $updateCondition));
+				}
 			}
 		}
 		catch (Exception $e)
@@ -1062,7 +1063,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$post_id = $this->_request->getPost('post_id');
 
 			if (!v::stringType()->validate($post_id))
@@ -1091,7 +1092,7 @@ class MobileController extends Zend_Controller_Action
 						var_export($id, true));
 				}
 
-				switch ($user->id)
+				switch ($user['id'])
 				{
 					case $conversation->from_id:
 						break;
@@ -1099,7 +1100,7 @@ class MobileController extends Zend_Controller_Action
 						$conversationIds[] = $conversation->id;
 						break;
 					default:
-						throw new RuntimeException('You are not authorized to access this action', -1);
+						throw new RuntimeException('You are not authorized to access this action');
 				}
 			}
 
@@ -1138,7 +1139,7 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = $this->getUserByToken();
+			$user = $this->getUserByToken(true);
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -1155,7 +1156,7 @@ class MobileController extends Zend_Controller_Action
 					var_export($other_user_id, true));
 			}
 
-			if ($user->id == $other_user_id)
+			if ($user['id'] == $other_user_id)
 			{
 				throw new RuntimeException('Other user ID cannot be the same');
 			}
@@ -1183,10 +1184,10 @@ class MobileController extends Zend_Controller_Action
 					'receiver_email' => 'ru.Email_id'
 				])
 				->joinLeft(['c' => 'conversation'], 'c.id=cm.conversation_id', '')
-				->where('(c.to_id=?',  $user->id)
+				->where('(c.to_id=?',  $user['id'])
 				->where('c.from_id=?)', $other_user_id)
 				->orWhere('(c.to_id=?',  $other_user_id)
-				->where('c.from_id=?)', $user->id)
+				->where('c.from_id=?)', $user['id'])
 				->joinLeft(['su' => 'user_data'], 'su.id=cm.from_id', '')
 				->joinLeft(['ru' => 'user_data'], 'ru.id=cm.to_id', '')
 				->group('cm.id')
@@ -2690,7 +2691,7 @@ class MobileController extends Zend_Controller_Action
 
 		(new Application_Model_Loginstatus)->update([
 			'visit_time' => new Zend_Db_Expr('NOW()')
-		], 'id=' . $user['login_id']);
+		], ['token=?' => $token]);
 
 		return $user;
 	}
