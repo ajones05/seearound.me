@@ -27,6 +27,10 @@ ALTER TABLE `user_data` ADD `image_name` varchar(255) null after `image_id`;
 ALTER TABLE `user_data` ADD `public_profile` tinyint(1) not null default '0';
 ALTER TABLE `user_data` ADD `gender` tinyint(1) null;
 ALTER TABLE `user_data` ADD `activity` varchar(255) null;
+ALTER TABLE `user_data` ADD `post` int(11) not null default '0';
+ALTER TABLE `user_data` ADD `comment` int(11) not null default '0';
+ALTER TABLE `user_data` ADD `comment_other` int(11) not null default '0';
+ALTER TABLE `user_data` ADD `vote` int(11) not null default '0';
 
 --
 -- Table structure for table `user_confirm`

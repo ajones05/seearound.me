@@ -245,7 +245,6 @@ class HomeController extends Zend_Controller_Action
 
 		$this->view->auth_id = $isAuth ? $user->id : null;
 		$this->view->profile = $profile;
-		$this->view->karma = $userModel->getKarma($profile->id);
 
 		if ($isAuth && $user->id != $profile->id)
 		{

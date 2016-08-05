@@ -265,7 +265,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 					return false;
 				}
 
-				$cache->save($user->toArray(), 'user_' . $auth['user_id']);
+				$cache->save($user->toArray(), 'user_' . $auth['user_id'],
+					['user' . $auth['user_id']]);
 			}
 
 			self::$_auth = $user;
@@ -434,8 +435,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 			if ($user)
 			{
-				$this->update(['Network_id' => $network_id], 'id=' . $user->id);
-				Zend_Registry::get('cache')->remove('user_' . $user['id']);
+				$this->updateWithCache(['Network_id' => $network_id], $user);
 			}
 			else
 			{
@@ -566,7 +566,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 				$user_data['Birth_date'] = null;
 			}
 
-			$this->update($user_data, 'id=' . $user['id']);
+			$this->updateWithCache($user_data, $user);
 
 			(new Application_Model_Address)->update([
 				'address' => null,
@@ -580,8 +580,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 				'zip' => My_ArrayHelper::getProp($data, 'zip'),
 				'timezone' => My_ArrayHelper::getProp($data, 'timezone', $user['timezone'])
 			], 'id=' . $user['address_id']);
-
-			Zend_Registry::get('cache')->remove('user_' . $user['id']);
 
 			$this->_db->commit();
 		}
@@ -629,38 +627,13 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * Returns user karma.
 	 *
-	 * @param	integer $user_id
-	 * @return	array
+	 * @param mixed $user
+	 * @return array
 	 */
-	public function getKarma($user_id)
+	public static function getKarma($user)
 	{
-		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-
-		$selfStasts = $db->fetchRow($db->select()
-			->from(['n' => 'news'], [
-				'COUNT(n.id) AS post',
-				'IFNULL(SUM(n.comment), 0) as comment',
-				'IFNULL(SUM(n.vote), 0) as vote'
-			])
-			->where('n.isdeleted=0 AND n.user_id=' . $user_id)
-		);
-
-		$otherStats = $db->fetchRow($db->select()
-			->from(['c' => 'comments'], ['count(c.id) AS count'])
-			->where('c.isdeleted=0 AND c.user_id=' . $user_id)
-			->joinLeft(['n' => 'news'], 'n.id=c.news_id', '')
-			->where('n.user_id<>' . $user_id)
-		);
-
-		return [
-			'post' => $selfStasts['post'],
-			'comment' => $selfStasts['comment'],
-			'comment_other' => $otherStats['count'],
-			'vote' => $selfStasts['vote'],
-			'karma' => $selfStasts['post'] +
-				(.25 * ($selfStasts['vote'] + $selfStasts['comment'])) +
-				$otherStats['count'] * .25
-		];
+		return round($user['post'] + (.25 * ($user['vote'] + $user['comment'])) +
+				$user['comment_other'] * .25, 4);
 	}
 
 	/**
@@ -711,5 +684,24 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	public static function getTimezone($user)
 	{
 		return (new DateTimeZone($user['timezone'] ?: 'UTC'));
+	}
+
+	/**
+	 * Updates existing rows.
+	 *
+	 * @param array $data
+	 * @param mixed $user
+	 * @return integer
+	 */
+	public function updateWithCache(array $data, $user)
+	{
+		$result = $this->update($data, 'id=' . $user['id']);
+
+		Zend_Registry::get('cache')->clean(
+			Zend_Cache::CLEANING_MODE_MATCHING_ANY_TAG,
+			['user' . $user['id']]
+		);
+
+		return $result;
 	}
 }
