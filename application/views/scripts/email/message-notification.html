@@ -1,7 +1,7 @@
 <?php
 $url = $this->serverUrl() . $this->baseUrl('/');
 ?>
-<p><?php echo $this->sender->Name; ?> has sent you a message on SeeAround.me.</p>
+<p><?php echo $this->sender['Name']; ?> has sent you a message on SeeAround.me.</p>
 <p><b>Subject:</b> <?php echo $this->subject; ?></p>
 <p><b>Message:</b> <?php echo $this->message; ?></p>
 <p>Please log in to SeeAround.me to reply to this message: <a href="<?php echo $url; ?>"><?php echo $url; ?></a> Please do not reply to this email</p>

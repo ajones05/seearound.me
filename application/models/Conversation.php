@@ -5,6 +5,7 @@
 class Application_Model_Conversation extends Zend_Db_Table_Abstract
 {
 	/**
+	 * the table name.
 	 * @var	string
 	 */
 	protected $_name = 'conversation';
@@ -12,34 +13,18 @@ class Application_Model_Conversation extends Zend_Db_Table_Abstract
 	/**
 	 * @var	array
 	 */
-	protected $_referenceMap = array(
-		'To' => array(
+	protected $_referenceMap = [
+		'To' => [
 			'columns' => 'to_id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'id'
-		),
-		'From' => array(
+		],
+		'From' => [
 			'columns' => 'from_id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'id'
-		),
-	);
-
-	/**
-	 * Saves form.
-	 *
-	 * @param	array	$data
-	 * @return	Zend_Db_Table_Row_Abstract
-	 */
-	public function save(array $data)
-	{
-		$conversation = $this->createRow($data);
-		$conversation->created_at = new Zend_Db_Expr('NOW()');
-		$conversation->status = new Zend_Db_Expr('0');
-		$conversation->save();
-
-		return $conversation;
-	}
+		],
+	];
 
 	/**
 	 * Finds record by ID.
