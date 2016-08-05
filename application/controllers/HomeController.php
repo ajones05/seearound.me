@@ -167,8 +167,7 @@ class HomeController extends Zend_Controller_Action
 
 			if ($user['image_id'])
 			{
-				Application_Model_Image::findById($user['image_id'])
-					->deleteImage();
+				Application_Model_Image::findById($user['image_id'])->deleteImage();
 			}
 
 			$image = (new Application_Model_Image)->save('www/upload', $name, [
@@ -178,7 +177,7 @@ class HomeController extends Zend_Controller_Action
 			]);
 
 			$userModel->update([
-				'image_id' => $image->id,
+				'image_id' => $image['id'],
 				'image_name' => $name
 			], 'id=' . $user['image_id']);
 
