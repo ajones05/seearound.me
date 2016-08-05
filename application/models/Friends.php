@@ -28,7 +28,7 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 		'FriendReceiver' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_User',
-			'refColumns' => 'reciever_id'
+			'refColumns' => 'receiver_id'
 		],
 		'FriendSender' => [
 			'columns' => 'id',
@@ -50,28 +50,74 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 		return $this->fetchRow(
 			$this->select()
 				->where('status=' . $this->status['confirmed'])
-				->where('((sender_id=' . $user1->id . ' AND reciever_id=' . $user2->id . ')')
-				->orWhere('(sender_id=' . $user2->id . ' AND reciever_id=' . $user1->id . '))')
+				->where('((sender_id=' . $user1->id . ' AND receiver_id=' . $user2->id . ')')
+				->orWhere('(sender_id=' . $user2->id . ' AND receiver_id=' . $user1->id . '))')
 		);
 	}
 
 	/**
 	 * Find records by user ID.
 	 *
-	 * @param	integer	$user_id
-	 *
-	 * @return	array
+	 * @param mixed $user
+	 * @param array $options
+	 * @return array
 	 */
-	public function findAllByUserId($user_id, $limit, $offset)
+	public function findAllByUserId($user, array $options=[])
 	{
-		$result = $this->fetchAll(
-			$this->select()
-				->where('reciever_id=' . $user_id . ' OR sender_id=' . $user_id)
-				->where('status=?', 1)
-				->limit($limit, $offset)
-		);
+		$query = $this->select()->setIntegrityCheck(false)
+			->from(['f' => 'friends'])
+			->where('f.receiver_id=' . $user['id'] . ' OR f.sender_id=' . $user['id'])
+			->where('f.status=' . $this->status['confirmed'])
+			->joinLeft(['ur' => 'user_data'], 'ur.id=f.receiver_id', [
+				'receiver_name' => 'Name',
+				'receiver_email' => 'Email_id',
+				'receiver_image_id' => 'image_id',
+				'receiver_image_name' => 'image_name',
+				'receiver_birthday' => 'Birth_date',
+				'receiver_gender' => 'gender',
+				'receiver_activity' => 'activity'
+			])
+			->joinLeft(['us' => 'user_data'], 'us.id=f.receiver_id', [
+				'sender_name' => 'Name',
+				'sender_email' => 'Email_id',
+				'sender_image_id' => 'image_id',
+				'sender_image_name' => 'image_name',
+				'sender_birthday' => 'Birth_date',
+				'sender_gender' => 'gender',
+				'sender_activity' => 'activity'
+			])
+			->limit($options['limit'],
+				My_ArrayHelper::getProp($options, 'offset', 0));
 
-		return $result;
+		if (!empty($options['address']))
+		{
+			$query->joinLeft(['ar' => 'address'], 'ar.id=ur.address_id', [
+				'receiver_address' => 'address',
+				'receiver_latitude' => 'latitude',
+				'receiver_longitude' => 'longitude',
+				'receiver_street_name' => 'street_name',
+				'receiver_street_number' => 'street_number',
+				'receiver_city' => 'city',
+				'receiver_state' => 'state',
+				'receiver_country' => 'country',
+				'receiver_zip' => 'zip',
+				'receiver_timezone' => 'timezone'
+			]);
+			$query->joinLeft(['as' => 'address'], 'as.id=us.address_id', [
+				'sender_address' => 'address',
+				'sender_latitude' => 'latitude',
+				'sender_longitude' => 'longitude',
+				'sender_street_name' => 'street_name',
+				'sender_street_number' => 'street_number',
+				'sender_city' => 'city',
+				'sender_state' => 'state',
+				'sender_country' => 'country',
+				'sender_zip' => 'zip',
+				'sender_timezone' => 'timezone'
+			]);
+		}
+
+		return $this->fetchAll($query);
 	}
 
 	/**
@@ -86,7 +132,7 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 		$result = $this->fetchRow(
 			$this->select()
 				->from($this, array('count(*) as result_count'))
-				->where('(reciever_id=' . $user_id . ' OR sender_id=' . $user_id . ')')
+				->where('(receiver_id=' . $user_id . ' OR sender_id=' . $user_id . ')')
 				->where('status=?', 1)
 		);
 
@@ -109,7 +155,7 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 		$result = $this->fetchRow(
 			$this->select()
 				->from($this, array('count(*) as result_count'))
-				->where('reciever_id=?', $receiver_id)
+				->where('receiver_id=?', $receiver_id)
 				->where('status=1')
 				->where('notify=0')
 		);

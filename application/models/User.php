@@ -78,7 +78,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'FriendReceiver' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Friends',
-			'refColumns' => 'reciever_id'
+			'refColumns' => 'receiver_id'
 		],
 		'FriendSender' => [
 			'columns' => 'id',
@@ -460,7 +460,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 					{
 						$friendId = $friendModel->insert([
 							'sender_id' => $tmpUser->sender_id,
-							'reciever_id' => $user['id'],
+							'receiver_id' => $user['id'],
 							'status' => $friendModel->status['confirmed'],
 							'source' => 'herespy'
 						]);
@@ -613,11 +613,12 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 * Returns user gender label.
 	 *
 	 * @param mixed $row
+	 * @param string $alias
 	 * @return string
 	 */
-	public static function getGender($row)
+	public static function getGender($row, $alias='')
 	{
-		$gender = My_ArrayHelper::getProp($row, 'gender');
+		$gender = My_ArrayHelper::getProp($row, $alias.'gender');
 		return $gender !== null ? self::$genderId[$gender] : '';
 	}
 

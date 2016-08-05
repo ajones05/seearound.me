@@ -303,7 +303,7 @@ class ContactsController extends Zend_Controller_Action
 			{
 				$friendId = $friendModel->insert([
 					'sender_id' => $user['id'],
-					'reciever_id' => $facebookUser['id'],
+					'receiver_id' => $facebookUser['id'],
 					'status' => $friendModel->status['confirmed'],
 					'source' => 'connect'
 				]);
@@ -406,8 +406,8 @@ class ContactsController extends Zend_Controller_Action
 					var_export($offset, true));
 			}
 
-			$friendModel = new Application_Model_Friends;
-			$friends = $friendModel->findAllByUserId($user->id, 5, $offset);
+			$friends = (new Application_Model_Friends)->findAllByUserId($user,
+				['limit' => 5, 'offset' => $offset, 'address' => true]);
 
 			$response = ['status' => 1];
 
@@ -415,18 +415,17 @@ class ContactsController extends Zend_Controller_Action
 			{
 				foreach ($friends as $friend)
 				{
-					$friendUserId = $friend->reciever_id == $user->id ? $friend->sender_id : $friend->reciever_id;
-					// TODO: merge
-					$friendUser = Application_Model_User::findById($friendUserId);
+					$alias = $friend['receiver_id'] == $user['id'] ?
+						'receiver_' : 'sender_';
 
 					$response['friends'][] = [
-						'id' => $friendUser->id,
+						'id' => $friend[$alias.'id'],
+						'name' => $friend[$alias.'name'],
 						'image' => $this->view->baseUrl(
-							Application_Model_User::getThumb($friendUser, '55x55')),
-						'name' => $friendUser->Name,
-						'address' => Application_Model_Address::format($friendUser),
-						'latitude' => $friendUser->latitude,
-						'longitude' => $friendUser->longitude
+							Application_Model_User::getThumb($friend,'55x55',['alias'=>$alias])),
+						'address' => Application_Model_Address::format($friend,['alias'=>$alias]),
+						'latitude' => $friend[$alias.'latitude'],
+						'longitude' => $friend[$alias.'longitude']
 					];
 				}
 			}
@@ -507,7 +506,7 @@ class ContactsController extends Zend_Controller_Action
 
 					$friendId = $friendModel->insert([
 						'sender_id' => $user['id'],
-						'reciever_id' => $receiver['id'],
+						'receiver_id' => $receiver['id'],
 						'status' => $friendModel->status['confirmed'],
 						'source' => 'herespy'
 					]);
@@ -548,7 +547,7 @@ class ContactsController extends Zend_Controller_Action
 				$response['total'] = $friendModel->fetchRow(
 					$friendModel->select()
 						->from($friendModel, ['COUNT(*) as count'])
-						->where('reciever_id=?', $user['id'])
+						->where('receiver_id=?', $user['id'])
 						->where('status=' . $friendModel->status['confirmed'])
 						->where('notify=0')
 				)->count;
@@ -642,7 +641,7 @@ class ContactsController extends Zend_Controller_Action
 			$friendModel = new Application_Model_Friends;
 			$friends = $friendModel->fetchAll(
 				$friendModel->select()
-					->where('reciever_id=?', $user->id)
+					->where('receiver_id=?', $user->id)
 					->where('status=1')
 					->where('notify=0')
 					->limit(10)
@@ -671,7 +670,7 @@ class ContactsController extends Zend_Controller_Action
 
 				$friendModel->update(
 					['notify' => 1],
-					['reciever_id=' . $user->id, 'status=1']
+					'receiver_id=' . $user->id, 'status=1'
 				);
 
 				$response['data'] = $data;
