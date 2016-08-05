@@ -56,7 +56,7 @@ class Application_Model_Address extends Zend_Db_Table_Abstract
 	public static function format($address, array $options=['street'=>true])
 	{
 		$output = '';
-		$alias = My_arrayHelper::getProp($options, 'alias', '');
+		$alias = My_ArrayHelper::getProp($options, 'alias', '');
 
 		if (!empty($options['street']))
 		{
