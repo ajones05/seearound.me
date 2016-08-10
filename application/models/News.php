@@ -1,84 +1,11 @@
 <?php
-use Embed\Embed;
-
-class Application_Model_NewsRow extends Zend_Db_Table_Row_Abstract
-{
-	/**
-	 * Renders news content.
-	 *
-	 * @param  mixed	$limit
-	 * @return string
-	 */
-	public function renderContent($limit = false)
-	{
-		$linksCount = preg_match_all('/' . My_CommonUtils::$link_regex . '/', $this->news);
-
-		$output = '';
-
-		for ($length = $i = 0; $i < strlen($this->news);)
-		{
-			$link_limit = false;
-
-			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($this->news, $i), $matches))
-			{
-				if ($linksCount > 1 || !$this->link_id)
-				{
-					$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '" target="_blank">';
-
-					if ($limit && $length + strlen($matches[0]) > $limit)
-					{
-						$output .= My_StringHelper::stringLimit($matches[0], $limit - $length) . '...';
-						$link_limit = true;
-					}
-					else
-					{
-						$output .= $matches[0];
-						$length += strlen($matches[0]);
-					}
-
-					$output .= '</a>';
-				}
-
-				$i += strlen($matches[0]);
-			}
-			else
-			{
-				$output .= preg_replace('/\n/', '<br>', $this->news[$i++]);
-				$length++;
-			}
-
-			if ($limit && ($link_limit || $length > $limit))
-			{
-				$output = trim($output);
-
-				if (!$link_limit)
-				{
-					$output .= '...';
-				}
-
-				$output .= ' <a href="#" class="moreButton">More</a>';
-
-				break;
-			}
-		}
-
-		if ($this->link_id)
-		{
-			$output .= My_ViewHelper::render('post/_link', ['post' => $this]);
-		}
-
-		return preg_replace('/\s{2,}/', ' ', $output);
-	}
-}
-
+/**
+ * This is the model class for table "image".
+ */
 class Application_Model_News extends Zend_Db_Table_Abstract
 {
 	/**
-	 * @var	Application_Model_News
-	 */
-	protected static $_instance;
-
-	/**
+	 * The table name.
 	 * @var string
 	 */
 	public static $imagePath = 'uploads';
@@ -92,19 +19,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		'960x960' => 'newsimages'
 	];
 
-    /**
-     * The table name.
-     *
-     * @var string
-     */
-    protected $_name = 'news';
-
-    /**
-     * Classname for row.
-     *
-     * @var string
-     */
-    protected $_rowClass = 'Application_Model_NewsRow';
+	/**
+	 * The table name.
+	 * @var string
+	 */
+	protected $_name = 'news';
 
 	/**
 	 * @var	array
@@ -125,22 +44,22 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_User',
 			'refColumns' => 'user_id'
-        ],
+		],
 		'Address' => [
 			'columns' => 'address_id',
 			'refTableClass' => 'Application_Model_Address',
 			'refColumns' => 'id'
-        ],
+		],
 		'Comments' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Comments',
 			'refColumns' => 'news_id'
-        ],
+			],
 		'Links' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_NewsLink',
 			'refColumns' => 'news_id'
-        ],
+		],
 		'Voting' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Voting',
@@ -336,8 +255,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * @param	array $options
 	 * @return	boolean
 	 */
-    public static function checkId($news_id, &$news, array $options=[])
-    {
+	public static function checkId($news_id, &$news, array $options=[])
+	{
 		if ($news_id == null)
 		{
 			return false;
@@ -346,14 +265,14 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		$news = self::findById($news_id, $options);
 
 		return $news != null;
-    }
+	}
 
 	/**
 	 * Finds record by ID.
 	 *
 	 * @param	integer	$id
 	 * @param	array $options
-	 * return	mixed If success Application_Model_NewsRow, otherwise NULL
+	 * return	mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
 	public static function findById($id, array $options=[])
 	{
@@ -377,196 +296,153 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		return $result;
 	}
 
-    /**
-     * Inserts a new row.
-     *
-     * @param  array  $data  Column-value pairs.
-     * @return mixed         The primary key of the row inserted.
-     */
-    public function insert(array $data)
-    {
-		$data['updated_date'] = new Zend_Db_Expr('NOW()');
-
-		return parent::insert($data);
-	}
-
 	/**
 	 * Saves form.
 	 *
-	 * @param	array $postData
-	 * @param	Application_Model_NewsRow $post
-	 * @return	Application_Model_NewsRow
+	 * @param Zend_Form $form
+	 * @param array|Zend_Db_Table_Row_Abstract $user
+	 * @param array $address
+	 * @param array $image
+	 * @param array $thumbs
+	 * @param array $link
+	 * @param array|Zend_Db_Table_Row_Abstract $post
+	 * @return array
 	 */
-	public function save(array $data, $post = null)
+	public function save(Zend_Form $form, $user, &$address, &$image=null,
+		&$thumbs=null, &$link=null, &$post=null)
 	{
-		$this->_db->beginTransaction();
+		$data = $form->getValues();
 
-		try
+		$saveData = ['news' => $data['body']];
+
+		if (!$form->isIgnore('address'))
 		{
-			$imageModel = new Application_Model_Image;
+			$address = [
+				'address' => $data['address'],
+				'latitude' => $data['latitude'],
+				'longitude' => $data['longitude'],
+				'street_name' => $data['street_name'],
+				'street_number' => $data['street_number'],
+				'city' => $data['city'],
+				'state' => $data['state'],
+				'country' => $data['country'],
+				'zip' => $data['zip'],
+				'timezone' => $data['timezone']
+			];
 
-			if ($post == null)
+			if ($post !== null)
 			{
-				$post = $this->createRow($data+[
-					'created_date' => new Zend_Db_Expr('NOW()')
-				]);
+				$this->_db->update('address', $address, 'id=' . $post['address_id']);
 			}
 			else
 			{
-				$link = $post->findParentRow('Application_Model_NewsLink');
-
-				if ($link)
-				{
-					if ($link->image_id)
-					{
-						$link->findParentRow('Application_Model_Image')->deleteImage();
-					}
-
-					$link->delete();
-				}
-
-				$post->setFromArray($data+[
-					'updated_date' => new Zend_Db_Expr('NOW()')
-				]);
+				$this->_db->insert('address', $address);
+				$saveData['address_id'] = $this->_db->lastInsertId('address');
 			}
-
-			if ($post->image_id != null && !empty($data['delete_image']))
-			{
-				Application_Model_Image::findById($post['image_id'])->deleteImage();
-				$post->image_id = null;
-			}
-			elseif (!empty($data['image']))
-			{
-				$image = $imageModel->save('uploads', $data['image'], [
-					[[320,320], 'tbnewsimages'],
-					[[448,320], 'thumb448x320', 2],
-					[[960,960], 'newsimages']
-				]);
-
-				$post->image_id = $image['id'];
-				$post->image_name = $data['image'];
-			}
-
-			$post->save();
-
-			if (empty($data['image']) && preg_match_all('/' . My_CommonUtils::$link_regex . '/', $post->news, $matches))
-			{
-				foreach ($matches[0] as $link)
-				{
-					try
-					{
-						$info = Embed::create($link);
-					}
-					catch (Exception $e)
-					{
-						continue;
-					}
-
-					$html = $info->getProvider('html');
-
-					$linkModel = new Application_Model_NewsLink;
-					$newsLink = $linkModel->createRow([
-						'news_id' => $post->id,
-						'link' => $link,
-						'link_trim' => $linkModel->trimLink($link),
-						'title' => strip_tags($info->getTitle()),
-						'description' => strip_tags($info->getDescription()),
-						'author' => strip_tags($html->bag->get('author'))
-					]);
-
-					$opengraph = $info->getProvider('opengraph');
-					$images = $opengraph->bag->get('images');
-
-					if ($images)
-					{
-						$image = $images[0];
-						$parseImageUrl = parse_url($image);
-
-						if (empty($parseImageUrl['host']))
-						{
-							$parseUrl = parse_url($link);
-							$image = My_ArrayHelper::getProp($parseUrl, 'scheme', 'http') . '://' .
-								My_ArrayHelper::getProp($parseUrl, 'host') . '/' . trim($image, '/');
-						}
-
-						try
-						{
-							$full_path = null;
-							$ext = strtolower(My_ArrayHelper::getProp(pathinfo($image), 'extension', 'tmp'));
-
-							if (!in_array($ext, My_CommonUtils::$imagetype_extension))
-							{
-								if (preg_match('/^(' . implode('|', My_CommonUtils::$imagetype_extension) . ')/', $ext, $matches))
-								{
-									$ext = $matches[0];
-								}
-							}
-
-							if ($ext != 'tmp' && !in_array($ext, My_CommonUtils::$imagetype_extension))
-							{
-								throw new Exception('Incorrect image extension: ' . $ext);
-							}
-
-							do
-							{
-								$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
-								$full_path = ROOT_PATH_WEB . '/uploads/' . $name;
-							}
-							while (file_exists($full_path));
-
-							if (!@copy($image, $full_path))
-							{
-								throw new Exception("Download image error");
-							}
-
-							$imageType = exif_imagetype($full_path);
-
-							if (!isset(My_CommonUtils::$imagetype_extension[$imageType]))
-							{
-								throw new Exception('Incorrect image type: ' . $imageType);
-							}
-
-							if (My_CommonUtils::$imagetype_extension[$imageType] != $ext)
-							{
-								$name = preg_replace('/' . $ext . '$/', My_CommonUtils::$imagetype_extension[$imageType], $name);
-
-								if (!rename($full_path, ROOT_PATH_WEB . '/uploads/' . $name))
-								{
-									throw new Exception('Rename image error: ' . $full_path);
-								}
-							}
-
-							$image = $imageModel->save('uploads', $name, [
-								[[448,320], 'thumb448x320', 2]
-							]);
-
-							$newsLink->image_id = $image->id;
-							$newsLink->image_name = $name;
-						}
-						catch (Exception $e)
-						{
-							if ($full_path != null)
-							{
-								@unlink($full_path);
-							}
-						}
-					}
-
-					$newsLink->save(true);
-					break;
-				}
-			}
-
-			$this->_db->commit();
-
-			return $post;
 		}
-		catch (Exception $e)
+
+		$timeNow = (new DateTime)->format(My_Time::SQL);
+
+		if ($post !== null)
 		{
-			$this->_db->rollBack();
-
-			throw $e;
+			$saveData['updated_date'] = $timeNow;
 		}
+		else
+		{
+			$this->_db->insert('address', $address);
+			$saveData['user_id'] = $user['id'];
+			$saveData['created_date'] = $timeNow;
+		}
+
+		$existImage = !empty($post['image_id']);
+		$uploadImage = !empty($data['image']);
+		$deleteImage = !empty($data['delete_image']);
+
+		if ($existImage && ($uploadImage || $deleteImage))
+		{
+			foreach (self::$thumbPath as $path)
+			{
+				@unlink(ROOT_PATH_WEB . '/' . $path . '/' . $post['image_name']);
+			}
+
+			$this->_db->delete('image_thumb', 'image_id=' . $post['image_id']);
+
+			@unlink(ROOT_PATH_WEB . '/' . self::$imagePath . '/' .
+				$post['image_name']);
+
+			$this->_db->delete('image', 'id=' . $post['image_id']);
+		}
+
+		if ($uploadImage)
+		{
+			$image = (new Application_Model_Image)->save(self::$imagePath, $data['image'], $thumbs, [
+				[[320,320], 'tbnewsimages'],
+				[[448,320], 'thumb448x320', 2],
+				[[960,960], 'newsimages']
+			]);
+
+			$saveData['image_id'] = $image['id'];
+			$saveData['image_name'] = $data['image'];
+		}
+		elseif ($existImage)
+		{
+			if ($deleteImage)
+			{
+				$saveData['image_id'] = null;
+				$saveData['image_name'] = null;
+			}
+			else
+			{
+				$image = [
+					'id' => $post['image_id'],
+					'path' => self::$imagePath . '/' . $post['image_name']
+				];
+			}
+		}
+
+		if ($post !== null)
+		{
+			$this->update($saveData, 'id=' . $post['id']);
+		}
+		else
+		{
+			$post = ['id' => $this->insert($saveData)];
+		}
+
+		if (!empty($post['link_id']))
+		{
+			foreach (Application_Model_NewsLink::$thumbPath as $path)
+			{
+				@unlink(ROOT_PATH_WEB . '/' . $path . '/' . $post['link_image_name']);
+			}
+
+			if (!empty($post['link_image_id']))
+			{
+				$this->_db->delete('image_thumb', 'image_id=' . $post['link_image_id']);
+
+				@unlink(ROOT_PATH_WEB . '/' . Application_Model_NewsLink::$imagePath .
+					'/' . $post['link_image_name']);
+
+				$this->_db->delete('image', 'id=' . $post['link_image_id']);
+			}
+
+			$this->_db->delete('news_link', 'id=' . $post['link_id']);
+		}
+
+		if (!$uploadImage && (!$existImage || $deleteImage))
+		{
+			$link = (new Application_Model_NewsLink)->saveLink([
+				'id' => $post['id'],
+				'news' => $data['body'],
+			]);
+		}
+
+		if (!is_array($post))
+		{
+			$post = $post->toArray();
+		}
+
+		return $saveData + $post;
 	}
 
 	/**
@@ -584,6 +460,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	/**
 	 * Returns most interesting order.
 	 *
+	 * @return string
 	 */
 	public function postScore()
 	{
@@ -628,5 +505,75 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		}
 
 		return self::$imagePath . '/' . $row[$imageField];
+	}
+
+	/**
+	 * Renders post content.
+	 *
+	 * @param array|Zend_Db_Table_Row_Abstract $post
+	 * @param array $options
+	 * @return string
+	 */
+	public static function renderContent($post, array $options=[])
+	{
+		$limit = My_ArrayHelper::getProp($options, 'limit');
+		$link = My_ArrayHelper::getProp($options, 'link');
+		$linksCount = preg_match_all('/' . My_CommonUtils::$link_regex . '/', $post['news']);
+
+		$output = '';
+
+		for ($length = $i = 0; $i < strlen($post['news']);)
+		{
+			$link_limit = false;
+
+			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($post['news'], $i), $matches))
+			{
+				if ($linksCount > 1 || $link === null)
+				{
+					$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '" target="_blank">';
+
+					if ($limit !== null && $length + strlen($matches[0]) > $limit)
+					{
+						$output .= My_StringHelper::stringLimit($matches[0], $limit - $length) . '...';
+						$link_limit = true;
+					}
+					else
+					{
+						$output .= $matches[0];
+						$length += strlen($matches[0]);
+					}
+
+					$output .= '</a>';
+				}
+
+				$i += strlen($matches[0]);
+			}
+			else
+			{
+				$output .= preg_replace('/\n/', '<br>', $post['news'][$i++]);
+				$length++;
+			}
+
+			if ($limit !== null && ($link_limit || $length > $limit))
+			{
+				$output = trim($output);
+
+				if (!$link_limit)
+				{
+					$output .= '...';
+				}
+
+				$output .= ' <a href="#" class="moreButton">More</a>';
+
+				break;
+			}
+		}
+
+		if ($link !== null)
+		{
+			$output .= My_ViewHelper::render('post/_link', ['link' => $link]);
+		}
+
+		return preg_replace('/\s{2,}/', ' ', $output);
 	}
 }

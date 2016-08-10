@@ -27,7 +27,8 @@ class PostController extends Zend_Controller_Action
 
 		$this->view->layout()->setLayout('posts');
 		$this->view->searchForm = new Application_Form_PostSearch;
-		$this->view->user = $user;
+		$this->view->user =
+		$this->view->owner = $user;
 
 		$postOptions = [
 			'link' => ['thumbs'=>[[448,320]]],
@@ -87,7 +88,22 @@ class PostController extends Zend_Controller_Action
 			]);
 		}
 
+		if (!empty($post['link_id']))
+		{
+			$this->view->link = [
+				'id' => $post['link_id'],
+				'link' => $post['link_link'],
+				'title' => $post['link_title'],
+				'description' => $post['link_description'],
+				'author' => $post['link_author'],
+				'image_id' => $post['link_image_id'],
+				'image_name' => $post['link_image_name']
+			];
+		}
+
 		$this->view->post = $post;
+		$this->view->hidden = true;
+
 		$this->view->headScript()->appendScript($headScript . ';');
 		$this->view->doctype('XHTML1_RDFA');
 		$this->view->headMeta()
@@ -231,6 +247,43 @@ class PostController extends Zend_Controller_Action
 
 		$this->view->addClass = ['posts'];
 		$this->view->layout()->setLayout('posts');
+		$this->_helper->viewRenderer->setNoRender(true);
+
+		if (count($posts))
+		{
+			foreach ($posts as $post)
+			{
+				$assets = [
+					'post' => $post,
+					'user' => $user,
+					'owner' => [
+						'Name' => $post['owner_name'],
+						'image_name' => $post['owner_image_name'],
+					],
+					'limit' => 350,
+					'hidden' => true
+				];
+
+				if (!empty($post['link_id']))
+				{
+					$assets['link'] = [
+						'id' => $post['link_id'],
+						'link' => $post['link_link'],
+						'title' => $post['link_title'],
+						'description' => $post['link_description'],
+						'author' => $post['link_author'],
+						'image_id' => $post['link_image_id'],
+						'image_name' => $post['link_image_name']
+					];
+				}
+
+				echo $this->view->partial('post/view.html', $assets);
+			}
+		}
+		else
+		{
+			echo $this->view->partial('post/_list_empty.html');
+		}
 	}
 
 	/**
@@ -299,15 +352,34 @@ class PostController extends Zend_Controller_Action
 
 				foreach ($result as $post)
 				{
+					$assets = [
+						'post' => $post,
+						'user' => $user,
+						'owner' => [
+							'Name' => $post['owner_name'],
+							'image_name' => $post['owner_image_name']
+						],
+						'limit' => 350
+					];
+
+					if (!empty($post['link_id']))
+					{
+						$assets['link'] = [
+							'id' => $post['link_id'],
+							'link' => $post['link_link'],
+							'title' => $post['link_title'],
+							'description' => $post['link_description'],
+							'author' => $post['link_author'],
+							'image_id' => $post['link_image_id'],
+							'image_name' => $post['link_image_name']
+						];
+					}
+
 					$data[] = [
 						$post->id,
 						$post->latitude,
 						$post->longitude,
-						$this->view->partial('post/_list_item.html', [
-							'post' => $post,
-							'user' => $user,
-							'limit' => 350
-						])
+						$this->view->partial('post/view.html', $assets)
 					];
 				}
 
@@ -511,50 +583,33 @@ class PostController extends Zend_Controller_Action
 					var_export($reset, true), -1);
 			}
 
-			$data = $this->_request->getPost();
 			$postForm = new Application_Form_News;
 			$postForm->setScenario('new');
 
-			if (!$postForm->isValid($data))
+			if (!$postForm->isValid($this->_request->getPost()))
 			{
 				throw new RuntimeException(
 					implode("\n", $postForm->getErrorMessages()));
 			}
 
-			$addressForm = new Application_Form_Address;
-
-			if (!$addressForm->isValid($data))
-			{
-				throw new RuntimeException(
-					implode("\n", $addressForm->getErrorMessages()));
-			}
-
-			$address = (new Application_Model_Address)
-				->createRow($addressForm->getValues());
-			$address->save();
-
-			$model = new Application_Model_News;
+			$postModel = new Application_Model_News;
 			$postUser = $user_id ? $customUser : $user;
-			$post = $model->save($postForm->getValues() +
-				['user_id' => $postUser['id'], 'address_id' => $address->id]);
-			// TODO: refactoring
-			$post = $model->findById($post->id, [
-				'link' => ['thumbs'=>[[448,320]]],
-				'userVote' => true,
-				'thumbs' => [[448,320],[960,960]]
-			]);
+			$post = $postModel->save($postForm, $postUser,
+				$address, $image, $thumbs, $link);
 
 			$response = [
 				'status' => 1,
 				'data' => [
 					[
-						$post->id,
-						$address->latitude,
-						$address->longitude,
-						$this->view->partial('post/_list_item.html', [
+						$post['id'],
+						$address['latitude'],
+						$address['longitude'],
+						$this->view->partial('post/view.html', [
 							'post' => $post,
-							'owner' => $postUser,
-							'user' => $user
+							'thumbs' => $thumbs,
+							'link' => $link,
+							'user' => $user,
+							'owner' => $postUser
 						])
 					]
 				]
@@ -576,15 +631,34 @@ class PostController extends Zend_Controller_Action
 
 				foreach ($result as $post)
 				{
+					$assets = [
+						'post' => $post,
+						'owner' => [
+							'Name' => $post['owner_name'],
+							'image_name' => $post['owner_image_name']
+						],
+						'user' => $user,
+						'limit' => 350
+					];
+
+					if (!empty($post['link_id']))
+					{
+						$assets['link'] = [
+							'id' => $post['link_id'],
+							'link' => $post['link_link'],
+							'title' => $post['link_title'],
+							'description' => $post['link_description'],
+							'author' => $post['link_author'],
+							'image_id' => $post['link_image_id'],
+							'image_name' => $post['link_image_name']
+						];
+					}
+
 					$response['data'][] = [
 						$post->id,
 						$post->latitude,
 						$post->longitude,
-						$this->view->partial('post/_list_item.html', [
-							'post' => $post,
-							'user' => $user,
-							'limit' => 350
-						])
+						$this->view->partial('post/view.html', $assets)
 					];
 				}
 			}
@@ -611,7 +685,7 @@ class PostController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-    public function editAction()
+	public function editAction()
 	{
 		try
 		{
@@ -677,33 +751,26 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$data = $this->_request->getPost();
-
-			// TODO: change post body field name
-			if (isset($data['body']))
-			{
-				$data['news'] = $data['body'];
-			}
-
-			$postForm = new Application_Form_News;
+			$postForm = new Application_Form_News(['ignore' => ['address']]);
 			$postForm->setScenario('before-save');
 
-			if (!$postForm->isValid($data))
+			if (!$postForm->isValid($this->_request->getPost()))
 			{
 				throw new RuntimeException(
 					implode("\n", $postForm->getErrorMessages()));
 			}
 
 			$linkModel = new Application_Model_NewsLink;
+			$postLinks = $linkModel->parseLinks($postForm->getValue('body'));
 			$linkExist = null;
 
-			if (preg_match_all('/' . My_CommonUtils::$link_regex . '/', $data['body'], $linkMatches))
+			if ($postLinks !== null)
 			{
-				foreach ($linkMatches[0] as $link)
+				foreach ($postLinks as $link)
 				{
-					$linkExist = $linkModel->findByLinkTrim($linkModel->trimLink($link));
+					$linkExist = $linkModel->findByLinkTrim($link);
 
-					if ($linkExist != null)
+					if ($linkExist !== null)
 					{
 						break;
 					}
@@ -712,7 +779,7 @@ class PostController extends Zend_Controller_Action
 
 			$response = ['status' => 1];
 
-			if ($linkExist != null)
+			if ($linkExist !== null)
 			{
 				$response['post_id'] = $linkExist->news_id;
 			}
@@ -754,9 +821,9 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			$model = new Application_Model_News;
+			$postModel = new Application_Model_News;
 
-			if (!$model->checkId($id, $post, ['join'=>false]))
+			if (!$postModel->checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID');
 			}
@@ -766,24 +833,21 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$data = $this->_request->getPost();
-
-			$postForm = new Application_Form_News;
+			$postForm = new Application_Form_News(['ignore' => ['address']]);
 			$postForm->setScenario('save');
 
-			if (!$postForm->isValid($data))
+			if (!$postForm->isValid($this->_request->getPost()))
 			{
 				throw new RuntimeException(
 					implode("\n", $postForm->getErrorMessages()));
 			}
 
-			$post = $model->save(['news' => $data['news']], $post);
-			// TODO: refactoring
-			$post = $model->findById($post->id, ['link'=>['thumbs'=>[[448,320]]]]);
+			$post = $postModel->save($postForm, $user, $address,
+				$image, $thumbs, $link, $post);
 
 			$response = [
 				'status' => 1,
-				'html' => $post->renderContent()
+				'html' => $postModel->renderContent($post, ['link' => $link])
 			];
 		}
 		catch (Exception $e)
@@ -823,7 +887,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!(new Application_Model_News)->checkId($id, $post, ['join'=>false]))
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
@@ -843,9 +907,8 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$data = $addressForm->getValues();
-
-			(new Application_Model_Address)
-				->update($data, 'id=' . $post['address_id']);
+			$db = Zend_Db_Table::getDefaultAdapter();
+			$db->update('address', $data, 'id=' . $post['address_id']);
 
 			$response = [
 				'status' => 1,
@@ -891,7 +954,8 @@ class PostController extends Zend_Controller_Action
 
 			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
 			{
-				throw new Exception('Incorrect post ID.');
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($id, true));
 			}
 
 			if (!Application_Model_News::canEdit($post, $user))
@@ -899,8 +963,11 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			(new Application_Model_News)
-				->update(['isdeleted' => 1], 'id=' . $id);
+			$db = Zend_Db_Table::getDefaultAdapter();
+			$db->update('news', [
+				'isdeleted' => 1,
+				'updated_date' => new Zend_Db_Expr('NOW()')
+			], 'id=' . $id);
 
 			(new Application_Model_User)->updateWithCache([
 				'post' => $user['post']-1
@@ -959,30 +1026,33 @@ class PostController extends Zend_Controller_Action
 					var_export($vote, true));
 			}
 
-			$model = new Application_Model_Voting;
+			$voteModel = new Application_Model_Voting;
 
-			if (!$model->canVote($user, $post))
+			if (!$voteModel->canVote($user, $post))
 			{
 				throw new RuntimeException('You cannot vote this post');
 			}
 
-			$userVote = $model->findVote($post->id, $user['id']);
+			$userVote = $voteModel->findVote($post->id, $user['id']);
 
 			if ($userVote != null)
 			{
-				$model->cancelVote($userVote);
+				$voteModel->update([
+					'updated_at' => new Zend_Db_Expr('NOW()'),
+					'active' => 0
+				], 'id=' . $userVote->id);
 			}
 
 			$updateVote = null;
 
-			if (!$user['is_admin'] && $userVote)
+			if (!$user['is_admin'] && $userVote != null)
 			{
 				$updateVote = $post->vote - $userVote->vote;
 			}
 
 			if ($user['is_admin'] || !$userVote || $userVote->vote != $vote)
 			{
-				$model->insert([
+				$voteModel->insert([
 					'vote' => $vote,
 					'user_id' => $user['id'],
 					'news_id' => $post->id,
@@ -1043,15 +1113,30 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, ['link'=>['thumbs'=>[[448,320]]]]))
+			if (!Application_Model_News::checkId($id, $post, ['link'=>true]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
 			}
 
+			$assets = [];
+
+			if (!empty($post['link_id']))
+			{
+				$assets['link'] = [
+					'id' => $post['link_id'],
+					'link' => $post['link_link'],
+					'title' => $post['link_title'],
+					'description' => $post['link_description'],
+					'author' => $post['link_author'],
+					'image_id' => $post['link_image_id'],
+					'image_name' => $post['link_image_name']
+				];
+			}
+
 			$response = [
 				'status' => 1,
-				'html' => $post->renderContent()
+				'html' => Application_Model_News::renderContent($post, $assets)
 			];
 		}
 		catch (Exception $e)

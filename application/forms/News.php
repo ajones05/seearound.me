@@ -3,37 +3,38 @@ use Respect\Validation\Validator as v;
 use Respect\Validation\Exceptions\ValidationException;
 
 /**
- * News form class
+ * Post form class.
  */
-class Application_Form_News extends Zend_Form
+class Application_Form_News extends Application_Form_Address
 {
 	/**
-	 * @var	string
+	 * Validate scenario name.
+	 * @var string
 	 */
 	private $_scenario;
 
 	/**
+	 * The post body max length.
 	 * @var integer
 	 */
 	public static $bodyMaxLength = 1500;
 
-    /**
-     * Initialize form (used by extending classes)
-     *
-     * @return void
-     */
-    public function init()
-    {
-		$this->addElement('text', 'news');
-    }
+	/**
+	 * Initialize form (used by extending classes).
+	 */
+	public function init()
+	{
+		parent::init();
+		$this->addElement('text', 'body');
+	}
 
-    /**
-     * Validate the form.
-     *
-     * @param 	array $data
-     * @return	boolean
-     */
-    public function isValid($data)
+	/**
+	 * Validate the form.
+	 *
+	 * @param array $data
+	 * @return boolean
+	 */
+	public function isValid($data)
 	{
 		$scenario = $this->getScenario();
 		$valid = parent::isValid($data);
@@ -41,7 +42,7 @@ class Application_Form_News extends Zend_Form
 		try
 		{
 			v::stringType()->length(1, self::$bodyMaxLength)->regex('/[^<>]/')
-				->assert(My_ArrayHelper::getProp($data, 'news'));
+				->assert(My_ArrayHelper::getProp($data, 'body'));
 		}
 		catch (Exception $e)
 		{

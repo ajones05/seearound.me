@@ -74,7 +74,7 @@ class My_Query
 	{
 		$db = Zend_Db_Table::getDefaultAdapter();
 		$values = [];
-		$fields = array_map([$db, 'quoteIdentifier'], array_keys($data[0]));
+		$fields = array_map([$db, 'quoteIdentifier'], array_keys(reset($data)));
 		foreach ($data as $row)
 		{
 			foreach($row as &$value)

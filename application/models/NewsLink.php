@@ -1,8 +1,13 @@
 <?php
+use Embed\Embed;
 
+/**
+ * This is the model class for table "news_link".
+ */
 class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 {
 	/**
+	 * The table name.
 	 * @var string
 	 */
 	public static $imagePath = 'uploads';
@@ -14,17 +19,17 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 		'448x320' => 'thumb448x320'
 	];
 
-    /**
-     * The table name.
-     *
-     * @var string
-     */
-    protected $_name = 'news_link';
+	/**
+	 * The table name.
+	 *
+	 * @var string
+	 */
+	protected $_name = 'news_link';
 
 	/**
 	 * @var	array
 	 */
-    protected $_dependentTables = [
+	protected $_dependentTables = [
 		'Application_Model_News',
 		'Application_Model_Image'
 	];
@@ -58,8 +63,157 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 	}
 
 	/**
-	 * Finds row by trimed link.
+	 * Parses links from text.
 	 *
+	 * @param string $text
+	 * @return array|null Array on success, otherwise NULL
+	 */
+	public static function parseLinks($text)
+	{
+		return preg_match_all('/' . My_CommonUtils::$link_regex . '/',
+			$text, $linkMatches) ? $linkMatches : null;
+	}
+
+	/**
+	 * Saves post link.
+	 *
+	 * @param string $post
+	 * @return mixed If success array, otherwise null
+	 */
+	public function saveLink($post)
+	{
+		$matchLinks = preg_match_all('/' . My_CommonUtils::$link_regex . '/',
+			$post['news'],  $matches);
+
+		if ($matchLinks)
+		{
+			foreach ($matches[0] as $link)
+			{
+				try
+				{
+					$info = Embed::create($link);
+				}
+				catch (Exception $e)
+				{
+					continue;
+				}
+
+				$html = $info->getProvider('html');
+
+				$linkData = [
+					'news_id' => $post['id'],
+					'link' => $link,
+					'link_trim' => $this->trimLink($link)
+				];
+
+				$title = trim(strip_tags($info->getTitle()));
+
+				if ($title !== '')
+				{
+					$linkData['title'] = $title;
+				}
+
+				$description = trim(strip_tags($info->getDescription()));
+
+				if ($description !== '')
+				{
+					$linkData['description'] = $description;
+				}
+
+				$author = trim(strip_tags($html->bag->get('author')));
+
+				if ($author !== '')
+				{
+					$linkData['author'] = $author;
+				}
+
+				$opengraph = $info->getProvider('opengraph');
+				$images = $opengraph->bag->get('images');
+
+				if ($images)
+				{
+					$imageUrl = $images[0];
+					$parseImageUrl = parse_url($imageUrl);
+
+					if (empty($parseImageUrl['host']))
+					{
+						$parseUrl = parse_url($link);
+						$imageUrl = My_ArrayHelper::getProp($parseUrl, 'scheme', 'http') . '://' .
+							My_ArrayHelper::getProp($parseUrl, 'host') . '/' . trim($imageUrl, '/');
+					}
+
+					try
+					{
+						$ext = strtolower(My_ArrayHelper::getProp(pathinfo($imageUrl), 'extension', 'tmp'));
+
+						if (!in_array($ext, My_CommonUtils::$imagetype_extension))
+						{
+							if (preg_match('/^(' . implode('|', My_CommonUtils::$imagetype_extension) . ')/', $ext, $extMatches))
+							{
+								$ext = $extMatches[0];
+							}
+						}
+
+						if ($ext != 'tmp' && !in_array($ext, My_CommonUtils::$imagetype_extension))
+						{
+							throw new Exception('Incorrect image extension: ' . $ext);
+						}
+
+						do
+						{
+							$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
+							$fullPath = ROOT_PATH_WEB . '/uploads/' . $name;
+						}
+						while (file_exists($fullPath));
+
+						if (!@copy($imageUrl, $fullPath))
+						{
+							throw new Exception("Download image error");
+						}
+
+						$imageType = exif_imagetype($fullPath);
+
+						if (!isset(My_CommonUtils::$imagetype_extension[$imageType]))
+						{
+							throw new Exception('Incorrect image type: ' . $imageType);
+						}
+
+						if (My_CommonUtils::$imagetype_extension[$imageType] != $ext)
+						{
+							$name = preg_replace('/' . $ext . '$/', My_CommonUtils::$imagetype_extension[$imageType], $name);
+
+							if (!rename($fullPath, ROOT_PATH_WEB . '/uploads/' . $name))
+							{
+								throw new Exception('Rename image error: ' . $fullPath);
+							}
+						}
+
+						$image = (new Application_Model_Image)->save('uploads', $name, $thumbs, [
+							[[448,320], 'thumb448x320', 2]
+						]);
+
+						$linkData['image_id'] = $image['id'];
+						$linkData['image_name'] = $name;
+					}
+					catch (Exception $e)
+					{
+						if ($fullPath != null)
+						{
+							@unlink($fullPath);
+						}
+					}
+				}
+
+				return $linkData+['id'=>$this->insert($linkData)];
+				break;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Finds row by trimed link.
 	 * @param	string	$link
 	 * @return	mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
@@ -69,7 +223,7 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 			$this->select()
 				->setIntegrityCheck(false)
 				->from(['l' => 'news_link'], 'l.*')
-				->where('l.link_trim=?', $link)
+				->where('l.link_trim=?', $this->trimLink($link))
 				->join(['p' => 'news'], 'p.id=l.news_id', '')
 				->where('p.isdeleted=0')
 		);

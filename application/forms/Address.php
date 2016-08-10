@@ -7,25 +7,51 @@ use Respect\Validation\Exceptions\ValidationException;
  */
 class Application_Form_Address extends Zend_Form
 {
-    /**
-     * Initialize form.
-     *
-     * @return void
-     */
-    public function init()
-    {
-		// TODO: remove
-		$this->addElement('text', 'address');
-		$this->addElement('text', 'latitude');
-		$this->addElement('text', 'longitude');
-		$this->addElement('text', 'street_name');
-		$this->addElement('text', 'street_number');
-		$this->addElement('text', 'city');
-		$this->addElement('text', 'state');
-		$this->addElement('text', 'country');
-		$this->addElement('text', 'zip');
-		$this->addElement('text', 'timezone');
-    }
+	/**
+	 * Contains parameters for ignore validation rules.
+	 * @var array
+	 */
+	protected $ignore = [];
+
+	/**
+	 * Constructor
+	 *
+	 * Registers form view helper as decorator
+	 *
+	 * @param mixed $options
+	 * @return void
+	 */
+	public function __construct($options = null)
+	{
+		if (isset($options['ignore']))
+		{
+			$this->ignore = $options['ignore'];
+			unset($options['ignore']);
+		}
+
+		parent::__construct($options);
+	}
+
+	/**
+	 * Initialize form (used by extending classes).
+	 */
+	public function init()
+	{
+		if (!$this->isIgnore('address'))
+		{
+			// TODO: refactoring
+			$this->addElement('text', 'address');
+			$this->addElement('text', 'latitude');
+			$this->addElement('text', 'longitude');
+			$this->addElement('text', 'street_name');
+			$this->addElement('text', 'street_number');
+			$this->addElement('text', 'city');
+			$this->addElement('text', 'state');
+			$this->addElement('text', 'country');
+			$this->addElement('text', 'zip');
+			$this->addElement('text', 'timezone');
+		}
+	}
 
 	/**
 	 * Validate the form
@@ -36,6 +62,11 @@ class Application_Form_Address extends Zend_Form
 	public function isValid($data)
 	{
 		$valid = parent::isValid($data);
+
+		if ($this->isIgnore('address'))
+		{
+			return $valid;
+		}
 
 		try
 		{
@@ -141,5 +172,16 @@ class Application_Form_Address extends Zend_Form
 		}
 
 		return $valid;
+	}
+
+	/**
+	 * Checks if rule is ignored.
+	 *
+	 * @param string $rule The rule name
+	 * @return boolean
+	 */
+	public function isIgnore($rule)
+	{
+		return in_array($rule, $this->ignore);
 	}
 }

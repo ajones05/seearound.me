@@ -13,8 +13,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Initialize object
-	 *
-	 * @return void
 	 */
 	public function init()
 	{
@@ -39,7 +37,6 @@ class MobileController extends Zend_Controller_Action
 	 *
 	 * @param  string $methodName
 	 * @param  array $args
-	 * @return void
 	 * @throws Zend_Controller_Action_Exception
 	 */
 	public function __call($methodName, $args)
@@ -126,8 +123,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Authenticate user with facebook action.
-	 *
-	 * @return void
 	 */
 	public function fbLoginAction()
 	{
@@ -183,8 +178,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Register a user action.
-	 *
-	 * @return void
 	 */
 	public function registrationAction()
 	{
@@ -235,7 +228,7 @@ class MobileController extends Zend_Controller_Action
 				$upload->addFilter('Rename', $full_path);
 				$upload->receive();
 
-				$image = (new Application_Model_Image)->save('www/upload', $name, [
+				$image = (new Application_Model_Image)->save('www/upload', $name, $thumbs, [
 					[[26,26], 'thumb26x26', 2],
 					[[55,55], 'thumb55x55', 2],
 					[[320,320], 'uploads']
@@ -280,8 +273,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Reset password api gateway.
-	 *
-	 * @return void
 	 */
 	public function resetPasswordAction()
 	{
@@ -348,14 +339,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Friends list action.
-	 *
-	 * @return void
 	 */
 	public function myfriendlistAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -409,14 +398,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Follow user action.
-	 *
-	 * @return void
 	 */
 	public function followAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$receiver_id = $this->_request->getPost('receiver_id');
 
 			if (!v::intVal()->validate($receiver_id))
@@ -480,14 +467,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Unfollow user action.
-	 *
-	 * @return void
 	 */
 	public function unfollowAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$receiver_id = $this->_request->getPost('receiver_id');
 
 			if (!v::intVal()->validate($receiver_id))
@@ -543,14 +528,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Profile details action.
-	 *
-	 * @return void
 	 */
   public function getotheruserprofileAction()
   {
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$other_user_id = $this->_request->getPost('other_user_id');
 
 			if (!v::intVal()->validate($other_user_id))
@@ -564,7 +547,9 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('Other user ID cannot be the same');
 			}
 
-			if (!Application_Model_User::checkId($other_user_id, $profile))
+			$profile = Application_Model_User::findById($other_user_id, true);
+
+			if ($profile == null)
 			{
 				throw new RuntimeException('Incorrect other user ID: ' .
 					var_export($other_user_id, true));
@@ -605,14 +590,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Send message action.
-	 *
-	 * @return void
 	 */
 	public function sendmessageAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$receiver_id = $this->_request->getPost('reciever_id');
 
 			if (!v::intVal()->validate($receiver_id))
@@ -739,14 +722,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * List of user unread messages action.
-	 *
-	 * @return void
 	 */
 	public function unreadmessagesAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -823,14 +804,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Retrieve message conversation action.
-	 *
-	 * @return	void
 	 */
 	public function messageConversationAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -939,14 +918,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Conversation messages list action.
-	 *
-	 * @return	void
 	 */
 	public function conversationMessageAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -1056,14 +1033,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Set notificatations status action.
-	 *
-	 * @return	void
 	 */
 	public function viewedAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$post_id = $this->_request->getPost('post_id');
 
 			if (!v::stringType()->validate($post_id))
@@ -1132,14 +1107,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Messages list action.
-	 *
-	 * @return	void
 	 */
 	public function messagesAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$start = $this->_request->getPost('start', 0);
 
 			if (!v::optional(v::intVal())->validate($start))
@@ -1241,8 +1214,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Post details action.
-	 *
-	 * @return	void
 	 */
 	public function postAction()
 	{
@@ -1284,7 +1255,7 @@ class MobileController extends Zend_Controller_Action
 				]
 			];
 
-			if ($post->image_id)
+			if ($post->image_id != null)
 			{
 				$response['post']['image'] = $this->view->serverUrl() .
 					$this->view->baseUrl(Application_Model_News::getImage($post));
@@ -1338,95 +1309,67 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Add news action.
-	 *
-	 * @return	void
 	 */
 	public function addimobinewsAction()
 	{
 		try
 		{
 			$user = $this->getUserByToken();
-			$data = $this->_request->getPost();
+
 			$postForm = new Application_Form_News;
 			$postForm->setScenario('new');
-
-			// TODO: change post body field name
-			if (isset($data['body']))
+			if (!$postForm->isValid($this->_request->getPost()))
 			{
-				$data['news'] = $data['body'];
-			}
-
-			if (!$postForm->isValid($data))
-			{
-				throw new RuntimeException(
+				throw new RuntimeException('Validate post error: ' .
 					implode("\n", $postForm->getErrorMessages()));
 			}
 
-			$addressForm = new Application_Form_Address;
-
-			if (!$addressForm->isValid($data))
-			{
-				throw new RuntimeException(
-					implode("\n", $addressForm->getErrorMessages()));
-			}
-
-			$address = (new Application_Model_Address)
-				->createRow($addressForm->getValues());
-			$address->save();
-
-			$model = new Application_Model_News;
-			$post = $model->save($postForm->getValues() +
-				['user_id' => $user->id, 'address_id' => $address->id]);
+			$postModel = new Application_Model_News;
+			$post = $postModel->save($postForm, $user,
+				$address, $image, $thumbs, $link);
 
 			$response = [
 				'status' => 'SUCCESS',
-				'userid' => $user->id,
-				'message' => $post->news
+				'userid' => $user['id'],
+				'post_id' => $post['id'],
+				'message' => $post['news']
 			];
 
-			// TODO: refactoring
-			$postLink = $post->findParentRow('Application_Model_NewsLink');
-
-			if ($postLink)
+			if ($link !== null)
 			{
-				$response += ['link_url' => $postLink->link];
+				$response['link_url'] = $link['link'];
 
-				if (trim($postLink->title) !== '')
+				if (!empty($link['title']))
 				{
-					$response += ['link_title' => $postLink->title];
+					$response['link_title'] = $link['title'];
 				}
 
-				if (trim($postLink->description) !== '')
+				if (!empty($link['description']))
 				{
-					$response += ['link_description' => $postLink->description];
+					$response['link_description'] = $link['description'];
 				}
 
-				if (trim($postLink->author) !== '')
+				if (!empty($link['author']))
 				{
-					$response += ['link_author' => $postLink->author];
+					$response['link_author'] = $link['author'];
 				}
 
-				if ($postLink->image_id != null)
+				if (!empty($link['image_id']))
 				{
-					$image = $postLink->findParentRow('Application_Model_Image');
-					$response += [
-						'link_thumb' => $this->view->serverUrl() .
-							$this->view->baseUrl($image->findThumb([448, 320])->path),
-						'link_image' => $this->view->serverUrl() .
-							$this->view->baseUrl($image->path)
-					];
+					$response['link_thumb'] = $this->view->serverUrl() .
+						$this->view->baseUrl(Application_Model_NewsLink::getThumb($link,
+							'448x320'));
+					$response['link_image'] = $this->view->serverUrl() .
+						$this->view->baseUrl(Application_Model_NewsLink::getImage($link));
 				}
 			}
 
-			if ($post->image_id != null)
+			if (!empty($post['image_id']))
 			{
-				$image = $post->findDependentRowset('Application_Model_Image')->current();
-				$response += [
-					'thumb' => $this->view->serverUrl() .
-						$this->view->baseUrl($image->findThumb([448, 320])->path),
-					'image' => $this->view->serverUrl() .
-						$this->view->baseUrl($image->path)
-				];
+				$response['thumb'] = $this->view->serverUrl() .
+					$this->view->baseUrl(Application_Model_News::getThumb($post, '448x320'));
+				$response['image'] = $this->view->serverUrl() .
+					$this->view->baseUrl(Application_Model_News::getImage($post));
 			}
 
 			(new Application_Model_User)->updateWithCache([
@@ -1449,8 +1392,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Before save post action.
-	 *
-	 * @return void
 	 */
 	public function beforeSavePostAction()
 	{
@@ -1458,14 +1399,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$user = $this->getUserByToken();
 			$data = $this->_request->getPost();
-
-			// TODO: change post body field name
-			if (isset($data['body']))
-			{
-				$data['news'] = $data['body'];
-			}
-
-			$postForm = new Application_Form_News;
+			$postForm = new Application_Form_News(['ignore' => ['address']]);
 			$postForm->setScenario('before-save');
 
 			if (!$postForm->isValid($data))
@@ -1475,15 +1409,16 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$linkModel = new Application_Model_NewsLink;
+			$postLinks = $linkModel->parseLinks($postForm->getValue('body'));
 			$linkExist = null;
 
-			if (preg_match_all('/' . My_CommonUtils::$link_regex . '/', $data['body'], $linkMatches))
+			if ($postLinks !== null)
 			{
-				foreach ($linkMatches[0] as $link)
+				foreach ($postLinks as $link)
 				{
-					$linkExist = $linkModel->findByLinkTrim($linkModel->trimLink($link));
+					$linkExist = $linkModel->findByLinkTrim($link);
 
-					if ($linkExist != null)
+					if ($linkExist !== null)
 					{
 						break;
 					}
@@ -1492,7 +1427,7 @@ class MobileController extends Zend_Controller_Action
 
 			$response = ['status' => 'SUCCESS'];
 
-			if ($linkExist != null)
+			if ($linkExist !== null)
 			{
 				$response['link_post_id'] = $linkExist->news_id;
 				$response['link'] = $linkExist->link;
@@ -1514,8 +1449,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Save post action.
-	 *
-	 * @return	void
 	 */
 	public function savePostAction()
 	{
@@ -1530,9 +1463,9 @@ class MobileController extends Zend_Controller_Action
 					var_export($post_id, true));
 			}
 
-			$model = new Application_Model_News;
+			$postModel = new Application_Model_News;
 
-			if (!$model->checkId($post_id, $post, ['join'=>false]))
+			if (!$postModel->checkId($post_id, $post, ['link'=>true]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($post_id, true));
@@ -1543,93 +1476,97 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$data = $this->_request->getPost();
-
-			// TODO: change post body field name
-			if (isset($data['body']))
-			{
-				$data['news'] = $data['body'];
-			}
-
 			$postForm = new Application_Form_News;
 			$postForm->setScenario('mobile-save');
 
-			if (!$postForm->isValid($data))
+			if (!$postForm->isValid($this->_request->getPost()))
 			{
 				throw new RuntimeException(
 					implode("\n", $postForm->getErrorMessages()));
 			}
 
-			$addressForm = new Application_Form_Address;
-
-			if (!$addressForm->isValid($data))
-			{
-				throw new RuntimeException(
-					implode("\n", $addressForm->getErrorMessages()));
-			}
-
-			$post = $model->save($postForm->getValues(), $post);
-
-			$address = $post->findParentRow('Application_Model_Address');
-			$address->setFromArray(['address'=>null]+$data);
-			$address->save();
-
-			// TODO: refactoring
-			$post = $model->findById($post->id, ['link'=>true]);
+			$post = $postModel->save($postForm, $user, $address,
+				$image, $thumbs, $link, $post);
 
 			$response = [
 				'status' => 'SUCCESS',
 				'post' => [
-					'body' => $post->news,
-					'latitude' => $post->latitude,
-					'longitude' => $post->longitude,
-				] + My_ArrayHelper::filter([
-					'address' => Application_Model_Address::format($post) ?: $post->address,
-					'street_name' => $post->street_name,
-					'street_number' => $post->street_number,
-					'city' => $post->city,
-					'state' => $post->state,
-					'country' => $post->country,
-					'zip' => $post->zip
-				])
+					'body' => $post['news'],
+					'latitude' => $address['latitude'],
+					'longitude' => $address['longitude']
+				]
 			];
 
-			if ($post->image_id != null)
+			$addressFormat = Application_Model_Address::format($address);
+
+			if ($addressFormat !== '')
 			{
-				$image = $post->findDependentRowset('Application_Model_Image')->current();
-				$response['post']['thumb'] = $this->view->serverUrl() .
-						$this->view->baseUrl($image->findThumb([448,320])->path);
-				$response['post']['image'] = $this->view->serverUrl() .
-						$this->view->baseUrl($image->path);
+				$response['post']['address'] = $addressFormat;
 			}
 
-			if ($post->link_id != null)
+			if (!empty($address['street_name']))
 			{
-				$response['post']['link_url'] = $post->link_link;
+				$response['post']['street_name'] = $address['street_name'];
+			}
 
-				if (trim($post->link_title) !== '')
+			if (!empty($address['street_number']))
+			{
+				$response['post']['street_number'] = $address['street_number'];
+			}
+
+			if (!empty($address['city']))
+			{
+				$response['post']['city'] = $address['city'];
+			}
+
+			if (!empty($address['state']))
+			{
+				$response['post']['state'] = $address['state'];
+			}
+
+			if (!empty($address['country']))
+			{
+				$response['post']['country'] = $address['country'];
+			}
+
+			if (!empty($address['zip']))
+			{
+				$response['post']['zip'] = $address['zip'];
+			}
+
+			if (!empty($post['image_id']))
+			{
+				$response['post']['thumb'] = $this->view->serverUrl() .
+					$this->view->baseUrl(Application_Model_News::getThumb($post,'448x320'));
+				$response['post']['image'] = $this->view->serverUrl() .
+					$this->view->baseUrl(Application_Model_News::getImage($post));
+			}
+			elseif ($link !== null)
+			{
+				$response['post']['link_url'] = $link['link'];
+
+				if (!empty($link['title']))
 				{
-					$response['post']['link_title'] = $post->link_title;
+					$response['post']['link_title'] = $link['title'];
 				}
 
-				if (trim($post->link_description) !== '')
+				if (!empty($link['description']))
 				{
-					$response['post']['link_description'] = $post->link_description;
+					$response['post']['link_description'] = $link['description'];
 				}
 
-				if (trim($post->link_author) !== '')
+				if (!empty($link['author']))
 				{
-					$response['post']['link_author'] = $post->link_author;
+					$response['post']['link_author'] = $link['author'];
 				}
 
-				if ($post->link_image_id != null)
+				if (!empty($link['image_id']))
 				{
 					$response['post']['link_thumb'] = $this->view->serverUrl() .
-						$this->view->baseUrl(Application_Model_NewsLink::getThumb($post,
-							'448x320', ['alias' => 'link_']));
+						$this->view->baseUrl(Application_Model_NewsLink::getThumb($link,
+							'448x320'));
 					$response['post']['link_image'] = $this->view->serverUrl() .
-						$this->view->baseUrl(Application_Model_NewsLink::getImage($post,
-							['alias' => 'link_']));
+						$this->view->baseUrl(Application_Model_NewsLink::getImage($link));
 				}
 			}
 		}
@@ -1649,8 +1586,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Delete post action.
-	 *
-	 * @return	void
 	 */
 	public function deletePostAction()
 	{
@@ -1676,8 +1611,11 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$post->isdeleted = 1;
-			$post->save();
+			$db = Zend_Db_Table::getDefaultAdapter();
+			$db->update('news', [
+				'isdeleted' => 1,
+				'updated_date' => new Zend_Db_Expr('NOW()')
+			], 'id=' . $post_id);
 
 			(new Application_Model_User)->updateWithCache([
 				'post' => $user['post']-1
@@ -1701,81 +1639,78 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Edit profile action.
-	 *
-	 * @return	void
 	 */
   public function editProfileAction()
 	{
 		try
 		{
 			$user = $this->getUserByToken();
-			$form = new Application_Form_MobileProfile;
+			$profileForm = new Application_Form_MobileProfile;
 
-			if (!$form->isValid($this->_request->getPost()))
+			if (!$profileForm->isValid($this->_request->getPost()))
 			{
-				$this->_formValidateException($form);
+				$this->_formValidateException($profileForm);
 			}
 
-			$data = $form->getValues();
 			$userModel = new Application_Model_User;
-			$userModel->getDefaultAdapter()->beginTransaction();
+			$data = $profileForm->getValues();
 
-			try
+			$user_data = [
+				'Name' => $data['name'],
+				'Birth_date' => trim($data['birth_date']) !== '' ?
+					(new DateTime($data['birth_date']))->format('Y-m-d') : null,
+				'Email_id' => $data['email'],
+				'public_profile' => $data['public_profile'],
+				'gender' => $data['gender'],
+				'activity' => $userModel->filterActivity($data['activities'])
+			];
+
+			if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
 			{
-				$user_data = [
-					'Name' => $data['name'],
-					'Birth_date' => trim($data['birth_date']) !== '' ?
-						(new DateTime($data['birth_date']))->format('Y-m-d') : null,
-					'Email_id' => $data['email'],
-					'public_profile' => $data['public_profile'],
-					'gender' => $data['gender'],
-					'activity' => $userModel->filterActivity($data['activities'])
-				];
-
-				if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
+				if (!empty($user['image_id']))
 				{
-					if ($user['image_id'])
+					$db = Zend_Db_Table::getDefaultAdapter();
+
+					foreach ($userModel::$thumbPath as $path)
 					{
-						Application_Model_Image::findById($user['image_id'])->deleteImage();
+						@unlink(ROOT_PATH_WEB . '/' . $path . '/' . $user['image_name']);
 					}
 
-					$image = (new Application_Model_Image)->save('www/upload', $data['image'], [
-						[[26,26], 'thumb26x26', 2],
-						[[55,55], 'thumb55x55', 2],
-						[[320,320], 'uploads']
-					]);
-					$user_data['image_id'] = $image['id'];
-					$user_data['image_name'] = $data['image'];
-					$profileImage = 'uploads/' . $data['image'];
-				}
-				else
-				{
-					$profileImage = Application_Model_User::getThumb($user, '320x320');
+					$db->delete('image_thumb', 'image_id=' . $user['image_id']);
+
+					@unlink(ROOT_PATH_WEB . '/' . $userModel::$imagePath . '/' .
+						$user['image_name']);
+
+					$db->delete('image', 'id=' . $user['image_id']);
 				}
 
-				$userModel->updateWithCache($user_data, $user);
-				$userModel->getDefaultAdapter()->commit();
+				$image = (new Application_Model_Image)->save($userModel::$imagePath, $data['image'], $thumbs, [
+					[[26,26], 'thumb26x26', 2],
+					[[55,55], 'thumb55x55', 2],
+					[[320,320], 'uploads']
+				]);
+				$user_data['image_id'] = $image['id'];
+				$user_data['image_name'] = $data['image'];
+				$profileImage = 'uploads/' . $data['image'];
 			}
-			catch (Exception $e)
+			else
 			{
-				$userModel->getDefaultAdapter()->rollBack();
-
-				throw $e;
+				$profileImage = Application_Model_User::getThumb($user, '320x320');
 			}
 
-			$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+			$userModel->updateWithCache($user_data, $user);
 
 			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'User profile has been updated successfully',
 				'result' => My_ArrayHelper::filter([
-					'user_id' => $user->id,
+					'user_id' => $user['id'],
 					'karma' => Application_Model_User::getKarma($user),
 					'Name' => $data['name'],
 					'Email_id' => $data['email'],
-					'address' => Application_Model_Address::format($userAddress->toArray()),
-					'latitude' => $userAddress->latitude,
-					'longitude' => $userAddress->longitude,
+					'address' => Application_Model_Address::format($user),
+					'latitude' => $user['latitude'],
+					'longitude' => $user['longitude'],
 					'Profile_image' => $this->view->serverUrl() .
 						$this->view->baseUrl($profileImage),
 					'Gender' => $data['gender'],
@@ -1796,12 +1731,10 @@ class MobileController extends Zend_Controller_Action
 
 		$this->responseHandler($response);
 		$this->_helper->json($response);
-    }
+	}
 
 	/**
 	 * List neares news action.
-	 *
-	 * @return	void
 	 */
 	public function requestNearestAction()
 	{
@@ -1864,33 +1797,31 @@ class MobileController extends Zend_Controller_Action
 
 					if ($row->link_id)
 					{
-						$data += ['link_url' => $row->link_link];
+						$data['link_url'] = $row->link_link;
 
 						if (trim($row->link_title) !== '')
 						{
-							$data += ['link_title' => $row->link_title];
+							$data['link_title'] = $row->link_title;
 						}
 
 						if (trim($row->link_description) !== '')
 						{
-							$data += ['link_description' => $row->link_description];
+							$data['link_description'] = $row->link_description;
 						}
 
 						if (trim($row->link_author) !== '')
 						{
-							$data += ['link_author' => $row->link_author];
+							$data['link_author'] = $row->link_author;
 						}
 
 						if ($row->link_image_id != null)
 						{
-							$data += [
-								'link_thumb' => $this->view->serverUrl() .
-									$this->view->baseUrl(Application_Model_NewsLink::getThumb($row,
-										'448x320', ['alias' => 'link_'])),
-								'link_image' => $this->view->serverUrl() .
-									$this->view->baseUrl(Application_Model_NewsLink::getImage($row,
-										['alias' => 'link_']))
-							];
+							$data['link_thumb'] = $this->view->serverUrl() .
+								$this->view->baseUrl(Application_Model_NewsLink::getThumb($row,
+									'448x320', ['alias' => 'link_']));
+							$data['link_image'] = $this->view->serverUrl() .
+								$this->view->baseUrl(Application_Model_NewsLink::getImage($row,
+									['alias' => 'link_']));
 						}
 					}
 
@@ -1914,8 +1845,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * List user posts action.
-	 *
-	 * @return	void
 	 */
 	public function mypostsAction()
 	{
@@ -1947,7 +1876,7 @@ class MobileController extends Zend_Controller_Action
 				->search($searchParameters + ['limit' => 15], $user,
 					['link'=>true,'user'=>$user,'userVote'=>true]);
 
-			if (count($result))
+			if ($result->count())
 			{
 				$userTimezone = Application_Model_User::getTimezone($user);
 
@@ -1980,33 +1909,31 @@ class MobileController extends Zend_Controller_Action
 
 					if ($row->link_id)
 					{
-						$data += ['link_url' => $row->link_link];
+						$data['link_url'] = $row->link_link;
 
 						if (trim($row->link_title) !== '')
 						{
-							$data += ['link_title' => $row->link_title];
+							$data['link_title'] = $row->link_title;
 						}
 
 						if (trim($row->link_description) !== '')
 						{
-							$data += ['link_description' => $row->link_description];
+							$data['link_description'] = $row->link_description;
 						}
 
 						if (trim($row->link_author) !== '')
 						{
-							$data += ['link_author' => $row->link_author];
+							$data['link_author'] = $row->link_author;
 						}
 
 						if ($row->link_image_id != null)
 						{
-							$data += [
-								'link_thumb' => $this->view->serverUrl() .
-									$this->view->baseUrl(Application_Model_NewsLink::getThumb($row,
-										'448x320', ['alias' => 'link_'])),
-								'link_image' => $this->view->serverUrl() .
-									$this->view->baseUrl(Application_Model_NewsLink::getImage($row,
-										['alias' => 'link_']))
-							];
+							$data['link_thumb'] = $this->view->serverUrl() .
+								$this->view->baseUrl(Application_Model_NewsLink::getThumb($row,
+									'448x320', ['alias' => 'link_']));
+							$data['link_image'] = $this->view->serverUrl() .
+								$this->view->baseUrl(Application_Model_NewsLink::getImage($row,
+									['alias' => 'link_']));
 						}
 					}
 
@@ -2030,8 +1957,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * List news comments action.
-	 *
-	 * @return	void
 	 */
   public function getTotalCommentsAction()
 	{
@@ -2109,14 +2034,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Post news comment action.
-	 *
-	 * @return void
 	 */
 	public function postCommentAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$id = $this->_request->getPost('news_id');
 
 			if (!v::intVal()->validate($id))
@@ -2131,14 +2054,14 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			$form = new Application_Form_Comment;
+			$commentForm = new Application_Form_Comment;
 
-			if (!$form->isValid($this->_request->getPost()))
+			if (!$commentForm->isValid($this->_request->getPost()))
 			{
-				$this->_formValidateException($form);
+				$this->_formValidateException($commentForm);
 			}
 
-			$data = $form->getValues();
+			$data = $commentForm->getValues();
 
 			$comment_id = (new Application_Model_Comments)->insert($data+[
 				'user_id' => $user['id'],
@@ -2197,14 +2120,12 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Delete post comment action.
-	 *
-	 * @return void
 	 */
   public function deleteCommentAction()
 	{
 		try
 		{
-			$user = $this->getUserByToken(true);
+			$user = $this->getUserByToken();
 			$id = $this->_request->getPost('comment_id');
 
 			if (!v::intVal()->validate($id))
@@ -2267,8 +2188,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Function to add like to a news.
-	 *
-	 * @return void
 	 */
 	public function postLikeAction()
 	{
@@ -2297,37 +2216,40 @@ class MobileController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			$model = new Application_Model_Voting;
+			$voteModel = new Application_Model_Voting;
 
-			if (!$model->canVote($user, $post))
+			if (!$voteModel->canVote($user, $post))
 			{
 				throw new RuntimeException('You cannot vote this post');
 			}
 
-			$userVote = $model->findVote($post->id, $user->id);
+			$userVote = $voteModel->findVote($post->id, $user['id']);
 
 			if ($userVote != null)
 			{
-				$model->cancelVote($userVote);
+				$voteModel->update([
+					'updated_at' => new Zend_Db_Expr('NOW()'),
+					'active' => 0
+				], 'id=' . $userVote->id);
 			}
 
-			if (!$user->is_admin && $userVote)
+			$updateVote = null;
+
+			if (!$user['is_admin'] && $userVote != null)
 			{
-				$post->vote -= $userVote->vote;
-				$updatePost = true;
+				$updateVote = $post->vote - $userVote->vote;
 			}
 
-			if ($user->is_admin || !$userVote || $userVote->vote != $vote)
+			if ($user['is_admin'] || !$userVote || $userVote->vote != $vote)
 			{
-				$model->insert([
+				$voteModel->insert([
 					'vote' => $vote,
-					'user_id' => $user->id,
+					'user_id' => $user['id'],
 					'news_id' => $post->id,
 					'active' => 1
 				]);
 
-				$post->vote += $vote;
-				$updatePost = true;
+				$updateVote = $post->vote + $vote;
 				$activeVote = $vote;
 			}
 			else
@@ -2335,10 +2257,10 @@ class MobileController extends Zend_Controller_Action
 				$activeVote = 0;
 			}
 
-			if ($updatePost)
+			if ($updateVote !== null)
 			{
-				// TODO: refactoring!!!!
-				$post->save();
+				(new Application_Model_News)
+					->update(['vote' => $updateVote], 'id=' . $id);
 
 				(new Application_Model_User)->updateWithCache([
 					'vote' => $user['vote']+$vote
@@ -2347,7 +2269,7 @@ class MobileController extends Zend_Controller_Action
 
 			$response = [
 				'success' => 'voted successfully',
-				'vote' => $post->vote,
+				'vote' => $updateVote !== null ? $updateVote : $post->vote,
 				'active' => $activeVote
 			];
     }
@@ -2367,8 +2289,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * List user notifications action.
-	 *
-	 * @return void
 	 */
 	public function notificationAction()
 	{
@@ -2399,7 +2319,7 @@ class MobileController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'f.notify'
 			]);
-			$select1->where('f.receiver_id=? AND f.status=1', $user->id);
+			$select1->where('f.receiver_id=? AND f.status=1', $user['id']);
 			$select1->where('f.notify=0 OR fl.created_at>=?', $maxDate);
 			$select1->joinLeft(['fl' => 'friend_log'],
 				'fl.friend_id=f.id AND fl.status_id=f.status', '');
@@ -2415,7 +2335,7 @@ class MobileController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'cm.is_read'
 			]);
-			$select2->where('cm.to_id=?', $user->id, $maxDate);
+			$select2->where('cm.to_id=?', $user['id'], $maxDate);
 			$select2->where('cm.is_read=0 OR cm.created_at>?', $maxDate);
 			$select2->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '');
 
@@ -2429,9 +2349,9 @@ class MobileController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'v.is_read'
 			]);
-			$select3->where('n.isdeleted=0 AND n.user_id=?', $user->id);
+			$select3->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
 			$select3->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
-			$select3->where('v.active=1 AND v.user_id<>?', $user->id);
+			$select3->where('v.active=1 AND v.user_id<>?', $user['id']);
 			$select3->where('v.is_read=0 OR v.created_at>?', $maxDate);
 			$select3->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
 			$select3->group(['u.id', 'n.id']);
@@ -2446,9 +2366,9 @@ class MobileController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'c.is_read'
 			]);
-			$select4->where('n.isdeleted=0 AND n.user_id=?', $user->id);
+			$select4->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
 			$select4->joinLeft(['c' => 'comments'], 'c.news_id=n.id', '');
-			$select4->where('c.isdeleted=0 AND c.user_id<>?', $user->id);
+			$select4->where('c.isdeleted=0 AND c.user_id<>?', $user['id']);
 			$select4->where('c.is_read=0 OR c.created_at>?', $maxDate);
 			$select4->joinLeft(['u' => 'user_data'], 'u.id=c.user_id', '');
 
@@ -2521,8 +2441,6 @@ class MobileController extends Zend_Controller_Action
 
 	/**
 	 * Set notifications read status action.
-	 *
-	 * @return void
 	 */
 	public function notificationReadAction()
 	{
@@ -2548,8 +2466,8 @@ class MobileController extends Zend_Controller_Action
 			switch ($type)
 			{
 				case 'friend':
-					$friendRequest = (new Application_Model_Friends)
-						->findById($id);
+					$friendModel = new Application_Model_Friends;
+					$friendRequest = $friendModel->findById($id);
 
 					if ($friendRequest == null)
 					{
@@ -2557,17 +2475,16 @@ class MobileController extends Zend_Controller_Action
 							var_export($id, true));
 					}
 
-					if ($user->id != $friendRequest->receiver_id)
+					if ($user['id'] != $friendRequest->receiver_id)
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
 
-					$friendRequest->notify = 1;
-					$friendRequest->save();
+					$friendModel->update(['notify' => 1], 'id=' . $id);
 					break;
 				case 'message':
-					$message = (new Application_Model_ConversationMessage)
-						->findById($id);
+					$messageModel = new Application_Model_ConversationMessage;
+					$message = $messageModel->findById($id);
 
 					if ($message == null)
 					{
@@ -2575,17 +2492,18 @@ class MobileController extends Zend_Controller_Action
 							var_export($id, true));
 					}
 
-					if ($user->id != $message->to_id)
+					if ($user['id'] != $message->to_id)
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
 
-					$message->is_read = 1;
-					$message->save();
+					$messageModel->update(['is_read' => 1], 'id=' . $id);
 					break;
 				case 'vote':
-					$vote = (new Application_Model_Voting)
-						->findById($id);
+					$voteModel = new Application_Model_Voting;
+					$vote = $voteModel->findById($id, [
+						'post' => ['post_user_id' => 'user_id']
+					]);
 
 					if ($vote == null)
 					{
@@ -2593,37 +2511,30 @@ class MobileController extends Zend_Controller_Action
 							var_export($id, true));
 					}
 
-					$post = $vote->findParentRow('Application_Model_News');
-
-					if ($post->isdeleted == 1)
-					{
-						throw new RuntimeException('Incorrect vote ID: ' .
-							var_export($id, true));
-					}
-
-					if ($user->id == $vote->user_id || $user->id != $post->user_id)
+					if ($user['id'] == $vote['user_id'] ||
+						$user['id'] != $vote['post_user_id'])
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
 
-					$vote->is_read = 1;
-					$vote->save();
+					$voteModel->update(['is_read' => 1], 'id=' . $id);
 					break;
 				case 'comment':
-					if (!Application_Model_Comments::checkId($id, $comment,
+					$commenModel = new Application_Model_Comments;
+					if (!$commenModel->checkId($id, $comment,
 						['post' => ['post_user_id' => 'user_id']]))
 					{
 						throw new RuntimeException('Incorrect comment ID: ' .
 							var_export($id, true));
 					}
 
-					if ($user->id == $comment['user_id'] || $user->id != $comment['post_user_id'])
+					if ($user['id'] == $comment['user_id'] ||
+						$user['id'] != $comment['post_user_id'])
 					{
 						throw new RuntimeException('You are not authorized to access this action');
 					}
 
-					(new Application_Model_Comments)
-						->update(['is_read' => 1], 'id=' . $id);
+					$commenModel->update(['is_read' => 1], 'id=' . $id);
 					break;
 				default:
 					throw new RuntimeException('Incorrect notification type: ' .
@@ -2652,7 +2563,7 @@ class MobileController extends Zend_Controller_Action
 	 * @return Zend_Db_Table_Row_Abstract
 	 * @throws RuntimeException
 	 */
-	protected function getUserByToken($loadCache=false)
+	protected function getUserByToken()
 	{
 		$token = $this->_request->getPost('token');
 
@@ -2662,31 +2573,19 @@ class MobileController extends Zend_Controller_Action
 				var_export($token, true));
 		}
 
-		if ($loadCache)
+		$cache = Zend_Registry::get('cache');
+		$user = $cache->load('user_' . $token);
+
+		if ($user == null)
 		{
-			$cache = Zend_Registry::get('cache');
-			$user = $cache->load('user_' . $token);
-
-			if ($user == null)
-			{
-				$user = $user = (new Application_Model_User)->findUserByToken($token);
-
-				if ($user == null || $user['Status'] != 'active')
-				{
-					throw new RuntimeException('You are not authorized to access this action');
-				}
-
-				$this->saveUserCache($user->toArray(), $token, $cache);
-			}
-		}
-		else
-		{
-			$user = (new Application_Model_User)->findUserByToken($token);
+			$user = $user = (new Application_Model_User)->findUserByToken($token);
 
 			if ($user == null || $user['Status'] != 'active')
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
+
+			$this->saveUserCache($user->toArray(), $token, $cache);
 		}
 
 		(new Application_Model_Loginstatus)->update([
@@ -2702,7 +2601,6 @@ class MobileController extends Zend_Controller_Action
 	 * @param mixed $user
 	 * @param string $token
 	 * @param Zend_Cache $cache
-	 * @return void
 	 */
 	protected function saveUserCache($user, $token, $cache=null)
 	{
@@ -2714,8 +2612,6 @@ class MobileController extends Zend_Controller_Action
 	 * Returns form validate error exception
 	 *
 	 * @param	Zend_Form	$form
-	 *
-	 * @return	void
 	 */
 	protected function _formValidateException(Zend_Form $form)
 	{
@@ -2740,7 +2636,6 @@ class MobileController extends Zend_Controller_Action
 	 * Error handler method.
 	 *
 	 * @param mixed $error Exception or string
-	 * @return void
 	 */
 	protected function errorHandler($error)
 	{
@@ -2756,7 +2651,6 @@ class MobileController extends Zend_Controller_Action
 	 * Response handler method.
 	 *
 	 * @param array $response Response data
-	 * @return void
 	 */
 	protected function responseHandler($response)
 	{
