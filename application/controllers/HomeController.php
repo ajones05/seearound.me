@@ -361,24 +361,26 @@ class HomeController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$form = new Application_Form_Address;
+			$addressForm = new Application_Form_Address;
 
-			if (!$form->isValid($this->_request->getPost()))
+			if (!$addressForm->isValid($this->_request->getPost()))
 			{
 				throw new RuntimeException(
-					implode("\n", $form->getErrorMessages()));
+					implode("\n", $addressForm->getErrorMessages()));
 			}
 
-			$address = $user->findDependentRowset('Application_Model_Address')->current();
-			$address->setFromArray($form->getValues());
-			$address->save();
+			$db = Zend_Db_Table::getDefaultAdapter();
+			$db->update('address', $addressForm->getValues(),
+				'id=' . $user['address_id']);
+
+			Application_Model_User::cleanUserCache($user);
 
 			$response = ['status' => 1];
 		}
@@ -391,7 +393,7 @@ class HomeController extends Zend_Controller_Action
 			);
 		}
 
-        $this->_helper->json($response);
+		$this->_helper->json($response);
 	}
 
 	/**
