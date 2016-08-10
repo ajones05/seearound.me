@@ -26,6 +26,17 @@ class Application_Model_Loginstatus extends Zend_Db_Table_Abstract
 	}
 
 	/**
+	 * Finds record by id.
+	 *
+	 * @param string $id
+	 * @return mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
+	 */
+	public function findById($id)
+	{
+		return $this->fetchRow($this->select()->where('id=?', $id));
+	}
+
+	/**
 	 * Finds record by acccess token.
 	 *
 	 * @param	string $token Access token
