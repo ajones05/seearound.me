@@ -17,19 +17,21 @@ class HomeController extends Zend_Controller_Action
 		{
 			(new Zend_Session_Namespace('userData'))->unsetAll();
 
-			$status = (new Application_Model_Loginstatus)->find($data['login_id'])->current();
+			$statusModel = new Application_Model_Loginstatus;
+			$loginStatus = $statusModel->findById($data['login_id']);
 
-			if ($status)
+			if ($loginStatus != null)
 			{
-				$status->logout_time = new Zend_Db_Expr('NOW()');
-				$status->save();
+				$statusModel->update([
+					'logout_time' => new Zend_Db_Expr('NOW()')
+				], 'id=' . $data['login_id']);
 			}
 
 			$auth->clearIdentity();
 			Zend_Session::forgetMe();
 		}
 
-		$this->_redirect($this->view->baseUrl('/login'));
+		$this->_redirect('login');
 	}
 
 	/**
