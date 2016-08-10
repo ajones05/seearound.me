@@ -7,13 +7,9 @@ use Respect\Validation\Validator as v;
  */
 class IndexController extends Zend_Controller_Action
 {
-    /**
-     * Initialize object
-     *
-     * Called from {@link __construct()} as final step of object instantiation.
-     *
-     * @return void
-     */
+	/**
+	 * Initialize object
+	 */
 	public function init()
 	{
 		if (Zend_Auth::getInstance()->hasIdentity())
@@ -417,7 +413,7 @@ class IndexController extends Zend_Controller_Action
 
 	public function sendInvitationAction()
 	{
-        $emailInvites = new Application_Model_Emailinvites;
+		$inviteForm = new Application_Model_Emailinvites;
 
 		if ($this->_request->isPost())
 		{
@@ -425,74 +421,86 @@ class IndexController extends Zend_Controller_Action
 			{
 				$email = $this->_request->getPost('Email_id');
 
-				if (My_Validate::emptyString($email))
+				if (!v::email()->validate($email))
 				{
-					throw new RuntimeException('Email cannot be blank', -1);
-				}
-
-				if (!filter_var($email, FILTER_VALIDATE_EMAIL))
-				{
-					throw new RuntimeException('Incorrect email address format: ' . var_export($email, true), -1);
+					throw new RuntimeException('Incorrect email address value: ' .
+						var_export($email, true));
 				}
 
 				if (Application_Model_User::findByEmail($email))
 				{
-					throw new RuntimeException('This email is already registered with seearound.me', -1);
+					throw new RuntimeException('This email is already registered with seearound.me');
 				}
 
-				$result = $emailInvites->saveInvitationInfo(
-					array('self_email' => $email),
-					array(
-						'sender_id' => new Zend_Db_Expr("NULL"),
-						'receiver_email'=>  new Zend_Db_Expr("NULL"),
-						'code' => My_CommonUtils::generateCode(),
-						'self_email' => $email,
-						'created' => new Zend_Db_Expr('NOW()')
-					)
-				);
+				$invite = $inviteForm->findByEmail($email);
 
-				if (!$result)
+				if ($invite != null)
 				{
-					throw new RuntimeException('An invitation has been sent already on this email', -1);
+					throw new RuntimeException('An invitation has been sent already on this email');
 				}
 
-				$response = array('status' => 1);
+				$inviteForm->insert([
+					'sender_id' => new Zend_Db_Expr("NULL"),
+					'receiver_email'=>  new Zend_Db_Expr("NULL"),
+					'code' => My_CommonUtils::generateCode(),
+					'self_email' => $email,
+					'created' => new Zend_Db_Expr('NOW()')
+				]);
+
+				$response = ['status' => 1];
 			}
 			catch (Exception $e)
 			{
-				$response = array(
+				$response = [
 					'status' => 0,
-					'error' => array('message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error')
-				);
+					'error' => ['message' => $e instanceof RuntimeException ?
+						$e->getMessage() : 'Internal Server Error']
+				];
 			}
 
 			$this->_helper->json($response);
 		}
+		else
+		{
+			$code = $this->_request->getParam('q');
 
-        
+			if (!v::optional(v::stringType())->validate($code))
+			{
+				throw new RuntimeException('Incorrect code value: ' .
+					var_export($code, true));
+			}
 
-        if($this->getRequest()->isGet() && $this->_request->getParam('q') != '' && $this->_request->getParam('regType') != '') {
+			$type = $this->_request->getParam('regType');
 
-            if($emailRow = $emailInvites->getData(array('code'=> $this->_request->getParam('q')))) {
+			if (!v::optional(v::stringType())->validate($type))
+			{
+				throw new RuntimeException('Incorrect type value: ' .
+					var_export($type, true));
+			}
 
-                $this->view->regEmail = ($emailRow->receiver_email)?($emailRow->receiver_email):($emailRow->self_email);
+			$email = $this->_request->getParam('Email_id');
 
-            }                      
+			if (!v::optional(v::email())->validate($email))
+			{
+				throw new RuntimeException('Incorrect email address value: ' .
+					var_export($email, true));
+			}
 
-        } else {
+			if ($code == null || $type == null)
+			{
+				$this->_redirect('/');
+			}
 
-            if($this->_request->getParam('regCode')) {
+			$invite = $inviteForm->findByCode($code);
 
-                
+			if ($invite)
+			{
+				$this->view->regEmail = $invite->receiver_email ?:
+					$invite->self_email;
+			}
+		}
 
-            } else {
-
-                $this->_redirect($this->view->baseUrl('/'));
-            }
-
-        }
-
-		$this->view->email = $this->_request->getParam('Email_id');
+		$this->view->email = $email;
 		$this->view->layout()->setLayout('login');
 	}
 }

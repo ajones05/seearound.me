@@ -13,8 +13,8 @@
         </div>    
         <div id="invite_div" class="invtFrndSec">
             <div class="invtFrndList">
-                <?php if(count($this->users) > 0) :?>
-                    <?php foreach ($this->users as $user) :?>
+                <?php if(count($this->paginator) > 0) :?>
+                    <?php foreach ($this->paginator as $user) :?>
                     <div class="invtFrndList">
                         <ul class="invtFrndRow">
                             <li class="name"><?=$user->self_email?></li>
@@ -56,25 +56,18 @@
             } 
         }
         $('#waitImage').show();
-        $.ajax({
-            type: 'post',
-            url : baseUrl+'admins/index',
-            data : {email:email, status:status},
-            success : function (data) {
-                data = $.parseJSON(data);
-                if(data && data.approve) {
-                    $(thisone).parent().parent().remove();
-                } else if(data && data.remove) {
-                    $(thisone).parent().parent().remove();
-                } else {
-                    alert('Oops! there are some error');
-                }
-                if(data && data.totalRows == 0) { 
-                    $('#norecorddiv').show();
-                    $('.pagination').hide();
-                }
-                $('#waitImage').hide();
-            }
-        });
+
+				ajaxJson({
+					url: baseUrl+'admins/index',
+					data:{email:email,status:status},
+					done: function(response){
+						$(thisone).parent().parent().remove();
+						if(response.total == 0){
+								$('#norecorddiv').show();
+								$('.pagination').hide();
+						}
+						$('#waitImage').hide();
+					}
+				});
     }
 </script>

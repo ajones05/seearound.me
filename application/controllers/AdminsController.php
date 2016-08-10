@@ -1,9 +1,17 @@
 <?php
+use Respect\Validation\Validator as v;
 
+/**
+ * Admins controller class.
+ * Handles admins actions.
+ */
 class AdminsController extends Zend_Controller_Action
 {
-    public function indexAction()
-    {
+	/**
+	 * Index action.
+	 */
+	public function indexAction()
+	{
 		$user = Application_Model_User::getAuth();
 
 		if ($user == null || !$user->is_admin)
@@ -11,47 +19,85 @@ class AdminsController extends Zend_Controller_Action
 			throw new RuntimeException('You are not authorized to access this action');
 		}
 
-        $response = new stdClass();
-        $emailInvites  = new Application_Model_Emailinvites();
+		$inviteModel = new Application_Model_Emailinvites;
 
-        if ($this->_request->isPost()) {
-           $email = $this->_request->getPost('email');
-           $status = $this->_request->getPost('status');
+		if ($this->_request->isPost())
+		{
+			try
+			{
+				$email = $this->_request->getPost('email');
 
-			$select = $emailInvites->select()->where('self_email =?', $email);
-
-			if ($row = $emailInvites->fetchRow($select)) {
-				if ($status == 'approve') {
-					My_Email::send(
-						$row->self_email,
-						'seearound.me Invitation',
-						array(
-							'template' => 'admin-invitation',
-							'assign' => array('invite' => $row)
-						)
-					);
-
-					$row->status = '1';
-					$row->save();
-					$response->approve = 'approved';
-				} else if ($status == 'remove') {
-					$row->delete();
-					$response->remove = 'deleted';
+				if (!v::email()->validate($email))
+				{
+					throw new RuntimeException('Incorrect email value: ' .
+						var_export($email, true));
 				}
 
-			   $response->totalRows = count($emailInvites->returnEmailInvites());
-			} else {
-				$response->error = 'No record found';
+				$status = $this->_request->getPost('status');
+
+				if (!v::stringType()->oneOf(v::equals('approve'),v::equals('remove'))
+					->validate($status))
+				{
+					throw new RuntimeException('Incorrect status value: ' .
+						var_export($status, true));
+				}
+
+				$invite = $inviteModel->findByEmail($email);
+
+				if ($invite == null)
+				{
+					throw new RuntimeException('No record found');
+				}
+
+				if ($status == 'approve')
+				{
+						My_Email::send(
+							$invite->self_email,
+							'seearound.me Invitation',
+							[
+								'template' => 'admin-invitation',
+								'assign' => ['invite' => $invite]
+							]
+						);
+
+					$inviteModel->update(['status' => 1], 'id=' . $invite->id);
+				}
+				else
+				{
+					$invite->delete();
+				}
+
+				$response = [
+					'status' => 1,
+					'total' => $inviteModel->getInvitesCount()
+				];
+			}
+			catch (Exception $e)
+			{
+				$response = [
+					'status' => 0,
+					'message' => $e instanceof RuntimeException ? $e->getMessage() :
+						'Internal Server Error'
+				];
 			}
 
 			$this->_helper->json($response);
 		}
 
-		$paginator = Zend_Paginator::factory($emailInvites->returnEmailInvites());
-		$paginator->setCurrentPageNumber($this->_request->getParam('page', 1));
+		$page = $this->_request->getPost('page', 1);
+
+		if (!v::intVal()->validate($page))
+		{
+			throw new RuntimeException('Incorrect page value: ' .
+				var_export($page, true));
+		}
+
+		$paginator = Zend_Paginator::factory($inviteModel->select()
+			->where('status=?', 0));
+		$paginator->setCurrentPageNumber($page);
 		$paginator->setItemCountPerPage(10);
 
-		$this->view->users = $this->view->paginator = $paginator;
+		$this->view->paginator = $paginator;
 		$this->view->hideRight = true;
 	}
 }
