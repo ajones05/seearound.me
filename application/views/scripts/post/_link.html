@@ -1,25 +1,27 @@
 <?php
-$link = My_CommonUtils::renderLink($this->post->link_link);
+$url = My_CommonUtils::renderLink($this->link['link']);
 ?>
 <div class="link-meta">
-	<?php if ($this->post->link_image_id): ?>
-	<div class="image">
-		<a href="<?php echo htmlspecialchars($link); ?>" target="_blank">
-			<img src="<?php echo $this->baseUrl(My_Query::getThumb($this->post, [448,320], 'link')['path']); ?>">
-		</a>
-	</div>
-	<?php endif; ?>
-	<div class="meta-content">
-		<a class="title" href="<?php echo htmlspecialchars($link); ?>" target="_blank"><?php echo $this->post->link_title; ?></a>
-		<?php if ($this->post->link_description != null): ?>
-		<div class="description"><?php echo My_StringHelper::stringLimit($this->post->link_description, 185, '...'); ?></div>
-		<?php endif; ?>
-		<div>
-			<span><?php echo strtoupper(parse_url($link, PHP_URL_HOST)); ?></span>
-			<?php if ($this->post->link_author != null): ?>
-			<span class="delim">|</span>
-			<span>BY <?php echo strtoupper($this->post->link_author); ?></span>
-			<?php endif; ?>
-		</div>
-	</div>
+<?php if (!empty($this->link['image_id'])): ?>
+<div class="image"><a href="<?php echo htmlspecialchars($url); ?>"
+target="_blank"><img
+src="<?php echo $this->baseUrl(Application_Model_NewsLink::getThumb($this->link,
+'448x320')); ?>"></a></div>
+<?php endif; ?>
+<div class="meta-content">
+<a class="title" href="<?php echo htmlspecialchars($url); ?>" target="_blank"
+><?php echo $this->link['title']; ?></a>
+<?php if (!empty($this->link['description'])): ?>
+<div class="description"
+><?php echo My_StringHelper::stringLimit($this->link['description'],
+	185, '...'); ?></div>
+<?php endif; ?>
+<div>
+<span><?php echo strtoupper(parse_url($url, PHP_URL_HOST)); ?></span>
+<?php if (!empty($this->link['author'])): ?>
+<span class="delim">|</span>
+<span>BY <?php echo strtoupper($this->link['author']); ?></span>
+<?php endif; ?>
+</div>
+</div>
 </div>

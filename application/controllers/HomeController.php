@@ -153,6 +153,23 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException(implode('. ', $upload->getMessages()), -1);
 			}
 
+			if (!empty($user['image_id']))
+			{
+				$db = Zend_Db_Table::getDefaultAdapter();
+
+				foreach ($userModel::$thumbPath as $path)
+				{
+					@unlink(ROOT_PATH_WEB . '/' . $path . '/' . $user['image_name']);
+				}
+
+				$db->delete('image_thumb', 'image_id=' . $user['image_id']);
+
+				@unlink(ROOT_PATH_WEB . '/' . $userModel->imagePath . '/' .
+					$user['image_name']);
+
+				$db->delete('image', 'id=' . $user['image_id']);
+			}
+
 			$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
 
 			do
@@ -165,21 +182,16 @@ class HomeController extends Zend_Controller_Action
 			$upload->addFilter('Rename', $full_path);
 			$upload->receive();
 
-			if ($user['image_id'])
-			{
-				Application_Model_Image::findById($user['image_id'])->deleteImage();
-			}
-
-			$image = (new Application_Model_Image)->save('www/upload', $name, [
+			$image = (new Application_Model_Image)->save('www/upload', $name, $thumbs, [
 				[[26,26], 'thumb26x26', 2],
 				[[55,55], 'thumb55x55', 2],
 				[[320,320], 'uploads']
 			]);
 
-			$userModel->update([
+			$userModel->updateWithCache([
 				'image_id' => $image['id'],
 				'image_name' => $name
-			], 'id=' . $user['id']);
+			], $user);
 
 			$response = [
 				'status' => 1,

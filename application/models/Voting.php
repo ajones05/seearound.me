@@ -1,16 +1,19 @@
 <?php
-
+/**
+ * This is the model class for table "votings".
+ */
 class Application_Model_Voting extends Zend_Db_Table_Abstract
 {
 	/**
-	 * @var	string
+	 * The table name.
+	 * @var string
 	 */
 	protected $_name = 'votings';
 
 	/**
 	 * @var	array
 	 */
-    protected $_dependentTables = [
+	protected $_dependentTables = [
 		'Application_Model_News'
 	];
 
@@ -22,8 +25,26 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 			'columns' => 'news_id',
 			'refTableClass' => 'Application_Model_News',
 			'refColumns' => 'id'
-        ]
-    ];
+		]
+	];
+
+	/**
+	 * Finds record by ID.
+	 *
+	 * @param integer $id
+	 * @param array $options
+	 * return mixed If success Zend_Db_Table_Row, otherwise NULL
+	 */
+	public function findById($id, $options)
+	{
+		return $this->fetchRow($this->select()->setIntegrityCheck(false)
+			->from(['v' => 'votings'])
+			->where('v.id=?', $id)
+			->join(['p' => 'news'], 'p.id=v.news_id',
+				My_ArrayHelper::getProp($options, 'post', ''))
+			->where('p.isdeleted=0')
+		);
+	}
 
 	/**
 	 * Returns vote row by user ID and post ID.
@@ -58,34 +79,5 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 		}
 
 		return $user['is_admin'] ? true : $user['id'] != $post['user_id'];
-	}
-
-	/**
-	 * Finds record by ID.
-	 *
-	 * @param	integer $id
-	 * return	mixed If success Zend_Db_Table_Row, otherwise NULL
-	 */
-	public function findById($id)
-	{
-		$model = new self;
-		$result = $model->fetchRow(
-			$model->select()->where('id=?', $id)
-		);
-		return $result;
-	}
-
-	/**
-	 * Cancel vote.
-	 *
-	 * @param	Zend_Db_Table_Row $vote
-	 * return	Zend_Db_Table_Row
-	 */
-	public function cancelVote($vote)
-	{
-		$vote->updated_at = new Zend_Db_Expr('NOW()');
-		$vote->active = 0;
-		$vote->save();
-		return $vote;
 	}
 }

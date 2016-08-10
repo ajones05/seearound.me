@@ -1120,7 +1120,7 @@ function postItem_renderContent(id, postContainer){
 			data: {id:id},
 			done: function(response){
 				$('.default-panel', postContainer).hide();
-				var editForm = $('<textarea>', {rows:1,name:'news'})
+				var editForm = $('<textarea>', {rows:1,name:'body'})
 					.appendTo($('.post_text', postContainer).empty())
 					.val(response.body)
 					.bind('input paste keypress',validatePost)
@@ -1236,7 +1236,7 @@ function postItem_renderContent(id, postContainer){
 
 								ajaxJson({
 									url:baseUrl+'post/save',
-									data:{id:id,news:body},
+									data:{id:id,body:body},
 									beforeSend:function(){editForm.attr('disabled',true); },
 									done:function(saveResponse){
 										$('.post_text', postContainer).html(saveResponse.html);
@@ -1408,7 +1408,7 @@ function newPost_dialog(){
 	var userBlock=$('<div/>').addClass('user')
 		.append($('<img/>',{width:43,height:43,src:user.image}),
 			$('<p/>').text(user.name));
-	var postBlockFl=$('<textarea/>',{name:'news',
+	var postBlockFl=$('<textarea/>',{name:'body',
 				placeholder:'Share something about a location...'})
 		.textareaAutoSize()
 		.bind('input paste keypress',validatePost)

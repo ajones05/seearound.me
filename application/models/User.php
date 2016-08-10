@@ -10,6 +10,11 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	protected static $_auth;
 
 	/**
+	 * @var string
+	 */
+	public static $imagePath = 'www/upload';
+
+	/**
 	 * @var array
 	 */
 	public static $thumbPath = [
@@ -27,7 +32,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	];
 
 	/**
-	 * @var	string
+	 * The table name.
+	 * @var string
 	 */
 	 protected $_name = 'user_data';
 
@@ -132,17 +138,32 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * Finds record by ID.
 	 *
-	 * @param	integer	$id
-	 *
-	 * return	mixed	If success Zend_Db_Table_Row_Abstract, otherwise NULL
+	 * @param integer $id
+	 * @param boolean $cache
+	 * #return mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
-	public static function findById($id)
+	public static function findById($id, $loadCache=false)
 	{
+		if ($loadCache)
+		{
+			$cache = Zend_Registry::get('cache');
+			$user = $cache->load('user_' . $id);
+
+			if ($user != null)
+			{
+				return $user;
+			}
+		}
+
 		$model = new self;
-		$result = $model->fetchRow(
-			$model->publicSelect()->where('u.id=?', $id)
-		);
-		return $result;
+		$user = $model->fetchRow($model->publicSelect()->where('u.id=?', $id));
+
+		if ($user != null && $loadCache)
+		{
+			$cache->save($user->toArray(), 'user_' . $id, ['user' . $id]);
+		}
+
+		return $user;
 	}
 
 	/**
@@ -179,29 +200,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 		if (self::$_auth == null)
 		{
-			if (!$loadCache)
-			{
-				self::$_auth = self::findById($auth['user_id']);
-				return self::$_auth;
-			}
-
-			$cache = Zend_Registry::get('cache');
-			$user = $cache->load('user_' . $auth['user_id']);
-
-			if ($user == null)
-			{
-				$user = self::findById($auth['user_id']);
-
-				if ($user == null)
-				{
-					return false;
-				}
-
-				$cache->save($user->toArray(), 'user_' . $auth['user_id'],
-					['user' . $auth['user_id']]);
-			}
-
-			self::$_auth = $user;
+			self::$_auth = self::findById($auth['user_id'], $loadCache);
 		}
 
 		return self::$_auth;
@@ -424,7 +423,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 							throw new Exception('Failed to copy file ' . $pictureUrl);
 						}
 
-						$image = (new Application_Model_Image)->save('www/upload', $name, [
+						$image = (new Application_Model_Image)->save('www/upload', $name, $thumbs, [
 							[[26,26], 'thumb26x26', 2],
 							[[55,55], 'thumb55x55', 2],
 							[[320,320], 'uploads']
