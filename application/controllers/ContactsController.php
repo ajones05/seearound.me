@@ -10,21 +10,19 @@ class ContactsController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$user = Application_Model_User::getAuth();
+		$user = Application_Model_User::getAuth(true);
 
 		if ($user == null)
 		{
-			$this->_redirect($this->view->baseUrl('/'));
+			$this->_redirect('/');
 		}
 
-		$user_invites = $user->findDependentRowset('Application_Model_Invitestatus')->current();
-
-		if ($user_invites->invite_count <= 0)
+		if ($user['invite'] <= 0)
 		{
-			$this->_redirect($this->view->baseUrl('contacts/friends-list'));
+			$this->_redirect('contacts/friends-list');
 		}
 
-		$this->view->invite_count = $user_invites->invite_count;
+		$this->view->invite_count = $user['invite'];
 		$this->view->hideRight = true;
 
 		$this->view->headScript()
@@ -38,121 +36,131 @@ class ContactsController extends Zend_Controller_Action
 	 */
 	public function invitesAction() 
 	{
-		$user = Application_Model_User::getAuth();
+		$user = Application_Model_User::getAuth(true);
 
 		if ($user == null)
 		{
-			$this->_redirect($this->view->baseUrl('/'));
+			$this->_redirect('/');
 		}
 
-		$user_invites = $user->findDependentRowset('Application_Model_Invitestatus')->current();
+		$userInvites = $user['invite'];
 
-		if ($user_invites->invite_count <= 0)
+		if ($userInvites <= 0)
 		{
-			$this->_redirect($this->view->baseUrl('contacts/friends-list'));
+			$this->_redirect('contacts/friends-list');
 		}
 
+		$userModel = new Application_Model_User;
+		$settings = Application_Model_Setting::getInstance();
 		$invite_success = 0;
 
 		if ($this->_request->isPost())
 		{
-			$emails = explode(",", $this->_request->getPost("emails"));
+			$emails = $this->_request->getPost('emails');
 
-			if (!count($emails))
+			if (!v::stringType()->notEmpty()->validate($emails))
 			{
-				throw new RuntimeException('Emails cannot be blank', -1);
+				throw new RuntimeException('Incorrect emails value: ' .
+					var_export($emails, true));
 			}
 
-			foreach ($emails as &$email)
+			$inviteModel = new Application_Model_Emailinvites;
+			$sendInvites = 0;
+			$sendEmails = [];
+
+			foreach (explode(',', $emails) as $email)
 			{
 				$email = trim(strtolower($email));
 
-				if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+				if (!v::email()->validate($email))
 				{
-					throw new RuntimeException('Incorrect email value: ' . var_export($email, true), -1);
+					throw new RuntimeException('Incorrect email address value: ' .
+						var_export($email, true));
 				}
-			}
 
-			$emails = array_unique($emails);
+				if (in_array($email, $sendEmails))
+				{
+					continue;
+				}
 
-			$userTable = new Application_Model_User;
-			$emailInvites = new Application_Model_Emailinvites;
-			$settings = Application_Model_Setting::getInstance();
+				$inviteUser = $userModel->findByEmail($email);
+				$sendEmails[] = $email;
 
-			foreach (array_slice($emails, 0, $user_invites->invite_count) as $email)
-			{
-				$email_user = $userTable->findByEmail($email);
-
-				if ($email_user)
+				if ($inviteUser != null)
 				{
 					My_Email::send(
 						$email,
 						'seearound.me connect request',
-						array(
+						[
 							'template' => 'invite-1',
-							'assign' => array('user' => $user),
+							'assign' => ['user' => $user],
 							'settings' => $settings
-						)
+						]
 					);
 
 					My_Email::send(
-						$user->Email_id,
+						$user['Email_id'],
 						'User already registered',
-						array(
+						[
 							'template' => 'invite-2',
-							'assign' => array('user' => $email_user),
+							'assign' => ['user' => $inviteUser],
 							'settings' => $settings
-						)
+						]
 					);
 				}
 				else
 				{
 					$code = My_CommonUtils::generateCode();
 
-					$emailInvites->insert(array(
-						"sender_id" => $user->id,
-						"receiver_email" => $email,
-						"code" => $code,
+					$inviteModel->insert([
+						'sender_id' => $user['id'],
+						'receiver_email' => $email,
+						'code' => $code,
 						'created' => new Zend_Db_Expr('NOW()')
-					));
+					]);
 
 					My_Email::send(
 						$email,
 						'seearound.me join request',
-						array(
+						[
 							'template' => 'invite-3',
-							'assign' => array(
+							'assign' => [
 								'user' => $user,
 								'code' => $code,
 								'settings' => $settings
-							),
+							],
 							'settings' => $settings
-						)
+						]
 					);
 
-					$user_invites->invite_count--;
-					$user_invites->save();
-					$invite_success++;
+					$sendInvites++;
+
+					if (--$userInvites <= 0)
+					{
+						break;
+					}
 				}
 			}
 		}
 
-		$this->view->invite_success = $invite_success;
-		$this->view->invite_count = $user_invites->invite_count;
+		$userModel->updateWithCache([
+			'invite' => $userInvites
+		], $user);
+
+		$this->view->invite_success = $sendInvites;
+		$this->view->invite_count = $userInvites;
 		$this->view->settings = $settings;
 		$this->view->hideRight = true;
 	}
 
 	/**
 	 * Ajax check facebook user status action.
-	 *
-	 * @return void
 	 */
 	public function checkfbstatusAction() 
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -168,7 +176,8 @@ class ContactsController extends Zend_Controller_Action
 
 			$response = array('status' => 1);
 
-			$facebook_friends = Application_Model_Fbtempusers::findAllByNetworkId($network_id, $user->id);
+			$facebook_friends = Application_Model_Fbtempusers::findAllByNetworkId(
+				$network_id, $user['id']);
 
 			if ($facebook_friends)
 			{
@@ -176,37 +185,38 @@ class ContactsController extends Zend_Controller_Action
 			}
 			else
 			{
-				$facebook_user = Application_Model_User::findByNetworkId($network_id);
-				$address = $facebook_user->findDependentRowset('Application_Model_Address')->current();
+				$facebookUser = Application_Model_User::findByNetworkId($network_id);
 
-				if (count($facebook_user) > 0)
+				if ($facebookUser != null)
 				{
-					$response['address'] = Application_Model_Address::format($address->toArray());
+					$response['address'] = Application_Model_Address::format($facebookUser);
 
-					$friends = (new Application_Model_Friends)->isFriend($user->id, $facebook_user->id);
+					$friends = (new Application_Model_Friends)
+						->isFriend($user['id'], $facebookUser->id);
 
 					if ($friends)
 					{
-						$response['data'] = array('status' => $friends->status);
-						$response['type'] = "herespy";
+						$response['data'] = ['status' => $friends->status];
+						$response['type'] = 'herespy';
 					}
 					else
 					{
-						$response['type'] = "follow";
+						$response['type'] = 'follow';
 					}
 				}
 				else
 				{
-					$response['type'] = "blank";
+					$response['type'] = 'blank';
 				}
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_helper->json($response);
@@ -221,43 +231,44 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$user_invites = $user->findDependentRowset('Application_Model_Invitestatus')->current();
-
-			if ($user_invites->invite_count <= 0)
+			if ($user['invite'] <= 0)
 			{
-				throw new RuntimeException('Sorry! you can not send this invitation', -1);
-			}
-			
-			$network_id = trim($this->_request->getPost("network_id"));
-
-			if ($network_id === '')
-			{
-				throw new RuntimeException('Network ID cannot be blank.', -1);
+				throw new RuntimeException('Sorry! you can not send this invitation');
 			}
 
-			(new Application_Model_Fbtempusers)->invite(array(
-				"sender_id" => $user->id,
-				"reciever_nw_id" => $network_id,
-			));
+			$network_id = trim($this->_request->getPost('network_id'));
 
-			$user_invites->invite_count--;
-			$user_invites->save();
+			if (!v::stringType()->validate($network_id))
+			{
+				throw new RuntimeException('Incorrect network id value: ' .
+					var_export($network_id, true));
+			}
 
-			$response = array('status' => 1);
+			(new Application_Model_Fbtempusers)->invite([
+				'sender_id' => $user['id'],
+				'reciever_nw_id' => $network_id,
+			]);
+
+			(new Application_Model_User)->updateWithCache([
+				'invite' => $user['invite']-1
+			], $user);
+
+			$response = ['status' => 1];
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() : 'Internal Server Error'
-			);
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 		}
 
 		$this->_helper->json($response);
@@ -345,38 +356,38 @@ class ContactsController extends Zend_Controller_Action
 	 */
 	public function friendsListAction()
 	{
-		$user = Application_Model_User::getAuth();
+		$user = Application_Model_User::getAuth(true);
 
 		if ($user == null)
 		{
-			$this->_redirect($this->view->baseUrl('/'));
+			$this->_redirect('/');
 		}
 
 		$settings = Application_Model_Setting::getInstance();
 
-		$friends_count = (new Application_Model_Friends)->getCountByUserId($user->id);
+		$friends_count = (new Application_Model_Friends)->getCountByUserId($user['id']);
 
-		$this->view->headLink()
-			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
-
-		$userAddress = $user->findDependentRowset('Application_Model_Address')->current();
+		$this->view->headLink()->appendStylesheet(My_Layout::assetUrl(
+			'bower_components/jquery-loadmask/src/jquery.loadmask.css', $settings));
 
 		$config = Zend_Registry::get('config_global');
 		$this->view->headScript()
 			->appendScript('var friends_count=' . $friends_count . ',' .
 				'profileData=' . json_encode([
-					'address' => Application_Model_Address::format($userAddress->toArray()),
-					'latitude' => $userAddress->latitude,
-					'longitude' => $userAddress->longitude
+					'address' => Application_Model_Address::format($user),
+					'latitude' => $user['latitude'],
+					'longitude' => $user['longitude']
 				]) . ',' .
 				'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
 				$settings['google_mapsKey'])
-			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'))
-			->appendFile(My_Layout::assetUrl('www/scripts/friendlist.js'));
+			->appendFile(My_Layout::assetUrl(
+				'bower_components/jquery-loadmask/src/jquery.loadmask.js', $settings))
+			->appendFile(My_Layout::assetUrl(
+				'www/scripts/friendlist.js', $settings));
 
-        $this->view->homePageExist = true;
-        $this->view->changeLocation = true;
+		$this->view->homePageExist = true;
+		$this->view->changeLocation = true;
 		$this->view->displayMapSlider = true;
 		$this->view->displayMapZoom = true;
 		$this->view->friends_count = $friends_count;
