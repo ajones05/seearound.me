@@ -294,7 +294,7 @@ class HomeController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
