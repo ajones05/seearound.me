@@ -642,12 +642,21 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	public function updateWithCache(array $data, $user)
 	{
 		$result = $this->update($data, 'id=' . $user['id']);
+		$this->cleanUserCache($user);
+		return $result;
+	}
 
+	/**
+	 * Clears user date cache.
+	 *
+	 * @param array|Zend_Db_Table_Row_Abstract $user
+	 * @return integer
+	 */
+	public static function cleanUserCache($user)
+	{
 		Zend_Registry::get('cache')->clean(
 			Zend_Cache::CLEANING_MODE_MATCHING_ANY_TAG,
 			['user' . $user['id']]
 		);
-
-		return $result;
 	}
 }

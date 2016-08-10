@@ -1,7 +1,7 @@
 <?php
 $url = $this->opts['baseUrl'] . 'post/' . $this->post->id;
-$label = count($this->comments) == 1 ?
-	$this->comments[0]->findDependentRowset('Application_Model_User')->current()->Name : 'Friends';
+$label = $this->comments->count() == 1 ?
+	$this->comments[0]['owner_name'] : 'Friends';
 
 $label .= ' has commented on ';
 
