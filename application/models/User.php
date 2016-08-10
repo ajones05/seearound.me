@@ -48,8 +48,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		'Application_Model_CommentNotify',
 		'Application_Model_Conversation',
 		'Application_Model_ConversationMessage',
-		'Application_Model_Friends',
-		'Application_Model_Invitestatus'
+		'Application_Model_Friends'
 	];
 
 	/**
@@ -90,11 +89,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_Friends',
 			'refColumns' => 'sender_id'
-		],
-		'InviteStatus' => [
-			'columns' => 'id',
-			'refTableClass' => 'Application_Model_Invitestatus',
-			'refColumns' => 'user_id'
 		]
 	];
 
@@ -324,18 +318,13 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'password' => $this->encryptPassword($data['password']),
 			'Status' => $data['Status'],
 			'image_id' => My_ArrayHelper::getProp($data, 'image_id'),
-			'image_name' => My_ArrayHelper::getProp($data, 'image_name')
+			'image_name' => My_ArrayHelper::getProp($data, 'image_name'),
+			'invite' => 10
 		];
 
 		$user['id'] = $this->insert($user + [
 			'address_id' => $addressId,
 			'Creation_date' => new Zend_Db_Expr('NOW()')
-		]);
-
-		(new Application_Model_Invitestatus)->insert([
-			'user_id' => $user['id'],
-			'invite_count' => 10,
-			'created' => new Zend_Db_Expr('NOW()')
 		]);
 
 		return $user;
@@ -443,11 +432,6 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 				$user += $addressData;
 
-				(new Application_Model_Invitestatus)->insert([
-					'user_id' => $user['id'],
-					'created' => new Zend_Db_Expr('NOW()')
-				]);
-
 				$users = Application_Model_Fbtempusers::findAllByNetworkId($network_id);
 
 				if ($users != null)
@@ -532,6 +516,41 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			$this->_db->rollBack();
 
 			throw $e;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Updates user invite count.
+	 *
+	 * @param array|Zend_Db_Table_Row_Abstract $user
+	 * @return boolean
+	 */
+	public static function updateInvites($user)
+	{
+		if (date('N') != 1)
+		{
+			return false;
+		}
+
+		if (floor((time() - strtotime($user['invite_updated_at'])) / 86400) >= 7)
+		{
+			$loginModel = new Application_Model_Loginstatus;
+			$result = $loginModel->fetchRow(
+				$loginModel->select()
+					->from($loginModel, 'count(*) as count')
+					->where('user_id=?', $user['id'])
+					->where('login_time>=DATE_SUB(NOW(),INTERVAL 7 DAY)')
+			);
+
+			if ($result && $result->count > 5)
+			{
+				(new self)->updateWithCache([
+					'invite' => $user['invite'] + floor($result->count / 5),
+					'invite_updated_at' => new Zend_Db_Expr('NOW()')
+				], $user);
+			}
 		}
 
 		return true;

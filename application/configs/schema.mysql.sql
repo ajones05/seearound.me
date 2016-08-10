@@ -31,6 +31,8 @@ ALTER TABLE `user_data` ADD `post` int(11) not null default '0';
 ALTER TABLE `user_data` ADD `comment` int(11) not null default '0';
 ALTER TABLE `user_data` ADD `comment_other` int(11) not null default '0';
 ALTER TABLE `user_data` ADD `vote` int(11) not null default '0';
+ALTER TABLE `user_data` ADD `invite` int(11) not null default '0';
+ALTER TABLE `user_data` ADD `invite_updated_at` timestamp null default null;
 
 --
 -- Table structure for table `user_confirm`
@@ -116,6 +118,7 @@ CREATE TABLE `friend_log` (
 --
 ALTER TABLE `invite_status` ENGINE = InnoDB;
 ALTER TABLE `invite_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
+DROP TABLE `invite_status`;
 
 --
 -- Table structure for table `login_status`

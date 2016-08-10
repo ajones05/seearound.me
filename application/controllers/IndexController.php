@@ -88,7 +88,7 @@ class IndexController extends Zend_Controller_Action
 						}
 
 						$loginId = (new Application_Model_Loginstatus)->save($user);
-						Application_Model_Invitestatus::updateCount($user);
+						Application_Model_User::updateInvites($user);
 
 						$auth = Zend_Auth::getInstance();
 						$auth->getStorage()->write([
@@ -186,7 +186,7 @@ class IndexController extends Zend_Controller_Action
 
 		$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
 		$loginId = (new Application_Model_Loginstatus)->save($user);
-		Application_Model_Invitestatus::updateCount($user);
+		Application_Model_User::updateInvites($user);
 
 		Zend_Auth::getInstance()->getStorage()->write(array(
 			'user_id' => $user['id'],

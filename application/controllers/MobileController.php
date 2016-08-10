@@ -83,7 +83,7 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$accessToken = (new Application_Model_Loginstatus)->save($user, true);
-			Application_Model_Invitestatus::updateCount($user);
+			Application_Model_User::updateInvites($user);
 			$this->saveUserCache($user->toArray(), $accessToken);
 
 			$response = [
@@ -141,7 +141,7 @@ class MobileController extends Zend_Controller_Action
 
 			$user = (new Application_Model_User)->facebookAuthentication($facebookApi);
 			$accessToken = (new Application_Model_Loginstatus)->save($user, true);
-			Application_Model_Invitestatus::updateCount($user);
+			Application_Model_User::updateInvites($user);
 
 			$response = [
 				'status' => 'SUCCESS',
