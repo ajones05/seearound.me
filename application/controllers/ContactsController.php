@@ -251,14 +251,20 @@ class ContactsController extends Zend_Controller_Action
 					var_export($network_id, true));
 			}
 
-			(new Application_Model_Fbtempusers)->invite([
-				'sender_id' => $user['id'],
-				'reciever_nw_id' => $network_id,
-			]);
+			$fbUserModel = new Application_Model_Fbtempusers;
+			$result = $fbUserModel->findAllByNetworkId($network_id, $user['id']);
 
-			(new Application_Model_User)->updateWithCache([
-				'invite' => $user['invite']-1
-			], $user);
+			if ($result == null)
+			{
+				$fbUserModel->insert([
+					'sender_id' => $user['id'],
+					'reciever_nw_id' => $network_id,
+				]);
+
+				(new Application_Model_User)->updateWithCache([
+					'invite' => $user['invite']-1
+				], $user);
+			}
 
 			$response = ['status' => 1];
 		}
@@ -422,7 +428,7 @@ class ContactsController extends Zend_Controller_Action
 
 			$response = ['status' => 1];
 
-			if (count($friends))
+			if ($friends->count())
 			{
 				foreach ($friends as $friend)
 				{

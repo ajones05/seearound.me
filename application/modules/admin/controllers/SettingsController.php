@@ -92,11 +92,11 @@ class Admin_SettingsController extends Zend_Controller_Action
 			throw new RuntimeException('Setting ID cannot be blank');
 		}
 
-		$model = new Admin_Model_Setting;
+		$settingModel = new Admin_Model_Setting;
 
 		if ($id != null)
 		{
-			$setting = $model->findById($id);
+			$setting = $settingModel->findById($id);
 
 			if ($setting === null)
 			{
@@ -106,42 +106,45 @@ class Admin_SettingsController extends Zend_Controller_Action
 			$this->view->setting = $setting;
 		}
 
-		$form = new Admin_Form_Setting;
+		$settingForm = new Admin_Form_Setting;
 
 		if ($this->_request->isPost())
 		{
 			$data = $this->_request->getPost();
 
-			if ($form->isValid($data))
+			if ($settingForm->isValid($data))
 			{
+				$saveData = [
+					'name' => $data['name'],
+					'value' => $data['value'],
+					'description' => $data['description'],
+					'updated_at' => new Zend_Db_Expr('NOW()')
+				];
+
 				if ($id == null)
 				{
-					$setting = $model->createRow([
-						'created_at' => new Zend_Db_Expr('NOW()')
-					]);
+					$saveData['created_at'] = new Zend_Db_Expr('NOW()');
+					$settingModel->insert($saveData);
+				}
+				else
+				{
+					$settingModel->update($saveData, 'id=' . $id);
 				}
 
-				$setting->name = $data['name'];
-				$setting->value = $data['value'];
-				$setting->description = $data['description'];
-				$setting->updated_at = new Zend_Db_Expr('NOW()');
-				$setting->save();
-
 				Zend_Registry::get('cache')->remove('settings');
-
 				$this->_redirect('admin/settings');
 			}
 		}
 		elseif ($id != null)
 		{
-			$form->setDefaults([
+			$settingForm->setDefaults([
 				'name' => $setting->name,
 				'value' => $setting->value,
 				'description' => $setting->description
 			]);
 		}
 
-		$this->view->form = $form;
+		$this->view->form = $settingForm;
 		$this->view->headScript('file', My_Layout::assetUrl(
 				'bower_components/jquery-validation/dist/jquery.validate.min.js'));
   }
