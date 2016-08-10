@@ -85,6 +85,8 @@ do
 							'c1.news_id = ' . $post->id . ' AND ' .
 							'c1.user_id = ' . $user->id . ' AND ' .
 							'c1.isdeleted = 0), 0))')
+					->join(['u' => 'user_data'], 'u.id=c.user_id',
+						['owner_name' => 'Name'])
 					->order('c.created_at DESC');
 
 				$comments = $commentModel->fetchAll($commentQuery->limit(15));
@@ -113,10 +115,10 @@ do
 
 					foreach ($comments as $comment)
 					{
-						$commentUserNotifyModel->insert(array(
+						$commentUserNotifyModel->insert([
 							'comment_id' => $comment->id,
 							'user_id' => $user->id
-						));
+						]);
 					}
 
 					echo $user->Name . "<" . $user->Email_id . "> - " . $comments->count() . "\n";
