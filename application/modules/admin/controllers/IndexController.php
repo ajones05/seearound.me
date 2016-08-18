@@ -4,29 +4,29 @@
  */
 class Admin_IndexController extends Zend_Controller_Action
 {
-    /**
-     * Initialize object
+	/**
+   * Initialize object
 	 *
 	 * @return void
-     */
-    public function init()
-    {
-		$this->user = Application_Model_User::getAuth();
+	 */
+	public function init()
+	{
+		$this->user = Application_Model_User::getAuth(true);
 
 		if ($this->user == null)
 		{
 			throw new RuntimeException('You are not authorized to access this action');
 		}
 
-        if (!$this->user->is_admin)
+		if (empty($this->user['is_admin']))
 		{
-            $this->_redirect($this->view->baseUrl('/'));
-        }
+			$this->_redirect($this->view->baseUrl('/'));
+		}
 
 		$this->view->layout()->setLayout('bootstrap');
 		$this->view->request = $this->_request;
 		$this->view->user = $this->user;
-    }
+	}
 
 	/**
 	 * Index action

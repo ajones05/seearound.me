@@ -290,7 +290,7 @@ class ContactsController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth();
+			$user = $userModel->getAuth(true);
 
 			if ($user == null)
 			{
@@ -408,7 +408,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -433,7 +433,7 @@ class ContactsController extends Zend_Controller_Action
 				foreach ($friends as $friend)
 				{
 					$alias = $friend['receiver_id'] == $user['id'] ?
-						'receiver_' : 'sender_';
+						'sender_' : 'receiver_';
 
 					$response['friends'][] = [
 						'id' => $friend[$alias.'id'],
@@ -469,7 +469,7 @@ class ContactsController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth();
+			$user = $userModel->getAuth(true);
 
 			if ($user == null)
 			{
@@ -591,7 +591,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -600,7 +600,7 @@ class ContactsController extends Zend_Controller_Action
 
 			$response = array('status' => 1);
 
-			$friends = (new Application_Model_Friends)->getCountByReceiverId($user->id);
+			$friends = (new Application_Model_Friends)->getCountByReceiverId($user['id']);
 
 			if ($friends > 0)
 			{
@@ -613,7 +613,7 @@ class ContactsController extends Zend_Controller_Action
 				$messageModel->select()
 					->from($messageModel, array('count' => 'count(*)'))
 					->where('is_read=?', 0)
-					->where('to_id=?', $user->id)
+					->where('to_id=?', $user['id'])
 			);
 
 			if ($result->count > 0)
@@ -648,7 +648,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -658,7 +658,7 @@ class ContactsController extends Zend_Controller_Action
 			$friendModel = new Application_Model_Friends;
 			$friends = $friendModel->fetchAll(
 				$friendModel->select()
-					->where('receiver_id=?', $user->id)
+					->where('receiver_id=?', $user['id'])
 					->where('status=1')
 					->where('notify=0')
 					->limit(10)
@@ -687,11 +687,12 @@ class ContactsController extends Zend_Controller_Action
 
 				$friendModel->update(
 					['notify' => 1],
-					'receiver_id=' . $user->id, 'status=1'
+					'receiver_id=' . $user['id'], 'status=1'
 				);
 
 				$response['data'] = $data;
-				$response['total'] = $count < 5 ? $count : $friendModel->getCountByReceiverId($user->id);
+				$response['total'] = $count < 5 ? $count :
+					$friendModel->getCountByReceiverId($user['id']);
 			}
 		}
 		catch (Exception $e)
@@ -716,7 +717,7 @@ class ContactsController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth();
+			$user = $userModel->getAuth(true);
 
 			if ($user == null)
 			{
@@ -734,7 +735,7 @@ class ContactsController extends Zend_Controller_Action
 			$response = ['status' => 1];
 
 			$query = $userModel->publicSelect()
-				->where('u.id<>?', $user->id)
+				->where('u.id<>?', $user['id'])
 				->order('u.Name')
 				->group('u.id');
 

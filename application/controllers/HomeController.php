@@ -43,7 +43,7 @@ class HomeController extends Zend_Controller_Action
 	{
 		$config = Zend_Registry::get('config_global');
 		$userModel = new Application_Model_User;
-		$user = $userModel->getAuth();
+		$user = $userModel->getAuth(true);
 
 		if ($user == null)
 		{
@@ -79,33 +79,33 @@ class HomeController extends Zend_Controller_Action
 		else
 		{
 			$addressForm->setDefaults([
-				'latitude' => $user->latitude,
-				'longitude' => $user->longitude,
-				'street_name' => $user->street_name,
-				'street_number' => $user->street_number,
-				'city' => $user->city,
-				'state' => $user->state,
-				'country' => $user->country,
-				'zip' => $user->zip
+				'latitude' => $user['latitude'],
+				'longitude' => $user['longitude'],
+				'street_name' => $user['street_name'],
+				'street_number' => $user['street_number'],
+				'city' => $user['city'],
+				'state' => $user['state'],
+				'country' => $user['country'],
+				'zip' => $user['zip']
 			]);
 			$profileForm->setDefaults([
-				'email' => $user->Email_id,
-				'public_profile' => $user->public_profile,
-				'name' => $user->Name,
-				'gender' => $user->gender,
-				'activities' => $user->activity,
-				'latitude' => $user->latitude,
-				'longitude' => $user->longitude,
-				'timezone' => $user->timezone,
+				'email' => $user['Email_id'],
+				'public_profile' => $user['public_profile'],
+				'name' => $user['Name'],
+				'gender' => $user['gender'],
+				'activities' => $user['activity'],
+				'latitude' => $user['latitude'],
+				'longitude' => $user['longitude'],
+				'timezone' => $user['timezone'],
 			]);
 
-			if ($user->Birth_date != null)
+			if (!empty($user['Birth_date']))
 			{
-				$birthbay = new DateTime($user->Birth_date);
+				$birthday = new DateTime($user['Birth_date']);
 				$profileForm->setDefaults([
-					'birth_day' => $birthbay->format('d'),
-					'birth_month' => $birthbay->format('m'),
-					'birth_year' => $birthbay->format('Y')
+					'birth_day' => $birthday->format('d'),
+					'birth_month' => $birthday->format('m'),
+					'birth_year' => $birthday->format('Y')
 				]);
 			}
 		}
@@ -116,9 +116,9 @@ class HomeController extends Zend_Controller_Action
 		$this->view->headScript()
 			->appendScript('var profileData=' . json_encode([
 				'address' => $addressFormat,
-				'latitude' => $user->latitude,
-				'longitude' => $user->longitude,
-				'timezone' => $user->timezone
+				'latitude' => $user['latitude'],
+				'longitude' => $user['longitude'],
+				'timezone' => $user['timezone']
 			]) . ',' .
 			'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
 			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
@@ -135,7 +135,7 @@ class HomeController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth();
+			$user = $userModel->getAuth(true);
 
 			if ($user == null)
 			{
@@ -219,7 +219,7 @@ class HomeController extends Zend_Controller_Action
 
 		if ($isAuth)
 		{
-			$user = $userModel->getAuth();
+			$user = $userModel->getAuth(true);
 
 			if ($user == null)
 			{
@@ -238,9 +238,11 @@ class HomeController extends Zend_Controller_Action
 				var_export($user_id, true));
 		}
 
-		if ($user_id)
+		if ($user_id != null)
 		{
-			if (!$userModel->checkId($user_id, $profile))
+			$profile = Application_Model_User::findById($user_id, true);
+
+			if ($profile == null)
 			{
 				throw new RuntimeException('Incorrect user ID: ' .
 					var_export($user_id, true));
@@ -256,10 +258,10 @@ class HomeController extends Zend_Controller_Action
 			$profile = $user;
 		}
 
-		$this->view->auth_id = $isAuth ? $user->id : null;
+		$this->view->auth_id = $isAuth ? $user['id'] : null;
 		$this->view->profile = $profile;
 
-		if ($isAuth && $user->id != $profile->id)
+		if ($isAuth && $user['id'] != $profile['id'])
 		{
 			$isFriend = (new Application_Model_Friends)->isFriend($user, $profile);
 			$this->view->headScript()
@@ -274,12 +276,12 @@ class HomeController extends Zend_Controller_Action
 		$this->view->addressFormat = $addressFormat;
 
 		$this->view->headScript()
-			->appendScript('var reciever_userid=' . json_encode($profile->id) . ',' .
+			->appendScript('var reciever_userid=' . json_encode($profile['id']) . ',' .
 				'profileData=' . json_encode([
-				'id' => $profile->id,
+				'id' => $profile['id'],
 				'address' => $addressFormat,
-				'latitude' => $profile->latitude,
-				'longitude' => $profile->longitude
+				'latitude' => $profile['latitude'],
+				'longitude' => $profile['longitude']
 			]) . ';')
 			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'));
 

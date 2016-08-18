@@ -1,8 +1,7 @@
 <?php
 $settings = Application_Model_Setting::getInstance();
-$config = Zend_Registry::get('config_global');
 $request = Zend_Controller_Front::getInstance()->getRequest();
-$auth = Zend_Auth::getInstance()->getIdentity();
+$user = Application_Model_User::getAuth(true);
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))
@@ -10,7 +9,7 @@ $this->headLink()
 
 $this->headScript()
 	->appendScript(
-		"	var isLogin = " . json_encode((boolean) $auth) . ";\n" .
+		"	var isLogin = " . ($user != null ? 1 : 0) . ";\n" .
 		"	var baseUrl = " . json_encode($this->serverUrl() . $this->baseUrl('/')) . ";\n" .
 		"	var facebook_appId = " . json_encode($settings['fb_appId']) . ";\n" .
 		"	var facebook_apiVer = " . json_encode($settings['fb_apiVersion']) . ";\n" .

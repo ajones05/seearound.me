@@ -3,8 +3,8 @@ $karmaTitle = 'User posts: ' . $this->profile['post'] . '<br/>' .
 	'User posts comments: ' . $this->profile['comment'] . '<br/>' .
 	'User posts votings: ' . $this->profile['vote'] . '<br/>' .
 	'User comments on other posts: ' . $this->profile['comment_other'];
-$age = $this->profile->Birth_date ?
-	(new DateTime($this->profile->Birth_date))->diff(new DateTime())->y : null;
+$age = $this->profile['Birth_date'] ?
+	(new DateTime($this->profile['Birth_date']))->diff(new DateTime())->y : null;
 $thumb = Application_Model_User::getThumb($this->profile, '55x55');
 $karma = Application_Model_User::getKarma($this->profile);
 ?>
@@ -17,7 +17,7 @@ $karma = Application_Model_User::getKarma($this->profile);
 			</span>
 		</div>
 		<div class="profile-describe">
-			<h3 class="name"><?php echo ucfirst($this->profile->Name); ?></h3>
+			<h3 class="name"><?php echo ucfirst($this->profile['Name']); ?></h3>
 			<p class="loc"><?php echo My_StringHelper::stringLimit($this->addressFormat, 50, '...'); ?></p>
 		</div>
 		<div class="clr"></div>
@@ -32,10 +32,10 @@ $karma = Application_Model_User::getKarma($this->profile);
 </span>
 <div class="clr"></div>
 </li>
-	<?php if ($this->auth_id == $this->profile->id): ?>
+	<?php if ($this->auth_id == $this->profile['id']): ?>
 	<li>
 		<label>Email Address</label>
-		<span><?php echo $this->profile->Email_id; ?></span>
+		<span><?php echo $this->profile['Email_id']; ?></span>
 		<div class="clr"></div>
 	</li>
 	<?php endif; ?>
@@ -46,7 +46,7 @@ $karma = Application_Model_User::getKarma($this->profile);
 </li>
     <li>
 		<label>Interests</label>
-        <span><?php echo $this->profile->activity; ?></span>
+        <span><?php echo $this->profile['activity']; ?></span>
 		<div class="clr"></div>
     </li>
     <?php if ($this->addressFormat !== ''): ?>
@@ -64,7 +64,7 @@ $karma = Application_Model_User::getKarma($this->profile);
     </li>
 	<?php endif; ?>
 </ul>
-<?php if ($this->profile->id == $this->auth_id): ?>
+<?php if ($this->profile['id'] == $this->auth_id): ?>
 <div class="btnBarM20">
 	<a href="<?php echo $this->baseUrl("home/edit-profile"); ?>">Edit Profile Info</a>
 </div>

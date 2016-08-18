@@ -1,7 +1,8 @@
 <?php
-$url = $this->serverUrl() . $this->baseUrl("home/profile/user/" . $this->user->id);
+$url = $this->serverUrl() . $this->baseUrl("home/profile/user/" .
+	$this->user['id']);
 ?>
 <p>
-	<?php echo $this->user->Name; ?> wants to connect with you on seearound.me. Please visit the link below to view <?php echo $user->Name; ?> public profile.<br />
-	<a href="<?php echo $url; ?>"><?php echo $url; ?></a>
+<?php echo $this->user['Name']; ?> wants to connect with you on seearound.me. Please visit the link below to view <?php echo $user['Name']; ?> public profile.<br />
+<a href="<?php echo $url; ?>"><?php echo $url; ?></a>
 </p>

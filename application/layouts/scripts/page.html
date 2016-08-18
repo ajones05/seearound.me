@@ -1,5 +1,6 @@
 <?php
 $settings = Application_Model_Setting::getInstance();
+$user = Application_Model_User::getAuth(true);
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))

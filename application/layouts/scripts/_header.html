@@ -1,5 +1,4 @@
 <?php
-$user = Application_Model_User::getAuth();
 $userImage = Application_Model_User::getThumb($user, '26x26');
 $request = Zend_Controller_Front::getInstance()->getRequest();
 

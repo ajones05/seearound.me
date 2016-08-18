@@ -157,7 +157,7 @@ $thumb = Application_Model_User::getThumb($this->user, '55x55');
 		</div>
 		<div class="profile-describe">   
 			<a class="hypDecNone" href="<?php echo $this->baseUrl("home/profile"); ?>">
-				<h3 class="name"><?php echo ucfirst($this->user->Name);?></h3>
+				<h3 class="name"><?php echo ucfirst($this->user['Name']);?></h3>
 			</a>
 			<p class="loc"><?php echo My_StringHelper::stringLimit($this->addressFormat, 50, '...'); ?></p>
 		</div>
@@ -231,7 +231,7 @@ $thumb = Application_Model_User::getThumb($this->user, '55x55');
 				?>
 			</dd>
 		</li>
-<?php if ($this->user->timezone == null): ?>
+<?php if (empty($this->user['timezone'])): ?>
 <li><?php echo $this->profileForm->timezone; ?></li>
 <?php else: ?>
 <input type="hidden" name="timezone" value="<?php echo $this->addressForm->timezone->getValue(); ?>">
