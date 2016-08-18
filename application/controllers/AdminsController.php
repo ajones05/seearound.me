@@ -12,9 +12,9 @@ class AdminsController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$user = Application_Model_User::getAuth();
+		$user = Application_Model_User::getAuth(true);
 
-		if ($user == null || !$user->is_admin)
+		if ($user == null || empty($user['is_admin']))
 		{
 			throw new RuntimeException('You are not authorized to access this action');
 		}

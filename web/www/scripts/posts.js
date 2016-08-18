@@ -2,7 +2,7 @@ var isList=isList||false,isAdmin=isAdmin||false,
 isPost=typeof post !== 'undefined' ? true : false,
 isLogin=isLogin||false,isTouch=false,
 mainMap,centerPosition,areaCircle,googleMapsCustomMarker,googleMapsAreaCircle,
-userPosition,loadXhr,
+userPosition,loadXhr,scrollTarget,
 postData=postData||[],postMarkers={},postMarkersCluster={},
 defaultMinZoom=13,defaultMaxZoom=15,renderRadius=opts.radius?opts.radius:1.5,
 defaultZoom=14,postLimit=15,groupDistance=0.018939,
@@ -39,10 +39,12 @@ require(['jquery', 'common'], function(){
 			isTouch = true;
 		}
 
+		scrollTarget = $(isTouch ? '.posts-container .posts' : window);
+
 		$(window).on('resize', resizeHandler);
 		resizeHandler();
 
-		if (isLogin){
+		if (false && isLogin){
 			var notification = function(){
 				ajaxJson({
 					url: baseUrl+'contacts/friends-notification',
@@ -1694,7 +1696,7 @@ function postList_change(){
 }
 
 function postList_reset(){
-	$(isTouch ? '.posts-container .posts' : window).unbind('scroll.load');
+	scrollTarget.unbind('scroll.load');
 	if (loadXhr) loadXhr.abort();
 	if (!$.isEmptyObject(postMarkers)>0){
 		$('#map_canvas :data(ui-tooltip)').tooltip('destroy');
@@ -1955,7 +1957,7 @@ function postItem_marker(id, location, data){
 }
 
 function postList_scrollHandler(scroll){
-	var target = $(isTouch ? '.posts-container .posts' : window).bind('scroll.load', function(){
+	scrollTarget.bind('scroll.load', function(){
 		if (disableScroll){
 			return false;
 		}
@@ -1963,14 +1965,14 @@ function postList_scrollHandler(scroll){
 		var scrollTop = $(this).scrollTop()+$(this).height(),
 			scrollHeight = isTouch ? this.scrollHeight : $(document).height();
 
-        if  ((scrollTop/(scrollHeight-$(window).height())) > 0.9){
+		if ((scrollHeight-scrollTop) < $(window).height()*5){
 			$(this).unbind('scroll.load');
 			postList_load(Object.size(postData));
 		}
 	});
 
 	if (scroll == true){
-		target.scroll();
+		scrollTarget.scroll();
 	}
 }
 

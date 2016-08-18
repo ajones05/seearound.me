@@ -17,9 +17,9 @@ class UserController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth();
+			$user = $userModel->getAuth(true);
 
-			if ($user == null || !$user->is_admin)
+			if (empty($user['is_admin']))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -46,12 +46,12 @@ class UserController extends Zend_Controller_Action
 
 			if ($result != null)
 			{
-				foreach ($result as $user)
+				foreach ($result as $resultUser)
 				{
 					$response['data'][] = [
-						'label' => $user->Name . ' <' . $user->Email_id .
-							'> (' . $user->id . ')',
-						'value' => $user->id
+						'label' => $resultUser->Name . ' <' . $resultUser->Email_id .
+							'> (' . $resultUser->id . ')',
+						'value' => $resultUser->id
 					];
 				}
 			}

@@ -13,7 +13,7 @@ class MessageController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$user = Application_Model_User::getAuth();
+		$user = Application_Model_User::getAuth(true);
 
 		if ($user == null)
 		{
@@ -36,12 +36,12 @@ class MessageController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'IFNULL(cm3.is_read,1)'
 			])
-			->where('(c.to_id=?', $user->id)
-			->orWhere('c.from_id=?)', $user->id)
+			->where('(c.to_id=?', $user['id'])
+			->orWhere('c.from_id=?)', $user['id'])
 			->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
 				'cm1.is_first=1)', '')
 			->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
-				'cm3.is_read=0 AND cm3.to_id=' . $user->id . ')', '')
+				'cm3.is_read=0 AND cm3.to_id=' . $user['id'] . ')', '')
 			->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', '')
 			->group('c.id')
 			->order(['is_read ASC', 'c.created_at DESC']);
@@ -64,7 +64,7 @@ class MessageController extends Zend_Controller_Action
 	 */
 	public function sendsAction()
 	{
-		$user = Application_Model_User::getAuth();
+		$user = Application_Model_User::getAuth(true);
 
 		if ($user == null)
 		{
@@ -82,9 +82,9 @@ class MessageController extends Zend_Controller_Action
 					'user_name' => 'u.Name',
 					'is_read' => 'IFNULL(cm.is_read,1)'
 				))
-				->where('c.from_id=?', $user->id)
+				->where('c.from_id=?', $user['id'])
 				->joinLeft(array('cm' => 'conversation_message'), '(cm.conversation_id=c.id AND ' .
-					'cm.is_read=0 AND cm.from_id=' . $user->id . ')', '')
+					'cm.is_read=0 AND cm.from_id=' . $user['id'] . ')', '')
 				->joinLeft(array('u' => 'user_data'), 'u.id=c.to_id', '')
 				->group('c.id')
 				->order('c.created_at DESC')
@@ -108,7 +108,7 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -131,7 +131,8 @@ class MessageController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if ($conversation->from_id != $user->id && $conversation->to_id != $user->id)
+			if ($conversation->from_id != $user['id'] &&
+				$conversation->to_id != $user['id'])
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
@@ -167,7 +168,7 @@ class MessageController extends Zend_Controller_Action
 
 			$updateCondition = [];
 
-			if ($conversation->to_id == $user->id)
+			if ($conversation->to_id == $user['id'])
 			{
 				$updateCondition[] = '(conversation_id=' . $conversation->id .
 					' AND is_first=1)';
@@ -195,7 +196,7 @@ class MessageController extends Zend_Controller_Action
 						]
 					];
 
-					if ($message->to_id == $user->id)
+					if ($message->to_id == $user['id'])
 					{
 						$updateCondition[] = 'id=' . $message->id;
 					}
@@ -234,7 +235,7 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -319,7 +320,7 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth();
+			$user = Application_Model_User::getAuth(true);
 
 			if ($user == null)
 			{
@@ -342,8 +343,8 @@ class MessageController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if ($conversation->from_id != $user->id &&
-				$conversation->to_id != $user->id)
+			if ($conversation->from_id != $user['id'] &&
+				$conversation->to_id != $user['id'])
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
