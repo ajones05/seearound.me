@@ -183,23 +183,15 @@ class MobileController extends Zend_Controller_Action
 	{
 		try
 		{
-			$data = $this->_request->getPost();
 			$registrationForm = new Application_Form_Registration;
 
-			if (!$registrationForm->isValid($data))
+			if (!$registrationForm->isValid($this->_request->getPost()))
 			{
-				$this->_formValidateException($registrationForm);
-			}
-
-			$addressForm = new Application_Form_Address;
-
-			if (!$addressForm->isValid($data))
-			{
-				throw new RuntimeException(
-					implode("\n", $addressForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($registrationForm));
 			}
 
 			$upload = new Zend_File_Transfer;
+			$data = $registrationForm->getValues();
 			$response = ['status' => 'SUCCESS'];
 
 			if (count($upload->getFileInfo()))
@@ -241,8 +233,8 @@ class MobileController extends Zend_Controller_Action
 						$this->view->baseUrl('uploads/' . $name);
 			}
 
-			$user = (new Application_Model_User)
-				->register($data+['Status' => 'active']);
+			$user = (new Application_Model_User)->register(['Status' => 'active'] +
+				$registrationForm->getValues());
 			$accessToken = (new Application_Model_Loginstatus)
 				->save($user, true);
 
@@ -1315,13 +1307,11 @@ class MobileController extends Zend_Controller_Action
 		try
 		{
 			$user = $this->getUserByToken();
+			$postForm = new Application_Form_Post(['scenario' => 'new']);
 
-			$postForm = new Application_Form_News;
-			$postForm->setScenario('new');
 			if (!$postForm->isValid($this->_request->getPost()))
 			{
-				throw new RuntimeException('Validate post error: ' .
-					implode("\n", $postForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($postForm));
 			}
 
 			$postModel = new Application_Model_News;
@@ -1399,13 +1389,14 @@ class MobileController extends Zend_Controller_Action
 		{
 			$user = $this->getUserByToken();
 			$data = $this->_request->getPost();
-			$postForm = new Application_Form_News(['ignore' => ['address']]);
-			$postForm->setScenario('before-save');
+			$postForm = new Application_Form_Post([
+				'ignore' => ['address'],
+				'scenario' => 'before-save'
+			]);
 
 			if (!$postForm->isValid($data))
 			{
-				throw new RuntimeException(
-					implode("\n", $postForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($postForm));
 			}
 
 			$linkModel = new Application_Model_NewsLink;
@@ -1476,13 +1467,11 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$postForm = new Application_Form_News;
-			$postForm->setScenario('mobile-save');
+			$postForm = new Application_Form_Post(['scenario' => 'mobile-save']);
 
 			if (!$postForm->isValid($this->_request->getPost()))
 			{
-				throw new RuntimeException(
-					implode("\n", $postForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($postForm));
 			}
 
 			$post = $postModel->save($postForm, $user, $address,
@@ -1649,7 +1638,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$profileForm->isValid($this->_request->getPost()))
 			{
-				$this->_formValidateException($profileForm);
+				throw new RuntimeException(My_Form::outputErrors($profileForm));
 			}
 
 			$userModel = new Application_Model_User;
@@ -1749,10 +1738,9 @@ class MobileController extends Zend_Controller_Action
 				'start' => $this->_request->getPost('start', 0)
 			];
 
-			if (!$searchForm->validateSearch($searchParameters))
+			if (!$searchForm->isValid($searchParameters))
 			{
-				throw new RuntimeException(
-					implode("\n", $searchForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
 			$response = [
@@ -1833,7 +1821,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ?
+				'message' => true || $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
 			$this->errorHandler($e);
@@ -1861,10 +1849,9 @@ class MobileController extends Zend_Controller_Action
 				'start' => $this->_request->getPost('start', 0)
 			];
 
-			if (!$searchForm->validateSearch($searchParameters))
+			if (!$searchForm->isValid($searchParameters))
 			{
-				throw new RuntimeException(
-					implode("\n", $searchForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
 			$response = [
@@ -2058,7 +2045,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!$commentForm->isValid($this->_request->getPost()))
 			{
-				$this->_formValidateException($commentForm);
+				throw new RuntimeException(My_Form::outputErrors($commentForm));
 			}
 
 			$data = $commentForm->getValues();
@@ -2606,30 +2593,6 @@ class MobileController extends Zend_Controller_Action
 	{
 		$cache = $cache ?: Zend_Registry::get('cache');
 		$cache->save($user, 'user_' . $token, ['user' . $user['id']]);
-	}
-
-	/**
-	 * Returns form validate error exception
-	 *
-	 * @param	Zend_Form	$form
-	 */
-	protected function _formValidateException(Zend_Form $form)
-	{
-		$errors = array();
-
-		foreach ($form->getMessages() as $field => $field_errors)
-		{
-			$_errors = array();
-
-			foreach ($field_errors as $validator => $error)
-			{
-				$_errors[] = ltrim($error, '- ');
-			}
-
-			$errors[] = '"' . $field . '" - ' . implode(', ', $_errors);
-		}
-
-		throw new RuntimeException('Validate error: ' . implode(', ', $errors), -1);
 	}
 
 	/**

@@ -48,9 +48,8 @@ class IndexController extends Zend_Controller_Action
 		$settings = Application_Model_Setting::getInstance();
 		$config = Zend_Registry::get('config_global');
 		$loginForm = new Application_Form_Login;
-		$addressForm = new Application_Form_Address;
-		$reg_form = new Application_Form_Registration;
-        $reg_form->addElement(
+		$registrationForm = new Application_Form_Registration;
+		$registrationForm->addElement(
 			'password',
 			'repassword',
 			array(
@@ -112,49 +111,48 @@ class IndexController extends Zend_Controller_Action
 			}
 			else
 			{
-				$validAddress = $addressForm->isValid($data);
-				$validProfile = $reg_form->isValid($data);
-
-				if ($validAddress)
+				if ($registrationForm->isValid($data))
 				{
-					if ($validProfile)
-					{
-						$user = $userModel->register(['Status'=>'inactive']+$data);
+					$user = $userModel->register($registrationForm->getValues()+
+						['Status'=>'inactive']);
 
-						$confirmModel = new Application_Model_UserConfirm;
-						$confirmCode = $confirmModel->generateConfirmCode();
-						$confirmModel->insert([
-							'user_id' => $user['id'],
-							'type_id' => $confirmModel::$type['registration'],
-							'code' => $confirmCode,
-							'deleted' => 0,
-							'created_at' => new Zend_Db_Expr('NOW()')
-						]);
+					$confirmModel = new Application_Model_UserConfirm;
+					$confirmCode = $confirmModel->generateConfirmCode();
+					$confirmModel->insert([
+						'user_id' => $user['id'],
+						'type_id' => $confirmModel::$type['registration'],
+						'code' => $confirmCode,
+						'deleted' => 0,
+						'created_at' => new Zend_Db_Expr('NOW()')
+					]);
 
-						My_Email::send(
-							$user['Email_id'],
-							'SeeAround.me Registration',
-							[
-								'template' => 'registration',
-								'assign' => ['code' => $confirmCode],
-								'settings' => $settings
-							]
-						);
+					My_Email::send(
+						$user['Email_id'],
+						'SeeAround.me Registration',
+						[
+							'template' => 'registration',
+							'assign' => ['code' => $confirmCode],
+							'settings' => $settings
+						]
+					);
 
-						$loginId = (new Application_Model_Loginstatus)->save($user);
+					$loginId = (new Application_Model_Loginstatus)->save($user);
 
-						Zend_Auth::getInstance()->getStorage()->write(array(
-							"user_id" => $user['id'],
-							"login_id" => $loginId
-						));
+					Zend_Auth::getInstance()->getStorage()->write(array(
+						"user_id" => $user['id'],
+						"login_id" => $loginId
+					));
 
-						$this->_redirect($this->view->baseUrl('/'));
-					}
+					$this->_redirect($this->view->baseUrl('/'));
+				}
 
-					$this->view->headScript('script', 'var formData=' . json_encode([
+				if (!$registrationForm->latitude->hasErrors() &&
+					!$registrationForm->longitude->hasErrors())
+				{
+					$this->view->headScript('script', 'var postData=' . json_encode([
 						'address' => Application_Model_Address::format($data),
-						'latitude' => $addressForm->latitude->getValue(),
-						'longitude' => $addressForm->longitude->getValue()
+						'latitude' => $registrationForm->latitude->getValue(),
+						'longitude' => $registrationForm->longitude->getValue()
 					]) . ';');
 				}
 			}
@@ -162,8 +160,7 @@ class IndexController extends Zend_Controller_Action
 
 		$this->view->layout()->setLayout('login');
 		$this->view->login_form = $loginForm;
-		$this->view->reg_form = $reg_form;
-		$this->view->addressForm = $addressForm;
+		$this->view->registrationForm = $registrationForm;
 
 		$this->view->headScript()
 			->appendScript('var	geolocation=' . json_encode(My_Ip::geolocation()) . ',' .

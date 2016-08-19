@@ -1,17 +1,32 @@
 <?php
 use Respect\Validation\Validator as v;
-use Respect\Validation\Exceptions\ValidationException;
 
 /**
  * Post form class.
  */
-class Application_Form_News extends Application_Form_Address
+class Application_Form_Post extends Application_Form_Address
 {
 	/**
 	 * Validate scenario name.
 	 * @var string
 	 */
 	private $_scenario;
+
+	/**
+	 * Constructor
+	 *
+	 * @param mixed $options
+	 */
+	public function __construct($options = null)
+	{
+		if (isset($options['scenario']))
+		{
+			$this->setScenario($options['scenario']);
+			unset($options['scenario']);
+		}
+
+		parent::__construct($options);
+	}
 
 	/**
 	 * The post body max length.
@@ -25,7 +40,24 @@ class Application_Form_News extends Application_Form_Address
 	public function init()
 	{
 		parent::init();
-		$this->addElement('text', 'body');
+
+		$this->addElement('text', 'body', [
+			'required' => true,
+			'validators' => [
+				['StringLength', false, ['min' => 1, 'max' => self::$bodyMaxLength]],
+				['Callback', false, function($value){
+					return !preg_match('/[<>]/', $value);
+				}]
+			]
+		]);
+
+		if ($this->getScenario() == 'mobile-save')
+		{
+			$this->addElement('text', 'delete_image', [
+				'required' => false,
+				'validators' => [['Callback', false, v::intVal()->equals(1)]]
+			]);
+		}
 	}
 
 	/**
@@ -36,42 +68,24 @@ class Application_Form_News extends Application_Form_Address
 	 */
 	public function isValid($data)
 	{
+		$isValid = parent::isValid($data);
+
+		if (!$isValid)
+		{
+			return false;
+		}
+
 		$scenario = $this->getScenario();
-		$valid = parent::isValid($data);
 
-		try
-		{
-			v::stringType()->length(1, self::$bodyMaxLength)->regex('/[^<>]/')
-				->assert(My_ArrayHelper::getProp($data, 'body'));
-		}
-		catch (Exception $e)
-		{
-			$valid = false;
-			$this->addErrorMessage($e->getMessage());
-		}
-
-		if ($scenario == 'mobile-save')
-		{
-			try
-			{
-				$value = My_ArrayHelper::getProp($data, 'delete_image');
-				v::optional(v::intVal()->equals(1))->assert($value);
-				$this->addElement('text', 'delete_image', ['value' => $value]);
-			}
-			catch (Exception $e)
-			{
-				$valid = false;
-				$this->addErrorMessage($e->getMessage());
-			}
-		}
-
-		if ($valid && ($scenario == 'new' ||
-			$scenario == 'mobile-save' && empty($data['delete_image'])))
+		if ($scenario == 'new' ||
+			$scenario == 'mobile-save' && empty($data['delete_image']))
 		{
 			$upload = new Zend_File_Transfer;
 
-			if (count($upload->getFileInfo()))
+			if ($upload->getFileInfo() != null)
 			{
+				$this->addElement('text', 'image');
+
 				$upload->setValidators([
 					['Extension', false, ['jpg', 'jpeg', 'png', 'gif']],
 					['MimeType', false, ['image/jpeg', 'image/png', 'image/gif'],
@@ -93,17 +107,18 @@ class Application_Form_News extends Application_Form_Address
 					$upload->addFilter('Rename', $full_path);
 					$upload->receive();
 
-					$this->addElement('text', 'image', ['value' => $name]);
+					$this->image->setValue($name);
 				}
 				else
 				{
-					$valid = false;
-					$this->addErrorMessage(implode(', ', $upload->getMessages()));
+					$isValid = false;
+					$this->image->addErrorMessage(implode(', ', $upload->getMessages()));
+					$this->image->markAsError();
 				}
 			}
 		}
 
-		return $valid;
+		return $isValid;
 	}
 
 	/**

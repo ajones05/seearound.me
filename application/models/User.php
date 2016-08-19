@@ -296,36 +296,28 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 		$addressId = (new Application_Model_Address)->insert([
 			'latitude' => $data['latitude'],
 			'longitude' => $data['longitude'],
-			'street_name' => My_StringHelper::trimToNull(
-				My_ArrayHelper::getProp($data, 'street_name')),
-			'street_number' => My_StringHelper::trimToNull(
-				My_ArrayHelper::getProp($data, 'street_number')),
-			'city' => My_StringHelper::trimToNull(
-				My_ArrayHelper::getProp($data, 'city')),
-			'state' => My_StringHelper::trimToNull(
-				My_ArrayHelper::getProp($data, 'state')),
-			'country' => My_StringHelper::trimToNull(
-				My_ArrayHelper::getProp($data, 'country')),
-			'zip' => My_StringHelper::trimToNull(
-				My_ArrayHelper::getProp($data, 'zip')),
-			'timezone' => My_StringHelper::trimToNull(
-				My_ArrayHelper::getProp($data, 'timezone'))
+			'street_name' => $data['street_name'],
+			'street_number' => $data['street_number'],
+			'city' => $data['city'],
+			'state' => $data['state'],
+			'country' => $data['country'],
+			'zip' => $data['zip'],
+			'timezone' => $data['timezone']
 		]);
 
 		$user = [
+			'address_id' => $addressId,
 			'Name' => $data['name'],
 			'Email_id' => $data['email'],
 			'password' => $this->encryptPassword($data['password']),
 			'Status' => $data['Status'],
 			'image_id' => My_ArrayHelper::getProp($data, 'image_id'),
 			'image_name' => My_ArrayHelper::getProp($data, 'image_name'),
-			'invite' => 10
+			'invite' => 10,
+			'Creation_date' => (new DateTime)->format(My_Time::SQL)
 		];
 
-		$user['id'] = $this->insert($user + [
-			'address_id' => $addressId,
-			'Creation_date' => new Zend_Db_Expr('NOW()')
-		]);
+		$user['id'] = $this->insert($user);
 
 		return $user;
 	}
