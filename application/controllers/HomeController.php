@@ -41,7 +41,6 @@ class HomeController extends Zend_Controller_Action
 	 */
 	public function editProfileAction()
 	{
-		$config = Zend_Registry::get('config_global');
 		$userModel = new Application_Model_User;
 		$user = $userModel->getAuth(true);
 
@@ -52,42 +51,29 @@ class HomeController extends Zend_Controller_Action
 
 		$settings = Application_Model_Setting::getInstance();
 		$profileForm = new Application_Form_Profile;
-		$addressModel = new Application_Model_Address;
-		$addressForm = new Application_Form_Address;
 
 		if ($this->_request->isPost())
 		{
 			$data = $this->_request->getPost();
-			$validAddress = $addressForm->isValid($data);
-			$validProfile = $profileForm->isValid($data);
 
-			if ($validAddress)
+			if ($profileForm->isValid($data))
 			{
-				if ($validProfile)
-				{
-					$userModel->updateProfile($user, $data);
-					$this->_redirect($this->view->baseUrl("home/profile"));
-				}
+				$userModel->updateProfile($user, $data);
+				$this->_redirect($this->view->baseUrl("home/profile"));
+			}
 
-				$this->view->headScript('script', 'var formData=' . json_encode([
-					'address' => $addressModel->format($data),
-					'latitude' => $addressForm->latitude->getValue(),
-					'longitude' => $addressForm->longitude->getValue()
+			if (!$profileForm->latitude->hasErrors() &&
+				!$profileForm->longitude->hasErrors())
+			{
+				$this->view->headScript('script', 'var postData=' . json_encode([
+					'address' => Application_Model_Address::format($data),
+					'latitude' => $profileForm->latitude->getValue(),
+					'longitude' => $profileForm->longitude->getValue()
 				]) . ';');
 			}
-        }
+		}
 		else
 		{
-			$addressForm->setDefaults([
-				'latitude' => $user['latitude'],
-				'longitude' => $user['longitude'],
-				'street_name' => $user['street_name'],
-				'street_number' => $user['street_number'],
-				'city' => $user['city'],
-				'state' => $user['state'],
-				'country' => $user['country'],
-				'zip' => $user['zip']
-			]);
 			$profileForm->setDefaults([
 				'email' => $user['Email_id'],
 				'public_profile' => $user['public_profile'],
@@ -96,7 +82,13 @@ class HomeController extends Zend_Controller_Action
 				'activities' => $user['activity'],
 				'latitude' => $user['latitude'],
 				'longitude' => $user['longitude'],
-				'timezone' => $user['timezone'],
+				'street_name' => $user['street_name'],
+				'street_number' => $user['street_number'],
+				'city' => $user['city'],
+				'state' => $user['state'],
+				'country' => $user['country'],
+				'zip' => $user['zip'],
+				'timezone' => $user['timezone']
 			]);
 
 			if (!empty($user['Birth_date']))
@@ -110,7 +102,7 @@ class HomeController extends Zend_Controller_Action
 			}
 		}
 
-		$addressFormat = $addressModel->format($user);
+		$addressFormat = Application_Model_Address::format($user);
 		$this->view->addressFormat = $addressFormat;
 
 		$this->view->headScript()
@@ -125,7 +117,6 @@ class HomeController extends Zend_Controller_Action
 				$settings['google_mapsKey']);
 
 		$this->view->profileForm = $profileForm;
-		$this->view->addressForm = $addressForm;
 		$this->view->user = $user;
 		$this->view->changeLocation = true;
 	}
@@ -313,10 +304,9 @@ class HomeController extends Zend_Controller_Action
 				'keywords' => $this->_request->getPost('keywords'),
 			];
 
-			if (!$searchForm->validateSearch($searchParameters))
+			if (!$searchForm->isValid($searchParameters))
 			{
-				throw new RuntimeException(
-					implode("\n", $searchForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
 			$result = (new Application_Model_News)->search($searchParameters +
@@ -376,8 +366,7 @@ class HomeController extends Zend_Controller_Action
 
 			if (!$addressForm->isValid($this->_request->getPost()))
 			{
-				throw new RuntimeException(
-					implode("\n", $addressForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($addressForm));
 			}
 
 			$db = Zend_Db_Table::getDefaultAdapter();

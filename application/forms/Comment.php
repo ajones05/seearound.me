@@ -1,49 +1,25 @@
 <?php
-
 /**
  * Comment form class.
  */
 class Application_Form_Comment extends Zend_Form
 {
-    /**
-     * Initialize form (used by extending classes)
-     *
-     * @return void
-     */
-    public function init()
-    {
-        $this->addElement(
-			'text',
-			'comment',
-			array(
-				'required' => true,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('stringLength', false, array(1, 65535))
-				)
-			)
-		);
-    }
-
-    /**
-     * Validate the form.
-     *
-     * @param 	array	$data
+	/**
+	 * Initialize form (used by extending classes)
 	 *
-     * @return	boolean
-     */
-    public function isValid($data)
+	 * @return void
+	 */
+	public function init()
 	{
-		if (!parent::isValid($data))
-		{
-			return false;
-		}
-
-		if (preg_match('/[<>]/', $data['comment']))
-		{
-			return false;
-		}
-
-		return true;
+		$this->addElement('text', 'comment', [
+			'required' => true,
+			'filters' => ['StringTrim'],
+			'validators' => [
+				['stringLength', false, [1, 65535]],
+				['callback', false, function($value){
+					return !preg_match('/[<>]/', $value);
+				}]
+			]
+		]);
 	}
 }

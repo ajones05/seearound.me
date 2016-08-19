@@ -1,6 +1,5 @@
 <?php
 use Respect\Validation\Validator as v;
-use Respect\Validation\Exceptions\ValidationException;
 
 /**
  * Address form class.
@@ -37,141 +36,80 @@ class Application_Form_Address extends Zend_Form
 	 */
 	public function init()
 	{
-		if (!$this->isIgnore('address'))
-		{
-			// TODO: refactoring
-			$this->addElement('text', 'address');
-			$this->addElement('text', 'latitude');
-			$this->addElement('text', 'longitude');
-			$this->addElement('text', 'street_name');
-			$this->addElement('text', 'street_number');
-			$this->addElement('text', 'city');
-			$this->addElement('text', 'state');
-			$this->addElement('text', 'country');
-			$this->addElement('text', 'zip');
-			$this->addElement('text', 'timezone');
-		}
-	}
-
-	/**
-	 * Validate the form
-	 *
-	 * @param  array $data
-	 * @return boolean
-	 */
-	public function isValid($data)
-	{
-		$valid = parent::isValid($data);
-
 		if ($this->isIgnore('address'))
 		{
-			return $valid;
+			return;
 		}
 
-		try
-		{
-			v::stringType()->lat()
-				->assert(My_ArrayHelper::getProp($data, 'latitude'));
-		}
-		catch (ValidationException $exception)
-		{
-			$valid = false;
-			$this->addErrorMessage('Latitude: ' .
-				$exception->getMessage());
-		}
+		$this->addElement('text', 'address', [
+			'required' => false,
+			'filters' => ['StringTrim']
+		]);
 
-		try
-		{
-			v::stringType()->lng()
-				->assert(My_ArrayHelper::getProp($data, 'longitude'));
-		}
-		catch (ValidationException $exception)
-		{
-			$valid = false;
-			$this->addErrorMessage('Longitude: ' .
-				$exception->getMessage());
-		}
+		$this->addElement('text', 'latitude', [
+			'required' => true,
+			'validators' => [
+				['callback', false, v::stringType()->lat()]
+			]
+		]);
 
-		try
-		{
-			v::optional(v::stringType())
-				->assert(My_ArrayHelper::getProp($data, 'street_name'));
-		}
-		catch (ValidationException $exception)
-		{
-			$valid = false;
-			$this->addErrorMessage('Street Name: ' .
-				$exception->getMessage());
-		}
+		$this->addElement('text', 'longitude', [
+			'required' => true,
+			'validators' => [
+				['callback', false, v::stringType()->lng()]
+			]
+		]);
 
-		try
-		{
-			v::optional(v::stringType())
-				->assert(My_ArrayHelper::getProp($data, 'street_number'));
-		}
-		catch (ValidationException $exception)
-		{
-			$valid = false;
-			$this->addErrorMessage('Street Number: ' .
-				$exception->getMessage());
-		}
+		$this->addElement('text', 'street_name', [
+			'required' => false,
+			'validators' => [
+				['callback', false, v::stringType()]
+			]
+		]);
 
-		try
-		{
-			v::optional(v::stringType())
-				->assert(My_ArrayHelper::getProp($data, 'city'));
-		}
-		catch (ValidationException $exception)
-		{
-			$valid = false;
-			$this->addErrorMessage('City: ' .
-				$exception->getMessage());
-		}
+		$this->addElement('text', 'street_number', [
+			'required' => false,
+			'validators' => [
+				['callback', false, v::stringType()]
+			]
+		]);
 
-		try
-		{
-			v::optional(v::stringType())
-				->assert(My_ArrayHelper::getProp($data, 'state'));
-		}
-		catch (ValidationException $exception)
-		{
-			$valid = false;
-			$this->addErrorMessage('State: ' .
-				$exception->getMessage());
-		}
+		$this->addElement('text', 'city', [
+			'required' => false,
+			'validators' => [
+				['callback', false, v::stringType()]
+			]
+		]);
 
-		$country = My_ArrayHelper::getProp($data, 'country');
+		$this->addElement('text', 'state', [
+			'required' => false,
+			'validators' => [
+				['callback', false, v::stringType()]
+			]
+		]);
 
-		try
-		{
-			v::optional(v::countryCode())->assert($country);
-		}
-		catch (ValidationException $exception)
-		{
-			$valid = false;
-			$country = null;
-			$this->addErrorMessage('Country: ' .
-				$exception->getMessage());
-		}
+		$this->addElement('text', 'country', [
+			'required' => false,
+			'validators' => [
+				['callback', false, v::countryCode()]
+			]
+		]);
 
-		try
-		{
-			v::optional($country ? v::postalCode($country) : v::stringType())
-				->assert(My_ArrayHelper::getProp($data, 'zip'));
-		}
-		catch (ValidationException $exception)
-		{
-			$valid = false;
-			$this->addErrorMessage('Zip: ' .
-				$exception->getMessage());
-		}
+		$this->addElement('text', 'zip', [
+			'required' => false,
+			'validators' => [
+				['callback', false, function($value, $data){
+					return !empty($data['country']) ?
+						v::postalCode($data['country'])->validate($value) :
+						v::stringType()->validate($value);
+				}]
+			]
+		]);
 
-		if (!$valid)
-		{
-			$this->markAsError();
-		}
-
-		return $valid;
+		$this->addElement('text', 'timezone', [
+			'required' => false,
+			'filters' => ['StringTrim']
+		]);
 	}
 
 	/**

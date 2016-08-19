@@ -84,7 +84,7 @@ class PostController extends Zend_Controller_Action
 					Application_Model_User::getThumb($user, '55x55'))
 			]) .
 			',settings=' . json_encode([
-				'bodyMaxLength' => Application_Form_News::$bodyMaxLength
+				'bodyMaxLength' => Application_Form_Post::$bodyMaxLength
 			]);
 		}
 
@@ -167,7 +167,7 @@ class PostController extends Zend_Controller_Action
 
 		$searchForm = new Application_Form_PostSearch;
 		$userData = (new Zend_Session_Namespace('userData'))->data;
-		$isValidData = $userData ? $searchForm->validateSearch($userData) : false;
+		$isValidData = $userData ? $searchForm->isValid($userData) : false;
 
 		if ($center)
 		{
@@ -191,10 +191,9 @@ class PostController extends Zend_Controller_Action
 			$searchParameters['radius'] = $userData['radius'];
 		}
 
-		if (!$searchForm->validateSearch($searchParameters))
+		if (!$searchForm->isValid($searchParameters))
 		{
-			throw new RuntimeException(
-				implode('<br>', $searchForm->getErrorMessages()));
+			throw new RuntimeException(My_Form::outputErrors($searchForm));
 		}
 
 		$posts = (new Application_Model_News)->search(array_merge(
@@ -241,7 +240,7 @@ class PostController extends Zend_Controller_Action
 			',opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) .
 			',timizoneList=' . json_encode(My_CommonUtils::$timezone) .
 			',settings=' . json_encode([
-				'bodyMaxLength' => Application_Form_News::$bodyMaxLength
+				'bodyMaxLength' => Application_Form_Post::$bodyMaxLength
 			]) . ';'
 		);
 
@@ -329,10 +328,9 @@ class PostController extends Zend_Controller_Action
 				'start' => $this->_request->getPost('start', 0)
 			];
 
-			if (!$searchForm->validateSearch($searchParameters))
+			if (!$searchForm->isValid($searchParameters))
 			{
-				throw new RuntimeException(
-					implode('<br>', $searchForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
 			$result = (new Application_Model_News)->search(array_merge(
@@ -491,10 +489,9 @@ class PostController extends Zend_Controller_Action
 				'filter' => $this->_request->getPost('filter'),
 			];
 
-			if (!$searchForm->validateSearch($searchParameters))
+			if (!$searchForm->isValid($searchParameters))
 			{
-				throw new RuntimeException(
-					implode("\n", $searchForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
 			$model = new Application_Model_News;
@@ -583,13 +580,11 @@ class PostController extends Zend_Controller_Action
 					var_export($reset, true), -1);
 			}
 
-			$postForm = new Application_Form_News;
-			$postForm->setScenario('new');
+			$postForm = new Application_Form_Post(['scenario' => 'new']);
 
 			if (!$postForm->isValid($this->_request->getPost()))
 			{
-				throw new RuntimeException(
-					implode("\n", $postForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($postForm));
 			}
 
 			$postModel = new Application_Model_News;
@@ -751,13 +746,14 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$postForm = new Application_Form_News(['ignore' => ['address']]);
-			$postForm->setScenario('before-save');
+			$postForm = new Application_Form_Post([
+				'ignore' => ['address'],
+				'scenario' => 'before-save'
+			]);
 
 			if (!$postForm->isValid($this->_request->getPost()))
 			{
-				throw new RuntimeException(
-					implode("\n", $postForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($postForm));
 			}
 
 			$linkModel = new Application_Model_NewsLink;
@@ -833,13 +829,14 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$postForm = new Application_Form_News(['ignore' => ['address']]);
-			$postForm->setScenario('save');
+			$postForm = new Application_Form_Post([
+				'ignore' => ['address'],
+				'scenario' => 'save'
+			]);
 
 			if (!$postForm->isValid($this->_request->getPost()))
 			{
-				throw new RuntimeException(
-					implode("\n", $postForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($postForm));
 			}
 
 			$post = $postModel->save($postForm, $user, $address,
@@ -902,8 +899,7 @@ class PostController extends Zend_Controller_Action
 
 			if (!$addressForm->isValid($this->_request->getPost()))
 			{
-				throw new RuntimeException(
-					implode("\n", $addressForm->getErrorMessages()));
+				throw new RuntimeException(My_Form::outputErrors($addressForm));
 			}
 
 			$data = $addressForm->getValues();

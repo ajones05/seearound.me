@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Login form class.
  */
@@ -7,38 +6,22 @@ class Application_Form_Login extends Zend_Form
 {
 	/**
 	 * Initialize form.
-	 *
-	 * @return void
 	 */
 	public function init()
 	{
-		$this->addElement(
-			'text',
-			'email',
-			array(
-				'required' => true,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('EmailAddress')
-				)
-			)
-		);
+		$this->addElement('text', 'email', [
+			'required' => true,
+			'filters' => ['StringTrim'],
+			'validators' => [['EmailAddress']]
+		]);
 
-        $this->addElement(
-			'password',
-			'password',
-			array(
-				'required' => true
-			)
-		);
+		$this->addElement('password', 'password', [
+			'required' => true
+		]);
 
-        $this->addElement(
-			'checkbox',
-			'remember',
-			array(
-				'default' => 0,
-				'required' => false
-			)
-		);
+		$this->addElement('checkbox', 'remember', [
+			'default' => 0,
+			'required' => false
+		]);
 	}
 }

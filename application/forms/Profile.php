@@ -1,120 +1,77 @@
 <?php
-
 /**
  * Profile form class.
  */
-class Application_Form_Profile extends Zend_Form
+class Application_Form_Profile extends Application_Form_Address
 {
-    /**
-     * Initialize form.
-     *
-     * @return void
-     */
-    public function init()
-    {
-        $this->addElement(
-			'text',
-			'email',
-			array(
-				'label' => 'Email Address',
-				'required' => true,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('EmailAddress')
-				)
-			)
-		);
+	/**
+	 * Initialize form.
+	 */
+	public function init()
+	{
+		parent::init();
 
-        $this->addElement(
-			'checkbox',
-			'public_profile',
-			array(
-				'label' => 'Allow other users to see your Email address?',
-				'required' => false
-			)
-		);
+		$this->addElement('text', 'email', [
+			'label' => 'Email Address',
+			'required' => true,
+			'filters' => ['StringTrim'],
+			'validators' => [['EmailAddress']]
+		]);
 
-        $this->addElement(
-			'text',
-			'name',
-			array(
-				'label' => 'Name',
-				'required' => true,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('stringLength', false, array(1, 50))
-				)
-			)
-		);
+		$this->addElement('checkbox', 'public_profile', [
+			'label' => 'Allow other users to see your Email address?',
+			'required' => false
+		]);
 
-		$this->addElement(
-			'select',
-			'gender',
-			[
-				'label' => 'Gender',
-				'required' => false,
-				'multiOptions' => Application_Model_User::$genderId
-			]
-		);
+		$this->addElement('text', 'name', [
+			'label' => 'Name',
+			'required' => true,
+			'filters' => ['StringTrim'],
+			'validators' => [['stringLength', false, [1, 50]]]
+		]);
 
-        $this->addElement(
-			'text',
-			'activities',
-			array(
+		$this->addElement('select', 'gender', [
+			'label' => 'Gender',
+			'required' => false,
+			'multiOptions' => Application_Model_User::$genderId
+		]);
+
+		$this->addElement('text', 'activities', [
 				'label' => 'Interest',
 				'required' => false,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('stringLength', false, array(0, 250))
-				)
-			)
-		);
+				'filters' => ['StringTrim'],
+				'validators' => [['stringLength', false, [0, 250]]]
+		]);
 
 		$days = array_map(function($item){
 			return str_pad($item, 2, '0', STR_PAD_LEFT); 
 		}, range(1, 31));
 
-        $this->addElement(
-			'select',
-			'birth_day',
-			array(
-				'required' => false,
-				'multiOptions' => array_combine(array_merge(array(''), range(1, 31)), array_merge(array('Day'), $days))
-			)
-		);
+		$this->addElement('select', 'birth_day', [
+			'required' => false,
+			'multiOptions' => array_combine(['']+range(1, 31), ['Day']+$days)
+		]);
 
 		$months = array_map(function($item){
 			return str_pad($item, 2, '0', STR_PAD_LEFT); 
 		}, range(1, 12));
 
-        $this->addElement(
-			'select',
-			'birth_month',
-			array(
-				'required' => false,
-				'multiOptions' => array_combine(array_merge(array(''), range(1, 12)), array_merge(array('Month'), $months))
-			)
-		);
+		$this->addElement('select', 'birth_month', [
+			'required' => false,
+			'multiOptions' => array_combine(['']+range(1, 12), ['Month']+$months)
+		]);
 
 		$years = range(date('Y'), 1905);
 
-        $this->addElement(
-			'select',
-			'birth_year',
-			array(
-				'required' => false,
-				'multiOptions' => array_combine(array_merge(array(''), $years), array_merge(array('Year'), $years))
-			)
-		);
+		$this->addElement('select', 'birth_year', [
+			'required' => false,
+			'multiOptions' => array_combine(['']+$years, ['Year']+$years)
+		]);
 
-        $this->addElement(
-			'select',
-			'timezone',
-			array(
-				'label' => 'Time zone',
-				'required' => false,
-				'multiOptions' => [''=>'UTC']+My_CommonUtils::$timezone
-			)
-		);
-    }
+		$this->addElement('select', 'timezone', [
+			'label' => 'Time zone',
+			'required' => false,
+			'multiOptions' => [''=>'UTC']+My_CommonUtils::$timezone
+		]);
+	}
 }

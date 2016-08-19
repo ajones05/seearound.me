@@ -11,14 +11,10 @@ class Application_Form_Forgot extends Zend_Form
 	 */
 	public function init()
 	{
-		$this->addElement(
-			'text',
-			'email',
-			[
-				'required' => true,
-				'filters' => ['StringTrim'],
-				'validators' => [['EmailAddress']]
-			]
-		);
+		$this->addElement('text', 'email', [
+			'required' => true,
+			'filters' => ['StringTrim'],
+			'validators' => [['EmailAddress']]
+		]);
 	}
 }
