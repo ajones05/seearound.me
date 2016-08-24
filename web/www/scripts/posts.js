@@ -472,16 +472,20 @@ function renderView_callback(){
 										mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
 										areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),getRadius());
 
-										for (var i in response.data){
-											$('.posts-container .posts').append(response.data[i][3]);
+										if (response.data){
+											for (var i in response.data){
+												$('.posts-container .posts').append(response.data[i][3]);
 
-											var id = response.data[i][0];
-											postData[id]=[response.data[i][1],response.data[i][2]];
-											postItem_render(id);
-										}
+												var id = response.data[i][0];
+												postData[id]=[response.data[i][1],response.data[i][2]];
+												postItem_render(id);
+											}
 
-										if (Object.size(response.data) >= postLimit){
-											postList_scrollHandler();
+											if (Object.size(response.data) >= postLimit){
+												postList_scrollHandler();
+											}
+										} else {
+											emptyPostsMessage();
 										}
 
 										$(event.target).dialog('close');
@@ -1234,6 +1238,9 @@ function postItem_renderContent(id, postContainer){
 										postItem_delete(id);
 										delete postData[id];
 										$('.posts-container .posts input[value='+id+']').remove();
+										if (Object.size(postData) == 0){
+											emptyPostsMessage();
+										}
 									},
 									fail: function(data, textStatus, jqXHR){
 										editButtons.attr('disabled', false);
@@ -1318,6 +1325,11 @@ function postItem_renderContent(id, postContainer){
 	require(['textarea_autosize'], function(){
 		input.textareaAutoSize();
 	});
+}
+
+function emptyPostsMessage(){
+	$('.posts').append($('<div/>').addClass('post empty')
+		.text('Be the first to post in this area!'))
 }
 
 function comment_render(comment){
