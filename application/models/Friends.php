@@ -75,7 +75,7 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 				'receiver_image_name' => 'image_name',
 				'receiver_birthday' => 'Birth_date',
 				'receiver_gender' => 'gender',
-				'receiver_activity' => 'activity'
+				'receiver_interest' => 'interest'
 			])
 			->joinLeft(['us' => 'user_data'], 'us.id=f.receiver_id', [
 				'sender_name' => 'Name',
@@ -84,7 +84,7 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 				'sender_image_name' => 'image_name',
 				'sender_birthday' => 'Birth_date',
 				'sender_gender' => 'gender',
-				'sender_activity' => 'activity'
+				'sender_interest' => 'interest'
 			])
 			->limit($options['limit'],
 				My_ArrayHelper::getProp($options, 'offset', 0));

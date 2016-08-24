@@ -79,7 +79,7 @@ class HomeController extends Zend_Controller_Action
 				'public_profile' => $user['public_profile'],
 				'name' => $user['Name'],
 				'gender' => $user['gender'],
-				'activities' => $user['activity'],
+				'interest' => $user['interest'],
 				'latitude' => $user['latitude'],
 				'longitude' => $user['longitude'],
 				'street_name' => $user['street_name'],
@@ -369,8 +369,7 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException(My_Form::outputErrors($addressForm));
 			}
 
-			$db = Zend_Db_Table::getDefaultAdapter();
-			$db->update('address', $addressForm->getValues(),
+			(new Application_Form_Address)->update($addressForm->getValues(),
 				'id=' . $user['address_id']);
 
 			Application_Model_User::cleanUserCache($user);

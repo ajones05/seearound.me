@@ -101,7 +101,7 @@ class MobileController extends Zend_Controller_Action
 					'address' => Application_Model_Address::format($user),
 					'latitude' => $user['latitude'],
 					'longitude' => $user['longitude'],
-					'Activities' => $user['activity'],
+					'Activities' => $user['interest'],
 					'Gender' => Application_Model_User::getGender($user),
 					'token' => $accessToken
 				]
@@ -155,7 +155,7 @@ class MobileController extends Zend_Controller_Action
 					'address' => Application_Model_Address::format($user),
 					'latitude' => $user['latitude'],
 					'longitude' => $user['longitude'],
-					'Activities' => My_ArrayHelper::getProp($user, 'activity'),
+					'Activities' => My_ArrayHelper::getProp($user, 'interest'),
 					'Gender' => Application_Model_User::getGender($user),
 					'token' => $accessToken
 				]
@@ -369,7 +369,7 @@ class MobileController extends Zend_Controller_Action
 					] + My_ArrayHelper::filter([
 						'Birth_date' => $friend[$alias.'birthday'],
 						'Gender' => Application_Model_User::getGender($friend, $alias),
-						'Activities' => $friend[$alias.'activity']
+						'Activities' => $friend[$alias.'interest']
 					]);
 				}
 			}
@@ -561,7 +561,7 @@ class MobileController extends Zend_Controller_Action
 						Application_Model_User::getThumb($profile, '320x320')),
 					'Email_id' => $profile['Email_id'],
 					'Gender' => Application_Model_User::getGender($profile),
-					'Activities' => $profile['activity'],
+					'Activities' => $profile['interest'],
 					'Birth_date' => $profile['Birth_date']
 				])
 			];
@@ -1644,14 +1644,14 @@ class MobileController extends Zend_Controller_Action
 			$userModel = new Application_Model_User;
 			$data = $profileForm->getValues();
 
-			$user_data = [
+			$updateData = [
 				'Name' => $data['name'],
 				'Birth_date' => trim($data['birth_date']) !== '' ?
 					(new DateTime($data['birth_date']))->format('Y-m-d') : null,
 				'Email_id' => $data['email'],
 				'public_profile' => $data['public_profile'],
 				'gender' => $data['gender'],
-				'activity' => $userModel->filterActivity($data['activities'])
+				'interest' => $userModel->filterInterest($data['interest'])
 			];
 
 			if (trim(My_ArrayHelper::getProp($data, 'image')) !== '')
@@ -1678,8 +1678,8 @@ class MobileController extends Zend_Controller_Action
 					[[55,55], 'thumb55x55', 2],
 					[[320,320], 'uploads']
 				]);
-				$user_data['image_id'] = $image['id'];
-				$user_data['image_name'] = $data['image'];
+				$updateData['image_id'] = $image['id'];
+				$updateData['image_name'] = $data['image'];
 				$profileImage = 'uploads/' . $data['image'];
 			}
 			else
@@ -1687,7 +1687,7 @@ class MobileController extends Zend_Controller_Action
 				$profileImage = Application_Model_User::getThumb($user, '320x320');
 			}
 
-			$userModel->updateWithCache($user_data, $user);
+			$userModel->updateWithCache($updateData, $user);
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -1703,7 +1703,7 @@ class MobileController extends Zend_Controller_Action
 					'Profile_image' => $this->view->serverUrl() .
 						$this->view->baseUrl($profileImage),
 					'Gender' => $data['gender'],
-					'Activities' => $data['activities'],
+					'Activities' => $updateData['interest'],
 					'Birth_date' => $data['birth_date']
 				])
 			];
@@ -1821,7 +1821,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = [
 				'status' => 'FAILED',
-				'message' => true || $e instanceof RuntimeException ?
+				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
 			$this->errorHandler($e);

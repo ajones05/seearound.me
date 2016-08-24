@@ -170,8 +170,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					$order[] = $this->postScore() . ' DESC';
 					break;
 				case '1':
-					$interests = $user['activity'] != null ?
-						explode(', ', $user['activity']) : null;
+					$interests = !empty($user['interest']) ?
+						explode(', ', $user['interest']) : null;
 
 					if ($interests != null)
 					{

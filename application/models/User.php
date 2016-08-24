@@ -474,7 +474,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 				'Email_id' => $data['email'],
 				'public_profile' => $data['public_profile'],
 				'gender' => $data['gender'],
-				'activity' => $this->filterActivity($data['activities'])
+				'interest' => $this->filterInterest($data['interest'])
 			];
 
 			if (!empty($data['birth_day']) && !empty($data['birth_month']) && !empty($data['birth_year']))
@@ -549,24 +549,24 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	}
 
 	/**
-	 * Filters user activity data.
+	 * Filters user interest data.
 	 *
-	 * @param	string $activities
+	 * @param	string $interests
 	 * @return string
 	 */
-	public function filterActivity($activities)
+	public function filterInterest($interests)
 	{
-		if (trim($activities) !== '')
+		if (trim($interests) !== '')
 		{
 			$result = [];
 
-			foreach (explode(',', $activities) as $activity)
+			foreach (explode(',', $interests) as $interest)
 			{
-				$activity = trim($activity);
+				$interest = trim($interest);
 
-				if ($activity !== '')
+				if ($interest !== '')
 				{
-					$result[] = $activity;
+					$result[] = $interest;
 				}
 			}
 
