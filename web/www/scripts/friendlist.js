@@ -1,3 +1,20 @@
+function deleteRowDialog(el,id,name){
+	if ($(el).attr('disabled')){
+		return false;
+	}
+	if (!confirm('Are you sure you want to unfollow '+name+'?')){
+		return false;
+	}
+	$(el).attr('disabled',true);
+	ajaxJson({
+		url:baseUrl+'contacts/friend',
+		data:{user:id,action:'reject'},
+		done:function(){
+			$(el).closest('.invtFrndList').remove();
+			loadFriendNews();
+		}
+	});
+}
 (function($){
 var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersCluster = [],
 	newsMapCircle, currentLocationMarke;
@@ -147,9 +164,11 @@ var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersClu
 
 					locationTimezone(position,function(timezone){
 						var data = {
-							latitude: position.lat(),
-							longitude: position.lng(),
-							timezone: timezone
+							latitude:position.lat(),
+							longitude:position.lng(),
+							timezone:timezone,
+							keywords:$('#searchNews [name=keywords]').val(),
+							radius:getRadius()
 						};
 
 						if (place){
@@ -157,7 +176,7 @@ var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersClu
 						}
 
 						ajaxJson({
-							url:baseUrl+'home/change-address',
+							url:baseUrl+'contacts/change-address',
 							data:data,
 							done:function(response){
 								userPosition = position;
@@ -170,7 +189,14 @@ var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersClu
 								newsMapCircle.changeCenter(position, 0.8);
 								currentLocationMarker.setPosition(position);
 
-								loadFriendNews();
+								resetMarkersBefore();
+
+								if (response.posts){
+									for (var i in response.posts){
+										renderListingMarker(response.posts[i]);
+									}
+									resetMarkersAfter();
+								}
 
 								$(dialogEvent.target).dialog('close');
 							},
@@ -185,8 +211,15 @@ var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersClu
 			});
 		});
 
-		loadFriendNews();
-		setHeight('.eqlCH');
+		if (typeof posts !== 'undefined'){
+			resetMarkersCluster();
+
+			for (var i in posts){
+				renderListingMarker(posts[i]);
+			}
+
+			resetMarkersAfter();
+		}
 
 		$("#search")
 			.val('')
@@ -230,12 +263,57 @@ var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersClu
 					.appendTo(ul);
 			};
 
-		if ($('#friendList').size()){
-			moreFriends();
-		}
+		$('.postClass_after').click(function(){
+			var loadBlock=$(this),loadImg=loadBlock.find('img').show();
+			ajaxJson({
+				url:baseUrl+'contacts/friends-list-load',
+				data:{offset:$('.invtFrndList:not(#friendList)').size()},
+				done:function(response){
+					loadImg.hide();
+
+					if (response.data){
+						for (var i in response.data){
+							$("#friendList").append(response.data[i]);
+						}
+					}
+
+					if (!response.data || response.data.length < 15){
+						loadBlock.remove();
+					}
+				}
+			});
+		});
 	});
 
 function loadFriendNews(callback){
+	resetMarkersBefore();
+
+	ajaxJson({
+		url:baseUrl+'contacts/load-friend-news',
+		data: {
+			keywords:$('#searchNews [name=keywords]').val(),
+			latitude:newsMap.getCenter().lat(),
+			longitude:newsMap.getCenter().lng(),
+			radius:getRadius()
+		},
+		done: function(response){
+			if (typeof callback == 'function'){
+				callback();
+			}
+
+			if (!response.data){
+				return false;
+			}
+
+			for (var i in response.data){
+				renderListingMarker(response.data[i]);
+			}
+
+			resetMarkersAfter();
+		}
+	});
+}
+function resetMarkersBefore(){
 	if (!$.isEmptyObject(newsMarkers)){
 		for (var id in newsMarkers){
 			newsMarkers[id].remove();
@@ -244,140 +322,24 @@ function loadFriendNews(callback){
 	}
 
 	resetMarkersCluster();
-
-	$.ajax({
-		url: baseUrl + 'home/load-friend-news',
-		data: {
-			keywords: $('#searchNews [name=keywords]').val(),
-			latitude: newsMap.getCenter().lat(),
-			longitude: newsMap.getCenter().lng(),
-			radius: getRadius()
-		},
-		type: 'POST',
-		dataType: 'json',
-		async: false
-	}).done(function(response){
-		if (response && response.status){
-			if (typeof callback == 'function'){
-				callback();
-			}
-
-			if (typeof response.result !== 'object'){
-				return false;
-			}
-
-			for (var i in response.result){
-				renderListingMarker(response.result[i], false);
-			}
-
-			resetMarkersCluster();
-
-			if (newsMapRady){
-				setTimeout(function(){
-					updateMarkersCluster();
-				}, .1);
-			} else {
-				google.maps.event.addListener(newsMap, 'idle', function(){
-					updateMarkersCluster();
-				});
-			}
-		} else {
-			alert(response ? response.message : ERROR_MESSAGE);
-		}
-	});
 }
+function resetMarkersAfter(){
+	resetMarkersCluster();
 
-function moreFriends(){
-	var offset = $('#friendList > .invtFrndList').size();
-
-	ajaxJson({
-		url:baseUrl+'contacts/friends-list-load',
-		data:{offset:offset},
-		done: function(response){
-			$('.postClass_after').remove();
-
-			if (!response.friends){
-				return false;
-			}
-
-			for (var x in response.friends){
-				$("#friendList").append(
-					$('<div/>').addClass('invtFrndList').append(
-						$('<ul/>', {'class': 'invtFrndRow'}).append(
-							$('<li/>', {'class': 'img'}).append(
-								$('<a/>', {href: baseUrl + 'home/profile/user/' + response.friends[x].id}).append(
-									$('<img/>', {src: response.friends[x].image})
-								)
-							),
-							$('<li/>', {'class': 'name'}).append(
-								response.friends[x].name,
-								$('<span/>', {'class': 'loc'}).text(response.friends[x].address)
-							),
-							$('<li/>', {'class': 'message btnCol'}).append(
-								$('<img/>', {src: baseUrl + 'www/images/envelope-icon.gif'}).click(function(){
-									var userData=$(this).closest('.invtFrndList').data('user');
-									userMessageDialog(userData.id);
-								})
-							),
-							$('<li/>', {'class': 'delete btnCol'}).append(
-								$('<img/>', {src: baseUrl + 'www/images/delete-icon.png'}).click(function(){
-									if ($(this).attr('disabled')){
-										return false;
-									}
-									var userRow=$(this).closest('.invtFrndList'),
-										userData=userRow.data('user');
-									if (!confirm('Are you sure you want to unfollow '+userData.name+'?')){
-										return false;
-									}
-									$(this).attr('disabled',true);
-									ajaxJson({
-										url: baseUrl + 'contacts/friend',
-										data: {
-											user: userData.id,
-											action: 'reject'
-										},
-										done: function(){
-											userRow.remove();
-											friends_count--;
-											loadFriendNews();
-										}
-									})
-								})
-							),
-							$('<div/>', {'class': 'clr'})
-						),
-						$('<div/>', {'class': 'clr'})
-					).data('user', {
-							id:response.friends[x].id,
-							name:response.friends[x].name
-					}),
-					$('<div/>', {'class': 'clr'})
-				);
-
-				if ($("#midColLayout").height() > 714){
-					setThisHeight(Number($("#midColLayout").height()));
-				}
-
-				offset++;
-			}
-
-			if (offset < friends_count){
-				$('.listHight').after(
-					$('<div/>', {'class': 'postClass_after'})
-						.click(function(){
-							$(this).append($('<img/>', {src: baseUrl + 'www/images/wait.gif'}));
-							moreFriends();
-						})
-						.append($('<lable/>').text('More'))
-				);
-			}
-		}
-	});
+	if (newsMapRady){
+		setTimeout(function(){
+			updateMarkersCluster();
+		}, .1);
+	} else {
+		google.maps.event.addListener(newsMap, 'idle', function(){
+			updateMarkersCluster();
+		});
+	}
 }
 
 function createNewsMarker(options, contentCallback){
 	var marker = new NewsMarker($.extend({
-		id: 'newsMarker' + options.data.id
+		id: 'newsMarker' + options.data.post[0]
 	}, options));
 
 	google.maps.event.addListener(marker, 'mouseover', function(){
@@ -443,7 +405,7 @@ function createNewsMarker(options, contentCallback){
 		.tooltip('open');
 	});
 
-	newsMarkers[options.data['id']] = marker;
+	newsMarkers[options.data.post[0]] = marker;
 
 	return marker;
 }
@@ -514,33 +476,31 @@ function getRadius(){
 	return 0.8;
 }
 
-function renderListingMarker(news, readmore){
-	var position = new google.maps.LatLng(parseFloat(news.latitude), parseFloat(news.longitude));
+function renderListingMarker(post){
+	var position = new google.maps.LatLng(parseFloat(post[1]), parseFloat(post[2]));
 	var marker = createNewsMarker({
-		map: newsMap,
-		position: position,
-		data: news,
-		icon: {
-			url: baseUrl + 'www/images/icons/icon_2.png',
-			width: 20,
-			height: 29
-		},
-		hide: true,
-		addClass: 'newsMarker'
+		map:newsMap,
+		position:position,
+		data:{post:post},
+		icon:{url:baseUrl+'www/images/icons/icon_2.png',width:20,height:29},
+		hide:true,
+		addClass:'newsMarker'
 	}, function(newsMarker){
 			var tooltip = '<div class="tooltip-content">' +
-			'<img src="' + newsMarker.opts.data.user.image + '" />' +
+			'<img src="' + baseUrl+newsMarker.opts.data.post[5] + '" />' +
 				'<div>' +
-					'<h4>' + newsMarker.opts.data.user.name + '</h4>' +
-					'<div>' + newsMarker.opts.data.news + '</div>' +
+					'<h4>' + newsMarker.opts.data.post[4] + '</h4>' +
+					'<div>' + newsMarker.opts.data.post[3] + '</div>' +
 				'</div>' +
 			'</div>' +
 			'<div class="tooltip-footer">';
-
-			if (getMarkerPosition(newsMarker.opts.data.id)[1].length == 1){
-				tooltip += '<a href="' + baseUrl + 'post/' + newsMarker.opts.data.id + '">More details</a>';
+			if (getMarkerPosition(newsMarker.opts.data.post[0])[1].length == 1){
+				tooltip += '<a href="' + baseUrl + 'post/' +
+					newsMarker.opts.data.post[0] + '">More details</a>';
 			} else {
-				tooltip += '<a href="' + baseUrl + 'post/center/' + newsMarker.opts.data.latitude + ',' + newsMarker.opts.data.longitude + '?point=1">More details</a>';
+				tooltip += '<a href="' + baseUrl + 'post/center/' +
+					newsMarker.opts.data.post[1] + ',' + newsMarker.opts.data.post[2] +
+					'?point=1">More details</a>';
 			}
 
 			tooltip += '</div>';
@@ -585,14 +545,14 @@ function resetMarkersCluster(){
 
 			for (var groupId in newsMarkersCluster){
 				if (latlngDistance(newsMarkersCluster[groupId][0][1], newsMarkers[id].getPosition(), 'F') <= 0.018939){
-					newsMarkersCluster[groupId].push([newsMarkers[id].opts.data.id, newsMarkers[id].getPosition()]);
+					newsMarkersCluster[groupId].push([newsMarkers[id].opts.data.post[0], newsMarkers[id].getPosition()]);
 					group = true;
 					break;
 				}
 			}
 
 			if (!group){
-				newsMarkersCluster.push([[newsMarkers[id].opts.data.id, newsMarkers[id].getPosition()]]);
+				newsMarkersCluster.push([[newsMarkers[id].opts.data.post[0], newsMarkers[id].getPosition()]]);
 			}
 		}
 	}

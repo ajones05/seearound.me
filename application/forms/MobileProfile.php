@@ -38,7 +38,7 @@ class Application_Form_MobileProfile extends Zend_Form
 			'required' => false
 		]);
 
-		$this->addElement('text', 'activities', [
+		$this->addElement('text', 'interest', [
 			'required' => false,
 			'filters' => ['StringTrim'],
 			'validators' => [

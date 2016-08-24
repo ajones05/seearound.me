@@ -79,7 +79,7 @@ class HomeController extends Zend_Controller_Action
 				'public_profile' => $user['public_profile'],
 				'name' => $user['Name'],
 				'gender' => $user['gender'],
-				'activities' => $user['activity'],
+				'interest' => $user['interest'],
 				'latitude' => $user['latitude'],
 				'longitude' => $user['longitude'],
 				'street_name' => $user['street_name'],
@@ -278,115 +278,6 @@ class HomeController extends Zend_Controller_Action
 
 		My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
 				'key=' . $settings['google_mapsKey'] . '&v=3&callback=initMap', $this->view);
-	}
-
-	/**
-	 * Load friend news action.
-	 *
-	 * @return	void
-	 */
-	public function loadFriendNewsAction()
-	{
-		try
-		{
-			$user = Application_Model_User::getAuth(true);
-
-			if ($user == null)
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
-			$searchForm = new Application_Form_PostSearch;
-			$searchParameters = [
-				'latitude' => $this->_request->getPost('latitude'),
-				'longitude' => $this->_request->getPost('longitude'),
-				'radius' => $this->_request->getPost('radius', 1.5),
-				'keywords' => $this->_request->getPost('keywords'),
-			];
-
-			if (!$searchForm->isValid($searchParameters))
-			{
-				throw new RuntimeException(My_Form::outputErrors($searchForm));
-			}
-
-			$result = (new Application_Model_News)->search($searchParameters +
-				['filter' => 2, 'start' => 0, 'limit' => 15], $user);
-
-			$response = ['status' => 1];
-
-			if (count($result))
-			{
-				foreach ($result as $row)
-				{
-					$ownerThumb = Application_Model_User::getThumb($row, '55x55',
-						['alias' => 'owner_']);
-					$response['result'][] = [
-						'id' => $row->id,
-						'news' => My_StringHelper::stringLimit($row->news, 100, '...'),
-						'latitude' => $row->latitude,
-						'longitude' => $row->longitude,
-						'user' => [
-							'id' => $row->user_id,
-							'name' => $row->owner_name,
-							'image' => $this->view->baseUrl($ownerThumb),
-						]
-					];
-				}
-			}
-		}
-		catch (Exception $e)
-		{
-			$response = [
-				'status' => 0,
-				'message' => $e instanceof RuntimeException ?
-					$e->getMessage() : 'Internal Server Error'
-			];
-		}
-
-		$this->_helper->json($response);
-	}
-
-	/**
-	 * Change user address news action.
-	 *
-	 * @return void
-	 */
-	public function changeAddressAction()
-	{
-		try
-		{
-			$user = Application_Model_User::getAuth(true);
-
-			if ($user == null)
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
-			$addressForm = new Application_Form_Address;
-
-			if (!$addressForm->isValid($this->_request->getPost()))
-			{
-				throw new RuntimeException(My_Form::outputErrors($addressForm));
-			}
-
-			$db = Zend_Db_Table::getDefaultAdapter();
-			$db->update('address', $addressForm->getValues(),
-				'id=' . $user['address_id']);
-
-			Application_Model_User::cleanUserCache($user);
-
-			$response = ['status' => 1];
-		}
-		catch (Exception $e)
-		{
-			$response = array(
-				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() :
-					'Internal Server Error'
-			);
-		}
-
-		$this->_helper->json($response);
 	}
 
 	/**

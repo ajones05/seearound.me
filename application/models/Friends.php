@@ -75,16 +75,16 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 				'receiver_image_name' => 'image_name',
 				'receiver_birthday' => 'Birth_date',
 				'receiver_gender' => 'gender',
-				'receiver_activity' => 'activity'
+				'receiver_interest' => 'interest'
 			])
-			->joinLeft(['us' => 'user_data'], 'us.id=f.receiver_id', [
+			->joinLeft(['us' => 'user_data'], 'us.id=f.sender_id', [
 				'sender_name' => 'Name',
 				'sender_email' => 'Email_id',
 				'sender_image_id' => 'image_id',
 				'sender_image_name' => 'image_name',
 				'sender_birthday' => 'Birth_date',
 				'sender_gender' => 'gender',
-				'sender_activity' => 'activity'
+				'sender_interest' => 'interest'
 			])
 			->limit($options['limit'],
 				My_ArrayHelper::getProp($options, 'offset', 0));
@@ -118,30 +118,6 @@ class Application_Model_Friends extends Zend_Db_Table_Abstract
 		}
 
 		return $this->fetchAll($query);
-	}
-
-	/**
-	 * Returns friends count by user ID.
-	 *
-	 * @param	integer	$user_id
-	 *
-	 * @return	integer
-	 */
-	public function getCountByUserId($user_id)
-	{
-		$result = $this->fetchRow(
-			$this->select()
-				->from($this, array('count(*) as result_count'))
-				->where('(receiver_id=' . $user_id . ' OR sender_id=' . $user_id . ')')
-				->where('status=?', 1)
-		);
-
-		if ($result)
-		{
-			return $result->result_count;
-		}
-
-		return 0;
 	}
 
 	/**

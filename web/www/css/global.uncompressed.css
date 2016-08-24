@@ -735,7 +735,7 @@ div.dur { position: relative; padding: 12px 20px 11px 0px; background: #fff;bord
 
 .invtFrndList .invtFrndList-title { text-align: center;font: normal 18px lato-bold;padding: 10px 0; color: #4276cd; }
 
-.invtFrndRow{border-top: 1px solid #d7d7d7; padding: 15px 0;}
+.invtFrndRow{border-top: 1px solid #d7d7d7; padding: 15px 0;display:inline-block;}
 
 .invtFrndRow li{float:left; margin-right: 15px;}
 

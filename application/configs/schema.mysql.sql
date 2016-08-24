@@ -33,6 +33,7 @@ ALTER TABLE `user_data` ADD `comment_other` int(11) not null default '0';
 ALTER TABLE `user_data` ADD `vote` int(11) not null default '0';
 ALTER TABLE `user_data` ADD `invite` int(11) not null default '0';
 ALTER TABLE `user_data` ADD `invite_updated_at` timestamp null default null;
+ALTER TABLE `user_data` CHANGE `activity` `interest` varchar(255) NULL;
 
 --
 -- Table structure for table `user_confirm`

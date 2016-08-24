@@ -36,7 +36,7 @@ class Application_Form_Profile extends Application_Form_Address
 			'multiOptions' => Application_Model_User::$genderId
 		]);
 
-		$this->addElement('text', 'activities', [
+		$this->addElement('text', 'interest', [
 				'label' => 'Interest',
 				'required' => false,
 				'filters' => ['StringTrim'],
