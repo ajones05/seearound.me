@@ -23,11 +23,27 @@
 		</li>
 	</ul>
 	<div class="clr"></div>
-	<?php if ($this->friends_count > 0): ?>
-	<div id="friendList" class="invtFrndList">
-		<p class="invtFrndList-title">Following</p>
-	</div>
-	<?php else: ?>
-	<div class="connListSec">No connection found</div>
-	<?php endif; ?> 
+<?php if ($this->friends->count() > 0): ?>
+<div id="friendList" class="invtFrndList">
+<p class="invtFrndList-title">Following</p>
+<?php
+foreach ($this->friends as $friend)
+{
+	echo $this->partial('contacts/_friend.html', [
+		'friend' => $friend,
+		'alias' => $friend['receiver_id'] == $this->user['id'] ?
+			'sender_' : 'receiver_'
+	]);
+}
+?>
 </div>
+<?php else: ?>
+<div class="connListSec">No connection found</div>
+<?php endif; ?>
+</div>
+<?php if ($this->friends->count() >= 15): ?>
+<div class="postClass_after">
+<label>More</label>
+<img src="<?php echo $this->baseUrl('www/images/wait.gif'); ?>" style="display: none;">
+</div>
+<?php endif;

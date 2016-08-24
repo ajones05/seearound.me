@@ -1,0 +1,23 @@
+<?php
+$id = $this->friend[$this->alias.'id'];
+$name = $this->friend[$this->alias.'name'];
+$url = $this->baseUrl('home/profile/user/' . $id);
+$thumb = Application_Model_User::getThumb($this->friend, '55x55', [
+	'alias' => $this->alias
+]);
+?>
+<div class="invtFrndList">
+<ul class="invtFrndRow">
+<li class="img"><a href="<?php echo $url; ?>"><img
+src="<?php echo $this->baseUrl($thumb); ?>"></a></li>
+<li class="name"><?php echo $name; ?><span
+class="loc"><?php echo Application_Model_Address::format($this->friend,
+	['alias' => $this->alias]); ?></span></li>
+<li class="message btnCol"><img
+src="<?php echo $this->baseUrl('www/images/envelope-icon.gif'); ?>"
+onclick="return userMessageDialog(<?php echo $id; ?>)"></li>
+<li class="delete btnCol"><img
+src="<?php echo $this->baseUrl('www/images/delete-icon.png'); ?>"
+onclick="return deleteRowDialog(this,<?php echo $id; ?>,'<?php echo htmlspecialchars($name); ?>')"></li>
+</ul>
+</div>

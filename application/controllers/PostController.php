@@ -27,8 +27,7 @@ class PostController extends Zend_Controller_Action
 
 		$this->view->layout()->setLayout('posts');
 		$this->view->searchForm = new Application_Form_PostSearch;
-		$this->view->user =
-		$this->view->owner = $user;
+		$this->view->user = $user;
 
 		$postOptions = [
 			'link' => ['thumbs'=>[[448,320]]],
@@ -102,6 +101,10 @@ class PostController extends Zend_Controller_Action
 		}
 
 		$this->view->post = $post;
+		$this->view->owner = [
+			'Name' => $post['owner_name'],
+			'image_name' => $post['owner_image_name']
+		];
 		$this->view->hidden = true;
 
 		$this->view->headScript()->appendScript($headScript . ';');
