@@ -444,6 +444,9 @@ function renderView_callback(){
 
 							locationTimezone(position,function(timezone){
 								var data = {
+									radius: getRadius(),
+									keywords: opts.keywords,
+									filter: opts.filter,
 									latitude: position.lat(),
 									longitude: position.lng(),
 									timezone: timezone
@@ -453,16 +456,34 @@ function renderView_callback(){
 									data = $.extend(data, parsePlaceAddress(place));
 								}
 
+								$('html, body').animate({scrollTop: 0}, 0);
+								$('.posts-container .posts > .empty').remove();
+
 								ajaxJson({
-									url: baseUrl+'home/change-address',
+									url: baseUrl+'post/change-user-location',
 									data:data,
 									done:function(response){
 										user.location = location;
 										userPosition = position;
 										centerPosition = position;
+
+										postList_reset();
+
 										mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
 										areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),getRadius());
-										postList_change();
+
+										for (var i in response.data){
+											$('.posts-container .posts').append(response.data[i][3]);
+
+											var id = response.data[i][0];
+											postData[id]=[response.data[i][1],response.data[i][2]];
+											postItem_render(id);
+										}
+
+										if (Object.size(response.data) >= postLimit){
+											postList_scrollHandler();
+										}
+
 										$(event.target).dialog('close');
 									},
 									fail:function(jqXHR,textStatus){
@@ -1965,10 +1986,11 @@ function postList_scrollHandler(scroll){
 		var scrollTop = $(this).scrollTop()+$(this).height(),
 			scrollHeight = isTouch ? this.scrollHeight : $(document).height();
 
-		if ((scrollHeight-scrollTop) < $(window).height()*5){
+		if ((scrollHeight-scrollTop) < $(window).height()*3){
 			$(this).unbind('scroll.load');
 			postList_load(Object.size(postData));
 		}
+
 	});
 
 	if (scroll == true){

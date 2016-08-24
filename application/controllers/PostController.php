@@ -612,47 +612,47 @@ class PostController extends Zend_Controller_Action
 
 			if ($reset)
 			{
-				$result = $model->search([
-					'latitude' => $address->latitude,
-					'longitude' => $address->longitude,
+				$result = $postModel->search([
+					'latitude' => $address['latitude'],
+					'longitude' => $address['longitude'],
 					'radius' => 1.5,
 					'limit' => 14,
-					'exclude_id' => [$post->id]
+					'exclude_id' => [$post['id']]
 				], $user, [
 					'link' => ['thumbs'=>[[448,320]]],
 					'userVote' => true,
 					'thumbs' => [[448,320],[960,960]]
 				]);
 
-				foreach ($result as $post)
+				foreach ($result as $_post)
 				{
 					$assets = [
-						'post' => $post,
+						'post' => $_post,
 						'owner' => [
-							'Name' => $post['owner_name'],
-							'image_name' => $post['owner_image_name']
+							'Name' => $_post['owner_name'],
+							'image_name' => $_post['owner_image_name']
 						],
 						'user' => $user,
 						'limit' => 350
 					];
 
-					if (!empty($post['link_id']))
+					if (!empty($_post['link_id']))
 					{
 						$assets['link'] = [
-							'id' => $post['link_id'],
-							'link' => $post['link_link'],
-							'title' => $post['link_title'],
-							'description' => $post['link_description'],
-							'author' => $post['link_author'],
-							'image_id' => $post['link_image_id'],
-							'image_name' => $post['link_image_name']
+							'id' => $_post['link_id'],
+							'link' => $_post['link_link'],
+							'title' => $_post['link_title'],
+							'description' => $_post['link_description'],
+							'author' => $_post['link_author'],
+							'image_id' => $_post['link_image_id'],
+							'image_name' => $_post['link_image_name']
 						];
 					}
 
 					$response['data'][] = [
-						$post->id,
-						$post->latitude,
-						$post->longitude,
+						$_post['id'],
+						$_post['latitude'],
+						$_post['longitude'],
 						$this->view->partial('post/view.html', $assets)
 					];
 				}
@@ -1539,5 +1539,104 @@ class PostController extends Zend_Controller_Action
 			die($e instanceof RuntimeException ? $e->getMessage() :
 				'Internal Server Error');
 		}
+	}
+
+	/**
+	 * Change user address news action.
+	 *
+	 * @return void
+	 */
+	public function changeUserLocationAction()
+	{
+		try
+		{
+			$user = Application_Model_User::getAuth(true);
+
+			if ($user == null)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$addressForm = new Application_Form_Address;
+
+			if (!$addressForm->isValid($this->_request->getPost()))
+			{
+				throw new RuntimeException(My_Form::outputErrors($addressForm));
+			}
+
+			$data = $addressForm->getValues();
+
+			$searchParameters = [
+				'latitude' => $data['latitude'],
+				'longitude' => $data['longitude'],
+				'keywords' => $this->_request->getPost('keywords'),
+				'filter' => $this->_request->getPost('filter'),
+				'radius' => $this->_request->getPost('radius')
+			];
+
+			$searchForm = new Application_Form_PostSearch;
+
+			if (!$searchForm->isValid($searchParameters))
+			{
+				throw new RuntimeException(My_Form::outputErrors($searchForm));
+			}
+
+			(new Application_Model_Address)->update($data,
+				'id=' . $user['address_id']);
+			Application_Model_User::cleanUserCache($user);
+
+			$response = ['status' => 1];
+
+			$result = (new Application_Model_News)->search([
+				'limit' => 15
+				] + $searchParameters, $user, [
+				'link' => ['thumbs'=>[[448,320]]],
+				'userVote' => true,
+				'thumbs' => [[448,320],[960,960]]
+			]);
+
+			foreach ($result as $post)
+			{
+				$assets = [
+					'post' => $post,
+					'owner' => [
+						'Name' => $post['owner_name'],
+						'image_name' => $post['owner_image_name']
+					],
+					'user' => $user,
+					'limit' => 350
+				];
+
+				if (!empty($post['link_id']))
+				{
+					$assets['link'] = [
+						'id' => $post['link_id'],
+						'link' => $post['link_link'],
+						'title' => $post['link_title'],
+						'description' => $post['link_description'],
+						'author' => $post['link_author'],
+						'image_id' => $post['link_image_id'],
+						'image_name' => $post['link_image_name']
+					];
+				}
+
+				$response['data'][] = [
+					$post['id'],
+					$post['latitude'],
+					$post['longitude'],
+					$this->view->partial('post/view.html', $assets)
+				];
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+					'Internal Server Error'
+			);
+		}
+
+		$this->_helper->json($response);
 	}
 }
