@@ -1,7 +1,7 @@
 <?php
 $settings = Application_Model_Setting::getInstance();
 $request = Zend_Controller_Front::getInstance()->getRequest();
-$user = Application_Model_User::getAuth(true);
+$user = Application_Model_User::getAuth();
 
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-ui/themes/base/jquery-ui.min.css'))

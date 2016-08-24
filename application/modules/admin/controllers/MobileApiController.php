@@ -11,7 +11,7 @@ class Admin_MobileApiController extends Zend_Controller_Action
 	 */
 	public function init()
 	{
-		$this->user = Application_Model_User::getAuth(true);
+		$this->user = Application_Model_User::getAuth();
 
 		if ($this->user == null)
 		{

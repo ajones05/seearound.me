@@ -12,7 +12,7 @@ class AdminsController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$user = Application_Model_User::getAuth(true);
+		$user = Application_Model_User::getAuth();
 
 		if ($user == null || empty($user['is_admin']))
 		{

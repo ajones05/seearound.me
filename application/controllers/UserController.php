@@ -17,7 +17,7 @@ class UserController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth(true);
+			$user = $userModel->getAuth();
 
 			if (empty($user['is_admin']))
 			{
