@@ -181,9 +181,10 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	/**
 	 * Returns auth user.
 	 *
-	 * return	mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
+	 * @param boolean $loadCache
+	 * @return mixed If success Zend_Db_Table_Row_Abstract, otherwise NULL
 	 */
-	public static function getAuth($loadCache=false)
+	public static function getAuth($loadCache=true)
 	{
 		$auth = Zend_Auth::getInstance()->getIdentity();
 

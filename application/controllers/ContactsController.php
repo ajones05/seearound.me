@@ -10,7 +10,7 @@ class ContactsController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$user = Application_Model_User::getAuth(true);
+		$user = Application_Model_User::getAuth();
 
 		if ($user == null)
 		{
@@ -36,7 +36,7 @@ class ContactsController extends Zend_Controller_Action
 	 */
 	public function invitesAction() 
 	{
-		$user = Application_Model_User::getAuth(true);
+		$user = Application_Model_User::getAuth();
 
 		if ($user == null)
 		{
@@ -160,7 +160,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -231,7 +231,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -290,7 +290,7 @@ class ContactsController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth(true);
+			$user = $userModel->getAuth();
 
 			if ($user == null)
 			{
@@ -362,7 +362,7 @@ class ContactsController extends Zend_Controller_Action
 	 */
 	public function friendsListAction()
 	{
-		$user = Application_Model_User::getAuth(true);
+		$user = Application_Model_User::getAuth();
 
 		if ($user == null)
 		{
@@ -442,7 +442,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -496,7 +496,7 @@ class ContactsController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth(true);
+			$user = $userModel->getAuth();
 
 			if ($user == null)
 			{
@@ -618,7 +618,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -675,7 +675,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -744,7 +744,7 @@ class ContactsController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth(true);
+			$user = $userModel->getAuth();
 
 			if ($user == null)
 			{
@@ -812,7 +812,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -874,7 +874,7 @@ class ContactsController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{

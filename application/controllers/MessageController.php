@@ -13,7 +13,7 @@ class MessageController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$user = Application_Model_User::getAuth(true);
+		$user = Application_Model_User::getAuth();
 
 		if ($user == null)
 		{
@@ -64,7 +64,7 @@ class MessageController extends Zend_Controller_Action
 	 */
 	public function sendsAction()
 	{
-		$user = Application_Model_User::getAuth(true);
+		$user = Application_Model_User::getAuth();
 
 		if ($user == null)
 		{
@@ -108,7 +108,7 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -235,7 +235,7 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -320,7 +320,7 @@ class MessageController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{

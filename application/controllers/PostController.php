@@ -15,7 +15,7 @@ class PostController extends Zend_Controller_Action
 	public function viewAction()
 	{
 		$userModel = new Application_Model_User;
-		$user = Application_Model_User::getAuth(true);
+		$user = Application_Model_User::getAuth();
 
 		$id = $this->_request->getParam('id');
 
@@ -144,7 +144,7 @@ class PostController extends Zend_Controller_Action
 	 */
 	public function listAction()
 	{
-		$user = Application_Model_User::getAuth(true);
+		$user = Application_Model_User::getAuth();
 
 		if ($user == null)
 		{
@@ -299,7 +299,7 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -424,7 +424,7 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -453,7 +453,7 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -547,7 +547,7 @@ class PostController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth(true);
+			$user = $userModel->getAuth();
 
 			if ($user == null)
 			{
@@ -687,7 +687,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -742,7 +742,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -805,7 +805,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -872,7 +872,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -936,7 +936,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -996,7 +996,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -1160,7 +1160,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -1230,7 +1230,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			$id = $this->_request->getPost('id');
 
@@ -1305,7 +1305,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -1392,7 +1392,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{
@@ -1508,7 +1508,7 @@ class PostController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth(true);
+			$user = $userModel->getAuth();
 
 			if ($user == null || !$user['is_admin'])
 			{
@@ -1553,7 +1553,7 @@ class PostController extends Zend_Controller_Action
 	{
 		try
 		{
-			$user = Application_Model_User::getAuth(true);
+			$user = Application_Model_User::getAuth();
 
 			if ($user == null)
 			{

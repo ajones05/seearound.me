@@ -42,7 +42,7 @@ class HomeController extends Zend_Controller_Action
 	public function editProfileAction()
 	{
 		$userModel = new Application_Model_User;
-		$user = $userModel->getAuth(true);
+		$user = $userModel->getAuth();
 
 		if ($user == null)
 		{
@@ -126,7 +126,7 @@ class HomeController extends Zend_Controller_Action
 		try
 		{
 			$userModel = new Application_Model_User;
-			$user = $userModel->getAuth(true);
+			$user = $userModel->getAuth();
 
 			if ($user == null)
 			{
@@ -210,7 +210,7 @@ class HomeController extends Zend_Controller_Action
 
 		if ($isAuth)
 		{
-			$user = $userModel->getAuth(true);
+			$user = $userModel->getAuth();
 
 			if ($user == null)
 			{
