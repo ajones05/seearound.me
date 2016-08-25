@@ -82,6 +82,11 @@ body {
     margin-top: 110px;
     margin-right: 92px;
 }
+.mainContainer h2 {
+	font-size: 24px;
+	color: #fff;
+	text-align: left;
+}
 .mainContainer h1 span{
 	font-weight: normal;
 	font-size: 24px;
@@ -91,14 +96,14 @@ body {
 	bottom: 0;
 	width: 470px;
 }
-.signup-form {
+.content {
 	max-width: 548px;
 	width: 100%;
 	position: absolute;
 	right: 0;
 	bottom: 184px;
 }
-.signup-form input {
+.content input {
     color: #fff;
     font-size: 20px;
     padding: 0 10px;
@@ -107,16 +112,17 @@ body {
     border-radius: 22px;
     border: 6px solid #fff;
 }
-.signup-form input[type="email"] {
+.content input[type="email"] {
 	background: rgba(255,255,255,.3);
 	width: 216px;
 	margin-right: 10px;
 }
-.signup-form input[type="submit"] {
+.content input[type="submit"] {
 	text-align: center;
 	background: #00a8ff;
 	font-weight: bold;
 	border-color:#00a8ff;
+	cursor: pointer;
     height: 46px;
     padding: 0 6px;
 }

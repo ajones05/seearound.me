@@ -6,6 +6,8 @@ $this->doctype('XHTML1_RDFA');
 $this->headLink()
 	->appendStylesheet(My_Layout::assetUrl('www/css/beta-mobile.css'));
 
+$this->headScript()->appendScript('var signup=0;');
+
 $this->headMeta('width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no', 'viewport')
 	->setProperty('og:title', $settings['meta_title'])
 	->setProperty('og:description', $settings['meta_description'])
@@ -25,14 +27,7 @@ $this->headMeta('width=device-width, initial-scale=1.0, maximum-scale=1.0, user-
 <img src="<?php echo $this->baseUrl('www/images/beta/logo-mobile.png'); ?>"
 alt="" class="logo-mobile">
 <h1>See and Share What's Happening Near You</h1>
-<div class="signup-form">
-<form
-action="https://docs.google.com/forms/d/1Fgw1vHniMWGgiXvtyndkIXZtRYWEW4kXxuG1Gq2C8ok/formResponse"
-method="POST">
-<input type="email" name="entry.364269482" placeholder="Email address..." required>
-<input type="submit" value="Notify me!">
-</form>
-</div>
+<div class="content"><?php echo $this->layout()->content; ?></div>
 <img src="<?php echo $this->baseUrl('www/images/beta/phone-upper.png'); ?>"
 alt="" class="phone-img">
 <p>A free, public, hyper-local community bulletin board</p>
