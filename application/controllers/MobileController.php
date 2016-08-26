@@ -1999,6 +1999,7 @@ class MobileController extends Zend_Controller_Action
 						'commTime' => (new DateTime($comment->created_at))
 							->setTimezone($userTimezone)
 							->format(My_Time::SQL),
+						'commTimeAgo' => My_Time::time_ago($comment->created_at),
 						'totalComments' => $post->comment,
 						'canEdit' => Application_Model_Comments::canEdit($comment, $post, $user)
 					];
@@ -2087,6 +2088,7 @@ class MobileController extends Zend_Controller_Action
 					'commTime' => (new DateTime)
 						->setTimezone(Application_Model_User::getTimezone($user))
 						->format(My_Time::SQL),
+					'commTimeAgo' => 'Just now',
 					'totalComments' => $postComments
 				]
 			];
