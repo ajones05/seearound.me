@@ -22,8 +22,6 @@ class IndexController extends Zend_Controller_Action
 
 	/**
 	 * Index action.
-	 *
-	 * @return void
 	 */
 	public function indexAction()
 	{
@@ -35,7 +33,21 @@ class IndexController extends Zend_Controller_Action
 		}
 
 		$this->view->layout()->setLayout($layout);
-		$this->_helper->viewRenderer->setNoRender(true);
+	}
+
+	/**
+	 * Signup success action.
+	 */
+	public function signupSuccessAction()
+	{
+		$layout = 'beta';
+
+		if (My_CommonUtils::isMobile())
+		{
+			$layout .= '-mobile';
+		}
+
+		$this->view->layout()->setLayout($layout);
 	}
 
 	/**

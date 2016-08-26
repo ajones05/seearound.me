@@ -32,11 +32,11 @@ body {
     font: normal 12px Lato-Regular;
 	line-height: 1;
 }
-.signup-form {
+.content {
 	text-align: center;
 	margin-top: 120px;
 }
-.signup-form input {
+.content input {
     color: #fff;
     font-size: 5vw;
     outline: none;
@@ -44,17 +44,18 @@ body {
     border-radius: 14px;
     border: 2px solid #fff;
 }
-.signup-form input[type="email"] {
+.content input[type="email"] {
 	background: rgba(255,255,255,.5);
     width: 40%;
 	margin-right: 10px;
 }
-.signup-form input[type="submit"] {
+.content input[type="submit"] {
 	text-align: center;
 	background: #00a8ff;
 	font-weight: bold;
 	border-color:#00a8ff;
 	-webkit-appearance: inherit;
+	cursor: pointer;
 }
 input[placeholder] {
 	text-overflow: ellipsis;
@@ -101,6 +102,11 @@ input:-ms-input-placeholder {
     font-weight: bold;
     line-height: 1;
     text-align: center;
+}
+.wraper-mobile h2 {
+	font-size: 5vw;
+	color: #fff;
+	text-align: center;
 }
 .wraper-mobile .logo-mobile {
 	display: block;

@@ -193,6 +193,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				['code' => '[A-Z0-9]+']
 			)
 		);
+
+		$router->addRoute(
+			'signup-success',
+			new Zend_Controller_Router_Route(
+				'signup-success',
+				['controller' => 'index', 'action' => 'signup-success']
+			)
+		);
 	}
 
 	protected function _initLog()
