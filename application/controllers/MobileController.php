@@ -233,8 +233,8 @@ class MobileController extends Zend_Controller_Action
 						$this->view->baseUrl('uploads/' . $name);
 			}
 
-			$user = (new Application_Model_User)->register(['Status' => 'active'] +
-				$registrationForm->getValues());
+			$user = (new Application_Model_User)->register($data +
+				['Status' => 'active']);
 			$accessToken = (new Application_Model_Loginstatus)
 				->save($user, true);
 
