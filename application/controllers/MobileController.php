@@ -359,7 +359,7 @@ class MobileController extends Zend_Controller_Action
 				foreach ($friends as $friend)
 				{
 					$alias = $friend['receiver_id'] == $user['id'] ?
-						'receiver_' : 'sender_';
+						'sender_' : 'receiver_';
 
 					$response['result'][] = [
 						'id' => $friend[$alias.'id'],
