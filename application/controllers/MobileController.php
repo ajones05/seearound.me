@@ -247,6 +247,7 @@ class MobileController extends Zend_Controller_Action
 				]
 			);
 
+			$response['data']['id'] = $user['id'];
 			$response['data']['token'] = $accessToken;
 		}
 		catch (Exception $e)
@@ -1999,7 +2000,8 @@ class MobileController extends Zend_Controller_Action
 						'commTime' => (new DateTime($comment->created_at))
 							->setTimezone($userTimezone)
 							->format(My_Time::SQL),
-						'commTimeAgo' => My_Time::time_ago($comment->created_at),
+						'commTimeAgo' => My_Time::time_ago($comment->created_at,
+							["ago" => true]),
 						'totalComments' => $post->comment,
 						'canEdit' => Application_Model_Comments::canEdit($comment, $post, $user)
 					];
