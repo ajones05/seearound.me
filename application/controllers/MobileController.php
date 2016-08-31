@@ -247,6 +247,7 @@ class MobileController extends Zend_Controller_Action
 				]
 			);
 
+			$response['data']['id'] = $user['id'];
 			$response['data']['token'] = $accessToken;
 		}
 		catch (Exception $e)
