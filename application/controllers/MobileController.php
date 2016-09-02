@@ -886,9 +886,6 @@ class MobileController extends Zend_Controller_Action
 				$userTimezone = Application_Model_User::getTimezone($user);
 				foreach ($messages as $message)
 				{
-					$alias = $message['receiver_id'] == $user['id'] ?
-						'sender_' : 'receiver_';
-
 					$response['result'][] = [
 						'id' => $message->id,
 						'sender_id' => $message->sender_id,
@@ -899,10 +896,18 @@ class MobileController extends Zend_Controller_Action
 							->setTimezone($userTimezone)
 							->format(My_Time::SQL),
 						'reciever_read' => $message->is_read,
-						'Name' => $message[$alias.'name'],
-						'Email_id' => $message[$alias.'email'],
-						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
-							Application_Model_User::getThumb($message,'320x320',['alias'=>$alias])),
+						'senderName' => $message['sender_name'],
+						'senderEmail' => $message['sender_email'],
+						'senderImage' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320',
+							['alias' => 'sender_'])),
+						'receiverName' => $message['receiver_name'],
+						'receiverEmail' => $message['receiver_email'],
+						'receiverImage' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320',
+							['alias' => 'receiver_'])),
+						'formatted_date' => My_Time::time_ago($message->created_at,
+							['ago' => true])
 					];
 				}
 			}
