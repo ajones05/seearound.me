@@ -197,7 +197,7 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 					}
 					catch (Exception $e)
 					{
-						if ($fullPath != null)
+						if (!empty($fullPath))
 						{
 							@unlink($fullPath);
 						}
@@ -205,7 +205,6 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 				}
 
 				return $linkData+['id'=>$this->insert($linkData)];
-				break;
 			}
 		}
 
