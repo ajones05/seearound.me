@@ -13,6 +13,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 	public function _initCache()
 	{
+		if (PHP_SAPI == 'cli')
+		{
+			return null;
+		}
+
 		$cache = Zend_Cache::factory(
 			'Core',
 			'File', [
@@ -55,6 +60,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 	protected function _initRoutes()
 	{
+		if (PHP_SAPI == 'cli')
+		{
+			return null;
+		}
+
 		$router = Zend_Controller_Front::getInstance()->getRouter();
 
 		if (Zend_Auth::getInstance()->hasIdentity())
@@ -247,14 +257,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		], 'id=' . $auth['login_id']);
 	}
 
-    /**
-     * Init update user data expiration.
-     *
-     * @return void
-     */
-    public function _initUserData()
-    {
-		if (!Zend_Auth::getInstance()->hasIdentity())
+	/**
+	 * Init update user data expiration.
+	 */
+	public function _initUserData()
+	{
+		if (PHP_SAPI == 'cli' || !Zend_Auth::getInstance()->hasIdentity())
 		{
 			return true;
 		}
@@ -265,5 +273,5 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		{
 			$userData->setExpirationSeconds(3);
 		}
-    }
+	}
 }
