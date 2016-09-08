@@ -27,8 +27,9 @@ class Application_Model_Setting extends Zend_Db_Table_Abstract
 	{
 		if (self::$_instance === null)
 		{
-			$cache = Zend_Registry::get('cache');
-			$settings = $cache->load('settings');
+			$enableCache = Zend_Registry::isRegistered('cache');
+			$cache = $enableCache ? Zend_Registry::get('cache') : null;
+			$settings = $enableCache ? $cache->load('settings') : null;
 
 			if ($settings == null)
 			{
@@ -43,7 +44,10 @@ class Application_Model_Setting extends Zend_Db_Table_Abstract
 					$settings[$setting->name] = $setting->value;
 				}
 
-				$cache->save($settings, 'settings');
+				if ($enableCache)
+				{
+					$cache->save($settings, 'settings');
+				}
 			}
 
 			self::$_instance = $settings;
