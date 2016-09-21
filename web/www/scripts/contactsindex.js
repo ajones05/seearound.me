@@ -73,9 +73,6 @@ var posturl ="/picture?type=square";
                                             $("#connect_div").html($("#connect_div").html()+html); 
                                         }
                                     }
-
-                                    if($("#midColLayout").height()>714)
-                                        setThisHeight(Number($("#midColLayout").height()));
                                 }
                             });
                         });

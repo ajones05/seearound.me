@@ -707,8 +707,7 @@ class ContactsController extends Zend_Controller_Action
 						'name' => $sender->Name,
 						'image' => $this->view->baseUrl(
 							Application_Model_User::getThumb($sender, '55x55')),
-						'link' => $this->view->baseUrl('home/profile/user/' .
-							$friend->sender_id)
+						'link' => $this->view->baseUrl('profile/' . $friend->sender_id)
 					];
 				}
 

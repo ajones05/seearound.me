@@ -16,6 +16,8 @@ RewriteRule ^post\/view\/(.*)$ /post/$1 [R=301,L]
 RewriteRule ^post\/list\/?(.*)$ /$1 [R=301,L]
 RewriteRule ^info/news/nwid/(.+)$ /post/$1 [R=301,L]
 RewriteRule ^index/fb-login / [R=301,L]
+RewriteRule ^home/profile/user/(.+) /profile/$1 [R=301,L]
+RewriteRule ^home/profile /profile [R=301,L]
 
 RewriteCond %{REQUEST_URI} ^/(robots.txt|sitemap.xml|th1s_1s_a_4o4.html) [OR]
 RewriteCond %{REQUEST_URI} ^/assets-[0-9a-zA-Z.]+.* [OR]

@@ -1,7 +1,7 @@
 <?php
 $id = $this->friend[$this->alias.'id'];
 $name = $this->friend[$this->alias.'name'];
-$url = $this->baseUrl('home/profile/user/' . $id);
+$url = $this->baseUrl('profile/' . $id);
 $thumb = Application_Model_User::getThumb($this->friend, '55x55', [
 	'alias' => $this->alias
 ]);

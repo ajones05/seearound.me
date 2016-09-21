@@ -78,7 +78,6 @@ function loadReplyMessages(target){
 										$submitField.attr("disabled", false);
 										$('.replyTxt', target).before(renderReplyMessage(replyResponse.message));
 										$messageField.val('');
-										setThisHeight(Number($("#midColLayout").height()));
 									},
 									fail: function(data, textStatus, jqXHR){
 										$(".rpl-loading", target).hide();
@@ -109,8 +108,6 @@ function loadReplyMessages(target){
 				)
 			);
 		}
-
-		setThisHeight(Number($("#midColLayout").height()));
 	});
 }
 

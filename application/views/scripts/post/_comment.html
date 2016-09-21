@@ -6,7 +6,7 @@ $ownerThumb = $this->is_new ?
 	Application_Model_User::getThumb($this->comment, '55x55',
 		['alias' => 'owner_']);
 $profileUrl = $this->user ?
-	$this->baseUrl('home/profile/user/' . $this->comment['user_id']) : '#';
+	$this->baseUrl('profile/' . $this->comment['user_id']) : '#';
 
 $timeAttr = '';
 $timeVal = '';

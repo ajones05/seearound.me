@@ -159,54 +159,52 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		}
 
 		$order = [];
-		$filter = My_ArrayHelper::getProp($parameters, 'filter');
 
-		if ($filter != null)
+		switch (My_ArrayHelper::getProp($parameters, 'filter'))
 		{
-			switch ($filter)
-			{
-				case '0':
-					$query->where('news.user_id=?', $user['id']);
-					$order[] = $this->postScore() . ' DESC';
-					break;
-				case '1':
-					$interests = !empty($user['interest']) ?
-						explode(', ', $user['interest']) : null;
+			// My posts
+			case '0':
+				$query->where('news.user_id=?', $user['id']);
+				$order[] = $this->postScore() . ' DESC';
+				break;
+			// My interests
+			case '1':
+				$interests = !empty($user['interest']) ?
+					explode(', ', $user['interest']) : null;
 
-					if ($interests != null)
+				if ($interests != null)
+				{
+					$adapter = $this->getAdapter();
+
+					foreach ($interests as &$_interest)
 					{
-						$adapter = $this->getAdapter();
-
-						foreach ($interests as &$_interest)
-						{
-							$_interest = 'news.news LIKE ' . $adapter->quote('%' . $_interest . '%');
-						}
-
-						$query->where(implode(' OR ', $interests));
+						$_interest = 'news.news LIKE ' . $adapter->quote('%' . $_interest . '%');
 					}
-					$order[] = $this->postScore() . ' DESC';
-					break;
-				case '2':
-					$query->where('news.user_id<>?', $user['id']);
-					$query->joinLeft(array('f1' => 'friends'), 'f1.sender_id=' . $user['id'], '');
-					$query->joinLeft(array('f2' => 'friends'), 'f2.receiver_id=' . $user['id'], '');
-					$query->where('((f1.status=1');
-					$query->where('news.user_id=f1.receiver_id)');
-					$query->orWhere('(f2.status=1');
-					$query->where('news.user_id=f2.sender_id))');
-					$order[] = $this->postScore() . ' DESC';
-					break;
-				case '3':
-					$order[] = 'created_date DESC';
-					break;
-			}
-		}
-		else
-		{
-			$order[] = $this->postScore() . ' DESC';
+
+					$query->where(implode(' OR ', $interests));
+				}
+				$order[] = $this->postScore() . ' DESC';
+				break;
+			// Following
+			case '2':
+				$query->where('news.user_id<>?', $user['id']);
+				$query->joinLeft(array('f1' => 'friends'), 'f1.sender_id=' . $user['id'], '');
+				$query->joinLeft(array('f2' => 'friends'), 'f2.receiver_id=' . $user['id'], '');
+				$query->where('((f1.status=1');
+				$query->where('news.user_id=f1.receiver_id)');
+				$query->orWhere('(f2.status=1');
+				$query->where('news.user_id=f2.sender_id))');
+				$order[] = $this->postScore() . ' DESC';
+				break;
+			// Most recent
+			case '3':
+				$order[] = 'created_date DESC';
+				break;
+			default:
+				$order[] = $this->postScore() . ' DESC';
 		}
 
-		if (count(My_ArrayHelper::getProp($parameters, 'exclude_id', array())))
+		if (!empty($parameters['exclude_id']))
 		{
 			foreach ($parameters['exclude_id'] as $id)
 			{

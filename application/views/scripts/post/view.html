@@ -2,7 +2,7 @@
 $commentsLimit = 3;
 $isGuest = empty($this->user);
 $user_id = !$isGuest ? $this->user['id'] : null;
-$profileUrl = !$isGuest ? $this->baseUrl('home/profile/user/' .
+$profileUrl = !$isGuest ? $this->baseUrl('profile/' .
 	$this->post['user_id']) : '#';
 $link = $this->baseUrl('post/' . $this->post['id']);
 $userVote = My_ArrayHelper::getProp($this->post, 'user_vote');
@@ -57,8 +57,8 @@ $ownerThumb = Application_Model_User::getThumb($this->owner, '55x55');
 <div class="post <?php if ($this->hidden) echo ' hidden';?>"
 data-id="<?php echo $this->post['id']; ?>">
 <a href="<?php echo $profileUrl; ?>" class="user_avatar"
-><img src="<?php echo $this->baseUrl($ownerThumb); ?>"></a>
-<a href="<?php echo $profileUrl; ?>" class="user_name"
+><img src="<?php echo $this->baseUrl($ownerThumb); ?>" width="55" height="55"
+></a><a href="<?php echo $profileUrl; ?>" class="user_name"
 ><?php echo ucfirst($this->owner['Name']); ?></a>
 <a href="<?php echo $link; ?>" class="post-time"
 <?php echo $timeAttr; ?>><?php echo $timeVal; ?></a>
@@ -78,6 +78,8 @@ data-id="<?php echo $this->post['id']; ?>">
 <?php if (!empty($this->post['image_id'])): ?>
 <div class="image">
 <img src="<?php echo $this->baseUrl($thumb448x320['path']); ?>"
+width="<?php echo $thumb448x320['width']; ?>"
+height="<?php echo $thumb448x320['height']; ?>"
 data-src="<?php echo $this->baseUrl($thumb960x960['path']); ?>"
 data-width="<?php echo $thumb960x960['width']; ?>"
 data-height="<?php echo $thumb960x960['height']; ?>">

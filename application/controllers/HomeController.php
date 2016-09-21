@@ -59,7 +59,7 @@ class HomeController extends Zend_Controller_Action
 			if ($profileForm->isValid($data))
 			{
 				$userModel->updateProfile($user, $data);
-				$this->_redirect($this->view->baseUrl("home/profile"));
+				$this->_redirect('profile');
 			}
 
 			if (!$profileForm->latitude->hasErrors() &&
@@ -205,23 +205,8 @@ class HomeController extends Zend_Controller_Action
 
 	public function profileAction()
 	{
-		$userModel = new Application_Model_User;
-		$isAuth = Zend_Auth::getInstance()->hasIdentity();
-
-		if ($isAuth)
-		{
-			$user = $userModel->getAuth();
-
-			if ($user == null)
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
-			$this->view->user = $user;
-		}
-
-		$settings = Application_Model_Setting::getInstance();
-		$user_id = $this->_request->getParam('user');
+		$user = Application_Model_User::getAuth();
+		$user_id = $this->_request->getParam('user_id');
 
 		if (!v::optional(v::intVal())->validate($user_id))
 		{
@@ -229,7 +214,9 @@ class HomeController extends Zend_Controller_Action
 				var_export($user_id, true));
 		}
 
-		if ($user_id != null)
+		$auth_id = My_ArrayHelper::getProp($user, 'id');
+
+		if ($user_id != null && $user_id !== $auth_id)
 		{
 			$profile = Application_Model_User::findById($user_id, true);
 
@@ -241,43 +228,82 @@ class HomeController extends Zend_Controller_Action
 		}
 		else
 		{
-			if (!$isAuth)
+			if ($auth_id == null)
 			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
+				throw new RuntimeException('You are not authorized to access this action');
 			}
 
 			$profile = $user;
 		}
 
-		$this->view->auth_id = $isAuth ? $user['id'] : null;
+		$addressFormat = Application_Model_Address::format($profile,
+			['street' => false]);
+
+		$this->view->searchForm = new Application_Form_PostSearch;
+		$this->view->user = $user;
+		$this->view->auth_id = $auth_id;
 		$this->view->profile = $profile;
-
-		if ($isAuth && $user['id'] != $profile['id'])
-		{
-			$isFriend = (new Application_Model_Friends)->isFriend($user, $profile);
-			$this->view->headScript()
-				->appendScript('var isFriend=' . ($isFriend ? 'true' : 'false') . ';');
-			$this->view->isFriend = $isFriend;
-		}
-
-		$this->view->headLink()
-			->appendStylesheet(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.css'));
-
-		$addressFormat = Application_Model_Address::format($profile, ['street'=>false]);
 		$this->view->addressFormat = $addressFormat;
 
-		$this->view->headScript()
-			->appendScript('var reciever_userid=' . json_encode($profile['id']) . ',' .
-				'profileData=' . json_encode([
-				'id' => $profile['id'],
-				'address' => $addressFormat,
-				'latitude' => $profile['latitude'],
-				'longitude' => $profile['longitude']
-			]) . ';')
-			->appendFile(My_Layout::assetUrl('bower_components/jquery-loadmask/src/jquery.loadmask.js'));
+		$location = $user != null ? [$user['latitude'], $user['longitude']] :
+			My_Ip::geolocation();
 
-		My_Layout::appendAsyncScript('//maps.googleapis.com/maps/api/js?' .
-				'key=' . $settings['google_mapsKey'] . '&v=3&callback=initMap', $this->view);
+		$this->view->appendScript = [
+			'opts=' . json_encode(['lat' => $location[0], 'lng' => $location[1]]),
+			'profile=' . json_encode(['id' => $profile['id']])
+		];
+
+		if ($user != null)
+		{
+			if ($user['id'] != $profile['id'])
+			{
+				$isFriend = (new Application_Model_Friends)->isFriend($user, $profile);
+				$this->view->appendScript[] = 'isFriend=' .
+					($isFriend != null ? 'true' : 'false');
+				$this->view->isFriend = $isFriend;
+			}
+
+			$this->view->appendScript[] = 'user=' . json_encode([
+				'name' => $user['Name'],
+				'image' => $this->view->baseUrl(
+					Application_Model_User::getThumb($user, '55x55')),
+				'location' => [$user['latitude'], $user['longitude']],
+				'is_admin' => $user['is_admin']
+			]);
+		}
+		else
+		{
+			$this->view->appendScript[] = 'user=' . json_encode([
+				'location' => $location
+			]);
+		}
+
+		$posts = (new Application_Model_News)->search([
+			'latitude' => $location[0],
+			'longitude' => $location[1],
+			'limit' => 15,
+			'radius' => 1.5,
+			'filter' => 0
+		], ['id' => $profile['id']], [
+			'link' => ['thumbs'=>[[448,320]]],
+			'thumbs' => [[448,320],[960,960]]
+		]);
+
+		if ($posts->count())
+		{
+			$data = [];
+
+			foreach ($posts as $post)
+			{
+				$data[$post->id] = [$post->latitude, $post->longitude];
+			}
+
+			$this->view->posts = $posts;
+			$this->view->appendScript[] = 'postData=' . json_encode($data);
+		}
+
+		$this->view->viewPage = 'profile';
+		$this->view->layout()->setLayout('map');
 	}
 
 	/**
