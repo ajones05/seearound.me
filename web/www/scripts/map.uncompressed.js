@@ -59,6 +59,7 @@ require(['jquery','common'], function(){
 			var notification = function(){
 				ajaxJson({
 					url: baseUrl+'contacts/friends-notification',
+					failMessage: false,
 					done: function(response){
 						var menu = $('.main-menu');
 						$('.community .count', menu).html(response.friends > 0 ?
