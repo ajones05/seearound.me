@@ -34,7 +34,7 @@ if ($error)
 			<li class="rightCol">
 				<ul class="primNav">
 					<li>
-						<a href="#" id="ddMyConn" onclick="showFriendRequest(this);">
+						<a href="#" id="ddMyConn">
 							<img src="<?php echo $this->baseUrl("www/images/friends.png"); ?>" style="margin-top:-6px; width: 27px; height: auto" alt="My Connections"  id="icnMyConn" />
 							<span style="padding-left:33px;color: #5d5d5d;">Following</span>
 						</a>
@@ -58,7 +58,7 @@ if ($error)
 						<div id="ddMyProf" class="ddMyProf dispNone">
 							<ul class="ddMyProfLinks">
 								<li>
-									<a href="<?php echo $this->baseUrl("home/profile"); ?>">Profile</a>
+									<a href="<?php echo $this->baseUrl("profile"); ?>">Profile</a>
 								</li>
 								<li id="logoutLi">
 									<a href="<?php echo $this->baseUrl("home/logout"); ?>">Logout</a>

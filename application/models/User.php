@@ -190,7 +190,7 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 		if (empty($auth['user_id']))
 		{
-			return false;
+			return null;
 		}
 
 		if (self::$_auth == null)
@@ -606,18 +606,26 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 
 		if (!empty($row[$imageField]))
 		{
-			$imageName = $row[$imageField];
-		}
-		elseif (!array_key_exists('default', $options) || $options['default'])
-		{
-			$imageName = 'default.jpg';
-		}
-		else
-		{
-			return null;
+			return self::$thumbPath[$thumb] . '/' . $row[$imageField];
 		}
 
-		return self::$thumbPath[$thumb] . '/' . $imageName;
+		if (!array_key_exists('default', $options) || $options['default'])
+		{
+			return self::getDefaultThumb($thumb);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returnds user default path.
+	 *
+	 * @param string $thumb Thumbnail dimensions WIDTHxHEIGHT
+	 * @return sString
+	 */
+	public static function getDefaultThumb($thumb)
+	{
+		return self::$thumbPath[$thumb] . '/default.jpg';
 	}
 
 	/**

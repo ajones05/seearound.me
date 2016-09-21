@@ -1,12 +1,22 @@
-var isList=isList||false,isAdmin=isAdmin||false,
-isPost=typeof post !== 'undefined' ? true : false,
-isLogin=isLogin||false,isTouch=false,
-mainMap,centerPosition,areaCircle,googleMapsCustomMarker,googleMapsAreaCircle,
-userPosition,loadXhr,scrollTarget,
-postData=postData||[],postMarkers={},postMarkersCluster={},
-defaultMinZoom=13,defaultMaxZoom=15,renderRadius=opts.radius?opts.radius:1.5,
-defaultZoom=14,postLimit=15,groupDistance=0.018939,
-disableScroll=false,markerClick=false,
+var mainMap,
+centerPosition,
+areaCircle,
+googleMapsCustomMarker,
+googleMapsAreaCircle,
+userPosition,
+loadXhr,
+scrollTarget,
+postData=postData||[],
+postMarkers={},
+postMarkersCluster={},
+defaultMinZoom=13,
+defaultMaxZoom=15,
+defaultZoom=viewPage=='post'?15:14,
+renderRadius=opts.radius?opts.radius:1.5,
+postLimit=15,
+groupDistance=0.018939,
+disableScroll=false,
+markerClick=false,
 postIcon={
 	url: assetsBaseUrl+'www/images/template/post-icon35x50.png',
 	width: 35, height: 50
@@ -27,31 +37,34 @@ require.config({paths: {
 	'jquery-ui': assetsBaseUrl+'bower_components/jquery-ui/jquery-ui.min',
 	'jquery-validate': assetsBaseUrl+'bower_components/jquery-validation/dist/jquery.validate.min',
 	'textarea_autosize': assetsBaseUrl+'bower_components/textarea-autosize/src/jquery.textarea_autosize',
-	'common': assetsBaseUrl+'www/scripts/commondev',
+	'common': assetsBaseUrl+'www/scripts/common',
 	'facebook-sdk': 'https://connect.facebook.net/en_US/sdk',
 	'google.maps': 'https://maps.googleapis.com/maps/api/js?key='+mapsKey+
-		'&v=3&libraries=places&callback=renderView_callback'
+		'&v=3&libraries=places&callback=initMap'
 }});
-require(['google.maps']);
-require(['jquery', 'common'], function(){
-	$(function(){
-		if ($('body').hasClass('touch')){
-			isTouch = true;
-		}
 
+require(['google.maps']);
+require(['jquery','common'], function(){
+	$(function(){
 		scrollTarget = $(isTouch ? '.posts-container .posts' : window);
 
 		$(window).on('resize', resizeHandler);
 		resizeHandler();
 
-		if (false && isLogin){
+		if (isLogin){
+			$('#menu-button').click(function(){
+				$(this).next('ul').toggleClass('open');
+			});
+
 			var notification = function(){
 				ajaxJson({
 					url: baseUrl+'contacts/friends-notification',
 					done: function(response){
 						var menu = $('.main-menu');
-						$('.community .count', menu).html(response.friends > 0 ? response.friends : '');
-						$('.message .count', menu).html(response.messages > 0 ? response.messages : '');
+						$('.community .count', menu).html(response.friends > 0 ?
+								response.friends : '');
+						$('.message .count', menu).html(response.messages > 0 ?
+								response.messages : '');
 						setTimeout(notification, 2000);
 					},
 					fail: function(data, textStatus, jqXHR){
@@ -64,13 +77,7 @@ require(['jquery', 'common'], function(){
 			};
 
 			notification();
-		}
 
-		$('#menu-button').click(function(){
-			$(this).next('ul').toggleClass('open');
-		});
-
-		if (isLogin){
 			$('.dropdown-toggle').click(function(e){
 				e.preventDefault();
 				e.stopPropagation();
@@ -107,17 +114,18 @@ require(['jquery', 'common'], function(){
 								.append($('<span/>').text('No new followers')));
 							return true;
 						}
-						for (var x in response.data){
+						for (var i in response.data){
 							load.after($('<li/>').addClass('community-row').append(
-								$('<a/>', {href: response.data[x].link}).append(
+								$('<a/>', {href: response.data[i].link}).append(
 									$('<div/>').addClass('thumb').append(
 										$('<img/>').attr({
-											src: response.data[x].image,
+											src: response.data[i].image,
 											width: 40,
 											height: 40
 										})
 									),
-									$('<div/>').addClass('name').html(response.data[x].name + ' is<br/>following you')
+									$('<div/>').addClass('name').html(response.data[i].name +
+										' is<br/>following you')
 								)
 							));
 						}
@@ -131,8 +139,45 @@ require(['jquery', 'common'], function(){
 				guestAction();
 			});
 		}
+
+		if (viewPage=='profile'){
+			require(['jquery-ui'], function(){
+				$('strong.karma').tooltip({
+					content: function(){return $(this).prop('title'); }
+				});
+				$('.action .message').on('click', function(){
+						userMessageDialog(profile.id);
+				});
+				$('.action .follow').click(function(){
+					var target=$(this);
+					if (target.attr('disabled')){
+						return false
+					}
+					target.attr('disabled', true);
+					ajaxJson({
+						url: baseUrl + 'contacts/friend',
+						data: {
+							action: isFriend ? 'reject' : 'follow',
+							user: profile.id,
+							total: 1
+						},
+						done: function(response){
+							target.text(isFriend ? 'Follow' : 'Unfollow')
+								.attr('disabled', false);
+							if (response.total > 0){
+								$('#noteTotal').html(response.total);
+							} else {
+								$('#noteTotal').hide();
+							}
+							isFriend = !isFriend;
+						}
+					});
+				});
+			});
+		}
 	});
 });
+
 require(['facebook-sdk'], function(){
 	window.fbAsyncInit = function(){
 		FB.init({
@@ -144,32 +189,40 @@ require(['facebook-sdk'], function(){
 	};
 });
 
-function renderView_callback(){
-	centerPosition = isPost ?
-		new google.maps.LatLng(post.lat,post.lng):
-		new google.maps.LatLng(opts.latitude,opts.longitude);
+function initMap(){
+	centerPosition = new google.maps.LatLng(opts.lat,opts.lng);
 	mainMap = new google.maps.Map(document.getElementById('map_canvas'), {
-		zoom: isList?defaultZoom:15,
+		zoom: defaultZoom,
 		minZoom: defaultMinZoom,
 		maxZoom: defaultMaxZoom,
 		disableDefaultUI: true,
 		scrollwheel: false,
 		disableDoubleClickZoom: true,
-		styles: [{
-			featureType: 'poi',
-			stylers: [{visibility: 'off'}]
-		}]
+		styles: [{featureType:'poi',stylers:[{visibility:'off'}]}]
 	});
 
 	google.maps.event.addListenerOnce(mainMap, 'idle', function(){
-		mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
-		if (!isList && !isPost){
-			return false;
+		mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),
+			offsetCenterY(true)));
+
+		if (viewPage=='post-offline'){
+			if (!isLogin){
+				$('.postSearch input').keydown(function(e){
+						e.preventDefault();
+						return guestAction();
+				});
+			}
+			return true;
 		}
+
 		require(['jquery','jquery-ui'], function(){
-			require(['textarea_autosize']);
+
+			if (isLogin && (viewPage=='post' || viewPage=='posts')){
+				require(['textarea_autosize']);
+			}
+
 			$(function(){
-				if (!isList){
+				if (viewPage=='post'){
 					var searchForm = $('form.postSearch').submit(function(e){
 						e.preventDefault();
 						guestAction();
@@ -181,10 +234,10 @@ function renderView_callback(){
 						map: mainMap,
 						id: 0,
 						icon: postIcon,
-						position: [post.lat,post.lng],
+						position: [opts.lat,opts.lng],
 						content: function(content, marker, event, ui){
 							$('.ui-tooltip-content', ui.tooltip)
-								.html(userAddressTooltip(post.address, owner.image));
+								.html(userAddressTooltip(post.address, post.owner.image));
 							ui.tooltip.position($(event.target).tooltip('option', 'position'));
 						},
 						openTooltip: true
@@ -214,11 +267,13 @@ function renderView_callback(){
 
 				areaCircle = new googleMapsAreaCircle({
 					map: mainMap,
-					center: offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),
+					center: offsetCenter(mainMap,mainMap.getCenter(),
+						offsetCenterX(),offsetCenterY()),
 					radius: renderRadius
 				});
 
-				var controlUIzoomIn = $('<div/>', {title: 'Zoom in'}).addClass('zoom_in')
+				var controlUIzoomIn = $('<div/>', {title: 'Zoom in'})
+					.addClass('zoom_in')
 					.append($('<img/>', {src: '/www/images/template/zoom_in25x25.png'})
 						.attr({width: 25, height: 25})).get(0);
 
@@ -226,7 +281,8 @@ function renderView_callback(){
 					mainMap.setZoom(mainMap.getZoom()+1);
 				});
 
-				var controlUIzoomOut = $('<div/>', {title: 'Zoom out'}).addClass('zoom_out')
+				var controlUIzoomOut = $('<div/>', {title: 'Zoom out'})
+					.addClass('zoom_out')
 					.append($('<img/>', {src: '/www/images/template/zoom_out25x25.png'})
 						.attr({width: 25, height: 25})).get(0);
 
@@ -234,7 +290,8 @@ function renderView_callback(){
 					mainMap.setZoom(mainMap.getZoom()-1);
 				});
 
-				var controlUImyLocation = $('<div/>', {title: 'Zoom out'}).addClass('my_location')
+				var controlUImyLocation = $('<div/>', {title: 'Zoom out'})
+					.addClass('my_location')
 					.append($('<img/>', {src: '/www/images/template/my_location.png'})
 						.attr({width: 20, height: 18})).get(0);
 
@@ -249,8 +306,10 @@ function renderView_callback(){
 						return true;
 					}
 					centerPosition = userPosition;
-					mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
-					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()), getRadius());
+					mainMap.setCenter(offsetCenter(mainMap,centerPosition,
+						offsetCenterX(true),offsetCenterY(true)));
+					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),
+						offsetCenterX(),offsetCenterY()), getRadius());
 					postList_change();
 				});
 
@@ -259,15 +318,22 @@ function renderView_callback(){
 						.append(controlUIzoomIn, controlUIzoomOut, controlUImyLocation)[0]
 				);
 
-				postList_locationMarker([opts.latitude,opts.longitude]);
+				postList_locationMarker([opts.lat,opts.lng]);
 
-				if (Object.size(postData)){
-					$('.posts .post').each(function(){
-						postItem_render($(this).show().attr('data-id'));
-					});
+				var postDataSize = Object.size(postData);
 
-					if (Object.size(postData) >= postLimit){
-						postList_scrollHandler(true);
+				if (postDataSize>0){
+					if (viewPage=='posts'){
+						$('.posts .post').each(function(){
+							postItem_render($(this).show().attr('data-id'));
+						});
+						if (postDataSize>=postLimit){
+							postList_scrollHandler(true);
+						}
+					} else {
+						for (var id in postData){
+							postItem_marker(id, postData[id]);
+						}
 					}
 				}
 
@@ -284,8 +350,10 @@ function renderView_callback(){
 						.tooltip('option', 'disabled', false);
 					google.maps.event.clearListeners(mainMap, 'idle');
 					google.maps.event.addListenerOnce(mainMap, 'idle', function(){
-						centerPosition = offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY());
-						areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()), getRadius());
+						centerPosition = offsetCenter(mainMap,mainMap.getCenter(),
+							offsetCenterX(),offsetCenterY());
+						areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),
+							offsetCenterX(),offsetCenterY()), getRadius());
 						postList_change();
 					});
 				});
@@ -295,8 +363,10 @@ function renderView_callback(){
 						.tooltip('close')
 						.tooltip('option', 'disabled', true)
 						.tooltip('option', 'disabled', false);
-					mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
-					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()), getRadius());
+					mainMap.setCenter(offsetCenter(mainMap,centerPosition,
+						offsetCenterX(true),offsetCenterY(true)));
+					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),
+						offsetCenterX(),offsetCenterY()), getRadius());
 				});
 
 				$(document).click(function(){
@@ -308,8 +378,10 @@ function renderView_callback(){
 
 				$(window).on('resize', function(){
 					mainMap.setZoom(defaultZoom);
-					mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
-					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()), getRadius());
+					mainMap.setCenter(offsetCenter(mainMap,centerPosition,
+						offsetCenterX(true),offsetCenterY(true)));
+					areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),
+						offsetCenterX(),offsetCenterY()), getRadius());
 				});
 
 				$(window).on('resize scroll', function(){
@@ -330,62 +402,67 @@ function renderView_callback(){
 					}
 				});
 
-				$('.post-new img').click(function(){
-					if ($('.post-new__dialog').size()){
-						$('.post-new__dialog').fadeOut(50, function(){
-							$(this).remove();
-						});
-						return true;
-					}
+				if (viewPage=='posts'){
+					$('.post-new img').click(function(){
+						if ($('.post-new__dialog').size()){
+							$('.post-new__dialog').fadeOut(50, function(){
+								$(this).remove();
+							});
+							return true;
+						}
 
-					if (getCookie('newpost')==1){
-						newPost_dialog();
-						return true;
-					}
+						if (getCookie('newpost')==1){
+							newPost_dialog();
+							return true;
+						}
 
-					$('<div/>')
-						.append(
-							$('<p/>')
-								.html('After you write something and hit "Post" you\'ll be asked to add the location the post relates to.')
-						)
-						.appendTo($('body'))
-						.dialog({
-							modal: true,
-							resizable: false,
-							drag: false,
-							width: 350,
-							dialogClass: 'dialog',
-							buttons:{
-								OK: function(){
-									if ($('#newPost_notify').is(':checked')){
-										setCookie('newpost', 1, 365);
+						$('<div/>')
+							.append(
+								$('<p/>')
+									.html('After you write something and hit "Post" you\'ll be asked to add the location the post relates to.')
+							)
+							.appendTo($('body'))
+							.dialog({
+								modal: true,
+								resizable: false,
+								drag: false,
+								width: 350,
+								dialogClass: 'dialog',
+								buttons:{
+									OK: function(){
+										if ($('#newPost_notify').is(':checked')){
+											setCookie('newpost', 1, 365);
+										}
+										$(this).dialog('close');
+										newPost_dialog();
 									}
-									$(this).dialog('close');
-									newPost_dialog();
+								},
+								open: function(event, ui){
+									$(event.target).parent().find('.ui-dialog-buttonpane').append(
+										$('<div/>')
+											.append(
+												$('<input/>').val(1)
+													.attr({type:'checkbox',id:'newPost_notify',
+														checked:getCookie('newpost')==1}),
+												$('<label/>').attr({for:'newPost_notify'})
+													.text('Don\'t show this message again')
+											)
+											.addClass('post-new__notify')
+									);
+								},
+								beforeClose: function(event, ui){
+									$(event.target).dialog('destroy').remove();
 								}
-							},
-							open: function(event, ui){
-								$(event.target).parent().find('.ui-dialog-buttonpane').append(
-									$('<div/>')
-										.append(
-											$('<input/>').val(1)
-												.attr({type:'checkbox',id:'newPost_notify',
-													checked:getCookie('newpost')==1}),
-											$('<label/>').attr({for:'newPost_notify'})
-												.text('Don\'t show this message again')
-										)
-										.addClass('post-new__notify')
-								);
-							},
-							beforeClose: function(event, ui){
-								$(event.target).dialog('destroy').remove();
-							}
-						});
-				});
+							});
+					});
+				}
 
 				$('.postSearch input').keydown(function(e){
 					if (e.keyCode == 13){
 						e.preventDefault();
+						if (!isLogin){
+							return guestAction();
+						}
 						var form = $(this).closest('form');
 						postSearch_submit(form);
 						return false;
@@ -418,6 +495,9 @@ function renderView_callback(){
 				});
 
 				$('.user-location button').click(function(){
+					if (!isLogin){
+						return guestAction();
+					}
 					var locationButton = $(this).attr('disabled', true);
 					editLocationDialog({
 						mapZoom: 14,
@@ -446,11 +526,17 @@ function renderView_callback(){
 								var data = {
 									radius: getRadius(),
 									keywords: opts.keywords,
-									filter: opts.filter,
 									latitude: position.lat(),
 									longitude: position.lng(),
 									timezone: timezone
 								};
+
+								if (viewPage=='profile'){
+									data.filter=0;
+									data.user_id=profile.id;
+								} else {
+									data.filter=opts.filter;
+								}
 
 								if (place){
 									data = $.extend(data, parsePlaceAddress(place));
@@ -469,23 +555,39 @@ function renderView_callback(){
 
 										postList_reset();
 
-										mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
-										areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),getRadius());
+										mainMap.setCenter(offsetCenter(mainMap,centerPosition,
+											offsetCenterX(true),offsetCenterY(true)));
+										areaCircle.changeCenter(offsetCenter(mainMap, mainMap.getCenter(),
+											offsetCenterX(),offsetCenterY()),getRadius());
 
-										if (response.data){
-											for (var i in response.data){
-												$('.posts-container .posts').append(response.data[i][3]);
-
-												var id = response.data[i][0];
-												postData[id]=[response.data[i][1],response.data[i][2]];
-												postItem_render(id);
-											}
-
-											if (Object.size(response.data) >= postLimit){
-												postList_scrollHandler();
+										if (viewPage=='profile'){
+											if (response.data !== null){
+												for (var i in response.data){
+													var id=response.data[i][0],
+														data=[
+															response.data[i][1],
+															response.data[i][2]
+														];
+													postData[id]=data;
+													postItem_marker(id, data);
+												}
 											}
 										} else {
-											emptyPostsMessage();
+											if (response.data){
+												for (var i in response.data){
+													$('.posts-container .posts').append(response.data[i][3]);
+
+													var id = response.data[i][0];
+													postData[id]=[response.data[i][1],response.data[i][2]];
+													postItem_render(id);
+												}
+
+												if (Object.size(response.data) >= postLimit){
+													postList_scrollHandler();
+												}
+											} else {
+												emptyPostsMessage();
+											}
 										}
 
 										$(event.target).dialog('close');
@@ -516,10 +618,10 @@ function renderView_callback(){
 			self.div = $('<div/>')
 				.addClass(this.opts.addClass)
 				.css($.extend({position: 'absolute', cursor: 'pointer'}, this.opts.css))
-				.append($('<img/>', {
-					src: self.opts.icon.url,
-					width: self.opts.icon.width,
-					height: self.opts.icon.height
+				.append($('<img/>').prop({
+					src:self.opts.icon.url,
+					width:self.opts.icon.width,
+					height:self.opts.icon.height
 				}));
 
 			if ($.trim(self.opts.id) !== ''){
@@ -713,24 +815,6 @@ function offsetCenterY(reverse){
 	return offset;
 }
 
-function getDistance(p1, p2){
-	p1[0] = parseFloat(p1[0]);
-	p1[1] = parseFloat(p1[1]);
-	p2[0] = parseFloat(p2[0]);
-	p2[1] = parseFloat(p2[1]);
-
-	if (p1[0] == p2[0] && p1[1] == p2[1]){
-		return 0;
-	}
-
-	var theta = p1[1] - p2[1];
-	var dist = Math.sin(p1[0] * Math.PI / 180) * Math.sin(p2[0] * Math.PI / 180) +
-		Math.cos(p1[0] * Math.PI / 180) * Math.cos(p2[0] * Math.PI / 180) *
-		Math.cos(theta * Math.PI / 180);
-	var miles = (Math.acos(dist) * 180 / Math.PI) * 60 * 1.1515;
-	return miles;
-}
-
 function getRadius(){
 	if ($('#slider').data('ui-slider')){
 		return $('#slider').slider('option', 'value');
@@ -765,7 +849,7 @@ function postSearch_submit(form){
 
 	$('.search', form).remove();
 
-	if (isList){
+	if (viewPage=='posts'||viewPage=='profile'){
 		$('.keywords img', form).remove();
 		postSearch_clearButton(form);
 	}
@@ -1173,8 +1257,6 @@ function postItem_renderContent(id, postContainer){
 										data.latitude=response.latitude=position.lat();
 										data.longitude=response.longitude=position.lng();
 										if (place){
-											// TODO: remove
-											data.address=place.formatted_address;
 											data=$.extend(data,parsePlaceAddress(place));
 										}
 										map.setOptions({draggable:false,zoomControl:false});
@@ -1182,7 +1264,7 @@ function postItem_renderContent(id, postContainer){
 											url:baseUrl+'post/save-location/id/'+id,
 											data:data,
 											done:function(saveResponse){
-												if (isList){
+												if (viewPage=='posts'){
 													if (getDistance([centerPosition.lat(), centerPosition.lng()],
 														[position.lat(), position.lng()])<=getRadius()){
 														postItem_delete(id);
@@ -1229,7 +1311,7 @@ function postItem_renderContent(id, postContainer){
 									url: baseUrl+'post/delete',
 									data: {id:id},
 									done: function(){
-										if (!isList){
+										if (viewPage!='posts'){
 											window.location.href = baseUrl;
 											return true;
 										}
@@ -1420,11 +1502,6 @@ function postItem_delete(id){
 	}
 }
 
-// TODO: require from common js
-function keyCode(event){
-	return event.keyCode || event.which;
-}
-
 function validatePost(){
 	var body=$(this).val();
 	if (/[<>]/.test(body)){
@@ -1569,7 +1646,7 @@ function newPost_dialog(){
 
 	formBlock.append(userBlock,postBlock);
 
-	if (isAdmin){
+	if (isLogin && user.is_admin == 1){
 		$('<div/>').addClass('options').text('options')
 			.appendTo(formBlock)
 			.on('click', function(){
@@ -1657,9 +1734,6 @@ function newPost_save(position,place){
 	data.append('longitude', position.lng());
 
 	if (place){
-		// TODO: remove
-		data.append('address',place.formatted_address);
-
 		var addressData=parsePlaceAddress(place);
 		if (Object.size(addressData)){
 			for (var field in addressData){
@@ -1741,28 +1815,53 @@ function postList_reset(){
 	postMarkers={};
 	postMarkersCluster={};
 	postList_locationMarker();
-	$('.posts-container .posts').html('');
+
+	if (viewPage!='profile'){
+		$('.posts-container .posts').html('');
+	}
 }
 
 function postList_load(start){
 	start = start || 0;
-	var position = areaCircle.center;
+	var position=areaCircle.center,data={
+		radius:getRadius(),
+		keywords:opts.keywords,
+		latitude:areaCircle.center.lat(),
+		longitude:areaCircle.center.lng(),
+		start:start
+	};
+
+	if (viewPage=='profile'){
+		data.filter=0;
+		data.user_id=profile.id;
+	} else {
+		data.filter=opts.filter;
+		data.point=opts.point;
+		data.new=$('.posts-container .posts [name=new\\[\\]]').map(function(){
+			return $(this).val();
+		}).get();
+	}
 
 	loadXhr = ajaxJson({
 		url: baseUrl+'post/load',
-		data: {
-			radius: getRadius(),
-			keywords: opts.keywords,
-			filter: opts.filter,
-			point: opts.point,
-			latitude: areaCircle.center.lat(),
-			longitude: areaCircle.center.lng(),
-			start: start,
-			'new': $('.posts-container .posts [name=new\\[\\]]').map(function(){
-				return $(this).val();
-			}).get()
-		},
+		data: data,
 		done: function(response){
+			if (viewPage=='profile'){
+				if (response.data !== null){
+					for (var i in response.data){
+						var id=response.data[i][0],
+							data=[
+								response.data[i][1],
+								response.data[i][2]
+							];
+						postData[id]=data;
+						postItem_marker(id, data);
+					}
+				}
+
+				return true;
+			}
+
 			if (response.empty){
 				$('.posts-container .posts').html(response.empty);
 				return true;
@@ -1823,14 +1922,19 @@ function postTooltip_content(position, event, ui, start){
 	var url, postTooltip, data = {};
 
 	if (!opts.point || getDistance([position.lat(),position.lng()],
-		[opts.latitude,opts.longitude])<=groupDistance){
+		[opts.lat,opts.lng])<=groupDistance){
 		data.start=start;
 		data.latitude=position.lat();
 		data.longitude=position.lng();
 		data.keywords=opts.keywords;
-		data.filter=opts.filter;
-		data.point=opts.point;
-		data.readmore=1;
+		if (viewPage=='profile'){
+			data.filter=0;
+			data.user_id=profile.id;
+		} else {
+			data.filter=opts.filter;
+			data.point=opts.point;
+			data.readmore=1;
+		}
 		url=baseUrl+'post/tooltip';
 		postTooltip = true;
 	} else {
@@ -2060,100 +2164,4 @@ function guestAction(){
 		window.location.href = baseUrl;
 	}
 	return false;
-}
-
-// TODO: require from common js
-function ajaxJson(url, settings){
-	if (typeof url === 'string'){
-		settings.url = url;
-	} else if (typeof url === 'object'){
-		settings = url;
-	}
-
-	settings.dataType = 'json';
-
-	var jqxhr = $.ajax($.extend(settings, {type: 'POST'}))
-		.done(function(data, textStatus, jqXHR){
-			var isObject = typeof data === 'object';
-			if (!isObject || data.status == 0){
-				if (typeof settings.fail === 'function'){
-					settings.fail(data, textStatus, jqXHR);
-				}
-				alert(isObject ? data.message : 'Internal server error');
-				return false;
-			}
-
-			if (typeof settings.done === 'function'){
-				return settings.done(data, textStatus, jqXHR);
-			}
-		}).fail(function(jqXHR, textStatus){
-			if (jqXHR.readyState == 0 || jqXHR.status == 0){
-				return true;
-			}
-			if (typeof settings.fail === 'function'){
-				settings.fail({}, textStatus, jqXHR);
-			}
-			alert('Internal server error');
-		});
-
-	return jqxhr;
-}
-
-// TODO: require from common js
-function userAddressTooltip(address, image){
-    return '<div class="location-dialog__user">' +
-		'<img src="' + image + '" />' +
-		'<div class="address">' + address + '</div>' +
-	'</div>';
-}
-
-// TODO: move to common js
-function setCookie(name, value, days){
-    var d = new Date();
-    d.setTime(d.getTime() + (days * 86400000));
-    document.cookie = name+'='+value+'; expires='+d.toUTCString();
-}
-
-// TODO: move to common js
-function getCookie(name){
-    var name = name+'=';
-    var ca = document.cookie.split(';');
-    for(var i=0; i<ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1);
-        if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
-    }
-    return '';
-}
-
-// TODO: move to common js
-Object.size = function(obj){
-	var size = 0, key;
-	for (key in obj){
-		if (obj.hasOwnProperty(key)) size++;
-	}
-	return size;
-};
-
-// TODO: move to common js
-function parsePlaceAddress(place){
-	var placeData = {}, addressFields = {
-		street_number: 'street_number',
-		route: 'street_name',
-		locality: 'city',
-		administrative_area_level_1: 'state',
-		country: 'country',
-		postal_code: 'zip'
-	};
-
-	for (var i in place.address_components){
-		var component = place.address_components[i],
-			type = component.types[0];
-		if (addressFields[type]){
-			placeData[addressFields[type]] = type=='route'?
-				component.long_name:component.short_name;
-		}
-	}
-
-	return placeData;
 }

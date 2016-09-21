@@ -211,6 +211,23 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				['controller' => 'index', 'action' => 'signup-success']
 			)
 		);
+
+		$router->addRoute(
+			'profile',
+			new Zend_Controller_Router_Route(
+				'profile',
+				['controller' => 'home', 'action' => 'profile']
+			)
+		);
+
+		$router->addRoute(
+			'profile/:user_id',
+			new Zend_Controller_Router_Route(
+				'profile/:user_id',
+				['controller' => 'home', 'action' => 'profile'],
+				['user_id' => '\d+']
+			)
+		);
 	}
 
 	protected function _initLog()

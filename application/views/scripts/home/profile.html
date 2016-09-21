@@ -1,153 +1,64 @@
 <?php
-$karmaTitle = 'User posts: ' . $this->profile['post'] . '<br/>' .
-	'User posts comments: ' . $this->profile['comment'] . '<br/>' .
-	'User posts votings: ' . $this->profile['vote'] . '<br/>' .
+$karmaTitle = 'User posts: ' . $this->profile['post'] . '<br>' .
+	'User posts comments: ' . $this->profile['comment'] . '<br>' .
+	'User posts votings: ' . $this->profile['vote'] . '<br>' .
 	'User comments on other posts: ' . $this->profile['comment_other'];
 $age = $this->profile['Birth_date'] ?
 	(new DateTime($this->profile['Birth_date']))->diff(new DateTime())->y : null;
 $thumb = Application_Model_User::getThumb($this->profile, '55x55');
 $karma = Application_Model_User::getKarma($this->profile);
 ?>
-<div class="profile">
-<div class="leftCol">
-	<div class="profDtl">
-		<div class="profile-img">
-			<span id="image_upload_field">
-				<img src="<?php echo $this->baseUrl($thumb); ?>">
-			</span>
-		</div>
-		<div class="profile-describe">
-			<h3 class="name"><?php echo ucfirst($this->profile['Name']); ?></h3>
-			<p class="loc"><?php echo My_StringHelper::stringLimit($this->addressFormat, 50, '...'); ?></p>
-		</div>
-		<div class="clr"></div>
-	</div>
-</div>
-<ul class="viewForm" style="width:100%; margin-left: 0px;">
+<div class="post">
+<p class="user_avatar"><img src="<?php echo $this->baseUrl($thumb); ?>"
+width="55" height="55"></p>
+<p class="user_name"><?php echo ucfirst($this->profile['Name']); ?></p>
+<p class="post_text"
+><?php echo My_StringHelper::stringLimit($this->addressFormat, 50, '...'); ?></p>
+<ul>
+<li><h3>Karma</h3><span><strong class="karma"
+title="<?php echo htmlspecialchars($karmaTitle); ?>"><?php echo $karma;
+?></strong> (Calculated based on posts &amp; comments)</span></li>
+<?php if ($this->auth_id == $this->profile['id']): ?>
 <li>
-<label>Karma</label>
-<span class="karma">
-<b title="<?php echo htmlspecialchars($karmaTitle); ?>"><?php echo $karma; ?></b
->(Calculated based on posts &amp; comments)
-</span>
-<div class="clr"></div>
+<h3>Email Address</h3>
+<span><?php echo $this->profile['Email_id']; ?></span>
 </li>
-	<?php if ($this->auth_id == $this->profile['id']): ?>
-	<li>
-		<label>Email Address</label>
-		<span><?php echo $this->profile['Email_id']; ?></span>
-		<div class="clr"></div>
-	</li>
-	<?php endif; ?>
+<?php endif; ?>
 <li>
-<label>Gender</label>
+<h3>Gender</h3>
 <span><?php echo Application_Model_User::getGender($this->profile); ?></span>
-<div class="clr"></div>
 </li>
-    <li>
-		<label>Interests</label>
-        <span><?php echo $this->profile['interest']; ?></span>
-		<div class="clr"></div>
-    </li>
-    <?php if ($this->addressFormat !== ''): ?>
-	<li>
-        <label>Location</label>
-        <span><?php echo $this->addressFormat; ?></span>
-		<div class="clr"></div>
-    </li>
-    <?php endif; ?>
-	<?php if ($age): ?>
-    <li>
-        <label>Age</label>
-        <span><?php echo $age; ?> Year<?php if ($age !== 1) echo 's'; ?></span>
-		<div class="clr"></div>
-    </li>
-	<?php endif; ?>
+<?php if ($this->profile['interest'] != null): ?>
+<li>
+<h3>Interests</h3>
+<span><?php echo $this->profile['interest']; ?></span>
+</li>
+<?php endif; ?>
+<?php if ($this->addressFormat !== ''): ?>
+<li>
+<h3>Location</h3>
+<span><?php echo $this->addressFormat; ?></span>
+</li>
+<?php endif; ?>
+<?php if ($age != null): ?>
+<li>
+<h3>Age</h3>
+<span><?php echo $age; ?> Year<?php if ($age !== 1) echo 's'; ?></span>
+</li>
+<?php endif; ?>
 </ul>
+<?php if ($this->auth_id): ?>
+<div class="action">
 <?php if ($this->profile['id'] == $this->auth_id): ?>
-<div class="btnBarM20">
-	<a href="<?php echo $this->baseUrl("home/edit-profile"); ?>">Edit Profile Info</a>
-</div>
-<?php elseif ($this->auth_id): ?>
-<div class="friendAction btnBarM20">
-<?php if ($this->isFriend): ?>
-<input class="friend" type="button" value="Unfollow" />
-<?php else: ?>
-<input class="friend" type="button" value="Follow" />
+<a class="edit" href="<?php echo $this->baseUrl('home/edit-profile'); ?>"
+>Edit Profile Info</a>
+<?php
+elseif ($this->auth_id):
+	if ($this->isFriend):
+?><span class="follow">Unfollow</span><?php else:
+?><span class="follow">Follow</span><?php endif;
+?><span class="message">Message</span>
 <?php endif; ?>
-<input class="message" type="button" value="Message" />
 </div>
 <?php endif; ?>
 </div>
-<script type="text/javascript">
-$(function(){
-	$('.karma b').tooltip({
-		content: function(){return $(this).prop('title'); }
-	});
-	$('.friendAction input.friend').click(function(){
-		var target = $(this).attr('disabled', true);
-		$('.friendAction').prepend(
-			$('<img/>', {src: baseUrl + 'www/images/wait.gif'})
-				.addClass('frndReqImg')
-		);
-		ajaxJson({
-			url: baseUrl + 'contacts/friend',
-			data: {
-				action: isFriend ? 'reject' : 'follow',
-				user: reciever_userid,
-				total: 1
-			},
-			done: function(response){
-				target.val(isFriend ? 'Follow' : 'Unfollow')
-					.attr('disabled', false);
-				$('.frndReqImg').remove();
-				if (response.total > 0){
-					$('#noteTotal').html(response.total);
-				} else {
-					$('#noteTotal').hide();
-				}
-				isFriend = !isFriend;
-			}
-		});
-	});
-});
-function initMap(){
-	var otherProfile = reciever_userid != user_id;
-
-	var map = new google.maps.Map($('#map_canvas')[0], {
-		zoom: 14,
-		minZoom: 13,
-		maxZoom: 15,
-		center: new google.maps.LatLng(profileData.latitude,profileData.longitude),
-        disableDefaultUI: true,
-        panControl: false,
-    	zoomControl: false,
-        scaleControl: false,
-    	streetViewControl: false,
-    	overviewMapControl: false,
-	    mapTypeId: google.maps.MapTypeId.ROADMAP
-    });
-
-	google.maps.event.addListenerOnce(map, 'idle', function(){
-		var marker = new google.maps.Marker({
-			position: map.getCenter(),
-			map: map,
-			icon: baseUrl + 'www/images/icons/icon_1.png'
-		});
-
-		if (!otherProfile){
-			var infowindow = new google.maps.InfoWindow({
-				content: userAddressTooltip(profileData.address, imagePath)
-			});
-
-			infowindow.open(map, marker);
-		}
-	});
-
-	if (otherProfile){
-		$('.friendAction .message').click(function(){
-			userMessageDialog(profileData.id);
-		});
-	}
-}
-</script>

@@ -14,5 +14,8 @@
 /web/bower_components/*
 /web/thumb448x320/*
 /web/www/scripts/common.js
+/web/www/scripts/global.js
+# TODO: /web/www/scripts/map.js
 /web/www/css/global.css
 /web/www/css/mobile.css
+/web/www/css/map.css

@@ -83,7 +83,7 @@ class Application_Form_MobileProfile extends Zend_Form
 				['Count', false, 1]
 			]);
 
-			if (!$upload->isValid('image'))
+			if ($upload->isValid('image'))
 			{
 				$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
 

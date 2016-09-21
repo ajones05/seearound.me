@@ -47,7 +47,8 @@ $thumb = Application_Model_User::getThumb($this->user, '55x55');
 					return userAddressTooltip(address, imagePath);
 				},
 				submit: function(dialogMap,event,position,place){
-					if (latlngDistance(position,userPosition) > 0){
+					if (getDistance([position.lat(),position.lng()],
+						[userPosition.lat(),userPosition.lng()]) > 0){
 						locationTimezone(position,function(timezone){
 							var data = place?parsePlaceAddress(place):{};
 							userAddress = place.formatted_address;
@@ -106,8 +107,6 @@ $thumb = Application_Model_User::getThumb($this->user, '55x55');
 			infowindow.open(map, marker);
 		});
 
-		setHeight('.eqlCH');
-
 		$('#imageButton').click(function(e){
 			e.preventDefault();
 			$('#ImageFile').trigger('click');
@@ -149,14 +148,14 @@ $thumb = Application_Model_User::getThumb($this->user, '55x55');
 <div id="userDiv" class="leftCol" >
 	<div class="profDtl"> 
 		<div class="profile-img">
-			<a style="z-index:9999;" href="<?php echo $this->baseUrl("home/profile"); ?>">
+			<a style="z-index:9999;" href="<?php echo $this->baseUrl("profile"); ?>">
 				<span id="image_upload_field">
 					<img src="<?php echo $this->baseUrl($thumb); ?>" class="imgProf">
 				</span>
 			</a> 
 		</div>
 		<div class="profile-describe">   
-			<a class="hypDecNone" href="<?php echo $this->baseUrl("home/profile"); ?>">
+			<a class="hypDecNone" href="<?php echo $this->baseUrl("profile"); ?>">
 				<h3 class="name"><?php echo ucfirst($this->user['Name']);?></h3>
 			</a>
 			<p class="loc"><?php echo My_StringHelper::stringLimit($this->addressFormat, 50, '...'); ?></p>
@@ -240,6 +239,6 @@ $thumb = Application_Model_User::getThumb($this->user, '55x55');
 	<div class="clr"></div>
 	<div class="btnBarM20">
 		<input type="submit" value="Apply" class="btnBlueRptType2" style="margin-right:8%" />
-		<input type="button" onclick="window.location.href = '<?php echo $this->baseUrl("home/profile"); ?>'" value="Cancel" class="btnBlueRptType2" />
+		<input type="button" onclick="window.location.href = '<?php echo $this->baseUrl("profile"); ?>'" value="Cancel" class="btnBlueRptType2" />
 	</div>
 </form>

@@ -25,7 +25,7 @@ class PostController extends Zend_Controller_Action
 				var_export($id, true));
 		}
 
-		$this->view->layout()->setLayout('posts');
+		$this->view->layout()->setLayout('map');
 		$this->view->searchForm = new Application_Form_PostSearch;
 		$this->view->user = $user;
 
@@ -47,15 +47,27 @@ class PostController extends Zend_Controller_Action
 				var_export($id, true));
 		}
 
+		$this->view->appendScript = [];
+
+		if ($user != null)
+		{
+			$this->view->appendScript[] = 'user=' . json_encode([
+				'name' => $user['Name'],
+				'image' => $this->view->baseUrl(
+					Application_Model_User::getThumb($user, '55x55')),
+				'is_admin' => $user['is_admin']
+			]);
+		}
+
 		if ($post->isdeleted)
 		{
 			$this->_helper->viewRenderer->setNoRender(true);
 			$geolocation = My_Ip::geolocation();
-			$this->view->headScript()->appendScript('var opts=' . json_encode([
-					'latitude' => $geolocation[0],
-					'longitude' => $geolocation[1]
-			], JSON_FORCE_OBJECT));
-
+			$this->view->appendScript[] = 'opts=' . json_encode([
+				'lat' => $geolocation[0],
+				'lng' => $geolocation[1]]
+			);
+			$this->view->viewPage = 'post-offline';
 			echo $this->view->partial('post/_item_empty.html');
 			return true;
 		}
@@ -63,26 +75,20 @@ class PostController extends Zend_Controller_Action
 		$ownerThumb = Application_Model_User::getThumb($post, '55x55',
 			['alias' => 'owner_']);
 
-		$headScript = 'var opts=' . json_encode(['latitude' => $post->latitude,
-			'longitude' => $post->longitude], JSON_FORCE_OBJECT) .
-			',owner=' . json_encode([
-				'image' => $this->view->baseUrl($ownerThumb)
-			]) .
-			',post=' . json_encode([
-				'id'=>$post->id,
-				'lat'=>$post->latitude,
-				'lng'=>$post->longitude,
-				'address'=>Application_Model_Address::format($post) ?: $post->address
-			]);
+		$this->view->appendScript[] = 'opts=' . json_encode([
+			'lat' => $post->latitude,
+			'lng' => $post->longitude
+		]);
 
-		if ($user)
+		$this->view->appendScript[] = 'post=' . json_encode([
+			'id' => $post->id,
+			'address' => Application_Model_Address::format($post),
+			'owner' => ['image' => $this->view->baseUrl($ownerThumb)],
+		]);
+
+		if ($user != null)
 		{
-			$headScript .= ',user=' . json_encode([
-				'name' => $user['Name'],
-				'image' => $this->view->baseUrl(
-					Application_Model_User::getThumb($user, '55x55'))
-			]) .
-			',settings=' . json_encode([
+			$this->view->appendScript[] = 'settings=' . json_encode([
 				'bodyMaxLength' => Application_Form_Post::$bodyMaxLength
 			]);
 		}
@@ -107,7 +113,6 @@ class PostController extends Zend_Controller_Action
 		];
 		$this->view->hidden = true;
 
-		$this->view->headScript()->appendScript($headScript . ';');
 		$this->view->doctype('XHTML1_RDFA');
 		$this->view->headMeta()
 			->setProperty('og:url', $this->view->serverUrl() . $this->view->baseUrl('post/' . $post->id))
@@ -134,7 +139,7 @@ class PostController extends Zend_Controller_Action
 			->setProperty('og:image:width', $imageWidth)
 			->setProperty('og:image:height', $imageHeight);
 
-		$this->view->addClass = ['post'];
+		$this->view->viewPage = 'post';
 	}
 
 	/**
@@ -149,7 +154,7 @@ class PostController extends Zend_Controller_Action
 		if ($user == null)
 		{
 			$this->_helper->flashMessenger('Please log in to access this page.');
-			$this->_redirect($this->view->baseUrl('/'));
+			$this->_redirect('/');
 		}
 
 		$point = $this->_request->getParam('point');
@@ -209,7 +214,27 @@ class PostController extends Zend_Controller_Action
 			'thumbs' => [[448,320],[960,960]]
 		]);
 
-		if (count($posts))
+		// TODO: remove after finish updates
+		$searchParameters['lat'] = $searchParameters['latitude'];
+		$searchParameters['lng'] = $searchParameters['longitude'];
+		unset($searchParameters['latitude'], $searchParameters['longitude']);
+
+		$this->view->appendScript = [
+			'user=' . json_encode([
+				'name' => $user['Name'],
+				'image' => $this->view->baseUrl(
+					Application_Model_User::getThumb($user, '55x55')),
+				'location' => [$user['latitude'], $user['longitude']],
+				'is_admin' => $user['is_admin']
+			]),
+			'opts=' . json_encode($searchParameters),
+			'timizoneList=' . json_encode(My_CommonUtils::$timezone),
+			'settings=' . json_encode([
+				'bodyMaxLength' => Application_Form_Post::$bodyMaxLength
+			])
+		];
+
+		if ($posts->count())
 		{
 			$data = [];
 
@@ -219,11 +244,10 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$this->view->posts = $posts;
-			$this->view->headScript()->appendScript('var postData=' .
-				json_encode($data) . ';');
+			$this->view->appendScript[] = 'postData=' . json_encode($data);
 		}
 
-		$this->view->isList = true;
+		$this->view->viewPage = 'posts';
 		$this->view->user = $user;
 		$this->view->searchForm = $searchForm;
 
@@ -232,26 +256,10 @@ class PostController extends Zend_Controller_Action
 			$searchParameters['point'] = 1;
 		}
 
-		$this->view->headScript()->appendScript(
-			'var user=' . json_encode([
-				'name' => $user['Name'],
-				'image' => $this->view->baseUrl(
-					Application_Model_User::getThumb($user, '55x55')),
-				'location' => [$user['latitude'], $user['longitude']]
-			]) .
-			',isList=true' .
-			',opts=' . json_encode($searchParameters, JSON_FORCE_OBJECT) .
-			',timizoneList=' . json_encode(My_CommonUtils::$timezone) .
-			',settings=' . json_encode([
-				'bodyMaxLength' => Application_Form_Post::$bodyMaxLength
-			]) . ';'
-		);
-
-		$this->view->addClass = ['posts'];
-		$this->view->layout()->setLayout('posts');
+		$this->view->layout()->setLayout('map');
 		$this->_helper->viewRenderer->setNoRender(true);
 
-		if (count($posts))
+		if ($posts->count())
 		{
 			foreach ($posts as $post)
 			{
@@ -290,8 +298,6 @@ class PostController extends Zend_Controller_Action
 
 	/**
 	 * Posts list action.
-	 *
-	 * @return void
 	 */
 	public function loadAction()
 	{
@@ -299,28 +305,6 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$user = Application_Model_User::getAuth();
-
-			if ($user == null)
-			{
-				throw new RuntimeException('Please log in to access this page.');
-			}
-
-			$point = $this->_request->getParam('point');
-
-			if (!v::optional(v::equals(1))->validate($point))
-			{
-				throw new RuntimeException('Incorrect point value: ' .
-					var_export($point, true));
-			}
-
-			$new = $this->_request->getPost('new', []);
-
-			if (!v::optional(v::arrayVal())->validate($new))
-			{
-				throw new RuntimeException('Incorrect new value');
-			}
-
 			$searchForm = new Application_Form_PostSearch;
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
@@ -336,52 +320,104 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
-			$result = (new Application_Model_News)->search(array_merge(
-				$searchParameters, ['limit' => 15, 'exclude_id' => $new,
-					'radius' => $point ? 0.018939 : $searchParameters['radius']]
-			), $user, [
+			$user = Application_Model_User::getAuth();
+			$profile_id = $this->_request->getParam('user_id');
+
+			if (!v::optional(v::intVal())->validate($profile_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($profile_id, true));
+			}
+
+			if ($profile_id != null)
+			{
+				$profile = Application_Model_User::findById($profile_id, true);
+
+				if ($profile == null)
+				{
+					throw new RuntimeException('Incorrect user ID: ' .
+						var_export($profile_id, true));
+				}
+			}
+			else
+			{
+				if ($user == null)
+				{
+					throw new RuntimeException('Please log in to access this page.');
+				}
+
+				$point = $this->_request->getParam('point');
+
+				if (!v::optional(v::equals(1))->validate($point))
+				{
+					throw new RuntimeException('Incorrect point value: ' .
+						var_export($point, true));
+				}
+
+				$new = $this->_request->getPost('new', []);
+
+				if (!v::optional(v::arrayVal())->validate($new))
+				{
+					throw new RuntimeException('Incorrect new value');
+				}
+
+				$searchParameters['exclude_id'] = $new;
+				$searchParameters['radius'] = $point ? 0.018939 :
+					$searchParameters['radius'];
+			}
+
+			$queryUser = $profile_id !== null ? $profile : $user;
+
+			$result = (new Application_Model_News)->search(
+				$searchParameters + ['limit' => 15], $queryUser, [
 				'link' => ['thumbs'=>[[448,320]]],
-				'userVote' => true,
+				'userVote' => $user !== null ? true : false,
 				'thumbs' => [[448,320],[960,960]]
 			]);
 
 			$response = ['status' => 1];
 
-			if (count($result))
+			if ($result->count())
 			{
 				$data = [];
 
 				foreach ($result as $post)
 				{
-					$assets = [
-						'post' => $post,
-						'user' => $user,
-						'owner' => [
-							'Name' => $post['owner_name'],
-							'image_name' => $post['owner_image_name']
-						],
-						'limit' => 350
-					];
-
-					if (!empty($post['link_id']))
-					{
-						$assets['link'] = [
-							'id' => $post['link_id'],
-							'link' => $post['link_link'],
-							'title' => $post['link_title'],
-							'description' => $post['link_description'],
-							'author' => $post['link_author'],
-							'image_id' => $post['link_image_id'],
-							'image_name' => $post['link_image_name']
-						];
-					}
-
-					$data[] = [
+					$postData = [
 						$post->id,
 						$post->latitude,
-						$post->longitude,
-						$this->view->partial('post/view.html', $assets)
+						$post->longitude
 					];
+
+					if ($profile_id == null)
+					{
+						$assets = [
+							'post' => $post,
+							'user' => $user,
+							'owner' => [
+								'Name' => $post['owner_name'],
+								'image_name' => $post['owner_image_name']
+							],
+							'limit' => 350
+						];
+
+						if (!empty($post['link_id']))
+						{
+							$assets['link'] = [
+								'id' => $post['link_id'],
+								'link' => $post['link_link'],
+								'title' => $post['link_title'],
+								'description' => $post['link_description'],
+								'author' => $post['link_author'],
+								'image_id' => $post['link_image_id'],
+								'image_name' => $post['link_image_name']
+							];
+						}
+
+						$postData[] = $this->view->partial('post/view.html', $assets);
+					}
+
+					$data[] = $postData;
 				}
 
 				$response['data'] = $data;
@@ -415,8 +451,6 @@ class PostController extends Zend_Controller_Action
 
 	/**
 	 * User tooltip action.
-	 *
-	 * @return void
 	 */
 	public function userTooltipAction()
 	{
@@ -425,13 +459,7 @@ class PostController extends Zend_Controller_Action
 		try
 		{
 			$user = Application_Model_User::getAuth();
-
-			if ($user == null)
-			{
-				throw new RuntimeException('You are not authorized to access this action', -1);
-			}
-
-			$this->view->user = $user;
+			$this->view->user = $this->getTooltipUserData($user);
 		}
 		catch (Exception $e)
 		{
@@ -444,8 +472,6 @@ class PostController extends Zend_Controller_Action
 
 	/**
 	 * Posts tooltip action.
-	 *
-	 * @return void
 	 */
 	public function tooltipAction()
 	{
@@ -454,28 +480,6 @@ class PostController extends Zend_Controller_Action
 		try
 		{
 			$user = Application_Model_User::getAuth();
-
-			if ($user == null)
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
-			$readmore = $this->_request->getPost('readmore', 0);
-
-			if (!v::optional(v::intVal()->equals(1))->validate($readmore))
-			{
-				throw new RuntimeException('Incorrect readmore value: ' .
-					var_export($readmore, true));
-			}
-
-			$point = $this->_request->getParam('point');
-
-			if (!v::optional(v::intVal()->equals(1))->validate($point))
-			{
-				throw new RuntimeException('Incorrect point value: ' .
-					var_export($point, true));
-			}
-
 			$start = $this->_request->getParam('start');
 
 			if (!v::intVal()->min(0)->validate($start))
@@ -497,20 +501,66 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
+			$profile_id = $this->_request->getParam('user_id');
+
+			if (!v::optional(v::intVal())->validate($profile_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($profile_id, true));
+			}
+
+			if ($profile_id != null)
+			{
+				$profile = Application_Model_User::findById($profile_id, true);
+
+				if ($profile == null)
+				{
+					throw new RuntimeException('Incorrect user ID: ' .
+						var_export($profile_id, true));
+				}
+			}
+			else
+			{
+				if ($user == null)
+				{
+					throw new RuntimeException('You are not authorized to access this action');
+				}
+
+				$point = $this->_request->getParam('point');
+
+				if (!v::optional(v::intVal()->equals(1))->validate($point))
+				{
+					throw new RuntimeException('Incorrect point value: ' .
+						var_export($point, true));
+				}
+
+				$readmore = $this->_request->getPost('readmore');
+
+				if (!v::optional(v::intVal()->equals(1))->validate($readmore))
+				{
+					throw new RuntimeException('Incorrect readmore value: ' .
+						var_export($readmore, true));
+				}
+
+				$this->view->point = $point;
+				$this->view->readmore = $readmore;
+			}
+
+			$queryUser = $profile_id != null ? $profile : $user;
+
 			$model = new Application_Model_News;
 			$post = $model->fetchRow($model->searchQuery($searchParameters +
-				['radius' => 0.018939], $user)->limit(1, $start));
+				['radius' => 0.018939], $queryUser)->limit(1, $start));
 
 			if (!$post)
 			{
+				$this->view->user = $this->getTooltipUserData($user);
 				$this->_helper->viewRenderer->setNoRender(true);
-				echo $this->view->partial('post/user-tooltip.html',
-					['user' => $user]);
-				return true;
+				return $this->render('user-tooltip');
 			}
 
 			$count = $model->fetchRow($model->searchQuery($searchParameters +
-				['radius' => 0.018939], $user, ['count' => true]))->count;
+				['radius' => 0.018939], $queryUser, ['count' => true]))->count;
 
 			if ($start)
 			{
@@ -523,8 +573,8 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$this->view->post = $post;
-			$this->view->point = $point;
-			$this->view->readmore = $readmore;
+			$this->view->group = $user !== null && empty($this->view->point) &&
+				(!empty($this->view->prev) || !empty($this->view->next));
 			$this->view->position = $searchParameters['latitude'] . ',' .
 				$searchParameters['longitude'];
 		}
@@ -1560,6 +1610,25 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
+			$profile_id = $this->_request->getParam('user_id');
+
+			if (!v::optional(v::intVal())->validate($profile_id))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($profile_id, true));
+			}
+
+			if ($profile_id != null)
+			{
+				$profile = Application_Model_User::findById($profile_id, true);
+
+				if ($profile == null)
+				{
+					throw new RuntimeException('Incorrect user ID: ' .
+						var_export($profile_id, true));
+				}
+			}
+
 			$addressForm = new Application_Form_Address;
 
 			if (!$addressForm->isValid($this->_request->getPost()))
@@ -1589,57 +1658,81 @@ class PostController extends Zend_Controller_Action
 			Application_Model_User::cleanUserCache($user);
 
 			$response = ['status' => 1];
+			$queryUser = $profile_id !== null ? $profile : $user;
 
 			$result = (new Application_Model_News)->search([
 				'limit' => 15
-				] + $searchParameters, $user, [
+				] + $searchParameters, $queryUser, [
 				'link' => ['thumbs'=>[[448,320]]],
-				'userVote' => true,
+				'userVote' => $user != null ? true : false,
 				'thumbs' => [[448,320],[960,960]]
 			]);
 
 			foreach ($result as $post)
 			{
-				$assets = [
-					'post' => $post,
-					'owner' => [
-						'Name' => $post['owner_name'],
-						'image_name' => $post['owner_image_name']
-					],
-					'user' => $user,
-					'limit' => 350
-				];
-
-				if (!empty($post['link_id']))
-				{
-					$assets['link'] = [
-						'id' => $post['link_id'],
-						'link' => $post['link_link'],
-						'title' => $post['link_title'],
-						'description' => $post['link_description'],
-						'author' => $post['link_author'],
-						'image_id' => $post['link_image_id'],
-						'image_name' => $post['link_image_name']
-					];
-				}
-
-				$response['data'][] = [
+				$data = [
 					$post['id'],
 					$post['latitude'],
 					$post['longitude'],
-					$this->view->partial('post/view.html', $assets)
 				];
+
+				if ($profile_id == null)
+				{
+					$assets = [
+						'post' => $post,
+						'owner' => [
+							'Name' => $post['owner_name'],
+							'image_name' => $post['owner_image_name']
+						],
+						'user' => $user,
+						'limit' => 350
+					];
+
+					if (!empty($post['link_id']))
+					{
+						$assets['link'] = [
+							'id' => $post['link_id'],
+							'link' => $post['link_link'],
+							'title' => $post['link_title'],
+							'description' => $post['link_description'],
+							'author' => $post['link_author'],
+							'image_id' => $post['link_image_id'],
+							'image_name' => $post['link_image_name']
+						];
+					}
+
+					$data[] = $this->view->partial('post/view.html', $assets);
+				}
+
+				$response['data'][] = $data;
 			}
 		}
 		catch (Exception $e)
 		{
-			$response = array(
+			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
 					'Internal Server Error'
-			);
+			];
 		}
 
 		$this->_helper->json($response);
+	}
+
+	/**
+	 * Returns user data for tooltip.
+	 *
+	 * @param array|Zend_Db_Table_Row_Abstract $user
+	 * @return array
+	 */
+	protected function getTooltipUserData($user)
+	{
+		return $user != null ? [
+			'name' => $user['Name'],
+			'thumb' => Application_Model_User::getThumb($user, '55x55')
+		] : [
+			'name' => '',
+			'thumb' => Application_Model_User::getDefaultThumb('55x55')
+		];
 	}
 }

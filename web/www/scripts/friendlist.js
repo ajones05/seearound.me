@@ -154,7 +154,8 @@ var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersClu
 					return userAddressTooltip(address, imagePath);
 				},
 				submit: function(map, dialogEvent, position, place){
-					if (latlngDistance(position,userPosition)<=0){
+					if (getDistance([position.lat(),position.lng()],
+						[userPosition.lat(),userPosition.lng()])<=0){
 						$(dialogEvent.target).dialog('close');
 						return true;
 					}
@@ -244,7 +245,7 @@ var newsMap, userPosition, newsMapRady = false, newsMarkers = {}, newsMarkersClu
 					return false;
 				},
 				select: function (event, ui){
-					window.location.href = baseUrl + "home/profile/user/" + ui.item.id;
+					window.location.href = baseUrl + "profile/" + ui.item.id;
 				}
 			})
 			.data("ui-autocomplete")._renderItem = function (ul, item){
@@ -544,7 +545,9 @@ function resetMarkersCluster(){
 			var group = false;
 
 			for (var groupId in newsMarkersCluster){
-				if (latlngDistance(newsMarkersCluster[groupId][0][1], newsMarkers[id].getPosition(), 'F') <= 0.018939){
+				var p1 = newsMarkersCluster[groupId][0][1],
+					p2 = newsMarkers[id].getPosition();
+				if (getDistance([p1.lat(),p1.lng()],[p2.lat(),p2.lng()]) <= 0.018939){
 					newsMarkersCluster[groupId].push([newsMarkers[id].opts.data.post[0], newsMarkers[id].getPosition()]);
 					group = true;
 					break;
