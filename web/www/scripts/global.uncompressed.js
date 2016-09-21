@@ -40,6 +40,7 @@ $(function(){
 		var notification = function(){
 			ajaxJson({
 				url: baseUrl+'contacts/friends-notification',
+				failMessage: false,
 				done: function(response){
 					if (response.friends > 0){
 						$("#noteTotal").html(response.friends).show();

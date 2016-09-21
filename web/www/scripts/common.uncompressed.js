@@ -361,7 +361,9 @@ function ajaxJson(url, settings){
 				if (typeof settings.fail === 'function'){
 					settings.fail(data, textStatus, jqXHR);
 				}
-				alert(isObject ? data.message : ERROR_MESSAGE);
+				if (settings.failMessage !== false){
+					alert(isObject ? data.message : ERROR_MESSAGE);
+				}
 				return false;
 			}
 
@@ -375,7 +377,9 @@ function ajaxJson(url, settings){
 			if (typeof settings.fail === 'function'){
 				settings.fail({}, textStatus, jqXHR);
 			}
-			alert(ERROR_MESSAGE);
+			if (settings.failMessage !== false){
+				alert(ERROR_MESSAGE);
+			}
 		});
 
 	return jqxhr;
