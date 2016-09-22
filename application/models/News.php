@@ -150,7 +150,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	public function searchQuery(array $parameters, $user, array $options = [])
 	{
 		// TODO: refactoring
-		$query = $this->publicSelect($options+['user'=>$user]);
+		$query = $this->publicSelect($options+['user'=>$user])
+			->where('news.vote>-4');
 		$isCount = My_ArrayHelper::getProp($options, 'count', false);
 
 		if (trim(My_ArrayHelper::getProp($parameters, 'keywords')) !== '')
