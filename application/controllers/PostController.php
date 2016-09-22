@@ -59,7 +59,7 @@ class PostController extends Zend_Controller_Action
 			]);
 		}
 
-		if ($post->isdeleted)
+		if ($post->isdeleted || $post->vote <= -4)
 		{
 			$this->_helper->viewRenderer->setNoRender(true);
 			$geolocation = My_Ip::geolocation();
