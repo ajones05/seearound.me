@@ -113,6 +113,11 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 					}
 				}
 
+				if ($info == null)
+				{
+					continue;
+				}
+
 				$html = $info->getProvider('html');
 
 				$linkData = [
