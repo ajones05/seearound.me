@@ -89,7 +89,7 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 		{
 			foreach ($matches[0] as $link)
 			{
-				$info = $this->renderLinkData($link);
+				$info = $this->embedSafeCreate($link);
 
 				if ($info == null)
 				{
@@ -97,16 +97,16 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 
 					if ($scheme == null)
 					{
-						$info = $this->renderLinkData('https://' . $link);
+						$info = $this->embedSafeCreate('https://' . $link);
 
 						if ($info == null)
 						{
-							$info = $this->renderLinkData('http://' . $link);
+							$info = $this->embedSafeCreate('http://' . $link);
 						}
 					}
 					else
 					{
-						$info = $this->renderLinkData($scheme == 'https' ?
+						$info = $this->embedSafeCreate($scheme == 'https' ?
 							preg_replace('/^https/', 'http', $link) :
 							preg_replace('/^http/', 'https', $link)
 						);
