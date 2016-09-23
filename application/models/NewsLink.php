@@ -89,13 +89,28 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 		{
 			foreach ($matches[0] as $link)
 			{
-				try
+				$info = $this->renderLinkData($link);
+
+				if ($info == null)
 				{
-					$info = Embed::create($link);
-				}
-				catch (Exception $e)
-				{
-					continue;
+					$scheme = My_ArrayHelper::getProp(parse_url($link), 'scheme');
+
+					if ($scheme == null)
+					{
+						$info = $this->renderLinkData('https://' . $link);
+
+						if ($info == null)
+						{
+							$info = $this->renderLinkData('http://' . $link);
+						}
+					}
+					else
+					{
+						$info = $this->renderLinkData($scheme == 'https' ?
+							preg_replace('/^https/', 'http', $link) :
+							preg_replace('/^http/', 'https', $link)
+						);
+					}
 				}
 
 				$html = $info->getProvider('html');
@@ -206,6 +221,25 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 
 				return $linkData+['id'=>$this->insert($linkData)];
 			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Change embed create link data to return null instead of exception.
+	 *
+	 * @param string $link
+	 * @return null|Embed\Adapters\Webpage
+	 */
+	public function embedSafeCreate($link)
+	{
+		try
+		{
+			return Embed::create($link);
+		}
+		catch (Exception $e)
+		{
 		}
 
 		return null;
