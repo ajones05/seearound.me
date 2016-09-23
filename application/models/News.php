@@ -428,13 +428,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			$this->_db->delete('news_link', 'id=' . $post['link_id']);
 		}
 
-		if (!$uploadImage && (!$existImage || $deleteImage))
-		{
-			$link = (new Application_Model_NewsLink)->saveLink([
-				'id' => $post['id'],
-				'news' => $data['body'],
-			]);
-		}
+		$link = (new Application_Model_NewsLink)->saveLink([
+			'id' => $post['id'],
+			'news' => $data['body'],
+		]);
 
 		if (!is_array($post))
 		{
@@ -516,7 +513,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	public static function renderContent($post, array $options=[])
 	{
 		$limit = My_ArrayHelper::getProp($options, 'limit');
-		$link = My_ArrayHelper::getProp($options, 'link');
+		$link = empty($post['image_id']) ? My_ArrayHelper::getProp($options, 'link') : null;
 		$linksCount = preg_match_all('/' . My_CommonUtils::$link_regex . '/', $post['news']);
 
 		$output = '';
