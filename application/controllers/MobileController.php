@@ -1277,7 +1277,8 @@ class MobileController extends Zend_Controller_Action
 					'Name' => $post->owner_name,
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($post, '320x320', ['alias' => 'owner_'])),
-					'canEdit' => Application_Model_News::canEdit($post, $user)
+					'canEdit' => Application_Model_News::canEdit($post, $user),
+					'canVote' => Application_Model_Voting::canVote($user, $post) ? 1 : 0
 				]
 			];
 
@@ -1806,7 +1807,8 @@ class MobileController extends Zend_Controller_Action
 						'Name' => $row->owner_name,
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
-						'canEdit' => Application_Model_News::canEdit($row, $user)
+						'canEdit' => Application_Model_News::canEdit($row, $user),
+						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0
 					];
 
 					if ($row->image_id)
@@ -1917,7 +1919,8 @@ class MobileController extends Zend_Controller_Action
 						'Name' => $row->owner_name,
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
-						'canEdit' => Application_Model_News::canEdit($row, $user)
+						'canEdit' => Application_Model_News::canEdit($row, $user),
+						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0
 					];
 
 					if ($row->image_id)
