@@ -737,9 +737,8 @@ class MobileController extends Zend_Controller_Action
 					'c.subject',
 					'cm1.body',
 					'cm1.created_at',
-					'user_id' => 'u.id',
-					'user_name' => 'u.Name',
-					'user_email' => 'u.Email_id'
+					'sender_id' => 'c.from_id',
+					'receiver_id' => 'c.to_id',
 				])
 				->where('c.to_id=?', $user['id'])
 				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
@@ -747,7 +746,18 @@ class MobileController extends Zend_Controller_Action
 				->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
 					'cm3.is_read=0 AND cm3.to_id=' . $user['id'] . ')', '')
 				->where('cm3.id IS NOT NULL')
-				->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', '')
+				->joinLeft(['us' => 'user_data'], 'us.id=c.from_id', [
+					'sender_name' => 'Name',
+					'sender_email' => 'Email_id',
+					'sender_image_id' => 'image_id',
+					'sender_image_name' => 'image_name',
+				])
+				->joinLeft(['ur' => 'user_data'], 'ur.id=c.to_id', [
+					'receiver_name' => 'Name',
+					'receiver_email' => 'Email_id',
+					'receiver_image_id' => 'image_id',
+					'receiver_image_name' => 'image_name',
+				])
 				->group('c.id')
 				->order('c.created_at DESC')
 				->limit(100, $start);
@@ -765,18 +775,24 @@ class MobileController extends Zend_Controller_Action
 				foreach ($messages as $message)
 				{
 					$response['result'][] = [
-						'id' => $message->id,
-						'sender_id' => $message->user_id,
-						'subject' => $message->subject,
-						'message' => $message->body,
-						'created' => (new DateTime($message->created_at))
+						'id' => $message['id'],
+						'sender_id' => $message['sender_id'],
+						'subject' => $message['subject'],
+						'message' => $message['body'],
+						'created' => (new DateTime($message['created_at']))
 							->setTimezone($userTimezone)
 							->format(My_Time::SQL),
 						'reciever_read' => 0,
-						'Name' => $message->user_name,
-						'Email_id' => $message->user_email,
-						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
-							Application_Model_User::getThumb($message, '320x320', ['alias' => 'u_']))
+						'senderName' => $message['sender_name'],
+						'senderEmail' => $message['sender_email'],
+						'senderImage' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320',
+							['alias' => 'sender_'])),
+						'receiverName' => $message['receiver_name'],
+						'receiverEmail' => $message['receiver_email'],
+						'receiverImage' => $this->view->serverUrl() . $this->view->baseUrl(
+							Application_Model_User::getThumb($message, '320x320',
+							['alias' => 'receiver_'])),
 					];
 				}
 			}
