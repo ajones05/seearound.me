@@ -103,7 +103,8 @@ class MobileController extends Zend_Controller_Action
 					'longitude' => $user['longitude'],
 					'Activities' => $user['interest'],
 					'Gender' => Application_Model_User::getGender($user),
-					'token' => $accessToken
+					'token' => $accessToken,
+					'public_profile' => $user['public_profile']
 				]
 			];
 		}
@@ -157,7 +158,8 @@ class MobileController extends Zend_Controller_Action
 					'longitude' => $user['longitude'],
 					'Activities' => My_ArrayHelper::getProp($user, 'interest'),
 					'Gender' => Application_Model_User::getGender($user),
-					'token' => $accessToken
+					'token' => $accessToken,
+					'public_profile' => $user['public_profile']
 				]
 			];
 		}
@@ -563,7 +565,8 @@ class MobileController extends Zend_Controller_Action
 					'Email_id' => $profile['Email_id'],
 					'Gender' => Application_Model_User::getGender($profile),
 					'Activities' => $profile['interest'],
-					'Birth_date' => $profile['Birth_date']
+					'Birth_date' => $profile['Birth_date'],
+					'public_profile' => $profile['public_profile']
 				])
 			];
 		}
@@ -1739,7 +1742,8 @@ class MobileController extends Zend_Controller_Action
 						$this->view->baseUrl($profileImage),
 					'Gender' => $data['gender'],
 					'Activities' => $updateData['interest'],
-					'Birth_date' => $data['birth_date']
+					'Birth_date' => $data['birth_date'],
+					'public_profile' => $data['public_profile']
 				])
 			];
 		}
