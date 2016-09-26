@@ -67,17 +67,13 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 	/**
 	 * Checks if user can vote post.
 	 *
-	 * @param	mixed $user
-	 * @param	mixed $post
-	 * @return	boolean
+	 * @param mixed $user
+	 * @param mixed $post
+	 * @return boolean
 	 */
-	public function canVote($user, $post)
+	public static function canVote($user, $post)
 	{
-		if (!$user)
-		{
-			return false;
-		}
-
-		return $user['is_admin'] ? true : $user['id'] != $post['user_id'];
+		return $user != null && (!empty($user['is_admin']) ||
+			$user['id'] != $post['user_id']) ? true : false;
 	}
 }
