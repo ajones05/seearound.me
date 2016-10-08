@@ -159,7 +159,7 @@ class MobileController extends Zend_Controller_Action
 					'Activities' => My_ArrayHelper::getProp($user, 'interest'),
 					'Gender' => Application_Model_User::getGender($user),
 					'token' => $accessToken,
-					'public_profile' => $user['public_profile']
+					'public_profile' => My_ArrayHelper::getProp($user, 'public_profile', 0)
 				]
 			];
 		}
