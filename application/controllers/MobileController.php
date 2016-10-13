@@ -738,31 +738,30 @@ class MobileController extends Zend_Controller_Action
 				->from(['c' => 'conversation'], [
 					'c.id',
 					'c.subject',
-					'cm1.body',
-					'cm1.created_at',
-					'sender_id' => 'c.from_id',
-					'receiver_id' => 'c.to_id',
+					'cm3.body',
+					'cm3.created_at',
+					'sender_id' => 'cm3.from_id',
+					'receiver_id' => 'cm3.to_id',
 				])
-				->where('c.to_id=?', $user['id'])
 				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
 					'cm1.is_first=1)', '')
 				->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
 					'cm3.is_read=0 AND cm3.to_id=' . $user['id'] . ')', '')
 				->where('cm3.id IS NOT NULL')
-				->joinLeft(['us' => 'user_data'], 'us.id=c.from_id', [
+				->joinLeft(['us' => 'user_data'], 'us.id=cm3.from_id', [
 					'sender_name' => 'Name',
 					'sender_email' => 'Email_id',
 					'sender_image_id' => 'image_id',
 					'sender_image_name' => 'image_name',
 				])
-				->joinLeft(['ur' => 'user_data'], 'ur.id=c.to_id', [
+				->joinLeft(['ur' => 'user_data'], 'ur.id=cm3.to_id', [
 					'receiver_name' => 'Name',
 					'receiver_email' => 'Email_id',
 					'receiver_image_id' => 'image_id',
 					'receiver_image_name' => 'image_name',
 				])
 				->group('c.id')
-				->order('c.created_at DESC')
+				->order('cm3.created_at DESC')
 				->limit(100, $start);
 
 			$messages = $model->fetchAll($query);
