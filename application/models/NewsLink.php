@@ -70,7 +70,7 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 	 */
 	public static function parseLinks($text)
 	{
-		return preg_match_all('/' . My_CommonUtils::$link_regex . '/',
+		return preg_match_all('/' . My_Regex::url() . '/ui',
 			$text, $linkMatches) ? $linkMatches : null;
 	}
 
@@ -82,7 +82,7 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 	 */
 	public function saveLink($post)
 	{
-		$matchLinks = preg_match_all('/' . My_CommonUtils::$link_regex . '/',
+		$matchLinks = preg_match_all('/' . My_Regex::url() . '/ui',
 			$post['news'],  $matches);
 
 		if ($matchLinks)

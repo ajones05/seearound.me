@@ -114,7 +114,7 @@ if ($sfPost != null)
 
 function prepareMessageBody($post, $baseUrl, $hashTag, $limit=null)
 {
-	$body = trim(preg_replace('/' . My_CommonUtils::$link_regex . '/i', '',
+	$body = trim(preg_replace('/' . My_Regex::url() . '/ui', '',
 		$post->news));
 	$postUrl = $baseUrl . '/post/' . $post->id;
 
