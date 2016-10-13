@@ -872,9 +872,10 @@ class PostController extends Zend_Controller_Action
 
 			$postModel = new Application_Model_News;
 
-			if (!$postModel->checkId($id, $post, ['join'=>false]))
+			if (!$postModel->checkId($id, $post, ['link'=>true]))
 			{
-				throw new RuntimeException('Incorrect post ID');
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($id, true));
 			}
 
 			if (!Application_Model_News::canEdit($post, $user))

@@ -514,7 +514,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	{
 		$limit = My_ArrayHelper::getProp($options, 'limit');
 		$link = empty($post['image_id']) ? My_ArrayHelper::getProp($options, 'link') : null;
-		$linksCount = preg_match_all('/' . My_CommonUtils::$link_regex . '/', $post['news']);
+		$linksCount = preg_match_all('/' . My_Regex::url() . '/ui', $post['news']);
 
 		$output = '';
 
@@ -522,7 +522,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		{
 			$link_limit = false;
 
-			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($post['news'], $i), $matches))
+			if (preg_match('/^' . My_Regex::url() . '/ui', substr($post['news'], $i), $matches))
 			{
 				if ($linksCount > 1 || $link === null)
 				{

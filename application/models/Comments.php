@@ -126,7 +126,7 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 		for ($i = 0; $i < strlen($comment['comment']);)
 		{
-			if (preg_match('/^' . My_CommonUtils::$link_regex . '/', substr($comment['comment'], $i), $matches))
+			if (preg_match('/^' . My_Regex::url() . '/ui', substr($comment['comment'], $i), $matches))
 			{
 				$output .= '<a href="' . htmlspecialchars(My_CommonUtils::renderLink($matches[0])) . '" target="_blank">' . $matches[0] . '</a>';
 				$i += strlen($matches[0]);
