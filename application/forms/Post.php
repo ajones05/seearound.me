@@ -32,7 +32,7 @@ class Application_Form_Post extends Application_Form_Address
 	 * The post body max length.
 	 * @var integer
 	 */
-	public static $bodyMaxLength = 1500;
+	public static $bodyMaxLength = 4000000;
 
 	/**
 	 * Initialize form (used by extending classes).

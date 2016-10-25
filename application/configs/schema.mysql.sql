@@ -158,6 +158,7 @@ ALTER TABLE `news`
 ALTER TABLE `news` MODIFY `news` text;
 ALTER TABLE `news` COLLATE 'utf8_general_ci';
 ALTER TABLE `news` ADD `image_name` varchar(255) null after `image_id`;
+ALTER TABLE `news` CHANGE `news` `news` longtext COLLATE 'utf8_general_ci';
 
 --
 -- Table structure for table `news_link`
