@@ -143,6 +143,7 @@ input:-ms-input-placeholder {
 .wraper-mobile .references h2 {
     margin: 0 auto 15px;
     font-size: 8vw;
+		color: #000;
 }
 
 .wraper-mobile .references .line{
