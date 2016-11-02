@@ -71,7 +71,7 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 	public static function parseLinks($text)
 	{
 		return preg_match_all('/' . My_Regex::url() . '/ui',
-			$text, $linkMatches) ? $linkMatches : null;
+			$text, $linkMatches) ? $linkMatches[0] : null;
 	}
 
 	/**
