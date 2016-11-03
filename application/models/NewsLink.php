@@ -1,5 +1,6 @@
 <?php
 use Embed\Embed;
+use JonnyW\PhantomJs\Client as PhantomJsClient;
 
 /**
  * This is the model class for table "news_link".
@@ -58,7 +59,7 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 	 */
 	public function trimLink($link)
 	{
-		return preg_replace(['/^https?:\/\//','/^www\./',
+		return preg_replace(['/^https?:\/\//','/^www\./','/\/$/',
 			'/[?&](utm_source|utm_medium|utm_term|utm_content|utm_campaign)=([^&])+/'],'',$link);
 	}
 
@@ -89,36 +90,40 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 		{
 			foreach ($matches[0] as $link)
 			{
-				$info = $this->embedSafeCreate($link);
+				$scheme = My_ArrayHelper::getProp(parse_url($link), 'scheme');
 
-				if ($info == null)
+				if ($scheme == null)
 				{
-					$scheme = My_ArrayHelper::getProp(parse_url($link), 'scheme');
+					$originalLink = $link;
+					$link = 'http://' . $link;
+				}
 
+				$content = $this->safeGetContent($link);
+
+				if ($content == null)
+				{
 					if ($scheme == null)
 					{
-						$info = $this->embedSafeCreate('https://' . $link);
-
-						if ($info == null)
-						{
-							$info = $this->embedSafeCreate('http://' . $link);
-						}
+						$link = 'https://' . $originalLink;
 					}
 					else
 					{
-						$info = $this->embedSafeCreate($scheme == 'https' ?
-							preg_replace('/^https/', 'http', $link) :
-							preg_replace('/^http/', 'https', $link)
-						);
+						$link = $scheme == 'https' ? preg_replace('/^https/', 'http', $link) :
+							preg_replace('/^http/', 'https', $link);
 					}
+
+					$content = $this->safeGetContent($link);
 				}
 
-				if ($info == null)
+				if ($content == null)
 				{
 					continue;
 				}
 
-				$html = $info->getProvider('html');
+				$errors = libxml_use_internal_errors(true);
+				$dom = new \DOMDocument();
+				$dom->loadHTML($content);
+				libxml_use_internal_errors($errors);
 
 				$linkData = [
 					'news_id' => $post['id'],
@@ -126,33 +131,70 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 					'link_trim' => $this->trimLink($link)
 				];
 
-				$title = trim(strip_tags($info->getTitle()));
+				$titleEl = $dom->getElementsByTagName('title');
 
-				if ($title !== '')
+				if ($titleEl->length)
 				{
-					$linkData['title'] = $title;
+					$title = trim(strip_tags($titleEl->item(0)->nodeValue));
+
+					if ($title !== '')
+					{
+						$linkData['title'] = $title;
+					}
 				}
 
-				$description = trim(strip_tags($info->getDescription()));
+				$xpath = new DOMXPath($dom);
+				$descriptionEl = $xpath->query('//meta[@name="description"]/@content');
 
-				if ($description !== '')
+				if ($descriptionEl->length == 0)
 				{
-					$linkData['description'] = $description;
+					$descriptionEl = $xpath
+						->query('//meta[@property="og:description"]/@content');
 				}
 
-				$author = trim(strip_tags($html->bag->get('author')));
-
-				if ($author !== '')
+				if ($descriptionEl->length != 0)
 				{
-					$linkData['author'] = $author;
+					$description = trim(strip_tags($descriptionEl->item(0)->nodeValue));
+
+					if ($description !== '')
+					{
+						$linkData['description'] = $description;
+					}
 				}
 
-				$opengraph = $info->getProvider('opengraph');
-				$images = $opengraph->bag->get('images');
+				$authorEl = $xpath->query('//meta[@name="author"]/@content');
 
-				if ($images)
+				if ($authorEl->length != 0)
 				{
-					$imageUrl = $images[0];
+					$author = trim(strip_tags($authorEl->item(0)->nodeValue));
+
+					if ($author !== '')
+					{
+						$linkData['author'] = $author;
+					}
+				}
+
+				// TODO: <link rel="image_src" href="logo.gif" />
+
+				$imageUrl = null;
+				$ogImageEl = $xpath->query('//meta[@property="og:image"]/@content');
+
+				if ($ogImageEl->length != 0)
+				{
+					$imageUrl = $ogImageEl->item(0)->nodeValue;
+				}
+				else
+				{
+					$imageEl = $xpath->query('//img');
+
+					if ($imageEl->length)
+					{
+						$imageUrl = $imageEl->item(0)->getAttribute('src');
+					}
+				}
+
+				if ($imageUrl != null)
+				{
 					$parseImageUrl = parse_url($imageUrl);
 
 					if (empty($parseImageUrl['host']))
@@ -164,11 +206,13 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 
 					try
 					{
-						$ext = strtolower(My_ArrayHelper::getProp(pathinfo($imageUrl), 'extension', 'tmp'));
+						$ext = strtolower(My_ArrayHelper::getProp(pathinfo($imageUrl),
+							'extension', 'tmp'));
 
 						if (!in_array($ext, My_CommonUtils::$imagetype_extension))
 						{
-							if (preg_match('/^(' . implode('|', My_CommonUtils::$imagetype_extension) . ')/', $ext, $extMatches))
+							if (preg_match('/^(' . implode('|',
+								My_CommonUtils::$imagetype_extension) . ')/', $ext, $extMatches))
 							{
 								$ext = $extMatches[0];
 							}
@@ -226,6 +270,44 @@ class Application_Model_NewsLink extends Zend_Db_Table_Abstract
 
 				return $linkData+['id'=>$this->insert($linkData)];
 			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns page content.
+	 *
+	 * @param	string $link
+	 * @return null|string
+	 */
+	protected function safeGetContent(&$link)
+	{
+		try
+		{
+			$client = PhantomJsClient::getInstance();
+			$client->getEngine()->setPath('/usr/local/bin/phantomjs');
+			$client->isLazy();
+
+			$request = $client->getMessageFactory()->createRequest($link);
+			$request->setTimeout(5000);
+			$response = $client->getMessageFactory()->createResponse();
+			$client->send($request, $response);
+
+			$status = $response->getStatus();
+
+			if ($status === 200 || $status === 301 || $status === 408)
+			{
+				if ($response->isRedirect())
+				{
+					$link = $response->getRedirectUrl();
+				}
+
+				return $response->getContent();
+			}
+		}
+		catch (Exception $e)
+		{
 		}
 
 		return null;

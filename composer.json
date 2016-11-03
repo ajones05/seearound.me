@@ -1,11 +1,12 @@
 {
 	"require": {
 		"geoip2/geoip2": "dev-master",
-    "facebook/php-sdk-v4": "^5.0",
+		"facebook/php-sdk-v4": "^5.0",
 		"respect/validation" : "1.*",
 		"mobiledetect/mobiledetectlib": "^2.8",
 		"embed/embed": "2.6.1",
 		"wp-cli/php-cli-tools": "0.*",
-		"j7mbo/twitter-api-php": "dev-master"
+		"j7mbo/twitter-api-php": "dev-master",
+		"jonnyw/php-phantomjs":"4.*"
 	}
 }
