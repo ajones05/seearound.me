@@ -785,6 +785,8 @@ function resizeHandler(){
 		var postsList = $('.posts-container .posts');
 		postsList.height($(window).height()-postsList.offset().top);
 	}
+
+	$('.post-new__dialog textarea').css('max-height', newPost_InputHeight());
 }
 
 function offsetCenter(map,latlng,offsetx,offsety){
@@ -1523,6 +1525,7 @@ function newPost_dialog(){
 			$('<p/>').text(user.name));
 	var postBlockFl=$('<textarea/>',{name:'body',
 				placeholder:'Share something about a location...'})
+		.css('max-height', newPost_InputHeight())
 		.textareaAutoSize()
 		.bind('input paste keypress',validatePost)
 		.focus(function(){
@@ -1696,6 +1699,10 @@ function newPost_dialog(){
 	formBlock.append(actionBlock);
 	newDialog.append(formBlock).appendTo('body').fadeIn(150);
 	$(postBlockFl).focus();
+}
+
+function newPost_InputHeight(){
+	return $(window).height()/2;
 }
 
 function newPost_addressDialog(dialog){
