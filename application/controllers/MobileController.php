@@ -2350,7 +2350,7 @@ class MobileController extends Zend_Controller_Action
 				'is_read' => 'f.notify'
 			]);
 			$select1->where('f.receiver_id=? AND f.status=1', $user['id']);
-			$select1->where('f.notify=0 OR fl.created_at>=?', $maxDate);
+			$select1->where('fl.created_at>?', $maxDate);
 			$select1->joinLeft(['fl' => 'friend_log'],
 				'fl.friend_id=f.id AND fl.status_id=f.status', '');
 			$select1->joinLeft(['u' => 'user_data'], 'u.id=fl.user_id', '');
@@ -2365,8 +2365,8 @@ class MobileController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'cm.is_read'
 			]);
-			$select2->where('cm.to_id=?', $user['id'], $maxDate);
-			$select2->where('cm.is_read=0 OR cm.created_at>?', $maxDate);
+			$select2->where('cm.to_id=?', $user['id']);
+			$select2->where('cm.created_at>?', $maxDate);
 			$select2->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '');
 
 			$select3 = $db->select();
@@ -2382,7 +2382,7 @@ class MobileController extends Zend_Controller_Action
 			$select3->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
 			$select3->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
 			$select3->where('v.active=1 AND v.user_id<>?', $user['id']);
-			$select3->where('v.is_read=0 OR v.created_at>?', $maxDate);
+			$select3->where('v.created_at>?', $maxDate);
 			$select3->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
 			$select3->group(['u.id', 'n.id']);
 
@@ -2399,7 +2399,7 @@ class MobileController extends Zend_Controller_Action
 			$select4->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
 			$select4->joinLeft(['c' => 'comments'], 'c.news_id=n.id', '');
 			$select4->where('c.isdeleted=0 AND c.user_id<>?', $user['id']);
-			$select4->where('c.is_read=0 OR c.created_at>?', $maxDate);
+			$select4->where('c.created_at>?', $maxDate);
 			$select4->joinLeft(['u' => 'user_data'], 'u.id=c.user_id', '');
 
 			$select = $db->select()
