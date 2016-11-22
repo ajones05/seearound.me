@@ -55,4 +55,22 @@ class Application_Model_Conversation extends Zend_Db_Table_Abstract
 
 		return $conversation != null;
 	}
+
+	/**
+	 * Checks if user can access to conversaion details.
+	 *
+	 * @param array|stdClass $conversation_
+	 * @param	array|stdCalss $user
+	 * @return boolean
+	 */
+	public static function canAccess($conversation, $user)
+	{
+		if ($conversation['from_id'] == $user['id'] ||
+			$conversation['to_id'] == $user['id'])
+		{
+			return true;
+		}
+
+		return false;
+	}
 }

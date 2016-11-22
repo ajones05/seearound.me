@@ -945,6 +945,101 @@ class MobileController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Retrieve conversation details action.
+	 */
+	public function conversationAction()
+	{
+		try
+		{
+			$user = $this->getUserByToken();
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect conversation ID value: ' .
+					var_export($id, true));
+			}
+
+			$conversationModel = new Application_Model_Conversation;
+			$conversation = $conversationModel->fetchRow(
+				$query = $conversationModel->select()->setIntegrityCheck(false)
+					->from(['c' => 'conversation'], [
+						'c.*',
+						'cm.body',
+						'cm.from_id',
+						'cm.to_id'
+					])
+					->where('c.id=?', $id)
+					->joinLeft(['cm' => 'conversation_message'], '(cm.conversation_id=c.id AND ' .
+						'cm.is_first=1)', '')
+					->joinLeft(['us' => 'user_data'], 'us.id=cm.from_id', [
+						'sender_name' => 'Name',
+						'sender_email' => 'Email_id',
+						'sender_image_id' => 'image_id',
+						'sender_image_name' => 'image_name',
+					])
+					->joinLeft(['ur' => 'user_data'], 'ur.id=cm.to_id', [
+						'receiver_name' => 'Name',
+						'receiver_email' => 'Email_id',
+						'receiver_image_id' => 'image_id',
+						'receiver_image_name' => 'image_name',
+					])
+			);
+
+			if ($conversation == null)
+			{
+				throw new RuntimeException('Incorrect conversation ID: ' .
+					var_export($id, true));
+			}
+
+			if (!$conversationModel->canAccess($conversation, $user))
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$userTimezone = Application_Model_User::getTimezone($user);
+
+			$response = [
+				'status' => 'SUCCESS',
+				'conversation' => [
+					'id' => $conversation['id'],
+					'subject' => $conversation['subject'],
+					'body' => $conversation['body'],
+					'created_at' => (new DateTime($conversation['created_at']))
+						->setTimezone($userTimezone)
+						->format(My_Time::SQL),
+					'created_at_formatted' => My_Time::time_ago($conversation['created_at'],
+						['ago' => true]),
+					'sender_id' => $conversation['from_id'],
+					'sender_name' => $conversation['sender_name'],
+					'sender_email' => $conversation['sender_email'],
+					'sender_image' => $this->view->serverUrl() . $this->view->baseUrl(
+						Application_Model_User::getThumb($conversation, '320x320',
+						['alias' => 'sender_'])),
+					'receiver_id' => $conversation['to_id'],
+					'receiver_name' => $conversation['receiver_name'],
+					'receiver_email' => $conversation['receiver_email'],
+					'receiver_image' => $this->view->serverUrl() . $this->view->baseUrl(
+						Application_Model_User::getThumb($conversation, '320x320',
+						['alias' => 'receiver_'])),
+				]
+			];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+			$this->errorHandler($e);
+		}
+
+		$this->responseHandler($response);
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * Conversation messages list action.
 	 */
 	public function conversationMessageAction()
