@@ -2357,7 +2357,7 @@ class MobileController extends Zend_Controller_Action
 
 			$select2 = $db->select();
 			$select2->from(['cm' => 'conversation_message'], [
-				'cm.id',
+				'id' => 'cm.conversation_id',
 				'type' => new Zend_Db_Expr('"message"'),
 				'cm.created_at',
 				'target_id' => new Zend_Db_Expr('NULL'),
