@@ -2436,8 +2436,8 @@ class MobileController extends Zend_Controller_Action
 				->format(My_Time::SQL);
 			$db = Zend_Db_Table::getDefaultAdapter();
 
-			$select1 = $db->select();
-			$select1->from(['f' => 'friends'], [
+			$friendSelect = $db->select();
+			$friendSelect->from(['f' => 'friends'], [
 				'f.id',
 				'type' => new Zend_Db_Expr('"friend"'),
 				'fl.created_at',
@@ -2446,28 +2446,28 @@ class MobileController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'f.notify'
 			]);
-			$select1->where('f.receiver_id=? AND f.status=1', $user['id']);
-			$select1->where('fl.created_at>?', $maxDate);
-			$select1->joinLeft(['fl' => 'friend_log'],
+			$friendSelect->where('f.receiver_id=? AND f.status=1', $user['id']);
+			$friendSelect->where('fl.created_at>?', $maxDate);
+			$friendSelect->joinLeft(['fl' => 'friend_log'],
 				'fl.friend_id=f.id AND fl.status_id=f.status', '');
-			$select1->joinLeft(['u' => 'user_data'], 'u.id=fl.user_id', '');
+			$friendSelect->joinLeft(['u' => 'user_data'], 'u.id=fl.user_id', '');
 
-			$select2 = $db->select();
-			$select2->from(['cm' => 'conversation_message'], [
-				'id' => 'cm.conversation_id',
+			$messageSelect = $db->select();
+			$messageSelect->from(['cm' => 'conversation_message'], [
+				'id' => 'cm.id',
 				'type' => new Zend_Db_Expr('"message"'),
 				'cm.created_at',
-				'target_id' => new Zend_Db_Expr('NULL'),
+				'target_id' => 'cm.conversation_id',
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'is_read' => 'cm.is_read'
 			]);
-			$select2->where('cm.to_id=?', $user['id']);
-			$select2->where('cm.created_at>?', $maxDate);
-			$select2->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '');
+			$messageSelect->where('cm.to_id=?', $user['id']);
+			$messageSelect->where('cm.created_at>?', $maxDate);
+			$messageSelect->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '');
 
-			$select3 = $db->select();
-			$select3->from(['n' => 'news'], [
+			$postLikeSelect = $db->select();
+			$postLikeSelect->from(['n' => 'news'], [
 				'v.id',
 				'type' => new Zend_Db_Expr('"vote"'),
 				'v.created_at',
@@ -2476,15 +2476,15 @@ class MobileController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'v.is_read'
 			]);
-			$select3->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
-			$select3->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
-			$select3->where('v.active=1 AND v.user_id<>?', $user['id']);
-			$select3->where('v.created_at>?', $maxDate);
-			$select3->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
-			$select3->group(['u.id', 'n.id']);
+			$postLikeSelect->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
+			$postLikeSelect->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
+			$postLikeSelect->where('v.active=1 AND v.user_id<>?', $user['id']);
+			$postLikeSelect->where('v.created_at>?', $maxDate);
+			$postLikeSelect->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
+			$postLikeSelect->group(['u.id', 'n.id']);
 
-			$select4 = $db->select();
-			$select4->from(['n' => 'news'], [
+			$postCommentSelect = $db->select();
+			$postCommentSelect->from(['n' => 'news'], [
 				'c.id',
 				'type' => new Zend_Db_Expr('"comment"'),
 				'c.created_at',
@@ -2493,15 +2493,19 @@ class MobileController extends Zend_Controller_Action
 				'user_name' => 'u.Name',
 				'is_read' => 'c.is_read'
 			]);
-			$select4->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
-			$select4->joinLeft(['c' => 'comments'], 'c.news_id=n.id', '');
-			$select4->where('c.isdeleted=0 AND c.user_id<>?', $user['id']);
-			$select4->where('c.created_at>?', $maxDate);
-			$select4->joinLeft(['u' => 'user_data'], 'u.id=c.user_id', '');
+			$postCommentSelect->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
+			$postCommentSelect->joinLeft(['c' => 'comments'], 'c.news_id=n.id', '');
+			$postCommentSelect->where('c.isdeleted=0 AND c.user_id<>?', $user['id']);
+			$postCommentSelect->where('c.created_at>?', $maxDate);
+			$postCommentSelect->joinLeft(['u' => 'user_data'], 'u.id=c.user_id', '');
 
 			$select = $db->select()
-				->union([$select1, $select2, $select3, $select4],
-					Zend_Db_Select::SQL_UNION_ALL)
+				->union([
+					$friendSelect,
+					$messageSelect,
+					$postLikeSelect,
+					$postCommentSelect
+				], Zend_Db_Select::SQL_UNION_ALL)
 				->order('created_at DESC')
 				->limit(10, $start);
 
@@ -2533,6 +2537,7 @@ class MobileController extends Zend_Controller_Action
 								' started following you';
 							break;
 						case 'message':
+							$data['conversation_id'] = $row['target_id'];
 							$data['message'] = $row['user_name'] .
 								' sent you a new message';
 							break;
@@ -2556,7 +2561,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = [
 				'status' => 'FAILED',
-				'message' => $e instanceof RuntimeException ?
+				'message' => true || $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
 			$this->errorHandler($e);
