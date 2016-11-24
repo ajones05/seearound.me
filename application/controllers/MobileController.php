@@ -967,7 +967,8 @@ class MobileController extends Zend_Controller_Action
 						'c.*',
 						'cm.body',
 						'cm.from_id',
-						'cm.to_id'
+						'cm.to_id',
+						'cm.is_read'
 					])
 					->where('c.id=?', $id)
 					->joinLeft(['cm' => 'conversation_message'], '(cm.conversation_id=c.id AND ' .
@@ -1004,22 +1005,23 @@ class MobileController extends Zend_Controller_Action
 				'conversation' => [
 					'id' => $conversation['id'],
 					'subject' => $conversation['subject'],
-					'body' => $conversation['body'],
-					'created_at' => (new DateTime($conversation['created_at']))
+					'message' => $conversation['body'],
+					'created' =>  (new DateTime($conversation['created_at']))
 						->setTimezone($userTimezone)
 						->format(My_Time::SQL),
-					'created_at_formatted' => My_Time::time_ago($conversation['created_at'],
+					'formatted_date' => My_Time::time_ago($conversation['created_at'],
 						['ago' => true]),
+					'reciever_read' => $conversation['is_read'],
 					'sender_id' => $conversation['from_id'],
-					'sender_name' => $conversation['sender_name'],
-					'sender_email' => $conversation['sender_email'],
-					'sender_image' => $this->view->serverUrl() . $this->view->baseUrl(
+					'senderName' => $conversation['sender_name'],
+					'senderEmail' => $conversation['sender_email'],
+					'senderImage' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($conversation, '320x320',
 						['alias' => 'sender_'])),
 					'receiver_id' => $conversation['to_id'],
-					'receiver_name' => $conversation['receiver_name'],
-					'receiver_email' => $conversation['receiver_email'],
-					'receiver_image' => $this->view->serverUrl() . $this->view->baseUrl(
+					'receiverName' => $conversation['receiver_name'],
+					'receiverEmail' => $conversation['receiver_email'],
+					'receiverImage' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($conversation, '320x320',
 						['alias' => 'receiver_'])),
 				]
