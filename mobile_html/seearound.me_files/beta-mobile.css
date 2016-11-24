@@ -1,0 +1,167 @@
+@font-face {
+	font-family: 'Lato-Regular';
+	src: url('http://www.seearound.me/www/css/fonts/Lato-Regular.eot');
+	src: local('☺'),
+		url('http://www.seearound.me/www/css/fonts/Lato-Regular.woff') format('woff'),
+		url('http://www.seearound.me/www/css/fonts/Lato-Regular.ttf') format('truetype'),
+		url('http://www.seearound.me/www/css/fonts/Lato-Regular.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+}
+body {
+	background-size: cover;
+    font: normal 12px Lato-Regular;
+	line-height: 1;
+}
+.content {
+	text-align: center;
+	margin-top: 120px;
+}
+.content input {
+    color: #fff;
+    font-size: 5vw;
+    outline: none;
+    padding: 1% 3%;
+    border-radius: 14px;
+    border: 2px solid #fff;
+}
+.content input[type="email"] {
+	background: rgba(255,255,255,.5);
+    width: 40%;
+	margin-right: 10px;
+}
+.content input[type="submit"] {
+	text-align: center;
+	background: #00a8ff;
+	font-weight: bold;
+	border-color:#00a8ff;
+	-webkit-appearance: inherit;
+	cursor: pointer;
+}
+input[placeholder] {
+	text-overflow: ellipsis;
+}
+input::-moz-placeholder {
+	text-overflow:ellipsis;
+}
+input:-moz-placeholder {
+	text-overflow: ellipsis;
+}
+input:-ms-input-placeholder {
+	text-overflow:ellipsis;
+}
+::-webkit-input-placeholder {
+	color:#fff;
+}
+::-moz-placeholder {
+	color:#fff;
+}
+:-moz-placeholder {
+	color:#fff;
+}
+:-ms-input-placeholder {
+	color:#fff;
+}
+:focus::-webkit-input-placeholder {
+	color: transparent;
+}
+:focus::-moz-placeholder {
+	color: transparent;
+}
+:focus:-moz-placeholder {
+	color: transparent;
+}
+:focus:-ms-input-placeholder {
+	color: transparent;
+}
+.wraper-mobile {
+	background: #12192a url('../images/beta/mobile-bg.jpg') no-repeat center top/100% auto;
+}
+.wraper-mobile h1 {
+    font-size: 9vw;
+    color: #fff;
+    font-weight: bold;
+    line-height: 1;
+    text-align: center;
+}
+.wraper-mobile h2 {
+	font-size: 5vw;
+	color: #fff;
+	text-align: center;
+}
+.wraper-mobile .logo-mobile {
+	display: block;
+	margin: 0 auto;
+	max-width: 406px;
+	width: 60%;
+	padding-top: 15px;
+    margin-bottom: 18px;
+}
+.wraper-mobile img.phone-img {
+	margin:50px auto 0;
+	width:100%;
+	max-width:750px;
+	display: block;
+}
+.wraper-mobile img.phone-img.lower-img {
+	margin-top:0;
+}
+.wraper-mobile p{
+    font-size: 8vw;
+    color: #fff;
+    font-weight: bold;
+    line-height: 1;
+    text-align: center;
+    margin: 34px auto;
+}
+.wraper-mobile .references {
+	    background-color: #fff;
+    width: 86%;
+    margin-top: -28%;
+    position: relative;
+    padding: 15px 7% 8%;
+}
+.wraper-mobile .references h2 {
+    margin: 0 auto 15px;
+    font-size: 8vw;
+		color: #000;
+}
+
+.wraper-mobile .references .line{
+	   color: #000;
+    line-height: 5em;
+    clear: both;
+    font-size: 5vw;
+}
+.wraper-mobile .references .line img{width:28%;}
+.wraper-mobile .references .line:nth-child(even){
+	text-align: left;
+}
+.wraper-mobile .references .line:nth-child(odd){
+	text-align: right;
+}
+.wraper-mobile .references .line:nth-child(even) img{
+	float: left;
+}
+.wraper-mobile .references .line:nth-child(odd) img{
+	float: right;
+}
