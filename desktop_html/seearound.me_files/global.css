@@ -84,7 +84,7 @@ table {
 
 body {
   background: #e8e8e8;
-  font: normal 12px  Lato-Regular;
+  font: normal 12px  'Lato-Regular';
   color: #afafaf;
   padding-top: 80px;
 }
@@ -1095,6 +1095,7 @@ body.page.about {
   color: #fff; 
   margin-top: 22px;
   font-size: 45px;/*add changes*/
+  font-family: 'Lato-Bold', sans-serif;/*add changes*/
 }
 
 .loginCopyArea .regForm{width:400px;float:right; background: #efeeee; padding:30px 0px 20px;margin-right: -100px;}
@@ -2344,6 +2345,15 @@ body.error .mainContainer > img {
 .loginFtr {
   max-width: 780px;
   margin: 0 auto;
+}
+.loginCopyArea .regForm {
+  padding: 25px 0px 25px;
+}
+#regForm {
+    padding: 0px 25px;
+}
+.fbImageMw {
+    padding: 0px 24px 0px 30px;
 }
 .special-footer .loginFtr ul li:first-child {
   margin-left: 60px;
