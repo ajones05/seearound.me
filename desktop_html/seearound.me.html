@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<title>seearound.me</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <link href="seearound.me_files/global.css" media="screen" rel="stylesheet" type="text/css">
+</head>
+<body class="bgRegForm">
+  <div class="uprBar">
+    <div class="loginHdr">
+      <a href="http://www.seearound.me/">
+        <img src="seearound.me_files/logo.png" style="height: auto;width:200px;margin: 8px 0px 8px 3px;">
+      </a>
+      <form id="loginForm" action="/login" method="POST" class="loginForm" novalidate="novalidate">
+        <ul>
+          <li>
+            <span id="loginError" class="loginerror"></span>
+          </li>
+          <li>
+            <input name="email" placeholder="Email..." tabindex="1" type="email">
+            <span>
+              <span> Keep me logged in </span>
+              <input name="remember" value="1" tabindex="3" type="checkbox">
+              <div class="clr"></div>
+            </span>
+          </li>
+          <li>
+            <input name="password" placeholder="Password..." tabindex="2" type="password">
+            <a class="hypDecNone" href="http://www.seearound.me/forgot"><span>Forgot your password?</span></a>
+          </li>
+          <li class="btn">
+            <input class="floatL" value="Login" tabindex="4" type="submit">
+          </li>
+          <div class="clr"></div>
+        </ul>
+      </form>
+      <div class="clr"></div>
+    </div>
+  </div>
+  <div class="mainContainer brdrNone" align="center">
+    <div class="loginCopyArea">
+      <div class="rightBoxArea">
+        <h2>Connect with life nearby</h2>
+      </div> 
+      <div class="leftBoxArea">
+        <div class="users-popup">
+
+        </div><!-- users-popup end -->
+        <div class="regForm">
+
+          <div class="fbImageMw">
+            <span>Register here or</span>
+            <img id="facebookLogin" style="cursor: pointer;" src="seearound.me_files/signupFacebookButton.png" alt="Sign Up">
+            <div class="clr"></div>
+          </div>
+          <p class="fbtext">
+          *We´ll never post to facebook without your permission
+          </p>
+          <div id="regForm">
+            <form id="reg_form" action="/register" method="post" autocomplete="off">
+              <ul class="frm">
+                <li>
+                  <input id="Name" name="name" placeholder="Name..." type="text">
+                </li>
+                <li>
+                  <input id="Email_id" name="email" placeholder="E-mail address..." type="text">
+                </li>
+                <li>
+                  <input id="Password" name="password" placeholder="Password..." value="" type="password">
+                </li>
+                <!-- <li>
+                <input id="Re-password" name="repassword" placeholder="Re-password" value="" type="password">
+                </li> -->
+                <li>
+                  <input id="Location" readonly="true" placeholder="Choose location..." type="text">
+                  <img class="myLoc" src="seearound.me_files/icn-location.gif" alt="My Location">
+                  <input name="latitude" value="" type="hidden">
+                  <input name="longitude" value="" type="hidden">
+                  <input name="street_name" value="" type="hidden">
+                  <input name="street_number" value="" type="hidden">
+                  <input name="city" value="" type="hidden">
+                  <input name="state" value="" type="hidden">
+                  <input name="country" value="" type="hidden">
+                  <input name="zip" value="" type="hidden">
+                  <input name="timezone" value="" type="hidden">
+                </li>
+                <li class="clr"></li>
+              </ul>
+              <div class="terms">By clicking Register, you agree to the <a class="tems-of-service-popup" href="http://www.seearound.me/terms">Terms of Service</a><span> and </span><a class="privacy-policy-popup" href="http://www.seearound.me/privacy">Privacy Policy</a>.</div>
+              <input class="btnBlueRpt regSub" value="Register" style="width: 100%; padding:6px 0px 7px; background-color: #3366cc;color: #FFFFFF;" type="submit">
+            </form>
+          </div>
+        </div>
+        <div class="clr"></div>
+      </div>
+      <div class="clr"></div>
+      <div class="app">
+        <span>Get the app</span>
+        <a href="#" target="_blank"><img src="./images/app-store.png"></a>
+        <a href="#" target="_blank"><img src="./images/google-play.png"></a>
+      </div>
+    </div>
+  </div>
+  <div class="opacity-dev"></div>
+  <div class="special-footer">
+    <div class="loginFtr">
+      <ul>
+        <li>
+          <a href="http://www.seearound.me/about">About</a>
+        </li>
+        <li>
+          <a href="http://www.seearound.me/terms">Terms of Service</a>
+        </li>
+        <li>
+          <a href="http://www.seearound.me/privacy">Privacy Policy</a>
+        </li>
+        <!-- <li>
+          <span class="ftrCopyRight">Copyright 2016 Seearound.me</span>
+        </li> -->
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
