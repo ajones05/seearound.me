@@ -148,6 +148,7 @@ class MobileController extends Zend_Controller_Action
 				'status' => 'SUCCESS',
 				'result' => [
 					'id' => $user['id'],
+					'karma' => Application_Model_User::getKarma($user),
 					'Name' => $user['Name'],
 					'Email_id' => $user['Email_id'],
 					'Birth_date' => My_ArrayHelper::getProp($user, 'Birth_date'),
