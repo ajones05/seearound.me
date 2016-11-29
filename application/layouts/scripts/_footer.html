@@ -1,6 +1,3 @@
-<?php
-$view = $request->getParam('view');
-?>
 <div class="special-footer">
 <div class="loginFtr">
 <ul>
@@ -15,13 +12,10 @@ $view = $request->getParam('view');
 </li>
 <?php endif; ?>
 <li>
-<a href="<?php echo $this->url(array(), 'terms'); ?>">Terms Of Service</a>
+<a href="<?php echo $this->url(array(), 'terms'); ?>">Terms of Service</a>
 </li>
 <li>
 <a href="<?php echo $this->url(array(), 'privacy'); ?>">Privacy Policy</a>
-</li>
-<li>
-<span class="ftrCopyRight">Copyright <?php echo date('Y'); ?> Seearound.me</span>
 </li>
 </ul>
 </div>

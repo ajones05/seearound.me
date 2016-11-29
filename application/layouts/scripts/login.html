@@ -1,6 +1,7 @@
 <?php
 $settings = Application_Model_Setting::getInstance();
 $request = Zend_Controller_Front::getInstance()->getRequest();
+$view = $request->getParam('view');
 $user = Application_Model_User::getAuth();
 
 $this->headLink()
@@ -29,13 +30,13 @@ $this->headMeta('text/html; charset=utf-8', 'Content-Type', 'http-equiv');
 <?php include '_head.html'; ?>
 </head>
 <body class="bgRegForm">
-	<?php include '_header.html'; ?>
-	<div align="center" class="mainContainer brdrNone">
-		<?php echo $this->layout()->content; ?>
-	</div>
-	<div class="opacity-dev"></div>
-	<?php include '_footer.html'; ?>
-	<div id="fb-root"></div>
+<?php include '_header.html'; ?>
+<div align="center" class="mainContainer brdrNone">
+<?php echo $this->layout()->content; ?>
+</div>
+<div class="opacity-dev"></div>
+<?php include '_footer.html'; ?>
+<div id="fb-root"></div>
 <?php include '_async_media.html'; ?>
 </body>
 </html>

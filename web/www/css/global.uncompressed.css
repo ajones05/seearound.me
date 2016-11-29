@@ -84,7 +84,7 @@ table {
 
 body {
 	background: #e8e8e8;
-	font: normal 12px  Lato-Regular;
+	font: normal 12px  'Lato-Regular';
 	color: #afafaf;
 	padding-top: 80px;
 }
@@ -206,7 +206,6 @@ body.layout:not(.hideRight) .mainContainer > .leftContainer{
 	top: 0;
 	left: 0;
 	z-index: 99;
-	border: 2px solid #d7d7d7;
 }
 
 .uprBar-wrapper {width: 960px; margin: 0 auto; padding-top: 5px;}
@@ -1069,7 +1068,7 @@ body.page.about {
 .loginCopyArea{margin:0px;}
 
 
-.loginCopyArea .leftBoxArea{width:100%; margin-top: 6%;}
+.loginCopyArea .leftBoxArea{width:100%; margin-top: 3%;}
 
 .loginCopyArea .leftBoxArea .fbImageMw span {font-size: 23px; color: #4d4a49; float: left; margin-top: 2px;}
 
@@ -1079,9 +1078,23 @@ body.page.about {
 
 .loginCopyArea .rightBoxArea{width:100%; text-align: center;}
 
-.users-popup{background: url('../images/users-popup.png') no-repeat center top; width: 732px; height: 296px; float: left; margin-left: -200px; margin-top: 75px; background-size: 85%;}
+.users-popup {
+	width: 732px;
+	height: 296px;
+	float: left;
+	margin-left: -200px;
+	margin-top: 75px;
+	background-size: 85%;
+	background: url('../images/users-popup.png') no-repeat center top;
+}
 
-.loginCopyArea .rightBoxArea h2 { font: 700 46px 'Lato'; color: #fff; margin-top: 22px; }
+.loginCopyArea .rightBoxArea h2 {
+	font: 700 46px 'Lato', sans-serif;
+	font-size: 45px;
+	font-family: 'Lato-Bold', sans-serif;
+	color: #fff;
+	margin-top: 22px;
+}
 
 .loginCopyArea .regForm{width:400px;float:right; background: #efeeee; padding:30px 0px 20px;margin-right: -100px;}
 
@@ -2310,4 +2323,36 @@ body.error .mainContainer > img {
 .t-and-c .further-step{
     text-align: center;
     margin-top:30px;
+}
+.app {
+	margin-top: 40px;
+	display: table;
+}
+.app span {
+	display: table-cell;
+	vertical-align: middle;
+	font-size: 32px;
+	color: #ffffff;
+}
+.app img {
+	margin-left: 15px;
+}
+.loginFtr {
+	max-width: 780px;
+	margin: 0 auto;
+}
+.loginCopyArea .regForm {
+	padding: 25px 0px 25px;
+}
+#regForm {
+	padding: 0px 25px;
+}
+.fbImageMw {
+	padding: 0px 24px 0px 30px;
+}
+.special-footer .loginFtr ul li:first-child {
+	margin-left: 60px;
+}
+.special-footer .loginFtr ul li {
+	margin-left: 228px;
 }

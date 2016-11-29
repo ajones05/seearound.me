@@ -3,7 +3,7 @@ $address = Application_Model_Address::format($this->registrationForm->getValues(
 ?>
 <div class="loginCopyArea">
     <div class="rightBoxArea">
-        <h2>See and Share What's Happening Near You</h2>
+        <h2>Connect with life nearby</h2>
     </div> 
     <div class="leftBoxArea">
         <div class="users-popup">
@@ -12,7 +12,7 @@ $address = Application_Model_Address::format($this->registrationForm->getValues(
         <div class="regForm">
 
            <div class="fbImageMw">
-                <span>Register Here or</span>
+                <span>Register here or</span>
 				<img id="facebookLogin" style="cursor: pointer;" src="<?php echo $this->baseUrl("www/images/signupFacebookButton.png"); ?>" alt="Sign Up" />
 				<div class="clr"></div>
            </div>
@@ -23,23 +23,19 @@ $address = Application_Model_Address::format($this->registrationForm->getValues(
 				<form id="reg_form" action="<?php echo $this->baseUrl('register'); ?>" method="post" autocomplete="off">
 					<ul class="frm">
 						<li>
-							<input id="Name" name="name" type="text" placeholder="Name" value="<?php echo $this->registrationForm->name->getValue(); ?>" />
+							<input id="Name" name="name" type="text" placeholder="Name..." value="<?php echo $this->registrationForm->name->getValue(); ?>" />
 							<?php echo $this->registrationForm->name->renderErrors(); ?>
 						</li>
 						<li>
-							<input id="Email_id" name="email" type="text" placeholder="Email address" value="<?php echo $this->registrationForm->email->getValue(); ?>" />
+							<input id="Email_id" name="email" type="text" placeholder="E-mail address..." value="<?php echo $this->registrationForm->email->getValue(); ?>" />
 							<?php echo $this->registrationForm->email->renderErrors(); ?>
 						</li>
 						<li>
-							<input id="Password" name="password" type="password" placeholder="Password" value="" />
+							<input id="Password" name="password" type="password" placeholder="Password..." value="" />
 							<?php echo $this->registrationForm->password->renderErrors(); ?>
 						</li>
 						<li>
-							<input id="Re-password" name="repassword" type="password" placeholder="Re-password" value="" />
-							<?php echo $this->registrationForm->repassword->renderErrors(); ?>
-						</li>
-						<li>
-<input id="Location" readonly="true" type="text" placeholder="User Location" value="<?php echo $address; ?>">
+<input id="Location" readonly="true" type="text" placeholder="Choose location..." value="<?php echo $address; ?>">
 <img class="myLoc" src="<?php echo $this->baseUrl("www/images/icn-location.gif"); ?>" alt="My Location" />
 <input type="hidden" name="latitude" value="<?php echo $this->registrationForm->latitude->getValue(); ?>">
 <input type="hidden" name="longitude" value="<?php echo $this->registrationForm->longitude->getValue(); ?>">
@@ -68,6 +64,11 @@ $address = Application_Model_Address::format($this->registrationForm->getValues(
     </div>
     
 	<div class="clr"></div>
+<div class="app">
+<span>Get the app</span>
+<a href="#" target="_blank"><img src="<?php echo $this->baseUrl('www/images/app-store.png'); ?>"></a>
+<a href="#" target="_blank"><img src="<?php echo $this->baseUrl('www/images/google-play.png'); ?>"></a>
+</div>
 </div>
 <script>
 $(function(){
