@@ -2444,6 +2444,8 @@ class MobileController extends Zend_Controller_Action
 				'target_id' => new Zend_Db_Expr('NULL'),
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
+				'user_image_id' => 'u.image_id',
+				'user_image_name' => 'u.image_name',
 				'is_read' => 'f.notify'
 			]);
 			$friendSelect->where('f.receiver_id=? AND f.status=1', $user['id']);
@@ -2460,6 +2462,8 @@ class MobileController extends Zend_Controller_Action
 				'target_id' => 'cm.conversation_id',
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
+				'user_image_id' => 'u.image_id',
+				'user_image_name' => 'u.image_name',
 				'is_read' => 'cm.is_read'
 			]);
 			$messageSelect->where('cm.to_id=?', $user['id']);
@@ -2474,6 +2478,8 @@ class MobileController extends Zend_Controller_Action
 				'target_id' => 'n.id',
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
+				'user_image_id' => 'u.image_id',
+				'user_image_name' => 'u.image_name',
 				'is_read' => 'v.is_read'
 			]);
 			$postLikeSelect->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
@@ -2491,6 +2497,8 @@ class MobileController extends Zend_Controller_Action
 				'target_id' => 'n.id',
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
+				'user_image_id' => 'u.image_id',
+				'user_image_name' => 'u.image_name',
 				'is_read' => 'c.is_read'
 			]);
 			$postCommentSelect->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
@@ -2527,7 +2535,8 @@ class MobileController extends Zend_Controller_Action
 						'user_id' => $row['user_id'],
 						'user_name' => $row['user_name'],
 						'user_image' => $this->view->serverUrl() . $this->view->baseUrl(
-							Application_Model_User::getThumb($row, '320x320', ['alias' => 'u_']))
+							Application_Model_User::getThumb($row, '320x320',
+								['alias' => 'user_']))
 					];
 
 					switch ($row['type'])
