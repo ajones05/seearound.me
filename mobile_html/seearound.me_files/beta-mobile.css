@@ -160,7 +160,7 @@ input:-ms-input-placeholder {
 .wraper-mobile .references {
       background-color: #fff;
     width: 86%;
-    margin-top: -28%;
+    margin-top: -27%;
     position: relative;
     padding: 15px 7% 8%;
 }
@@ -172,7 +172,7 @@ input:-ms-input-placeholder {
 
 .wraper-mobile .references .line{
      color: #000;
-    line-height: 5em;
+    line-height: 3em;
     clear: both;
     font-size: 5vw;
 }
@@ -214,7 +214,7 @@ input:-ms-input-placeholder {
 }
 .wrapper-a a {
   display: table-cell;
-  padding: 4vw 2vw;
+  padding: 2vw;
 }
 .wrapper-a a img {
   max-width: 100%;
@@ -223,7 +223,7 @@ input:-ms-input-placeholder {
   margin-top: 4vw;
 }
 .wrapper-map {
-  padding: 4vw 8vw 27vw 8vw;
+  padding: 4vw 8vw 26vw 8vw;
 }
 .wraper-mobile .logo-mobile {
   padding-top: 10px;
@@ -240,5 +240,22 @@ input:-ms-input-placeholder {
 }
 .wraper-mobile .references .line {
   color: #2c2c2c;
+}
+.wraper-mobile .logo-mobile {
+  width: 54%;
+  padding-top: 5px;
+}
+.content {
+  margin-top: 3vw;
+}
+.wraper-mobile img.phone-img {
+  margin: 10vw auto 0;
+}
+.wraper-mobile .references .line img {
+  width: 25%;
+}
+.references .line span {
+  vertical-align: middle;
+  line-height: 4em;
 }
 /* END Add changes */

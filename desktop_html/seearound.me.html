@@ -8,7 +8,7 @@
   <div class="uprBar">
     <div class="loginHdr">
       <a href="http://www.seearound.me/">
-        <img src="seearound.me_files/logo.png" style="height: auto;width:200px;margin: 8px 0px 8px 3px;">
+        <img src="seearound.me_files/logo.png" style="height: auto;width:200px;margin: 8px 0px 17px 3px;">
       </a>
       <form id="loginForm" action="/login" method="POST" class="loginForm" novalidate="novalidate">
         <ul>
@@ -16,10 +16,10 @@
             <span id="loginError" class="loginerror"></span>
           </li>
           <li>
-            <input name="email" placeholder="Email..." tabindex="1" type="email">
+            <input name="email" placeholder="E-mail..." tabindex="1" type="email">
             <span>
-              <span> Keep me logged in </span>
-              <input name="remember" value="1" tabindex="3" type="checkbox">
+              <input id="firstcheck" name="remember" value="1" tabindex="3" type="checkbox">
+              <label for="firstcheck"> Keep me logged in </label>
               <div class="clr"></div>
             </span>
           </li>
