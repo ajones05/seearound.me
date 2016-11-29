@@ -1,6 +1,8 @@
 <?php
 $settings = Application_Model_Setting::getInstance();
 
+
+
 $this->doctype('XHTML1_RDFA');
 
 $this->headLink()
@@ -26,13 +28,21 @@ $this->headMeta('width=device-width, initial-scale=1.0, maximum-scale=1.0, user-
 <div class="wraper-mobile">
 <img src="<?php echo $this->baseUrl('www/images/beta/logo-mobile.png'); ?>"
 alt="" class="logo-mobile">
-<h1>See and Share What's Happening Near You</h1>
-<div class="content"><?php echo $this->layout()->content; ?></div>
-<img src="<?php echo $this->baseUrl('www/images/beta/phone-upper.png'); ?>"
-alt="" class="phone-img">
-<p>SeeAround.me is the best way to see what's happening nearby</p>
-<img src="<?php echo $this->baseUrl('www/images/beta/phone-lower.png'); ?>"
-alt="" class="phone-img lower-img">
+<h1>Connect with life nearby</h1>
+<div class="wrapper-users-mobile">
+<img src="<?php echo $this->baseUrl('www/images/users.png'); ?>" alt="" class="users-mobile">
+</div>
+<div class="content">
+<div class="app-mobile">
+<h2 class="h2">Get the app</h2>
+<div class="wrapper-a">
+<a href="#" target="_blank"><img src="<?php echo $this->baseUrl('www/images/app-store-mob.png'); ?>"></a>
+<a href="#" target="_blank"><img src="<?php echo $this->baseUrl('www/images/google-play-mob.png'); ?>"></a>
+</div>
+</div>
+<div class="wrapper-map">
+<img src="<?php echo $this->baseUrl('www/images/map.png'); ?>" alt="" class="phone-img">
+</div>
 <div class="references">
 <h2>Join other people already sharing about topics like...</h2>
 <div class="line"><img src="<?php echo $this->baseUrl('www/images/beta/pic-1.jpg'); ?>" alt=""> <span>New local businesses</span></div>
@@ -43,6 +53,7 @@ alt="" class="phone-img lower-img">
 <div class="line"><span>Food trucks or yard sales</span> <img src="<?php echo $this->baseUrl('www/images/beta/pic-6.png'); ?>" alt=""></div>
 </div>
 </div>
+<img src="<?php echo $this->baseUrl('www/images/phone-lower.png'); ?>" alt="" class="phone-img lower-img">
 <?php include '_async_media.html'; ?>
 </body>
 </html>

@@ -40,13 +40,6 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function signupSuccessAction()
 	{
-		$layout = 'beta';
-
-		if (My_CommonUtils::isMobile())
-		{
-			$layout .= '-mobile';
-		}
-
 		$this->view->layout()->setLayout($layout);
 	}
 
