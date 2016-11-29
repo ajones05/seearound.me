@@ -24,10 +24,12 @@ title="<?php echo htmlspecialchars($karmaTitle); ?>"><?php echo $karma;
 <span><?php echo $this->profile['Email_id']; ?></span>
 </li>
 <?php endif; ?>
+<?php if ($this->profile['gender'] != null): ?>
 <li>
 <h3>Gender</h3>
 <span><?php echo Application_Model_User::getGender($this->profile); ?></span>
 </li>
+<?php endif; ?>
 <?php if ($this->profile['interest'] != null): ?>
 <li>
 <h3>Interests</h3>
