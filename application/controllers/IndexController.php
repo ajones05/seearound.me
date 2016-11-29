@@ -54,18 +54,6 @@ class IndexController extends Zend_Controller_Action
 		$config = Zend_Registry::get('config_global');
 		$loginForm = new Application_Form_Login;
 		$registrationForm = new Application_Form_Registration;
-		$registrationForm->addElement(
-			'password',
-			'repassword',
-			array(
-				'required' => true,
-				'filters' => array('StringTrim'),
-				'validators' => array(
-					array('stringLength', false, array(1, 50)),
-					array('Identical', false, array('token' => 'password'))
-				)
-			)
-		);
 
 		if ($this->_request->isPost())
 		{
