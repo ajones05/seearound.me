@@ -1052,16 +1052,16 @@ body.page.about {
 
 .loginForm li{float:left;}
 
-.loginForm li input{border:1px solid #d7d7d7; height:24px; color:#969696; margin-left: 8px ;margin-top: 12px; padding-left: 7px; width: 163px; font-family: Lato-lightItalic;}
+.loginForm li input{border:2px solid #d7d7d7; height:28px; color:#969696; margin-left: 8px ;margin-top: 12px; padding-left: 7px; width: 153px; font-family: Lato-lightItalic;}
 
-.loginForm li span{display:block; font:normal 12px Lato-LightItalic; color:#afafaf; margin:0px 0 0; line-height:15px; margin-left: 16px; margin-top: 2px;}
+.loginForm li span{display:block; font:normal 12px Lato-LightItalic; color:#afafaf; margin:0px 0 0; line-height:15px; margin-left: 16px; margin-top: 3px;}
 
 .loginForm li span span { float: left; display: inline-block; margin-right: 5px; margin-left: 0px; margin-top: 0px;}
 
 .loginForm li span input{ float: left; display: inline-block; width:auto; height:auto; margin-top: 2px;}
 
 
-.loginForm li.btn input {cursor: pointer ; border:0; height:auto; margin-top:0px; ;vertical-align:middle; color: #fff; font: normal 18px Lato-Bold; background: #668cd5; padding:19px 40px; width: auto;}
+.loginForm li.btn input {cursor: pointer ; border:0; height:auto; margin-top:0px; ;vertical-align:middle; color: #fff; font: normal 26px Lato-Bold; background: #668cd5; padding:19px 40px; width: auto;}
 
 .blueButton{background-color: #3366cc;border: 0 none;color: #ffffff;cursor: pointer;overflow: visible;padding: 6px 0 7px;width: 100%;font: 18px Lato-Bold;}
 
@@ -1112,7 +1112,7 @@ body.page.about {
 
 .regForm ul.frm li{margin-top: 5px;position: relative;}
 
-.regForm ul.frm li input{border:1px solid #d7d7d7; width:94.5%; padding:9px 10px; background:#fff; color:#afafaf;font: normal 15px lato-LightItalic;}
+.regForm ul.frm li input{border:2px solid #d7d7d7; width:94.5%; padding:9px 10px; background:#fff; color:#afafaf;font: normal 15px lato-LightItalic;}
 
 .regForm ul.frm li .myLoc{cursor:pointer; position: absolute; top: 8px;width: 21px; height: auto;right: 5px;}
 
@@ -2116,7 +2116,7 @@ input[type=submit], input[type=button] {
 	font-size: 18px;
 }
 .fbImageMw {
-	padding: 0px 20px 0px 30px;
+	padding: 0px 32px 0px 40px;
 }
 .ui_image {
 	width: 50px;
@@ -2343,9 +2343,10 @@ body.error .mainContainer > img {
 }
 .loginCopyArea .regForm {
 	padding: 25px 0px 25px;
+	width: auto;
 }
 #regForm {
-	padding: 0px 25px;
+	padding: 0px 35px;
 }
 .fbImageMw {
 	padding: 0px 24px 0px 30px;
@@ -2355,4 +2356,42 @@ body.error .mainContainer > img {
 }
 .special-footer .loginFtr ul li {
 	margin-left: 228px;
+}
+.loginForm li.btn input:last-child {
+  margin-left: 20px;
+}
+.regForm .terms {
+  color: #838383;
+}
+.regForm ul.frm li input {
+  font-size: 18px;
+}
+.loginForm li input {
+  font-size: 15px;
+}
+.loginForm li span input[type="checkbox"] {
+    display:none;
+}
+.loginForm li span input[type="checkbox"] + label {
+  display: block;
+  font: normal 13px Lato-LightItalic;
+  color: #afafaf;
+  float: left;
+  cursor: pointer;
+}
+.loginForm li span input[type="checkbox"] + label::before {
+    content: "";
+    display: inline-block;
+    height: 16px;
+    width: 17px;
+    background-image: url("../images/check.png");
+    background-repeat: no-repeat;
+    float: right;
+    margin-left: 7px;
+}
+.loginForm li span input[type="checkbox"] + label::before {
+    background-position: 0px 0px;    
+}
+.loginForm li span input[type="checkbox"]:checked + label::before {
+    background-position: 0px -16px;
 }

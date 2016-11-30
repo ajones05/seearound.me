@@ -77,7 +77,7 @@ if ($error)
 	<?php else: ?>
 	<div class="loginHdr">
 		<a href="<?php echo $this->baseUrl('/'); ?>">
-			<img src="<?php echo $this->baseUrl("www/images/logo.png"); ?>" style="height: auto;width:200px;margin: 8px 0px 8px 3px;" />
+			<img src="<?php echo $this->baseUrl("www/images/logo.png"); ?>" style="height: auto;width:200px;margin: 8px 0px 17px 3px;" />
 		</a>
 		<form id="loginForm" action="<?php echo $this->baseUrl('login'); ?>" method="POST" class="loginForm">
 			<ul>
@@ -87,10 +87,10 @@ if ($error)
 				</li>
 				<?php endif; ?>
 				<li>
-					<input type="email" name="email" placeholder="Email..." tabindex="1">
+					<input type="email" name="email" placeholder="E-mail..." tabindex="1">
 					<span>
-						<span> Keep me logged in </span>
-						<input name="remember" type="checkbox" value="1" tabindex="3" />
+						<input id="firstcheck" name="remember" value="1" tabindex="3" type="checkbox">
+						<label for="firstcheck"> Keep me logged in </label>
 						<div class="clr"></div>
 					</span>
 				</li>
