@@ -941,7 +941,7 @@ body.hideRight .footer .footerLinks {
 
 .special-footer .loginFtr ul li:first-child {margin-left: 100px;}
 
-.special-footer .loginFtr ul li a {color: #fff; font-size: 15px; text-decoration: none;}
+.special-footer .loginFtr ul li a {color: #fff; font-size: 16px; text-decoration: none;}
 
 .special-footer .loginFtr ul li .ftrCopyRight { color: #fff; float: none; margin: 0px; font-size: 15px;}
 
@@ -1094,6 +1094,7 @@ body.page.about {
 	font-family: 'Lato-Bold', sans-serif;
 	color: #fff;
 	margin-top: 22px;
+	text-shadow: 0px 0px 4px #000;
 }
 
 .loginCopyArea .regForm{width:400px;float:right; background: #efeeee; padding:30px 0px 20px;margin-right: -100px;}
@@ -2115,9 +2116,7 @@ input[type=submit], input[type=button] {
 	padding: 6px 0;
 	font-size: 18px;
 }
-.fbImageMw {
-	padding: 0px 32px 0px 40px;
-}
+
 .ui_image {
 	width: 50px;
 	padding: 8px;
@@ -2333,6 +2332,7 @@ body.error .mainContainer > img {
 	vertical-align: middle;
 	font-size: 32px;
 	color: #ffffff;
+	text-shadow: 0 0 4px #000;
 }
 .app img {
 	margin-left: 15px;
@@ -2348,6 +2348,9 @@ body.error .mainContainer > img {
 }
 #regForm {
 	padding: 0px 35px;
+}
+.fbImageMw {
+  padding: 0px 32px 0px 40px;
 }
 .special-footer .loginFtr ul li:first-child {
 	margin-left: 60px;
@@ -2400,9 +2403,9 @@ body.error .mainContainer > img {
 }
 .users-popup {
   background: url('../images/users-popup.png') no-repeat center top;
-  width: 497px;
-  height: 202px;
-  margin-left: -60px;
+  width: 613px;
+  height: 248px;
+  margin-left: -140px;
 }
 .loginCopyArea .leftBoxArea .fbImageMw img {
   width: 153px;
