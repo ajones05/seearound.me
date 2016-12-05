@@ -942,7 +942,7 @@ body.hideRight .footer .footerLinks {
 
 .special-footer .loginFtr ul li:first-child {margin-left: 100px;}
 
-.special-footer .loginFtr ul li a {color: #fff; font-size: 15px; text-decoration: none;}
+.special-footer .loginFtr ul li a {color: #fff; font-size: 16px; text-decoration: none;}
 
 .special-footer .loginFtr ul li .ftrCopyRight { color: #fff; float: none; margin: 0px; font-size: 15px;}
 
@@ -1046,7 +1046,7 @@ table tr td input { border: 1px solid #d7d7d7;}
 
 body.bgRegForm,
 body.page.about {
-  background: url(../images/template/background-city.jpg) no-repeat 0px 8%; background-size: cover;
+  background: url(../images/template/background-city-new.jpg) no-repeat 0px 8%; background-size: cover;
 }
 
 .loginForm{ float:right; margin:0px;}
@@ -1096,6 +1096,7 @@ body.page.about {
   margin-top: 22px;
   font-size: 38px;/*add changes*/
   font-family: 'Lato-Bold', sans-serif;/*add changes*/
+  text-shadow: 0px 0px 4px #000;
 }
 
 .loginCopyArea .regForm{width:400px;float:right; background: #efeeee; padding:30px 0px 20px;margin-right: -100px;}
@@ -2119,9 +2120,6 @@ input[type=submit], input[type=button] {
   padding: 6px 0;
   font-size: 18px;
 }
-.fbImageMw {
-  padding: 0px 20px 0px 30px;
-}
 .ui_image {
   width: 50px;
   padding: 8px;
@@ -2297,14 +2295,12 @@ body.error .mainContainer > img {
     font-family: Lato;
     text-align: left;
 }
-
 .t-and-c h2{
     font-size: 22px;
     width:44%;
     display: inline-block;
     vertical-align: top;
 }
-
 .t-and-c .answer{
     display: inline-block;
     width:55%;
@@ -2319,15 +2315,15 @@ body.error .mainContainer > img {
     font-size: 16px;
     margin-bottom: 36px;
 }
-
 .t-and-c a{
     color: #fff;
 }
-
 .t-and-c .further-step{
     text-align: center;
     margin-top:30px;
 }
+
+
 /* BEGIN Added changes */
 .app {
   margin-top: 60px;
@@ -2338,6 +2334,7 @@ body.error .mainContainer > img {
   vertical-align: middle;
   font-size: 32px;
   color: #ffffff;
+  text-shadow: 0px 0px 4px #000;
 }
 .app img {
   margin-left: 15px;
@@ -2380,8 +2377,6 @@ body.error .mainContainer > img {
 .loginHdr {
   width: 1100px;
 }
-
-
 .loginForm li span input[type="checkbox"] {
     display:none;            
 }
@@ -2408,12 +2403,11 @@ body.error .mainContainer > img {
 .loginForm li span input[type="checkbox"]:checked + label::before {
     background-position: 0px -16px;
 }
-
 .users-popup { 
-  background: url(../images/users-popup-new-1.png) no-repeat center top;
-  width: 497px;
-  height: 202px;
-  margin-left: -60px;
+  background: url(../images/users-popup-original.png) no-repeat center top;
+  width: 613px;
+  height: 248px;
+  margin-left: -140px;
 }
 .loginCopyArea .leftBoxArea .fbImageMw img {
   width: 153px;
