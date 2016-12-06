@@ -2109,7 +2109,7 @@ input[type=submit], input[type=button] {
 	color: #EC0000 !important;
 	font-size: 14px !important;
 	padding: 1px;
-	width: 229px;
+	width: 220px;
 }
 .regSub{
 	width: 100%;
@@ -2338,25 +2338,28 @@ body.error .mainContainer > img {
 	margin-left: 15px;
 }
 .loginFtr {
-	max-width: 780px;
-	margin: 0 auto;
+	text-align: center;
 }
 .loginCopyArea .regForm {
 	padding: 25px 0px 25px;
 	width: auto;
 	margin-right: -42px;
+	margin-right: 20px;
 }
 #regForm {
-	padding: 0px 35px;
+	padding: 0px 22px;
 }
 .fbImageMw {
-  padding: 0px 32px 0px 40px;
+  padding: 0px 27px 0px 23px;
 }
 .special-footer .loginFtr ul li:first-child {
-	margin-left: 60px;
+	margin-left: 0px;
 }
 .special-footer .loginFtr ul li {
-	margin-left: 228px;
+	margin-right: 150px;
+	margin-left: 0px;
+	display: inline-block;
+	float: none !important;
 }
 .loginForm li.btn input:last-child {
 	margin-left: 28px;
@@ -2373,7 +2376,7 @@ body.error .mainContainer > img {
   margin-top: 8px;
 }
 .loginHdr {
-  width: 1100px;
+  width: 980px;
 }
 .loginForm li span input[type="checkbox"] {
     display:none;
@@ -2402,22 +2405,31 @@ body.error .mainContainer > img {
     background-position: 0px -16px;
 }
 .users-popup {
-  background: url('../images/users-popup.png') no-repeat center top;
-  width: 613px;
-  height: 248px;
-  margin-left: -140px;
+  background: url(../images/users-popup.png) no-repeat center top;
+  width: 497px;
+  height: 202px;
+  margin-left: -50px;
 }
 .loginCopyArea .leftBoxArea .fbImageMw img {
   width: 153px;
 }
 .loginCopyArea .leftBoxArea .fbImageMw span {
-  font-size: 20px;
+  font-size: 19px;
 }
 .loginCopyArea .leftBoxArea .fbtext {
   color: #7d7d7d;
   font-size: 13px;
-  padding-right: 34px;
+  padding-right: 27px;
 }
 .regForm ul.frm li input {
-  width: 93%;
+  width: 90%;
+  padding: 7px 10px;
+  font-size: 14px;
+}
+.regForm ul.frm li .myLoc {
+  top: 4px;
+  right: 10px;
+}
+.loginFtr {
+  margin-left: 75px;
 }
