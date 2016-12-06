@@ -1839,7 +1839,7 @@ class MobileController extends Zend_Controller_Action
 						$this->view->baseUrl($profileImage),
 					'Gender' => $data['gender'],
 					'Activities' => $updateData['interest'],
-					'Birth_date' => $data['birth_date'],
+					'Birth_date' => $updateData['Birth_date'],
 					'public_profile' => $data['public_profile']
 				])
 			];
