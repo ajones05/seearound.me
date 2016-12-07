@@ -1785,7 +1785,8 @@ class MobileController extends Zend_Controller_Action
 					(new DateTime($data['birth_date']))->format('Y-m-d') : null,
 				'Email_id' => $data['email'],
 				'public_profile' => $data['public_profile'],
-				'gender' => $data['gender'],
+				'gender' => $data['gender'] != null ? array_search($data['gender'],
+					Application_Model_User::$genderId) : null,
 				'interest' => $userModel->filterInterest($data['interest'])
 			];
 
