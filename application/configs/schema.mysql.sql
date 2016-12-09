@@ -168,7 +168,7 @@ CREATE TABLE `news_link` (
 	`news_id` INT(11) NOT NULL,
 	`link` VARCHAR(2000) NOT NULL,
 	`title` VARCHAR(255) NULL,
-	`description` VARCHAR(255) NULL,
+	`description` TEXT NULL,
 	`author` VARCHAR(255) NULL,
 	`image` VARCHAR(2000) NULL,
 	`image_width` INT(10) NULL,
