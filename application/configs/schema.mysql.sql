@@ -1,5 +1,5 @@
-ALTER DATABASE `seearoun_seearoundme` COLLATE utf8_general_ci;
-ALTER DATABASE `seearoun_seearoundme` CHARSET utf8;
+ALTER DATABASE `seearoun_seearoundme` COLLATE utf8mb4_general_ci;
+ALTER DATABASE `seearoun_seearoundme` CHARSET utf8mb4;
 
 --
 -- Table structure for table `address`
@@ -18,7 +18,7 @@ CREATE TABLE `address` (
   `zip` varchar(255) DEFAULT NULL,
   `timezone` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `comments`
@@ -28,7 +28,7 @@ CREATE TABLE `comments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `news_id` int(10) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `comment` mediumtext CHARACTER SET utf8 NOT NULL,
+  `comment` mediumtext NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL,
   `notify` tinyint(4) NOT NULL DEFAULT '0',
@@ -37,7 +37,7 @@ CREATE TABLE `comments` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`news_id`) REFERENCES `news` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `comment_user_notify`
@@ -51,7 +51,7 @@ CREATE TABLE `comment_user_notify` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `conversation`
@@ -67,7 +67,7 @@ CREATE TABLE `conversation` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`from_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`to_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `conversation_message`
@@ -87,7 +87,7 @@ CREATE TABLE `conversation_message` (
   FOREIGN KEY (`conversation_id`) REFERENCES `conversation` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`from_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`to_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `email_invites`
@@ -103,7 +103,7 @@ CREATE TABLE `email_invites` (
   `status` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   FOREIGN KEY (`sender_id`) REFERENCES `user_data` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `facebook_temp_users`
@@ -119,7 +119,7 @@ CREATE TABLE `facebook_temp_users` (
   `udate` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`sender_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `friends`
@@ -135,7 +135,7 @@ CREATE TABLE `friends` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`sender_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`receiver_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `friend_log`
@@ -150,7 +150,7 @@ CREATE TABLE `friend_log` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`friend_id`) REFERENCES `friends` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `image`
@@ -162,7 +162,7 @@ CREATE TABLE `image` (
   `width` int(10) DEFAULT NULL,
   `height` int(10) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `image_thumb`
@@ -178,7 +178,7 @@ CREATE TABLE `image_thumb` (
   `thumb_height` int(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`image_id`) REFERENCES `image` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `login_status`
@@ -195,7 +195,7 @@ CREATE TABLE `login_status` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `news`
@@ -219,7 +219,7 @@ CREATE TABLE `news` (
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`image_id`) REFERENCES `image` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   FOREIGN KEY (`address_id`) REFERENCES `address` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TRIGGER `news_before_del` BEFORE DELETE ON `news` FOR EACH ROW
 DELETE FROM address WHERE address.id=OLD.address_id;;
@@ -233,7 +233,7 @@ CREATE TABLE `news_link` (
   `news_id` int(11) NOT NULL,
   `link` varchar(2000) NOT NULL,
   `link_trim` varchar(2000) NOT NULL,
-  `title` varchar(255) DEFAULT NULL,
+  `title` varchar(2000) DEFAULT NULL,
   `description` text,
   `author` varchar(255) DEFAULT NULL,
   `image_id` int(11) DEFAULT NULL,
@@ -241,7 +241,7 @@ CREATE TABLE `news_link` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`news_id`) REFERENCES `news` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`image_id`) REFERENCES `image` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `post_social`
@@ -253,7 +253,7 @@ CREATE TABLE `post_social` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`post_id`) REFERENCES `news` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `setting`
@@ -267,9 +267,8 @@ CREATE TABLE `setting` (
   `value` text NOT NULL,
   `description` varchar(2000) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY (`name`),
   INDEX (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `user_confirm`
@@ -285,7 +284,7 @@ CREATE TABLE `user_confirm` (
   `deleted` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `user_data`
@@ -317,7 +316,7 @@ CREATE TABLE `user_data` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`image_id`) REFERENCES `image` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   FOREIGN KEY (`address_id`) REFERENCES `address` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TRIGGER `user_before_del` BEFORE DELETE ON `user_data` FOR EACH ROW
 DELETE FROM address WHERE address.id=OLD.address_id;;
@@ -339,4 +338,4 @@ CREATE TABLE `votings` (
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`news_id`) REFERENCES `news` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

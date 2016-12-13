@@ -93,6 +93,7 @@ class Admin_SettingsController extends Zend_Controller_Action
 		}
 
 		$settingModel = new Admin_Model_Setting;
+		$settingForm = new Admin_Form_Setting;
 
 		if ($id != null)
 		{
@@ -105,8 +106,11 @@ class Admin_SettingsController extends Zend_Controller_Action
 
 			$this->view->setting = $setting;
 		}
-
-		$settingForm = new Admin_Form_Setting;
+		else
+		{
+			$settingForm->getElement('name')->addValidator(
+				new Zend_Validate_Db_NoRecordExists('setting', 'name'));
+		}
 
 		if ($this->_request->isPost())
 		{
