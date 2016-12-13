@@ -2,317 +2,341 @@ ALTER DATABASE `seearoun_seearoundme` COLLATE utf8_general_ci;
 ALTER DATABASE `seearoun_seearoundme` CHARSET utf8;
 
 --
--- Table structure for table `user_data`
---
-ALTER TABLE `user_data` DROP `Profile_image`;
-ALTER TABLE `user_data` CHANGE `Network_id` `Network_id` VARCHAR(2000) NULL DEFAULT NULL;
-ALTER TABLE `user_data` CHANGE `is_admin` `is_admin` TINYINT(1) NOT NULL DEFAULT '0';
-ALTER TABLE `user_data` COLLATE 'utf8_general_ci';
-ALTER TABLE `user_data` ADD `password_hash` varchar(255) NULL;
-ALTER TABLE `user_data` ADD `image_id` INT(11) NULL;
-ALTER TABLE `user_data` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE `user_data` CHANGE `image_id` `image_id` int(11) NULL AFTER `id`;
-ALTER TABLE `user_data` ADD `address_id` INT(11) NOT NULL AFTER `id`;
-ALTER TABLE `user_data` ADD FOREIGN KEY (`address_id`) REFERENCES `address`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-CREATE TRIGGER user_before_del BEFORE DELETE ON user_data
-	FOR EACH ROW DELETE FROM address WHERE address.id=OLD.address_id;
-ALTER TABLE `user_data` CONVERT TO CHARACTER SET utf8;
-ALTER TABLE `user_data` DROP `User_id`;
-ALTER TABLE `user_data` DROP `Token`;
-ALTER TABLE `user_data` DROP `Password`;
-ALTER TABLE `user_data` DROP `Old_email`;
-ALTER TABLE `user_data` DROP `Conf_code`;
-ALTER TABLE `user_data` CHANGE `password_hash` `password` VARCHAR(255) NULL;
-ALTER TABLE `user_data` ADD `image_name` varchar(255) null after `image_id`;
-ALTER TABLE `user_data` ADD `public_profile` tinyint(1) not null default '0';
-ALTER TABLE `user_data` ADD `gender` tinyint(1) null;
-ALTER TABLE `user_data` ADD `activity` varchar(255) null;
-ALTER TABLE `user_data` ADD `post` int(11) not null default '0';
-ALTER TABLE `user_data` ADD `comment` int(11) not null default '0';
-ALTER TABLE `user_data` ADD `comment_other` int(11) not null default '0';
-ALTER TABLE `user_data` ADD `vote` int(11) not null default '0';
-ALTER TABLE `user_data` ADD `invite` int(11) not null default '0';
-ALTER TABLE `user_data` ADD `invite_updated_at` timestamp null default null;
-ALTER TABLE `user_data` CHANGE `activity` `interest` varchar(255) NULL;
-
---
--- Table structure for table `user_confirm`
---
-CREATE TABLE `user_confirm` (
-  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `user_id` int(11) NOT NULL,
-  `type_id` smallint NOT NULL,
-  `code` varchar(255) NOT NULL,
-  `created_at` TIMESTAMP NULL,
-  `updated_at` TIMESTAMP NULL,
-  `deleted` TINYINT(1) NOT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE='InnoDB' COLLATE 'utf8_general_ci';
-
---
 -- Table structure for table `address`
 --
-ALTER TABLE `address` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `address` CHANGE `address` `address` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
-ALTER TABLE `address` COLLATE 'utf8_general_ci';
-ALTER TABLE `address` CHANGE `Id` `id` int(10) NOT NULL AUTO_INCREMENT;
-ALTER TABLE `address` CHANGE `latitude` `latitude` double NOT NULL;
-ALTER TABLE `address` CHANGE `longitude` `longitude` double NOT NULL;
-ALTER TABLE `address` ADD `street_name` varchar(255) NULL;
-ALTER TABLE `address` ADD `street_number` varchar(255) NULL AFTER `street_name`;
-ALTER TABLE `address` ADD `city` varchar(255) NULL AFTER `street_number`;
-ALTER TABLE `address` ADD `state` varchar(255) NULL AFTER `city`;
-ALTER TABLE `address` ADD `country` varchar(255) NULL AFTER `state`;
-ALTER TABLE `address` ADD `zip` varchar(255) NULL AFTER `country`;
-ALTER TABLE `address` DROP FOREIGN KEY `address_ibfk_1`;
-ALTER TABLE `address` DROP `user_id`;
-ALTER TABLE `address` ADD `timezone` varchar(255) NULL;
 
---
--- Table structure for table `user_profile`
---
-ALTER TABLE `user_profile` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-DROP TABLE `user_profile`;
+CREATE TABLE `address` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `address` varchar(255) DEFAULT NULL,
+  `latitude` double NOT NULL,
+  `longitude` double NOT NULL,
+  `street_name` varchar(255) DEFAULT NULL,
+  `street_number` varchar(255) DEFAULT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `state` varchar(255) DEFAULT NULL,
+  `country` varchar(255) DEFAULT NULL,
+  `zip` varchar(255) DEFAULT NULL,
+  `timezone` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `comments`
 --
-ALTER TABLE `comments` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `comments` CHANGE `created_at` `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
-ALTER TABLE `comments` CHANGE `isdeleted` `isdeleted` INT(2) NOT NULL DEFAULT '0';
-ALTER TABLE `comments` CHANGE `comment` `comment` VARCHAR(65535) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
-ALTER TABLE `comments` ADD FOREIGN KEY `comments_fk_2`(`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE;
-ALTER TABLE `comments` ADD `notify` TINYINT NOT NULL DEFAULT '0' AFTER `updated_at`;
-ALTER TABLE `comments` ADD `is_read` BIT NOT NULL DEFAULT 0 AFTER `notify`;
-ALTER TABLE `comments` CHANGE `is_read` `is_read` TINYINT(1) NOT NULL DEFAULT '0';
 
---
--- Table structure for table `friends`
---
-ALTER TABLE `friends` ENGINE = InnoDB;
-ALTER TABLE `friends` CHANGE `sender_id` `sender_id` INT(10) NOT NULL;
-ALTER TABLE `friends` CHANGE `reciever_id` `reciever_id` INT(10) NOT NULL;
-ALTER TABLE `friends` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `friends` ADD FOREIGN KEY (`receiver_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `friends` CHANGE `status` `status` SMALLINT NOT NULL DEFAULT '0';
-ALTER TABLE `friends` ADD `notify` TINYINT(1) NOT NULL DEFAULT '0' AFTER `udate`;
-ALTER TABLE `friends` DROP `udate`;
-ALTER TABLE `friends` DROP `cdate`;
-ALTER TABLE `friends` CHANGE `reciever_id` `receiver_id` int(10) not null;
-
---
--- Table structure for table `friend_log`
---
-CREATE TABLE `friend_log` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`friend_id` INT(11) NOT NULL,
-	`user_id` INT(11) NOT NULL,
-	`status_id` SMALLINT NOT NULL,
-	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY (`friend_id`) REFERENCES `friends`(`id`) ON DELETE CASCADE,
-	FOREIGN KEY (`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE,
-	PRIMARY KEY (`id`)
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
-
---
--- Table structure for table `invite_status`
---
-ALTER TABLE `invite_status` ENGINE = InnoDB;
-ALTER TABLE `invite_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-DROP TABLE `invite_status`;
-
---
--- Table structure for table `login_status`
---
-ALTER TABLE `login_status` ENGINE = InnoDB;
-ALTER TABLE `login_status` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `login_status` CHANGE `login_time` `login_time` TIMESTAMP NULL DEFAULT NULL;
-ALTER TABLE `login_status` CHANGE `logout_time` `logout_time` TIMESTAMP NULL DEFAULT NULL;
-ALTER TABLE `login_status` ADD `visit_time` TIMESTAMP NULL DEFAULT NULL AFTER `logout_time`;
-ALTER TABLE `login_status` ADD `token` VARCHAR(64) NULL;
-
---
--- Table structure for table `news`
---
-ALTER TABLE `news` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `news` CHANGE `created_date` `created_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
-ALTER TABLE `news` ADD `news_html` LONGTEXT NULL DEFAULT NULL AFTER `news`;
-ALTER TABLE `news` CHANGE `news` `news` VARCHAR(500) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
-ALTER TABLE `news` CHANGE `news_html` `news_html` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
-ALTER TABLE `news` CHANGE `images` `image` TEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
-ALTER TABLE `news` DROP `news_html`;
-ALTER TABLE `news` ADD `vote` INT(11) NOT NULL DEFAULT '0' AFTER `Address`;
-ALTER TABLE `news` DROP `score`;
-ALTER TABLE `news` ADD `comment` INT(11) NOT NULL DEFAULT '0' AFTER `vote`;
-ALTER TABLE `news` DROP `image`;
-ALTER TABLE `news` ADD `image_id` INT(11) NULL;
-ALTER TABLE `news` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE `news` ADD `address_id` INT(11) NULL AFTER `id`;
-ALTER TABLE `news` ADD FOREIGN KEY (`address_id`) REFERENCES `address`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-CREATE TRIGGER news_before_del BEFORE DELETE ON news
-	FOR EACH ROW DELETE FROM address WHERE address.id=OLD.address_id;
-ALTER TABLE `news`
-	DROP `latitude`,
-	DROP `longitude`,
-	DROP `Address`;
-ALTER TABLE `news` MODIFY `news` text;
-ALTER TABLE `news` COLLATE 'utf8_general_ci';
-ALTER TABLE `news` ADD `image_name` varchar(255) null after `image_id`;
-ALTER TABLE `news` CHANGE `news` `news` longtext COLLATE 'utf8_general_ci';
-
---
--- Table structure for table `news_link`
---
-CREATE TABLE `news_link` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`news_id` INT(11) NOT NULL,
-	`link` VARCHAR(2000) NOT NULL,
-	`title` VARCHAR(255) NULL,
-	`description` TEXT NULL,
-	`author` VARCHAR(255) NULL,
-	`image` VARCHAR(2000) NULL,
-	`image_width` INT(10) NULL,
-	`image_height` INT(10) NULL,
-	PRIMARY KEY (`id`),
-	FOREIGN KEY `news_link_fk_1`(`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-ALTER TABLE `news_link` DROP `image`;
-ALTER TABLE `news_link` DROP `image_width`;
-ALTER TABLE `news_link` DROP `image_height`;
-ALTER TABLE `news_link` ADD `image_id` INT(11) NULL;
-ALTER TABLE `news_link` ADD FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE `news_link` ADD `link_trim` VARCHAR(2000) NOT NULL AFTER `link`;
-ALTER TABLE `news_link` ADD `image_name` varchar(255) null after `image_id`;
-
---
--- Table structure for table `post_social`
---
-CREATE TABLE `post_social` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`post_id` INT(11) NOT NULL,
-	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	PRIMARY KEY (`id`),
-	FOREIGN KEY (`post_id`) REFERENCES `news`(`id`) ON DELETE CASCADE
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
-
---
--- Table structure for table `image`
---
-CREATE TABLE `image` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`path` VARCHAR(2000) NULL,
-	`width` INT(10) NULL,
-	`height` INT(10) NULL,
-	PRIMARY KEY (`id`)
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
-
---
--- Table structure for table `image_thumb`
---
-CREATE TABLE `image_thumb` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`image_id` INT(11) NOT NULL,
-	`path` VARCHAR(2000) NULL,
-	`width` INT(10) NULL,
-	`height` INT(10) NULL,
-	`thumb_width` INT(10) NULL,
-	`thumb_height` INT(10) NULL,
-	PRIMARY KEY (`id`),
-	FOREIGN KEY (`image_id`) REFERENCES `image`(`id`) ON DELETE CASCADE
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
-
---
--- Table structure for table `votings`
---
-ALTER TABLE `votings` ADD FOREIGN KEY `user_data_fk_1`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-ALTER TABLE `votings` ADD FOREIGN KEY `user_data_fk_2`(`news_id`) REFERENCES `news`(`id`) ON DELETE CASCADE;
-ALTER TABLE `votings` ADD FOREIGN KEY `user_data_fk_3`(`comments_id`) REFERENCES `comments`(`id`) ON DELETE CASCADE;
-ALTER TABLE `votings` DROP FOREIGN KEY votings_ibfk_4;
-ALTER TABLE `votings` DROP `comments_id`;
-ALTER TABLE `votings` DROP `comments_count`;
-ALTER TABLE `votings` DROP `type`;
-ALTER TABLE `votings` DROP `news_count`;
-ALTER TABLE `votings` ADD `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `news_id`;
-ALTER TABLE `votings` ADD `updated_at` TIMESTAMP NULL DEFAULT NULL AFTER `created_at`;
-ALTER TABLE `votings` ADD `vote` TINYINT NOT NULL DEFAULT '1' AFTER `id`;
-ALTER TABLE `votings` CHANGE `vote` `vote` TINYINT(4) NOT NULL;
-ALTER TABLE `votings` ADD `canceled` TINYINT NOT NULL DEFAULT '0';
-ALTER TABLE `votings` ADD `is_read` BIT NOT NULL DEFAULT 0;
-ALTER TABLE `votings` CHANGE `is_read` `is_read` TINYINT(1) NOT NULL DEFAULT '0';
-ALTER TABLE `votings` ADD `active` TINYINT(1) NOT NULL DEFAULT '0';
-ALTER TABLE `votings` DROP `canceled`;
-
---
--- Table structure for table `facebook_temp_users`
---
-ALTER TABLE `facebook_temp_users` ENGINE = InnoDB;
-ALTER TABLE `facebook_temp_users` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE;
-
---
--- Table structure for table `email_invites`
---
-ALTER TABLE `email_invites` ENGINE = InnoDB;
-ALTER TABLE `email_invites` ADD FOREIGN KEY `user_data_fk_1`(`sender_id`) REFERENCES `user_data`(`id`) ON DELETE SET NULL;
+CREATE TABLE `comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `news_id` int(10) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `comment` mediumtext CHARACTER SET utf8 NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `notify` tinyint(4) NOT NULL DEFAULT '0',
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `isdeleted` int(2) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`news_id`) REFERENCES `news` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `comment_user_notify`
 --
+
 CREATE TABLE `comment_user_notify` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`comment_id` INT(11) NOT NULL,
-	`user_id` INT(11) NOT NULL,
-	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	PRIMARY KEY (`id`),
-	FOREIGN KEY `comment_user_notify_ibfk_1`(`comment_id`) REFERENCES `comments`(`id`) ON DELETE CASCADE,
-	FOREIGN KEY `comment_user_notify_ibfk_2`(`user_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `comment_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `conversation`
 --
+
 CREATE TABLE `conversation` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`from_id` INT(11) NOT NULL,
-	`to_id` INT(11) NOT NULL,
-	`subject` VARCHAR(250) NULL,
-	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`status` TINYINT(1) NOT NULL,
-	PRIMARY KEY (`id`),
-	FOREIGN KEY (`from_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE,
-	FOREIGN KEY (`to_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `from_id` int(11) NOT NULL,
+  `to_id` int(11) NOT NULL,
+  `subject` varchar(250) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`from_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`to_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `conversation_message`
 --
+
 CREATE TABLE `conversation_message` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`conversation_id` INT(11) NOT NULL,
-	`from_id` INT(11) NOT NULL,
-	`to_id` INT(11) NOT NULL,
-	`body` VARCHAR(250) NULL,
-	`is_read` TINYINT(1) NOT NULL,
-	`is_first` TINYINT(1) NOT NULL,
-	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`status` TINYINT(1) NOT NULL,
-	PRIMARY KEY (`id`),
-	FOREIGN KEY (`conversation_id`) REFERENCES `conversation`(`id`) ON DELETE CASCADE,
-	FOREIGN KEY (`from_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE,
-	FOREIGN KEY (`to_id`) REFERENCES `user_data`(`id`) ON DELETE CASCADE
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `conversation_id` int(11) NOT NULL,
+  `from_id` int(11) NOT NULL,
+  `to_id` int(11) NOT NULL,
+  `body` varchar(250) DEFAULT NULL,
+  `is_read` tinyint(1) NOT NULL,
+  `is_first` tinyint(1) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`conversation_id`) REFERENCES `conversation` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`from_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`to_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `email_invites`
+--
+
+CREATE TABLE `email_invites` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sender_id` int(11) DEFAULT NULL,
+  `receiver_email` varchar(55) DEFAULT NULL,
+  `code` varchar(55) DEFAULT NULL,
+  `self_email` varchar(255) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `status` enum('0','1') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`sender_id`) REFERENCES `user_data` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Table structure for table `facebook_temp_users`
+--
+
+CREATE TABLE `facebook_temp_users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sender_id` int(11) NOT NULL,
+  `reciever_nw_id` varchar(25) NOT NULL,
+  `full_name` varchar(50) NOT NULL,
+  `status` enum('0','1','2') DEFAULT '0',
+  `cdate` datetime DEFAULT NULL,
+  `udate` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`sender_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Table structure for table `friends`
+--
+
+CREATE TABLE `friends` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sender_id` int(10) NOT NULL,
+  `receiver_id` int(10) NOT NULL,
+  `status` smallint(6) NOT NULL DEFAULT '0',
+  `source` enum('herespy','email','facebook','connect') DEFAULT 'herespy',
+  `notify` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`sender_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`receiver_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Table structure for table `friend_log`
+--
+
+CREATE TABLE `friend_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `friend_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `status_id` smallint(6) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`friend_id`) REFERENCES `friends` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `image`
+--
+
+CREATE TABLE `image` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `path` varchar(2000) DEFAULT NULL,
+  `width` int(10) DEFAULT NULL,
+  `height` int(10) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `image_thumb`
+--
+
+CREATE TABLE `image_thumb` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `image_id` int(11) NOT NULL,
+  `path` varchar(2000) DEFAULT NULL,
+  `width` int(10) DEFAULT NULL,
+  `height` int(10) DEFAULT NULL,
+  `thumb_width` int(10) DEFAULT NULL,
+  `thumb_height` int(10) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`image_id`) REFERENCES `image` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `login_status`
+--
+
+CREATE TABLE `login_status` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `login_time` timestamp NULL DEFAULT NULL,
+  `logout_time` timestamp NULL DEFAULT NULL,
+  `visit_time` timestamp NULL DEFAULT NULL,
+  `ip_address` varbinary(255) DEFAULT NULL,
+  `token` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Table structure for table `news`
+--
+
+CREATE TABLE `news` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `address_id` int(11) NOT NULL,
+  `user_id` int(10) NOT NULL,
+  `news` longtext,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime DEFAULT NULL,
+  `isdeleted` tinyint(1) DEFAULT '0',
+  `isflag` tinyint(1) DEFAULT '0',
+  `isblock` tinyint(1) DEFAULT '0',
+  `vote` int(11) NOT NULL DEFAULT '0',
+  `comment` int(11) NOT NULL DEFAULT '0',
+  `image_id` int(11) DEFAULT NULL,
+  `image_name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`image_id`) REFERENCES `image` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  FOREIGN KEY (`address_id`) REFERENCES `address` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TRIGGER `news_before_del` BEFORE DELETE ON `news` FOR EACH ROW
+DELETE FROM address WHERE address.id=OLD.address_id;;
+
+--
+-- Table structure for table `news_link`
+--
+
+CREATE TABLE `news_link` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `news_id` int(11) NOT NULL,
+  `link` varchar(2000) NOT NULL,
+  `link_trim` varchar(2000) NOT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `description` text,
+  `author` varchar(255) DEFAULT NULL,
+  `image_id` int(11) DEFAULT NULL,
+  `image_name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`news_id`) REFERENCES `news` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`image_id`) REFERENCES `image` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `post_social`
+--
+
+CREATE TABLE `post_social` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `post_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`post_id`) REFERENCES `news` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `setting`
 --
+
 CREATE TABLE `setting` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
-	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`updated_at` TIMESTAMP,
-	`name` VARCHAR(255) NOT NULL,
-	`value` TEXT NOT NULL,
-	`description` VARCHAR(2000) NULL,
-	PRIMARY KEY (`id`),
-	INDEX(`name`),
-	UNIQUE(`name`)
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `name` varchar(255) NOT NULL,
+  `value` text NOT NULL,
+  `description` varchar(2000) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`name`),
+  INDEX (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `user_confirm`
+--
+
+CREATE TABLE `user_confirm` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `type_id` smallint(6) NOT NULL,
+  `code` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `user_data`
+--
+
+CREATE TABLE `user_data` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `address_id` int(11) NOT NULL,
+  `Name` varchar(50) DEFAULT NULL,
+  `Email_id` varchar(100) DEFAULT NULL,
+  `Birth_date` date DEFAULT NULL,
+  `Creation_date` datetime DEFAULT NULL,
+  `Update_date` datetime DEFAULT NULL,
+  `Status` enum('inactive','active') DEFAULT 'inactive',
+  `Network_id` varchar(2000) DEFAULT NULL,
+  `is_admin` tinyint(1) NOT NULL DEFAULT '0',
+  `password` varchar(255) DEFAULT NULL,
+  `image_id` int(11) DEFAULT NULL,
+  `image_name` varchar(255) DEFAULT NULL,
+  `public_profile` tinyint(1) NOT NULL DEFAULT '0',
+  `gender` tinyint(1) DEFAULT NULL,
+  `interest` varchar(255) DEFAULT NULL,
+  `post` int(11) NOT NULL DEFAULT '0',
+  `comment` int(11) NOT NULL DEFAULT '0',
+  `comment_other` int(11) NOT NULL DEFAULT '0',
+  `vote` int(11) NOT NULL DEFAULT '0',
+  `invite` int(11) NOT NULL DEFAULT '0',
+  `invite_updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`image_id`) REFERENCES `image` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  FOREIGN KEY (`address_id`) REFERENCES `address` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TRIGGER `user_before_del` BEFORE DELETE ON `user_data` FOR EACH ROW
+DELETE FROM address WHERE address.id=OLD.address_id;;
+
+--
+-- Table structure for table `votings`
+--
+
+CREATE TABLE `votings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `vote` tinyint(4) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `news_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`,`user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`news_id`) REFERENCES `news` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
