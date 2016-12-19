@@ -1004,10 +1004,24 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
+			if (!Application_Model_News::checkId($id, $post,
+				['deleted' => true, 'join'=>false]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($id, true));
+			}
+
+			if ($post['isdeleted'])
+			{
+				if ($isAjax)
+				{
+					throw new RuntimeException('Post is already deleted: ' .
+						var_export($id, true));
+				}
+				else
+				{
+					$this->_redirect('post/' . $id);
+				}
 			}
 
 			if (!Application_Model_News::canDelete($post, $user))
@@ -1027,7 +1041,7 @@ class PostController extends Zend_Controller_Action
 
 			if (!$isAjax)
 			{
-				$this->_redirect('/');
+				$this->_redirect('post/' . $id);
 			}
 
 			$response = ['status' => 1];
