@@ -140,6 +140,18 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		);
 
 		$router->addRoute(
+			'post/delete',
+			new Zend_Controller_Router_Route(
+				'post/delete/:id',
+				array(
+					'controller' => 'post',
+					'action' => 'delete'
+				),
+				array('id' => '\d+')
+			)
+		);
+
+		$router->addRoute(
 			'about',
 			new Zend_Controller_Router_Route(
 				'about',

@@ -1860,6 +1860,54 @@ class MobileController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Flags post as inappropriate.
+	 */
+	public function flagPostAction()
+	{
+		try
+		{
+			$user = $this->getUserByToken();
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
+			{
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($id, true));
+			}
+
+			My_Email::send(
+				$this->settings['email_fromAddress'],
+				'Report Abuse',
+				[
+					'template' => 'flag-post',
+					'assign' => ['post' => $post],
+					'settings' => $this->settings
+				]
+			);
+
+			$response = ['status' => 'SUCCESS'];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+			$this->errorHandler($e);
+		}
+
+		$this->responseHandler($response);
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * List neares news action.
 	 */
 	public function requestNearestAction()

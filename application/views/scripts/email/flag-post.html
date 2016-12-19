@@ -1,0 +1,9 @@
+<?php
+$detailsUrl = $this->serverUrl() . $this->baseUrl('post/' .
+	$this->post['id']);
+$deleteUrl = $this->serverUrl() . $this->baseUrl('post/delete/' .
+	$this->post['id']);
+?>
+<p>This post has been flagged as in appropriate, please review within 24 hours.
+<a href="<?php echo $detailsUrl; ?>"><?php echo $detailsUrl; ?></a>.</p>
+<p><a href="<?php echo $deleteUrl; ?>"><?php echo $deleteUrl; ?></a></p>

@@ -985,6 +985,8 @@ class PostController extends Zend_Controller_Action
 	 */
 	public function deleteAction()
 	{
+		$isAjax = $this->getRequest()->isXmlHttpRequest();
+
 		try
 		{
 			$user = Application_Model_User::getAuth();
@@ -994,7 +996,7 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$id = $this->_request->getPost('id');
+			$id = $this->_request->get('id');
 
 			if (!v::intVal()->validate($id))
 			{
@@ -1023,11 +1025,22 @@ class PostController extends Zend_Controller_Action
 				'post' => $user['post']-1
 			], $user);
 
+			if (!$isAjax)
+			{
+				$this->_redirect('/');
+			}
+
 			$response = ['status' => 1];
 		}
 		catch (Exception $e)
 		{
+			if (!$isAjax)
+			{
+				throw $e;
+			}
+
 			My_Log::exception($e);
+
 			$response = [
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
