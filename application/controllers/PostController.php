@@ -1010,7 +1010,7 @@ class PostController extends Zend_Controller_Action
 					var_export($id, true));
 			}
 
-			if (!Application_Model_News::canEdit($post, $user))
+			if (!Application_Model_News::canDelete($post, $user))
 			{
 				throw new RuntimeException('You are not authorized to access this action');
 			}
