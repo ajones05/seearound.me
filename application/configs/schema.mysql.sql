@@ -322,6 +322,20 @@ CREATE TRIGGER `user_before_del` BEFORE DELETE ON `user_data` FOR EACH ROW
 DELETE FROM address WHERE address.id=OLD.address_id;;
 
 --
+-- Table structure for table `user_block`
+--
+
+CREATE TABLE `user_block` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `block_user_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`block_user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
 -- Table structure for table `votings`
 --
 

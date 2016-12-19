@@ -586,6 +586,61 @@ class MobileController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Profile details action.
+	 */
+  public function blockUserAction()
+	{
+		try
+		{
+			$user = $this->getUserByToken();
+			$block_user_id = $this->_request->getPost('block_user_id');
+
+			if (!v::intVal()->validate($block_user_id))
+			{
+				throw new RuntimeException('Incorrect block user ID value: ' .
+					var_export($block_user_id, true));
+			}
+
+			if ($user['id'] == $block_user_id)
+			{
+				throw new RuntimeException('Block user ID cannot be the same');
+			}
+
+			if (Application_Model_User::findById($block_user_id, true) == null)
+			{
+				throw new RuntimeException('Incorrect block user ID: ' .
+					var_export($block_user_id, true));
+			}
+
+			$userBlockModel = new Application_Model_UserBlock;
+
+			if ($userBlockModel->isBlock($user['id'], $block_user_id))
+			{
+				throw new RuntimeException('User is already blocked');
+			}
+
+			$userBlockModel->insert([
+				'user_id' => $user['id'],
+				'block_user_id' => $block_user_id
+			]);
+
+			$response = ['status' => 'SUCCESS'];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => true || $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+			$this->errorHandler($e);
+		}
+
+		$this->responseHandler($response);
+		$this->_helper->json($response);
+	}
+
+	/**
 	 * Send message action.
 	 */
 	public function sendmessageAction()

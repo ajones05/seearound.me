@@ -1,0 +1,35 @@
+<h2>mobile/block-user</h2>
+<ol class="breadcrumb">
+	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
+	<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile Api</a></li>
+	<li class="active">block-user</li>
+</ol>
+<div class="well">
+<p>Block User</p>
+<a href="https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileblock-user">
+https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobileblock-user</a>
+</div>
+<form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/block-user'); ?>"
+	method="post" enctype="multipart/form-data">
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="token">Token [token]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="token" class="form-control"
+				id="token" placeholder="Enter access token"
+				value="<?php echo $this->request->getParam('token'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="block_user_id">Block User ID [block_user_id]:</label>
+		<div class="col-sm-10">
+			<input type="text" name="block_user_id" class="form-control"
+				id="block_user_id" placeholder="Enter user ID"
+				value="<?php echo $this->request->getParam('block_user_id'); ?>">
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="btn btn-default">Submit</button>
+		</div>
+	</div>
+</form>

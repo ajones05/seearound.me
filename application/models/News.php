@@ -78,8 +78,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * @param array $options
 	 * @return Zend_Db_Table_Select
 	 */
-	 public function publicSelect(array $options = [])
-	 {
+	public function publicSelect(array $options = [])
+	{
 		$isCount = My_ArrayHelper::getProp($options, 'count', false);
 		$addressFields = $isCount ? '' : ['address', 'latitude', 'longitude',
 			'street_name', 'street_number', 'city', 'state', 'country', 'zip'];
@@ -134,10 +134,18 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					['user_vote' => 'vote']
 				);
 			}
+
+			$query->joinLeft([
+				'ub' => 'user_block'],
+				'(ub.block_user_id=news.user_id AND ub.user_id=' .
+					$options['user']['id'] . ')',
+				''
+			);
+			$query->where('ub.id IS NULL');
 		}
 
 		return $query;
-    }
+	}
 
 	/**
 	 * Returns search news query.
