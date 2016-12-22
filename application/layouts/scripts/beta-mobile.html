@@ -1,8 +1,6 @@
 <?php
 $settings = Application_Model_Setting::getInstance();
 
-
-
 $this->doctype('XHTML1_RDFA');
 
 $this->headLink()
@@ -10,7 +8,8 @@ $this->headLink()
 
 $this->headScript()->appendScript('var signup=0;');
 
-$this->headMeta('width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no', 'viewport')
+$this->headMeta('width=device-width, initial-scale=1.0, maximum-scale=1.0,
+	user-scalable=no', 'viewport')
 	->setProperty('og:title', $settings['meta_title'])
 	->setProperty('og:description', $settings['meta_description'])
 	->setProperty('og:image', $this->serverUrl() .
@@ -30,30 +29,45 @@ $this->headMeta('width=device-width, initial-scale=1.0, maximum-scale=1.0, user-
 alt="" class="logo-mobile">
 <h1>Connect with life nearby</h1>
 <div class="wrapper-users-mobile">
-<img src="<?php echo $this->baseUrl('www/images/users.png'); ?>" alt="" class="users-mobile">
+<img alt="" class="users-mobile"
+src="<?php echo $this->baseUrl('www/images/users.png'); ?>">
 </div>
 <div class="content">
 <div class="app-mobile">
 <h2 class="h2">Get the app</h2>
 <div class="wrapper-a">
-<a href="#" target="_blank"><img src="<?php echo $this->baseUrl('www/images/app-store-mob.png'); ?>"></a>
-<a href="#" target="_blank"><img src="<?php echo $this->baseUrl('www/images/google-play-mob.png'); ?>"></a>
+<?php /*<a href="#" target="_blank"><img
+src="<?php echo $this->baseUrl('www/images/app-store-mob.png'); ?>"></a>*/ ?>
+<a target="_blank"
+href="https://play.google.com/store/apps/details?id=com.seearoundme.mobileapp"
+><img src="<?php echo $this->baseUrl('www/images/google-play-mob.png'); ?>"></a>
 </div>
 </div>
 <div class="wrapper-map">
-<img src="<?php echo $this->baseUrl('www/images/map.png'); ?>" alt="" class="phone-img">
+<img alt="" class="phone-img"
+src="<?php echo $this->baseUrl('www/images/map.png'); ?>">
 </div>
 <div class="references">
 <h2>Join other people already sharing about topics like...</h2>
-<div class="line"><img src="<?php echo $this->baseUrl('www/images/beta/pic-1.jpg'); ?>" alt=""> <span>New local businesses</span></div>
-<div class="line"><span>Local events or festivals</span> <img src="<?php echo $this->baseUrl('www/images/beta/pic-2.jpg'); ?>" alt=""></div>
-<div class="line"><img src="<?php echo $this->baseUrl('www/images/beta/pic-3.png'); ?>" alt=""> <span>Crime and safety issues</span></div>
-<div class="line"><span>Crowds or protest updates</span> <img src="<?php echo $this->baseUrl('www/images/beta/pic-4.png'); ?>" alt=""></div>
-<div class="line"><img src="<?php echo $this->baseUrl('www/images/beta/pic-5.png'); ?>" alt=""> <span>Why do I hear helicopters?</span></div>
-<div class="line"><span>Food trucks or yard sales</span> <img src="<?php echo $this->baseUrl('www/images/beta/pic-6.png'); ?>" alt=""></div>
+<div class="line"><img alt=""
+src="<?php echo $this->baseUrl('www/images/beta/pic-1.jpg'); ?>"> <span
+>New local businesses</span></div>
+<div class="line"><span>Local events or festivals</span> <img alt=""
+src="<?php echo $this->baseUrl('www/images/beta/pic-2.jpg'); ?>"></div>
+<div class="line"><img alt=""
+src="<?php echo $this->baseUrl('www/images/beta/pic-3.png'); ?>"> <span
+>Crime and safety issues</span></div>
+<div class="line"><span>Crowds or protest updates</span> <img alt=""
+src="<?php echo $this->baseUrl('www/images/beta/pic-4.png'); ?>"></div>
+<div class="line"><img alt=""
+src="<?php echo $this->baseUrl('www/images/beta/pic-5.png'); ?>"> <span
+>Why do I hear helicopters?</span></div>
+<div class="line"><span>Food trucks or yard sales</span> <img alt=""
+src="<?php echo $this->baseUrl('www/images/beta/pic-6.png'); ?>"></div>
 </div>
 </div>
-<img src="<?php echo $this->baseUrl('www/images/phone-lower.png'); ?>" alt="" class="phone-img lower-img">
+<img alt="" class="phone-img lower-img"
+src="<?php echo $this->baseUrl('www/images/phone-lower.png'); ?>">
 <?php include '_async_media.html'; ?>
 </body>
 </html>

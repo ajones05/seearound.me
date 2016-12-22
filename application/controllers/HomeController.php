@@ -31,7 +31,7 @@ class HomeController extends Zend_Controller_Action
 			Zend_Session::forgetMe();
 		}
 
-		$this->_redirect('login');
+		$this->_redirect('/');
 	}
 
 	/**

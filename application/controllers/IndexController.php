@@ -25,31 +25,13 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
-		$layout = 'beta';
-
 		if (My_CommonUtils::isMobile())
 		{
-			$layout .= '-mobile';
+			$this->_helper->viewRenderer->setNoRender(true);
+			$this->view->layout()->setLayout('beta-mobile');
+			return;
 		}
 
-		$this->view->layout()->setLayout($layout);
-	}
-
-	/**
-	 * Signup success action.
-	 */
-	public function signupSuccessAction()
-	{
-		$this->view->layout()->setLayout($layout);
-	}
-
-	/**
-	 * Login action.
-	 *
-	 * @return void
-	 */
-	public function loginAction()
-	{
 		$settings = Application_Model_Setting::getInstance();
 		$config = Zend_Registry::get('config_global');
 		$loginForm = new Application_Form_Login;
