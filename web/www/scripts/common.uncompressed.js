@@ -18,7 +18,7 @@ function editLocationDialog(options){
 			$('<div/>').addClass('panel').append(
 				locationForm.append(
 					$('<input/>', {type: 'text', name: 'address', placeholder: options.inputPlaceholder}),
-					$('<input/>', {type: 'submit'}).val('').addClass('search'),
+					$('<input/>', {type: 'button'}).val('').addClass('search'),
 					$('<input/>', {type: 'button'}).val(options.submitText).addClass('save')
 				)
 			)
@@ -41,7 +41,8 @@ function editLocationDialog(options){
 			},
 			open: function(dialogEvent, ui){
 				var renderPlace=false,
-					submitInput=$('[type=submit]',locationForm),
+					autocompleteSel=false,
+					submitInput=$('.search',locationForm).attr('clicked',false),
 					locationAddress=$('[name=address]',locationForm)
 						.on('input', function(){submitInput.attr('disabled', false); }),
 					autocomplete = new google.maps.places.Autocomplete(locationAddress.get(0)),
@@ -73,6 +74,27 @@ function editLocationDialog(options){
 					infowindow.setContent(options.infoWindowContent(address));
 					infowindow.open(map,marker);
 					setGoogleMapsAutocompleteValue(locationAddress.val(address),address);
+				},
+				submitAutocompleteFormHandler=function(){
+					var address=$.trim(locationAddress.val());
+					if (address===''){
+						locationAddress.focus();
+						return false;
+					}
+					submitInput.add(locationAddress).attr('disabled',true);
+					geocoder.geocode({
+						address:address
+					}, function(results, status){
+						var elements=locationAddress;
+						if (status===google.maps.GeocoderStatus.OK){
+							renderLocation({place:results[0],update:['map','marker']});
+							elements.add(submitInput);
+						} else {
+							alert('Sorry! We are unable to find this location.');
+							renderPlace=false;
+						}
+						elements.attr('disabled',false);
+					});
 				};
 				var map = new google.maps.Map(document.getElementById('map-canvas'),{
 					zoom:options.mapZoom,
@@ -144,30 +166,31 @@ function editLocationDialog(options){
 						$(dialogEvent.target).dialog('close');
 					});
 				}
+
+				submitInput.on('click', function(){
+					if ($(this).is(':disabled')){
+						return;
+					}
+					$(this).attr('clicked', true);
+					locationForm.submit();
+				});
+
 				locationForm.submit(function(e){
 					e.preventDefault();
-					if (submitInput.is(':disabled')){
-						return true;
+
+					if (submitInput.attr('clicked')==true){
+						submitInput.attr('clicked',false);
+						submitAutocompleteFormHandler();
+					} else {
+						locationAddress.attr('disabled',true);
+						setTimeout(function(){
+							locationAddress.attr('disabled',false);
+							if (submitInput.is(':disabled')){
+								return true;
+							}
+							submitAutocompleteFormHandler();
+						},200)
 					}
-					var address=$.trim(locationAddress.val());
-					if (address===''){
-						locationAddress.focus();
-						return false;
-					}
-					submitInput.add(locationAddress).attr('disabled',true);
-					geocoder.geocode({
-						address:address
-					}, function(results, status){
-						var elements=locationAddress;
-						if (status===google.maps.GeocoderStatus.OK){
-							renderLocation({place:results[0],update:['map','marker']});
-							elements.add(submitInput);
-						} else {
-							alert('Sorry! We are unable to find this location.');
-							renderPlace=false;
-						}
-						elements.attr('disabled',false);
-					});
 				});
 
 				$('.save',locationForm).click(function(){
