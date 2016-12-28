@@ -1416,6 +1416,10 @@ class MobileController extends Zend_Controller_Action
 					var_export($post_id, true));
 			}
 
+			// TODO: refactoring
+			$friendStatus = $user['id'] != $post['user_id'] ? (new Application_Model_Friends)
+				->isFriend($user, ['id' => $post['user_id']]) : null;
+
 			$response = [
 				'status' => 'SUCCESS',
 				'post' => [
@@ -1433,7 +1437,8 @@ class MobileController extends Zend_Controller_Action
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($post, '320x320', ['alias' => 'owner_'])),
 					'canEdit' => Application_Model_News::canEdit($post, $user),
-					'canVote' => Application_Model_Voting::canVote($user, $post) ? 1 : 0
+					'canVote' => Application_Model_Voting::canVote($user, $post) ? 1 : 0,
+					'isFriend' => $friendStatus ? 1 : 0
 				]
 			];
 
@@ -1994,10 +1999,15 @@ class MobileController extends Zend_Controller_Action
 
 			if (count($result))
 			{
+				$friendModel = new Application_Model_Friends;
 				$userTimezone = Application_Model_User::getTimezone($user);
 
 				foreach ($result as $row)
 				{
+					// TODO: refactoring
+					$friendStatus = $user['id'] != $row['user_id'] ?
+						$friendModel->isFriend($user, ['id' => $row['user_id']]) : null;
+
 					$data = [
 						'id' => $row->id,
 						'user_id' => $row->user_id,
@@ -2013,7 +2023,8 @@ class MobileController extends Zend_Controller_Action
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
 						'canEdit' => Application_Model_News::canEdit($row, $user),
-						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0
+						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0,
+						'isFriend' => $friendStatus ? 1 : 0
 					];
 
 					if ($row->image_id)
@@ -2106,10 +2117,15 @@ class MobileController extends Zend_Controller_Action
 
 			if ($result->count())
 			{
+				$friendModel = new Application_Model_Friends;
 				$userTimezone = Application_Model_User::getTimezone($user);
 
 				foreach ($result as $row)
 				{
+					// TODO: refactoring
+					$friendStatus = $user['id'] != $row['user_id'] ?
+						$friendModel->isFriend($user, ['id' => $row['user_id']]) : null;
+
 					$data = [
 						'id' => $row->id,
 						'user_id' => $row->user_id,
@@ -2125,7 +2141,8 @@ class MobileController extends Zend_Controller_Action
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
 						'canEdit' => Application_Model_News::canEdit($row, $user),
-						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0
+						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0,
+						'isFriend' => $friendStatus ? 1 : 0
 					];
 
 					if ($row->image_id)
