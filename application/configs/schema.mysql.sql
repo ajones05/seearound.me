@@ -342,7 +342,7 @@ CREATE TABLE `user_block` (
 CREATE TABLE `votings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `vote` tinyint(4) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` int(11) NULL DEFAULT NULL,
   `news_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL,
