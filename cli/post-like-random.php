@@ -66,7 +66,7 @@ do
 		{
 			$likeTime = strtotime($post['like_created_at']);
 
-			if ((time() - $likeTime) / 3600 < 1)
+			if ((time() - $likeTime) / 3600 < 0.99)
 			{
 				continue;
 			}
