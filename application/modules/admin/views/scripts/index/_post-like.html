@@ -1,0 +1,15 @@
+<?php
+$postLink = $this->serverUrl() . $this->baseUrl('post/' . $this->like->news_id);
+?>
+<li class="list-group-item" data-id="<?php echo $this->like->id; ?>"
+><span class="badge"><?php echo $this->like->vote; ?></span
+><span class="badge"><?php echo $this->like->created_at; ?></span
+>[<?php echo $this->like->id; ?>]
+<?php if ($this->like->user_id != null): ?>
+<a href="<?php echo $this->baseUrl('profile/' . $this->like->user_id); ?>"
+target="_blank"><?php echo $this->like->user_name; ?></a>
+<?php else: ?>
+<span class="label label-warning">BOT</span>
+<?php endif; ?>
+- <a href="<?php echo $postLink; ?>" target="_blank"><?php echo $postLink; ?></a>
+</li>

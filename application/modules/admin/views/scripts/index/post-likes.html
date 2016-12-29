@@ -1,0 +1,67 @@
+<?php
+$count = $this->likes->count();
+?>
+<h1>Post Likes</h1>
+<ol class="breadcrumb">
+<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
+<li>Post Likes</li>
+</ol>
+<?php if ($count): ?>
+<ul class="list-group">
+<?php foreach ($this->likes as $like)
+echo My_ViewHelper::render('index/_post-like', ['like' => $like],
+'modules/admin/views/scripts');
+if ($count >= 100): ?>
+<li class="list-group-item btn btn-default more">Load more</li>
+<?php endif; ?>
+</ul>
+<?php else: ?>
+<p class="text-warning">There is no likes yet.</p>
+<?php endif; ?>
+<script>
+var likesAjax;
+jQuery('.more').on('click',function(){
+	var target=jQuery(this);
+	if (target.hasClass('disabled'))
+		return false;
+	target.addClass('disabled');
+	if (likesAjax)
+		likesAjax.abort();
+	likesAjax = ajaxJson(baseUrl+'admin/index/post-likes',{
+		data: {start: jQuery('.list-group-item[data-id]').size()},
+		done: function(response){
+			target.removeClass('disabled');
+			if (response.data){
+				for (var i = 0; i < response.data.length; i++){
+					target.before(response.data[i]);
+				}
+			} else {
+				target.remove();
+			}
+		}
+	})
+});
+updateLikes();
+function updateLikes(){
+	setTimeout(function(){
+		likesAjax = ajaxJson(baseUrl+'admin/index/post-likes',{
+			data: {
+				source: 'new',
+				id: jQuery('.list-group li[data-id]:first-child').attr('data-id')
+			},
+			done: function(response){
+				if (response.data){
+					for(var i = response.data.length; i--;){
+						jQuery('.list-group').prepend(
+							jQuery(response.data[i]).addClass('btn-default').on('click',function(){
+								jQuery(this).removeClass('btn-default');
+							})
+						)
+					}
+				}
+				return updateLikes();
+			}
+		})
+	}, 10000);
+}
+</script>

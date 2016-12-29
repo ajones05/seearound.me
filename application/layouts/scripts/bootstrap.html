@@ -27,7 +27,49 @@ $this->headTitle()->setSeparator(' - ')->prepend($settings['site_titlePrefix']);
 <!DOCTYPE html>
 <html lang="en">
 <head><?php echo $this->headMeta() . $this->headTitle() .
-$this->headLink() . $this->headScript(); ?></head>
+$this->headLink() . $this->headScript(); ?><script>
+var baseUrl=<?php echo json_encode($this->baseUrl('/')); ?>,
+ERROR_MESSAGE='Internal server error';
+function ajaxJson(url, settings){
+	if (typeof url === 'string'){
+		settings.url = url;
+	} else if (typeof url === 'object'){
+		settings = url;
+	}
+
+	settings.dataType = 'json';
+
+	var jqxhr = $.ajax($.extend(settings, {type: 'POST'}))
+		.done(function(data, textStatus, jqXHR){
+			var isObject = typeof data === 'object';
+			if (!isObject || data.status == 0){
+				if (typeof settings.fail === 'function'){
+					settings.fail(data, textStatus, jqXHR);
+				}
+				if (settings.failMessage !== false){
+					alert(isObject ? data.message : ERROR_MESSAGE);
+				}
+				return false;
+			}
+
+			if (typeof settings.done === 'function'){
+				return settings.done(data, textStatus, jqXHR);
+			}
+		}).fail(function(jqXHR, textStatus){
+			if (jqXHR.readyState == 0 || jqXHR.status == 0){
+				return true;
+			}
+			if (typeof settings.fail === 'function'){
+				settings.fail({}, textStatus, jqXHR);
+			}
+			if (settings.failMessage !== false){
+				alert(ERROR_MESSAGE);
+			}
+		});
+
+	return jqxhr;
+}
+</script></head>
 <body>
 <nav class="navbar navbar-default" role="navigation">
 <div class="navbar-header">
@@ -66,6 +108,7 @@ class="btn btn-default" role="button"><i class="glyphicon glyphicon-remove"></i>
 				<li><a href="<?php echo $this->baseUrl('admin'); ?>">Statistic</a></li>
 				<li><a href="<?php echo $this->baseUrl('admin/settings'); ?>">Settings</a></li>
 				<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile API</a></li>
+				<li><a href="<?php echo $this->baseUrl('admin/index/post-likes'); ?>">Post Likes</a></li>
 			</ul>
 		</li>
 		<?php endif; ?>

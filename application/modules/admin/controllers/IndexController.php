@@ -1,4 +1,6 @@
 <?php
+use Respect\Validation\Validator as v;
+
 /**
  * Admin module index controller class.
  */
@@ -88,4 +90,96 @@ class Admin_IndexController extends Zend_Controller_Action
 				->where('created_at>"' . $pastWeekTime . '"')
 		);
     }
+
+	/**
+	 * POst likes list action
+	 */
+	public function postLikesAction()
+	{
+		$isAjax = $this->getRequest()->isXmlHttpRequest();
+
+		try
+		{
+			$source = $this->_request->get('source');
+
+			if (!v::optional(v::stringType())->validate($source))
+			{
+				throw new RuntimeException('Incorrect source value type: ' .
+					var_export($source, true));
+			}
+
+			$start = $this->_request->get('start');
+
+			if (!v::optional(v::intVal())->validate($start))
+			{
+				throw new RuntimeException('Incorrect start value type: ' .
+					var_export($source, true));
+			}
+
+			$likeModel = new Application_Model_Voting;
+			$query = $likeModel->select()->setIntegrityCheck(false)
+				->from('votings', 'votings.*')
+				->joinLeft(['p' => 'news'], 'p.id=votings.news_id', '')
+				->where('p.isdeleted=0')
+				->joinLeft(['u' => 'user_data'], 'u.id=votings.user_id',
+					['user_name' => 'Name'])
+				->group('votings.id');
+
+			switch ($source)
+			{
+				case 'new':
+					$id = $this->_request->get('id');
+
+					if (!v::intVal()->validate($id))
+					{
+						throw new RuntimeException('Incorrect id value type: ' .
+							var_export($id, true));
+					}
+
+					$query
+						->where('votings.id>?', $id)
+						->order('votings.id DESC')
+						->limit(100, 0);
+					break;
+				default:
+					$query
+						->order('votings.id DESC')
+						->limit(100, $start);
+			}
+
+			$result = $likeModel->fetchAll($query);
+
+			if ($isAjax)
+			{
+				$response = ['status' => 1];
+
+				if ($result->count())
+				{
+					foreach ($result as $like)
+					{
+						$response['data'][] = My_ViewHelper::render('index/_post-like',
+							['like' => $like], 'modules/admin/views/scripts');
+					}
+				}
+
+				$this->_helper->json($response);
+			}
+			else
+			{
+				$this->view->likes = $result;
+			}
+		}
+		catch (Exception $e)
+		{
+			if (!$isAjax)
+			{
+				throw $e;
+			}
+
+			$this->_helper->json([
+				'status' => 0,
+				'message' => $e->getMessage()
+			]);
+		}
+	}
 }
