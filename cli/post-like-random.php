@@ -46,8 +46,7 @@ $query = $postModel->select()->setIntegrityCheck(false)
 	// @INFO: the latest bot vote
 	->joinLeft(['pl' => 'votings'],
 		'(pl.news_id=news.id AND pl.user_id IS NULL AND pl.active=1)', '')
-	->group('news.id')
-	->order('RAND()');
+	->group('news.id');
 
 $limit = 100;
 $start = 0;
