@@ -2606,6 +2606,8 @@ class MobileController extends Zend_Controller_Action
 			]);
 			$postLikeSelect->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
 			$postLikeSelect->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
+			// @TODO: refactoring with https://github.com/ajones05/seearound.me/issues/164
+			$postLikeSelect->where('v.user_id IS NOT NULL');
 			$postLikeSelect->where('v.active=1 AND v.user_id<>?', $user['id']);
 			$postLikeSelect->where('v.created_at>?', $maxDate);
 			$postLikeSelect->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
