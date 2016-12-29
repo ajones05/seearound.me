@@ -39,6 +39,7 @@ class PostController extends Zend_Controller_Action
 		{
 			$postOptions['user'] = $user;
 			$postOptions['userVote'] = true;
+			$postOptions['userBlock'] = true;
 		}
 
 		if (!Application_Model_News::checkId($id, $post, $postOptions))
