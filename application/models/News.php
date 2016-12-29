@@ -135,13 +135,16 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				);
 			}
 
-			$query->joinLeft([
-				'ub' => 'user_block'],
-				'(ub.block_user_id=news.user_id AND ub.user_id=' .
-					$options['user']['id'] . ')',
-				''
-			);
-			$query->where('ub.id IS NULL');
+			if (empty($options['userBlock']))
+			{
+				$query->joinLeft([
+					'ub' => 'user_block'],
+					'(ub.block_user_id=news.user_id AND ub.user_id=' .
+						$options['user']['id'] . ')',
+					''
+				);
+				$query->where('ub.id IS NULL');
+			}
 		}
 
 		return $query;
