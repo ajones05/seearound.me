@@ -588,8 +588,13 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function getKarma($user)
 	{
-		return round($user['post'] + (.25 * ($user['vote'] + $user['comment'])) +
-				$user['comment_other'] * .25, 4);
+		$posts = My_ArrayHelper::getProp($user, 'post', 0);
+		$votes = My_ArrayHelper::getProp($user, 'vote', 0);
+		$comments = My_ArrayHelper::getProp($user, 'comment', 0);
+		$comments_other = My_ArrayHelper::getProp($user, 'comment_other', 0);
+
+		return round($posts + (.25 * ($votes + $comments)) +
+				$comments_other * .25, 4);
 	}
 
 	/**
