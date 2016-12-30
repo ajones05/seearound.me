@@ -34,18 +34,9 @@ $voteModel = new Application_Model_Voting;
 $postModel = new Application_Model_News;
 
 $query = $postModel->select()->setIntegrityCheck(false)
-	->from('news', [
-		'news.id',
-		'news.vote',
-		'like_created_at' => 'pl.created_at'
-	])
-	// @INFO: available posts
-	->where('news.isdeleted=0')
-	// @INFO: interval 6 hours
-	->where('news.created_date>DATE_SUB(NOW(), INTERVAL 6 HOUR)')
-	// @INFO: the latest bot vote
-	->joinLeft(['pl' => 'votings'],
-		'(pl.news_id=news.id AND pl.user_id IS NULL AND pl.active=1)', '')
+	->from('news', ['news.id', 'news.vote'])
+	->where('news.isdeleted=0 AND ' .
+		'news.created_date>DATE_SUB(NOW(), INTERVAL 6 HOUR)')
 	->group('news.id');
 
 $limit = 100;
@@ -62,16 +53,6 @@ do
 
 	foreach ($posts as $post)
 	{
-		if ($post['like_created_at'] != null)
-		{
-			$likeTime = strtotime($post['like_created_at']);
-
-			if ((time() - $likeTime) / 3600 < 0.99)
-			{
-				continue;
-			}
-		}
-
 		$voteCount = rand(0, 2);
 
 		if ($voteCount == 0)
