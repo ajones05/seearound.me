@@ -6,6 +6,16 @@ $count = $this->likes->count();
 <li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
 <li>Post Likes</li>
 </ol>
+<form action="<?php echo $this->baseUrl('admin/index/post-likes'); ?>"
+method="get">
+<div class="form-group">
+<label for="postID">Post ID</label>
+<input type="text" id="postID" name="post_id" class="form-control"
+placeholder="Enter post ID"
+value="<?php echo $this->request->getParam('post_id'); ?>">
+</div>
+<button type="submit" class="btn btn-primary">Submit</button>
+</form>
 <?php if ($count): ?>
 <ul class="list-group">
 <?php foreach ($this->likes as $like)
@@ -28,7 +38,10 @@ jQuery('.more').on('click',function(){
 	if (likesAjax)
 		likesAjax.abort();
 	likesAjax = ajaxJson(baseUrl+'admin/index/post-likes',{
-		data: {start: jQuery('.list-group-item[data-id]').size()},
+		data: {
+			start: jQuery('.list-group-item[data-id]').size(),
+			post_id: jQuery('#postID').val()
+		},
 		done: function(response){
 			target.removeClass('disabled');
 			if (response.data){
@@ -47,7 +60,8 @@ function updateLikes(){
 		likesAjax = ajaxJson(baseUrl+'admin/index/post-likes',{
 			data: {
 				source: 'new',
-				id: jQuery('.list-group li[data-id]:first-child').attr('data-id')
+				id: jQuery('.list-group li[data-id]:first-child').attr('data-id'),
+				post_id: jQuery('#postID').val()
 			},
 			done: function(response){
 				if (response.data){

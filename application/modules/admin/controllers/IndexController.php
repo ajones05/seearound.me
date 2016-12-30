@@ -116,6 +116,14 @@ class Admin_IndexController extends Zend_Controller_Action
 					var_export($source, true));
 			}
 
+			$post_id = $this->_request->get('post_id');
+
+			if (!v::optional(v::intVal())->validate($post_id))
+			{
+				throw new RuntimeException('Incorrect post ID value type: ' .
+					var_export($post_id, true));
+			}
+
 			$likeModel = new Application_Model_Voting;
 			$query = $likeModel->select()->setIntegrityCheck(false)
 				->from('votings', 'votings.*')
@@ -123,28 +131,34 @@ class Admin_IndexController extends Zend_Controller_Action
 				->where('p.isdeleted=0')
 				->joinLeft(['u' => 'user_data'], 'u.id=votings.user_id',
 					['user_name' => 'Name'])
-				->group('votings.id');
+				->group('votings.id')
+				->order('votings.id DESC');
+
+			if ($post_id != null)
+			{
+				$query->where('votings.news_id=?', $post_id);
+			}
 
 			switch ($source)
 			{
 				case 'new':
 					$id = $this->_request->get('id');
 
-					if (!v::intVal()->validate($id))
+					if (!v::optional(v::intVal())->validate($id))
 					{
 						throw new RuntimeException('Incorrect id value type: ' .
 							var_export($id, true));
 					}
 
-					$query
-						->where('votings.id>?', $id)
-						->order('votings.id DESC')
-						->limit(100, 0);
+					if ($id != null)
+					{
+						$query->where('votings.id>?', $id);
+					}
+
+					$query->limit(100, 0);
 					break;
 				default:
-					$query
-						->order('votings.id DESC')
-						->limit(100, $start);
+					$query->limit(100, $start);
 			}
 
 			$result = $likeModel->fetchAll($query);
