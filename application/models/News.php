@@ -544,12 +544,25 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		for ($length = $i = 0; $i < strlen($post['news']);)
 		{
 			$link_limit = false;
+			$subString = substr($post['news'], $i);
 
-			if (preg_match('/^' . My_Regex::url() . '/ui', substr($post['news'], $i), $matches))
+			if (preg_match('/^' . My_Regex::url() . '/ui', $subString, $matches) ||
+				preg_match('/^#(?P<hashtag>\w+)/', $subString, $matches))
 			{
-				if ($linksCount > 1 || $link === null)
+				if (!empty($matches['hashtag']) || $linksCount > 1 || $link === null)
 				{
-					$output .= '<a href="' . My_CommonUtils::renderLink($matches[0]) . '" target="_blank">';
+					if (!empty($matches['hashtag']))
+					{
+						$settings =  Application_Model_Setting::getInstance();
+						$renderLink = $settings['server_requestScheme'] . '://' .
+							$settings['server_httpHost'] . '/?keywords=' . $matches['hashtag'];
+					}
+					else
+					{
+						$renderLink = My_CommonUtils::renderLink($matches[0]);
+					}
+
+					$output .= '<a href="' . $renderLink . '" target="_blank">';
 
 					if ($limit !== null && $length + strlen($matches[0]) > $limit)
 					{
