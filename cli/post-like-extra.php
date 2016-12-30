@@ -38,7 +38,7 @@ $query = $postModel->select()->setIntegrityCheck(false)
 	->where('news.isdeleted=0')
 	->join(['pl' => 'votings'], 'pl.news_id=news.id', '')
 	->where('(pl.active=1 AND pl.user_id IS NOT NULL AND '.
-		'pl.created_at>"2016-12-01" AND ' .
+		'pl.created_at>"2016-12-29" AND ' .
 		'pl.created_at<DATE_SUB(NOW(), INTERVAL 2 HOUR))')
 	->group('news.id');
 
