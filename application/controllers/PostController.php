@@ -811,7 +811,8 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$linkModel = new Application_Model_NewsLink;
-			$postLinks = $linkModel->parseLinks($postForm->getValue('body'));
+			$postLinks = $linkModel->parseLinks(
+					Application_Model_News::filterBody($postForm->getValue('body')));
 			$linkExist = null;
 
 			if ($postLinks !== null)
@@ -1413,6 +1414,7 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$data = $form->getValues();
+			$data['comment'] = Application_Model_News::filterBody($data['comment']);
 
 			$comment_id = (new Application_Model_Comments)->insert($data+[
 				'user_id' => $user['id'],
