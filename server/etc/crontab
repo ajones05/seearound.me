@@ -1,4 +1,4 @@
  */10 *  *  *  * ubuntu php /var/www/html/cli/comment-notify.php
  0   */5 *  *  * ubuntu php /var/www/html/cli/social-post.php
- 0   *   *  *  * ubuntu php /var/www/html/cli/post-like-random.php
- 0   */2 *  *  * ubuntu php /var/www/html/cli/post-like-extra.php
+ */20 *  *  *  * ubuntu php /var/www/html/cli/post-like-random.php
+ 0    *  *  *  * ubuntu php /var/www/html/cli/post-like-extra.php
