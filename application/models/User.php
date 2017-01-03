@@ -527,7 +527,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			return false;
 		}
 
-		if (floor((time() - strtotime($user['invite_updated_at'])) / 86400) >= 7)
+		if (!empty($user['invite_updated_at']) &&
+			floor((time() - strtotime($user['invite_updated_at'])) / 86400) >= 7)
 		{
 			$loginModel = new Application_Model_Loginstatus;
 			$result = $loginModel->fetchRow(
