@@ -323,6 +323,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	{
 		$data = $form->getValues();
 
+		$data['body'] = $this->filterBody($data['body']);
 		$saveData = ['news' => $data['body']];
 
 		if (!$form->isIgnore('address'))
@@ -607,5 +608,19 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		}
 
 		return preg_replace('/\s{2,}/', ' ', $output);
+	}
+
+	/**
+	 * Filters body.
+	 *
+	 * @param string $body
+	 * @return string
+	 */
+	public static function filterBody($body)
+	{
+		return preg_replace(
+			// remove tracking parameters
+			'/([&?]utm_\w+=\w+|#link_time=\d+)/',
+			'', $body);
 	}
 }
