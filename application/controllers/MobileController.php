@@ -630,7 +630,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = [
 				'status' => 'FAILED',
-				'message' => true || $e instanceof RuntimeException ?
+				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
 			$this->errorHandler($e);
@@ -2566,6 +2566,7 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"friend"'),
 				'fl.created_at',
 				'target_id' => new Zend_Db_Expr('NULL'),
+				'target_count' => new Zend_Db_Expr('NULL'),
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image_id' => 'u.image_id',
@@ -2584,6 +2585,7 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"message"'),
 				'cm.created_at',
 				'target_id' => 'cm.conversation_id',
+				'target_count' => new Zend_Db_Expr('NULL'),
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image_id' => 'u.image_id',
@@ -2596,24 +2598,27 @@ class MobileController extends Zend_Controller_Action
 
 			$postLikeSelect = $db->select();
 			$postLikeSelect->from(['n' => 'news'], [
-				'v.id',
+				'id' => 'max(v.id)',
 				'type' => new Zend_Db_Expr('"vote"'),
-				'v.created_at',
+				'created_at' => 'max(v.created_at)',
 				'target_id' => 'n.id',
+				'target_count' => 'count(v.id)',
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image_id' => 'u.image_id',
 				'user_image_name' => 'u.image_name',
-				'is_read' => 'v.is_read'
+				'is_read' => 'min(v.is_read)'
 			]);
 			$postLikeSelect->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
 			$postLikeSelect->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
-			// @TODO: refactoring with https://github.com/ajones05/seearound.me/issues/164
-			$postLikeSelect->where('v.user_id IS NOT NULL');
-			$postLikeSelect->where('v.active=1 AND v.user_id<>?', $user['id']);
+			$postLikeSelect->where('v.active=1 AND (v.user_id IS NULL OR v.user_id<>?)',
+				$user['id']);
 			$postLikeSelect->where('v.created_at>?', $maxDate);
-			$postLikeSelect->joinLeft(['u' => 'user_data'], 'u.id=v.user_id', '');
-			$postLikeSelect->group(['u.id', 'n.id']);
+			$postLikeSelect->joinLeft(['v2' => 'votings'],
+				'v2.news_id=n.id AND v2.user_id IS NOT NULL', '');
+			$postLikeSelect->where('(v2.id IS NULL OR v2.created_at>?)', $maxDate);
+			$postLikeSelect->joinLeft(['u' => 'user_data'], 'u.id=v2.user_id', '');
+			$postLikeSelect->group('n.id');
 
 			$postCommentSelect = $db->select();
 			$postCommentSelect->from(['n' => 'news'], [
@@ -2621,6 +2626,7 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"comment"'),
 				'c.created_at',
 				'target_id' => 'n.id',
+				'target_count' => new Zend_Db_Expr('NULL'),
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image_id' => 'u.image_id',
@@ -2677,9 +2683,26 @@ class MobileController extends Zend_Controller_Action
 								' sent you a new message';
 							break;
 						case 'vote':
+							$message = $row['user_name'];
+
+							if ($message == null)
+							{
+								$key = mt_rand(0, Application_Model_Voting::$botNamesCount);
+								$message = Application_Model_Voting::$botNames[$key];
+							}
+
+							if ($row['target_count'] > 1)
+							{
+								$message .= ' and ' . ($row['target_count'] - 1) . ' other';
+
+								if ($row['target_count'] > 2)
+								{
+									$message .= 's';
+								}
+							}
+
+							$data['message'] = $message . ' liked your post';
 							$data['post_id'] = $row['target_id'];
-							$data['message'] = $row['user_name'] .
-								' liked your post';
 							break;
 						case 'comment':
 							$data['post_id'] = $row['target_id'];
@@ -2696,7 +2719,7 @@ class MobileController extends Zend_Controller_Action
 		{
 			$response = [
 				'status' => 'FAILED',
-				'message' => true || $e instanceof RuntimeException ?
+				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
 			$this->errorHandler($e);
@@ -2784,7 +2807,10 @@ class MobileController extends Zend_Controller_Action
 						throw new RuntimeException('You are not authorized to access this action');
 					}
 
-					$voteModel->update(['is_read' => 1], 'id=' . $id);
+					$voteModel->update(['is_read' => 1], [
+						'news_id=?' => $vote['news_id'],
+						'created_at<=?' => $vote['created_at']
+					]);
 					break;
 				case 'comment':
 					$commenModel = new Application_Model_Comments;

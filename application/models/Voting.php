@@ -29,6 +29,32 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 	];
 
 	/**
+	 * @var integer
+	 */
+	public static $botNamesCount = 14;
+
+	/**
+	 * @var array
+	 */
+	public static $botNames = [
+		'Benjamin',
+		'Jenny',
+		'Frank',
+		'Jonathan',
+		'Glen',
+		'Marcella',
+		'Stacy',
+		'Eileen',
+		'Alisha',
+		'Ed',
+		'Andrew',
+		'Brandon',
+		'Keith',
+		'Riley',
+		'Sam'
+	];
+
+	/**
 	 * Finds record by ID.
 	 *
 	 * @param integer $id
