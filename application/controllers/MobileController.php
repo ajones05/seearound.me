@@ -2683,13 +2683,14 @@ class MobileController extends Zend_Controller_Action
 								' sent you a new message';
 							break;
 						case 'vote':
-							$message = $row['user_name'];
-
-							if ($message == null)
+							if ($data['user_name'] == null)
 							{
-								$key = mt_rand(0, Application_Model_Voting::$botNamesCount);
-								$message = Application_Model_Voting::$botNames[$key];
+								$randKey = mt_rand(0, Application_Model_Voting::$botNamesCount);
+								$botName = Application_Model_Voting::$botNames[$randKey];
+								$data['user_name'] = $botName;
 							}
+
+							$message = $data['user_name'];
 
 							if ($row['target_count'] > 1)
 							{
