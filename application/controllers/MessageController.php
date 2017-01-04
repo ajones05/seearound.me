@@ -365,6 +365,7 @@ class MessageController extends Zend_Controller_Action
 				'from_id' => $user['id'],
 				'to_id' => $receiverId,
 				'body' => $body,
+				'is_first' => 0,
 				'is_read' => 0,
 				'created_at' => new Zend_Db_Expr('NOW()'),
 				'status' => 0
