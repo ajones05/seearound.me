@@ -59,6 +59,12 @@ class My_Regex
 	const PATH = '(?:[\/?#][^\\s"]*)?';
 
 	/**
+	 * Contains url path regex
+	 * @const string
+	 */
+	const BASE64 = '[a-zA-Z0-9+\/]+={0,2}';
+
+	/**
 	 * Returns URL regex.
 	 *
 	 * @return string

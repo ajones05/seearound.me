@@ -175,4 +175,27 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 		return $label;
 	}
+
+	/**
+	 * Returns row by attributes.
+	 *
+	 * @param array $attr
+	 * @return stdClass|null
+	 */
+	public function findByAttributes(array $attr)
+	{
+		$query = $this->select();
+		foreach ($attr as $field => $value)
+		{
+			if ($value === null)
+			{
+				$query->where($field . ' IS NULL');
+			}
+			else
+			{
+				$query->where($field . '=?', $value);
+			}
+		}
+		return $this->fetchRow($query);
+	}
 }

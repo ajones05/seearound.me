@@ -1580,6 +1580,130 @@ class PostController extends Zend_Controller_Action
 	}
 
 	/**
+	 * Unsubscribe from post comments action.
+	 */
+	public function unsubscribePostCommentsAction()
+	{
+		$user_id = $this->_request->get('user_id');
+
+		if (!v::regex('/' . My_Regex::BASE64 . '/')->validate($user_id))
+		{
+			throw new RuntimeException('Incorrect user ID value');
+		}
+
+		$user_id = base64_decode($user_id);
+
+		if (!v::intVal()->validate($user_id))
+		{
+			throw new RuntimeException('Incorrect user ID value');
+		}
+
+		$userModel = new Application_Model_User;
+		$authUser = $userModel->getAuth();
+
+		if ($user_id == $authUser['id'])
+		{
+			$user = $authUser['id'];
+		}
+		else
+		{
+			if (!$userModel->checkId($user_id, $user))
+			{
+				throw new RuntimeException('Incorrect user ID: ' .
+					var_export($user_id, true));
+			}
+		}
+
+		$data = ['user_id' => $user_id];
+
+		$post_id = $this->_request->get('post_id');
+
+		if (!v::optional(v::regex('/' . My_Regex::BASE64 . '/'))->validate($post_id))
+		{
+			throw new RuntimeException('Incorrect post ID value');
+		}
+
+		$commentSubscriptionModel = new Application_Model_CommentSubscription;
+
+		if ($post_id != null)
+		{
+			$post_id = base64_decode($post_id);
+
+			if (!v::intVal()->validate($post_id))
+			{
+				throw new RuntimeException('Incorrect post ID value');
+			}
+
+			if (!Application_Model_News::checkId($post_id, $post, ['join'=>false]))
+			{
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($post_id, true));
+			}
+
+			if ($user_id != $post['user_id'])
+			{
+				$existComment = (new Application_Model_Comments)->findByAttributes([
+					'user_id' => $user_id,
+					'news_id' => $post_id
+				]);
+
+				if (!$existComment)
+				{
+					throw new RuntimeException('You are not authorized to access this action');
+				}
+			}
+
+			$data['post_id'] = $post_id;
+		}
+
+		$isSubscribed = false;
+
+		if ($commentSubscriptionModel->findByAttributes($data))
+		{
+			$isSubscribed = true;
+		}
+		else
+		{
+			if ($post_id != null)
+			{
+				if ($commentSubscriptionModel->findByAttributes(
+					['user_id' => $user_id, 'post_id' => null]))
+				{
+					$isSubscribed = true;
+				}
+			}
+		}
+
+		if ($isSubscribed)
+		{
+			$redirectUrl = 'unsubscribe-post-comments/already';
+		}
+		else
+		{
+			$redirectUrl = 'unsubscribe-post-comments/success';
+			$commentSubscriptionModel->insert($data);
+		}
+
+		$this->_redirect($redirectUrl);
+	}
+
+	/**
+	 * Unsubscribe from post comments action.
+	 */
+	public function unsubscribePostCommentsMessageAction()
+	{
+		$success = $this->_request->get('success');
+
+		if (!v::optional(v::intVal()->equals(1))->validate($success))
+		{
+			throw new RuntimeException('Incorrect success parameter value');
+		}
+
+		$this->view->layout()->setLayout('login');
+		$this->view->success = $success;
+	}
+
+	/**
 	 * Post option dialog action.
 	 *
 	 * @return void

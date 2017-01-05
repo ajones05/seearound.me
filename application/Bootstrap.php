@@ -242,6 +242,44 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				)
 			)
 		);
+
+		$router->addRoute(
+			'unsubscribe-post-comments',
+			new Zend_Controller_Router_Route(
+				'unsubscribe-post-comments/:user_id/:post_id',
+				[
+					'controller' => 'post',
+					'action' => 'unsubscribe-post-comments',
+					'post_id' => null
+				],[
+					'user_id' => My_Regex::BASE64,
+					'post_id' => My_Regex::BASE64
+				]
+			)
+		);
+
+		$router->addRoute(
+			'unsubscribe-post-comments/success',
+			new Zend_Controller_Router_Route(
+				'unsubscribe-post-comments/success',
+				[
+					'controller' => 'post',
+					'action' => 'unsubscribe-post-comments-message',
+					'success' => 1
+				]
+			)
+		);
+
+		$router->addRoute(
+			'unsubscribe-post-comments/already',
+			new Zend_Controller_Router_Route(
+				'unsubscribe-post-comments/already',
+				[
+					'controller' => 'post',
+					'action' => 'unsubscribe-post-comments-message',
+				]
+			)
+		);
 	}
 
 	protected function _initLog()

@@ -46,6 +46,9 @@ $postQuery = $postModel->publicSelect()->setIntegrityCheck(false)
 	->group('news.id')
 	->order('comments.created_at ASC');
 
+$baseUrl = $settings['server_requestScheme'] . '://' .
+	$settings['server_httpHost'] . '/';
+
 do
 {
 	$posts = $postModel->fetchAll($postQuery->limit($limit, $postStart));
@@ -59,13 +62,16 @@ do
 	{
 		$userStart = 0;
 		$userQuery = $userModel->select()->setIntegrityCheck(false)
-			->from($userModel, 'user_data.*')
-			->joinLeft('comments', 'user_data.id = comments.user_id', '')
-			->where('(comments.isdeleted =?', 0)
-			->where('comments.news_id =?)', $post->id)
-			->orWhere('user_data.id =?', $post->user_id)
-			->group('user_data.id')
-			->order('comments.created_at ASC');
+			->from(['u' => 'user_data'], 'u.*')
+			->joinLeft(['c' => 'comments'], 'u.id=c.user_id', '')
+			->where('((c.isdeleted =?', 0)
+			->where('c.news_id=?)', $post->id)
+			->orWhere('u.id=?)', $post->user_id)
+			->joinLeft(['cs' => 'comment_subscription'], '(cs.user_id=u.id AND '.
+				'(cs.post_id IS NULL OR cs.post_id=' . $post['id'] . '))', '')
+			->where('cs.id IS NULL')
+			->group('u.id')
+			->order('c.created_at ASC');
 
 		do
 		{
@@ -93,6 +99,7 @@ do
 
 				if ($comments->count())
 				{
+					$userIdEncoded = base64_encode($user['id']);
 					My_Email::send(
 						[$user->Name => $user->Email_id],
 						$user->id == $post->user_id ?
@@ -104,10 +111,15 @@ do
 								'post' => $post,
 								'user' => $user,
 								'comments' => $comments,
-								'opts' => [
-									'baseUrl' => $settings['server_requestScheme'] . '://' .
-										$settings['server_httpHost'] . '/'
-								]
+								'unsubscribe' => [[
+									'Unsubscribe me from future notifications about this post',
+									$baseUrl . 'unsubscribe-post-comments/' .
+										$userIdEncoded . '/' . base64_encode($post['id'])
+								],[
+									'Unsubscribe me from all comment notifications',
+									$baseUrl . 'unsubscribe-post-comments/' . $userIdEncoded
+								]],
+								'opts' => ['baseUrl' => $baseUrl]
 							],
 							'settings' => $settings
 						]
