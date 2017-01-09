@@ -1,6 +1,7 @@
 <?php
 $url = $this->opts['baseUrl'] . 'post/' . $this->post->id;
-$label = $this->comments->count() == 1 ?
+
+$label = $this->users->count() == 1 ?
 	$this->comments[0]['owner_name'] : 'Friends';
 
 $label .= ' has commented on ';
@@ -16,6 +17,6 @@ else
 ?>
 <p><?php echo $label; ?>.</p>
 <?php foreach ($this->comments as $comment): ?>
-<p><?php echo nl2br(My_StringHelper::stringLimit($comment->comment, 100, '...')); ?></p>
+<p>"<?php echo nl2br(My_StringHelper::stringLimit($comment->comment, 100, '...')); ?>"</p>
 <?php endforeach; ?>
 <p>View the comments for this post: <a href="<?php echo $url; ?>"><?php echo $url; ?></a></p>

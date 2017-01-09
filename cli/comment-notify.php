@@ -60,6 +60,11 @@ do
 
 	foreach ($posts as $post)
 	{
+		$commentUsersQuery = $commentModel->publicSelect()
+			->where('c.notify=0 AND c.news_id=?', $post->id)
+			->group('c.user_id');
+		$commentUsers = $commentModel->fetchAll($commentUsersQuery);
+
 		$userStart = 0;
 		$userQuery = $userModel->select()->setIntegrityCheck(false)
 			->from(['u' => 'user_data'], 'u.*')
@@ -110,6 +115,7 @@ do
 							'assign' => [
 								'post' => $post,
 								'user' => $user,
+								'users' => $commentUsers,
 								'comments' => $comments,
 								'unsubscribe' => [[
 									'Unsubscribe me from future notifications about this post',
