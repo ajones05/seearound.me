@@ -68,6 +68,7 @@ do
 
 			$voteModel->insert([
 				'vote' => 1,
+				'bot_id' => mt_rand(0, Application_Model_Voting::$botNamesCount),
 				'news_id' => $post->id,
 				'updated_at' => !$isActive ? new Zend_Db_Expr('NOW()') : null,
 				'active' => $isActive ? 1 : 0

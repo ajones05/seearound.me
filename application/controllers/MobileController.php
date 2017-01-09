@@ -2565,8 +2565,9 @@ class MobileController extends Zend_Controller_Action
 				'f.id',
 				'type' => new Zend_Db_Expr('"friend"'),
 				'fl.created_at',
-				'target_id' => new Zend_Db_Expr('NULL'),
-				'target_count' => new Zend_Db_Expr('NULL'),
+				'param1' => new Zend_Db_Expr('NULL'),
+				'param2' => new Zend_Db_Expr('NULL'),
+				'param3' => new Zend_Db_Expr('NULL'),
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image_id' => 'u.image_id',
@@ -2584,8 +2585,9 @@ class MobileController extends Zend_Controller_Action
 				'id' => 'cm.id',
 				'type' => new Zend_Db_Expr('"message"'),
 				'cm.created_at',
-				'target_id' => 'cm.conversation_id',
-				'target_count' => new Zend_Db_Expr('NULL'),
+				'param1' => 'cm.conversation_id',
+				'param2' => new Zend_Db_Expr('NULL'),
+				'param3' => new Zend_Db_Expr('NULL'),
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image_id' => 'u.image_id',
@@ -2601,8 +2603,9 @@ class MobileController extends Zend_Controller_Action
 				'id' => 'max(v.id)',
 				'type' => new Zend_Db_Expr('"vote"'),
 				'created_at' => 'max(v.created_at)',
-				'target_id' => 'n.id',
-				'target_count' => 'count(v.id)',
+				'param1' => 'n.id',
+				'param2' => 'count(v.id)',
+				'param3' => 'v.bot_id',
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image_id' => 'u.image_id',
@@ -2625,8 +2628,9 @@ class MobileController extends Zend_Controller_Action
 				'c.id',
 				'type' => new Zend_Db_Expr('"comment"'),
 				'c.created_at',
-				'target_id' => 'n.id',
-				'target_count' => new Zend_Db_Expr('NULL'),
+				'param1' => 'n.id',
+				'param2' => new Zend_Db_Expr('NULL'),
+				'param3' => new Zend_Db_Expr('NULL'),
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
 				'user_image_id' => 'u.image_id',
@@ -2678,35 +2682,38 @@ class MobileController extends Zend_Controller_Action
 								' started following you';
 							break;
 						case 'message':
-							$data['conversation_id'] = $row['target_id'];
+							$data['conversation_id'] = $row['param1'];
 							$data['message'] = $row['user_name'] .
 								' sent you a new message';
 							break;
 						case 'vote':
 							if ($data['user_name'] == null)
 							{
-								$randKey = mt_rand(0, Application_Model_Voting::$botNamesCount);
-								$botName = Application_Model_Voting::$botNames[$randKey];
-								$data['user_name'] = $botName;
+								$data['user_name'] = My_arrayHelper::getProp(
+									Application_Model_Voting::$botNames, $row['param3']);
 							}
 
 							$message = $data['user_name'];
 
-							if ($row['target_count'] > 1)
+							if ($row['param2'] > 1)
 							{
-								$message .= ' and ' . ($row['target_count'] - 1) . ' other';
+								$message .= ' and ';
 
-								if ($row['target_count'] > 2)
+								if ($row['param2'] == 2)
 								{
-									$message .= 's';
+									$message .= 'one other';
+								}
+								else
+								{
+									$message .= ($row['param2'] - 1) . ' others';
 								}
 							}
 
 							$data['message'] = $message . ' liked your post';
-							$data['post_id'] = $row['target_id'];
+							$data['post_id'] = $row['param1'];
 							break;
 						case 'comment':
-							$data['post_id'] = $row['target_id'];
+							$data['post_id'] = $row['param1'];
 							$data['message'] = $row['user_name'] .
 								' commented on your post';
 							break;

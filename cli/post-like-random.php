@@ -53,7 +53,7 @@ do
 
 	foreach ($posts as $post)
 	{
-		$voteCount = [0, 1, 0, 2, 0][mt_rand(0, 4)];
+		$voteCount = [0, 0, 1, 0, 0, 2, 0, 0][mt_rand(0, 7)];
 
 		if ($voteCount == 0)
 		{
@@ -71,6 +71,7 @@ do
 
 			$voteModel->insert([
 				'vote' => 1,
+				'bot_id' => mt_rand(0, Application_Model_Voting::$botNamesCount),
 				'news_id' => $post->id,
 				'updated_at' => !$isActive ? new Zend_Db_Expr('NOW()') : null,
 				'active' => $isActive ? 1 : 0
