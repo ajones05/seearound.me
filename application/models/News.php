@@ -596,7 +596,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					$output .= '...';
 				}
 
-				$output .= ' <a href="#" class="moreButton">More</a>';
+				if (!array_key_exists('more_button', $options) || $options['more_button'])
+				{
+					$output .= ' <a href="#" class="moreButton">More</a>';
+				}
 
 				break;
 			}
