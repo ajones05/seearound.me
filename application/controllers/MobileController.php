@@ -1433,7 +1433,7 @@ class MobileController extends Zend_Controller_Action
 					'comment_count' => $post->comment,
 					'vote' => $post->vote,
 					'isLikedByUser' => $post->user_vote !== null ? $post->user_vote : '0',
-					'Name' => $post->owner_name,
+					'Name' => Application_Model_User::getFirstName($post, 'owner_'),
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($post, '320x320', ['alias' => 'owner_'])),
 					'canEdit' => Application_Model_News::canEdit($post, $user),
@@ -2020,7 +2020,7 @@ class MobileController extends Zend_Controller_Action
 						'comment_count' => $row->comment,
 						'vote' => $row->vote,
 						'isLikedByUser' => $row->user_vote !== null ? $row->user_vote : '0',
-						'Name' => $row->owner_name,
+						'Name' => Application_Model_User::getFirstName($row, 'owner_'),
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
 						'canEdit' => Application_Model_News::canEdit($row, $user),
@@ -2138,7 +2138,7 @@ class MobileController extends Zend_Controller_Action
 						'comment_count' => $row->comment,
 						'vote' => $row->vote,
 						'isLikedByUser' => $row->user_vote !== null ? $row->user_vote : '0',
-						'Name' => $row->owner_name,
+						'Name' => Application_Model_User::getFirstName($row, 'owner_'),
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
 						'canEdit' => Application_Model_News::canEdit($row, $user),

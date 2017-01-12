@@ -685,4 +685,16 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			['user' . $user['id']]
 		);
 	}
+
+	/**
+	 * Returns user first namr.
+	 *
+	 * @param array|Zend_Db_Table_Row_Abstract $user
+	 * @return string
+	 */
+	public static function getFirstName($row, $alias='')
+	{
+		$name = My_ArrayHelper::getProp($row, $alias.'name');
+		return My_ArrayHelper::getProp(explode(' ', $name), 0);
+	}
 }
