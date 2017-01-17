@@ -53,7 +53,7 @@ do
 
 	foreach ($posts as $post)
 	{
-		$voteCount = [0, 0, 1, 0, 0, 2, 0, 0][mt_rand(0, 7)];
+		$voteCount = [0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0][mt_rand(0, 10)];
 
 		if ($voteCount == 0)
 		{
