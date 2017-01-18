@@ -1,0 +1,182 @@
+<?php
+$request = Zend_Controller_Front::getInstance()->getRequest();
+?>
+<style>
+.post-newupd {
+  background-color: #fff;
+}
+.vote-newupd {
+  float: right;
+}
+.like-newupd {
+  background: rgba(0, 0, 0, 0) url("/assets-12345/www/images/like-small.png") no-repeat scroll center center;
+  margin-bottom: 4px;
+  cursor: pointer;
+  height: 16px;
+  width: 18px;
+}
+.image-newupd img {
+  width: 100%;
+  display: block;
+}
+.action-newupd {
+  color: red;
+  float: right;
+  font-size: 50px;
+  line-height: 0;
+  margin-top: -5px;
+	cursor: pointer;
+}
+.details-newupd .dropdown-menu a {
+  font-family: Lato-Light;
+  font-size: 15px;
+}
+.post-coments-newupd {
+  background: #eee;
+}
+.post-comment__new-newupd {
+  border-top: 2px solid #e4e4e4;
+}
+.post-comment__item-newupd,
+.post-comment__new-newupd {
+  display: inline-block;
+  width: 100%;
+}
+.post-comment__new-body-newupd,
+.post-comment__new-owner-newupd {
+  float: left;
+}
+.post-comment__new-body-newupd {
+  background: rgba(0, 0, 0, 0) url("/assets-12345/www/images/user-symbol-small.png") no-repeat scroll 0 0;
+  margin-right: 23px;
+  margin-top: 12px;
+  padding-left: 12px;
+}
+.post-comment__item-newupd,
+.post-comment__new-body-newupd textarea {
+  font-size: 13.65px;
+}
+.post-comment__new-body-newupd textarea {
+  background: #fff none repeat scroll 0 0;
+  border: medium none;
+  color: #7d7d7d;
+  font-family: Lato-LightItalic;
+  height: 17px;
+  line-height: 17px;
+  margin-bottom: 7px;
+  outline: 0 none;
+  overflow-y: hidden;
+  padding: 10px;
+  resize: none;
+  width: 318px;
+}
+.post-comment__new-owner-newupd img {
+  margin: 10px 6px 6px 13px;
+}
+.post-comment__item-owner-newupd img,
+.post-comment__new-owner-newupd img {
+  border-radius: 50px;
+  height: 43px;
+  width: 43px;
+}
+.post-comment__item-newupd:first-child {
+  padding-top: 11px;
+}
+.post-comment__item-newupd {
+  font-family: Lato-Regular;
+  min-height: 58px;
+}
+.post-coments-newupd a,
+.post_text-newupd a {
+  color: #c30;
+}
+.post-comment__item-newupd > a {
+  display: block;
+  float: left;
+}
+.post-comment__item-owner-newupd img {
+  margin: 6px 16px 6px 13px;
+}
+.post-comment__body-newupd {
+  display: inline-block;
+  margin-top: 4px;
+  max-width: 317px;
+  overflow-wrap: break-word;
+}
+.post-coment-user-name-newupd {
+  font-family: Lato-Regular,sans-serif;
+}
+.post-coments-newupd span {
+  color: #333;
+}
+.post-coment__date-newupd {
+  color: #c00;
+  font: 400 9.1px Lato-Regular,sans-serif;
+  margin: 4px 0 0;
+}
+.details-newupd {
+  position: relative;
+}
+.details-newupd .dropdown-menu {
+  left: auto;
+	right: 0;
+	width: 180px;
+	top: auto;
+	bottom: 18px;
+}
+</style>
+<div class="post-newupd" data-id="1">
+	<div class="vote-newupd">
+		<div class="like-newupd<?php if ($request->get('like') == 'active'): ?> active<?php endif; ?>"></div>
+		<div class="count-newupd">12</div>
+	</div>
+	<div class="post_text-newupd">Leaning Tower renovation is done and is back open today! The biggest change was to retile the floor and update some of the plumbing underneath, but future planned changes will move the ovens back further and move additional seating in front.</div>
+	<div class="image-newupd">
+		<img src="/thumb448x320/p9y4csx415.png" width="448" height="382" data-src="http://www.seearound.me/newsimages/p9y4csx415.png" data-width="960" data-height="819">
+	</div>
+	<div class="details-newupd">24 minutes ago by <a href="/profile/276">James</a><span class="action-newupd dropdown-toggle">...</span>
+		<ul class="dropdown-menu">
+			<li><a href="#">Edit</a></li>
+			<li><a href="#">Delete</a></li>
+			<li><a href="#">Share post</a></li>
+			<li><a href="#">Follow James</a></li>
+			<li><a href="#">Message James</a></li>
+			<li><a href="#">View James's profile</a></li>
+			<li><a href="#">Block James</a></li>
+			<li><a href="#">Flag as inappropriate</a></li>
+			<li><a href="#">Cancel</a></li>
+		</ul>
+	</div>
+	<div class="post-coments-newupd">
+		<?php if ($request->get('comments') == 'show'): ?>
+		<div class="post-comment__item-newupd">
+			<a class="post-comment__item-owner-newupd" href="/profile/276">
+				<img src="http://www.seearound.me/thumb55x55/3pyn6afcr3.jpg" alt="Yuriy Kurilyuk" height="43" width="43">
+			</a>
+			<div class="post-comment__body-newupd">
+				<a href="http://www.seearound.me/thumb55x55/3pyn6afcr3.jpg" class="post-coment-user-name-newupd">Yuriy Kurilyuk:</a>
+				<span>comment 1</span>
+				<p class="post-coment__date-newupd" title="January 18 at 11:54am">29 minutes</p>
+			</div>
+		</div>
+		<div class="post-comment__item-newupd">
+			<a class="post-comment__item-owner-newupd" href="/profile/276">
+				<img src="http://www.seearound.me/thumb55x55/3pyn6afcr3.jpg" alt="Yuriy Kurilyuk" height="43" width="43">
+			</a>
+			<div class="post-comment__body-newupd">
+				<a href="http://www.seearound.me/thumb55x55/3pyn6afcr3.jpg" class="post-coment-user-name-newupd">Yuriy Kurilyuk:</a>
+				<span>comment 2</span>
+				<p class="post-coment__date-newupd" title="January 18 at 11:54am">29 minutes</p>
+			</div>
+		</div>
+		<?php endif; ?>
+		<div class="post-comment__new-newupd">
+			<div class="post-comment__new-owner-newupd">
+				<img src="http://www.seearound.me/thumb55x55/vlab8mnyns.jpg" height="43" width="43">
+			</div>
+			<div class="post-comment__new-body-newupd">
+				<textarea placeholder="Write a Comment..."></textarea>
+			</div>
+		</div>
+	</div>
+</div>
