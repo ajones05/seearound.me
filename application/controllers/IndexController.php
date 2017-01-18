@@ -47,41 +47,43 @@ class IndexController extends Zend_Controller_Action
 				if ($loginForm->isValid($data))
 				{
 					$user = $userModel->findByEmail($loginForm->email->getValue());
-					$password = $loginForm->password->getValue();
 
-					if ($user->password == null)
+					if ($user != null)
 					{
-						$this->_redirect('/forgot');
-					}
+						$password = $loginForm->password->getValue();
 
-					if ($user && password_verify($password, $user->password))
-					{
-						if ($user->Status !== 'active')
+						if (empty($user['password']))
 						{
-							$this->_redirect($this->view->baseUrl('index/reg-success/id/' . $user->id));
+							$this->_redirect('/forgot');
 						}
 
-						$loginId = (new Application_Model_Loginstatus)->save($user);
-						Application_Model_User::updateInvites($user);
+						if (password_verify($password, $user->password))
+						{
+							if ($user->Status != 'active')
+							{
+								$this->_redirect('index/reg-success/id/' . $user->id);
+							}
 
-						$auth = Zend_Auth::getInstance();
-						$auth->getStorage()->write([
-							'user_id' => $user->id,
-							'login_id' => $loginId
-						]);
+							$loginId = (new Application_Model_Loginstatus)->save($user);
+							Application_Model_User::updateInvites($user);
 
-						$remember = $loginForm->remember->getValue();
-						Zend_Session::rememberMe($remember == 1 ?
-							1209600 : // 2 weeks
-							604800 // 1 week
-						);
+							$auth = Zend_Auth::getInstance();
+							$auth->getStorage()->write([
+								'user_id' => $user->id,
+								'login_id' => $loginId
+							]);
 
-						$this->_redirect('/');
+							$remember = $loginForm->remember->getValue();
+							Zend_Session::rememberMe($remember == 1 ?
+								1209600 : // 2 weeks
+								604800 // 1 week
+							);
+
+							$this->_redirect('/');
+						}
 					}
-					else
-					{
-						$loginForm->addError('Incorrect user email or password');
-					}
+
+					$loginForm->addError('Incorrect user email or password');
 				}
 			}
 			else

@@ -1,4 +1,6 @@
 <?php
+use Respect\Validation\Validator as v;
+
 /**
  * Login form class.
  */
@@ -11,8 +13,7 @@ class Application_Form_Login extends Zend_Form
 	{
 		$this->addElement('text', 'email', [
 			'required' => true,
-			'filters' => ['StringTrim'],
-			'validators' => [['EmailAddress']]
+			'validators' => [['Callback', false, v::email()]]
 		]);
 
 		$this->addElement('password', 'password', [
