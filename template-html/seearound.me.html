@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>seearound.me</title>
+<link href="seearound.me_files/map.css" media="screen" rel="stylesheet" type="text/css">
+<script type="text/javascript">
+    //<![CDATA[
+var baseUrl="http:\/\/www.seearound.me\/",assetsBaseUrl="http:\/\/www.seearound.me\/assets-2.2\/",facebook_appId="380169185437308",facebook_apiVer="v2.7",mapsKey="AIzaSyC0Z7ZSCkdgLnPVoiitp7LfpdYH4ATAC14",viewPage="post",isLogin=true,isTouch=false,user={"name":"Yuriy Kurilyuk","image":"\/thumb55x55\/3pyn6afcr3.jpg","is_admin":"1"},opts={"lat":"37.804232","lng":"-122.27140600000001"},post={"id":"4699","address":"Oakland, CA 94612, US","owner":{"image":"\/thumb55x55\/3fqnixp8xd.png"}},settings={"bodyMaxLength":4000000};    //]]>
+</script>
+<script type="text/javascript" defer="defer" data-main="seearound.me_files/map" src="seearound.me_files/require.js"></script>
+<link type="text/css" rel="stylesheet" href="seearound.me_files/jquery-ui.css">
+</head>
+<body class="post">
+<div class="navbar">
+<div class="logo">
+<a href="http://www.seearound.me/">
+<img src="seearound.me_files/logo194x41.png" alt="logo" width="194" height="41">
+</a>
+</div>
+<div class="post-search">
+<form class="postSearch" action="/" method="GET">
+<div class="keywords">
+<input name="keywords" id="keywords" placeholder="Search Posts..." type="text"><img class="search" src="seearound.me_files/search14x14.png" alt="search" width="14" height="14"></div>
+</form>
+</div>
+<div class="main-menu">
+<a id="menu-button"></a>
+<ul>
+<li class="dropdown community">
+<a class="dropdown-toggle" href="#">
+<span class="icon"></span><span class="text">Community</span><span class="count"></span>
+</a>
+<ul class="dropdown-menu" style="display: none;">
+<li class="load"><span>Loading...</span></li>
+<li><a href="http://www.seearound.me/contacts/friends-list">See all</a></li>
+</ul>
+</li>
+<li class="message">
+<a href="http://www.seearound.me/message">
+<span class="icon"></span><span class="text">Messages</span><span class="count"></span>
+</a>
+</li>
+<li class="dropdown profile">
+<a class="dropdown-toggle" href="#">
+<img class="profile" src="seearound.me_files/3pyn6afcr3.jpg" alt="profile" width="24" height="24">Profile
+</a>
+<ul class="dropdown-menu" style="display: none;">
+<li><a href="http://www.seearound.me/profile">Profile</a></li>
+<li><a href="http://www.seearound.me/home/logout">Logout</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="container">
+<div class="footer" style="width: 1450px; display: block;">
+<ul class="about-info">
+<li><a href="http://www.seearound.me/about">About</a></li>
+<li><a href="http://www.seearound.me/privacy">Privacy Policy</a></li>
+<li><span>Copyright 2017 SeeAround.me</span></li>
+</ul>
+</div>
+<div class="map-container">
+<div id="map_canvas"></div>
+</div>
+<div class="posts-container">
+<div class="posts"><style>
+.post-newupd {
+  background-color: #fff;
+}
+.vote-newupd {
+  float: right;
+}
+.like-newupd {
+  background: rgba(0, 0, 0, 0) url("seearound.me_files/like-small.png") no-repeat scroll center center;
+  margin-bottom: 4px;
+  cursor: pointer;
+  height: 16px;
+  width: 18px;
+}
+.image-newupd img {
+  width: 100%;
+  display: block;
+}
+.action-newupd {
+  color: red;
+  float: right;
+  font-size: 50px;
+  line-height: 0;
+  margin-top: -5px;
+	cursor: pointer;
+}
+.details-newupd .dropdown-menu a {
+  font-family: Lato-Light;
+  font-size: 15px;
+}
+.post-coments-newupd {
+  background: #eee;
+}
+.post-comment__new-newupd {
+  border-top: 2px solid #e4e4e4;
+}
+.post-comment__item-newupd,
+.post-comment__new-newupd {
+  display: inline-block;
+  width: 100%;
+}
+.post-comment__new-body-newupd,
+.post-comment__new-owner-newupd {
+  float: left;
+}
+.post-comment__new-body-newupd {
+  background: rgba(0, 0, 0, 0) url("seearound.me_files/user-symbol-small.png") no-repeat scroll 0 0;
+  margin-right: 23px;
+  margin-top: 12px;
+  padding-left: 12px;
+}
+.post-comment__item-newupd,
+.post-comment__new-body-newupd textarea {
+  font-size: 13.65px;
+}
+.post-comment__new-body-newupd textarea {
+  background: #fff none repeat scroll 0 0;
+  border: medium none;
+  color: #7d7d7d;
+  font-family: Lato-LightItalic;
+  height: 17px;
+  line-height: 17px;
+  margin-bottom: 7px;
+  outline: 0 none;
+  overflow-y: hidden;
+  padding: 10px;
+  resize: none;
+  width: 318px;
+}
+.post-comment__new-owner-newupd img {
+  margin: 10px 6px 6px 13px;
+}
+.post-comment__item-owner-newupd img,
+.post-comment__new-owner-newupd img {
+  border-radius: 50px;
+  height: 43px;
+  width: 43px;
+}
+.post-comment__item-newupd:first-child {
+  padding-top: 11px;
+}
+.post-comment__item-newupd {
+  font-family: Lato-Regular;
+  min-height: 58px;
+}
+.post-coments-newupd a,
+.post_text-newupd a {
+  color: #c30;
+}
+.post-comment__item-newupd > a {
+  display: block;
+  float: left;
+}
+.post-comment__item-owner-newupd img {
+  margin: 6px 16px 6px 13px;
+}
+.post-comment__body-newupd {
+  display: inline-block;
+  margin-top: 4px;
+  max-width: 317px;
+  overflow-wrap: break-word;
+}
+.post-coment-user-name-newupd {
+  font-family: Lato-Regular,sans-serif;
+}
+.post-coments-newupd span {
+  color: #333;
+}
+.post-coment__date-newupd {
+  color: #c00;
+  font: 400 9.1px Lato-Regular,sans-serif;
+  margin: 4px 0 0;
+}
+.details-newupd {
+  position: relative;
+}
+.details-newupd .dropdown-menu {
+  left: auto;
+	right: 0;
+	width: 180px;
+	top: auto;
+	bottom: 18px;
+}
+</style>
+<div class="post-newupd" data-id="1">
+	<div class="vote-newupd">
+		<div class="like-newupd"></div>
+		<div class="count-newupd">12</div>
+	</div>
+	<div class="post_text-newupd">Leaning Tower renovation is done and is 
+back open today! The biggest change was to retile the floor and update 
+some of the plumbing underneath, but future planned changes will move 
+the ovens back further and move additional seating in front.</div>
+	<div class="image-newupd">
+		<img src="seearound.me_files/p9y4csx415.png" data-src="http://www.seearound.me/newsimages/p9y4csx415.png" data-width="960" data-height="819" width="448" height="382">
+	</div>
+	<div class="details-newupd">24 minutes ago by <a href="http://www.seearound.me/profile/276">James</a><span class="action-newupd dropdown-toggle">...</span>
+		<ul class="dropdown-menu" style="display: none;">
+			<li><a href="#">Edit</a></li>
+			<li><a href="#">Delete</a></li>
+			<li><a href="#">Share post</a></li>
+			<li><a href="#">Follow James</a></li>
+			<li><a href="#">Message James</a></li>
+			<li><a href="#">View James's profile</a></li>
+			<li><a href="#">Block James</a></li>
+			<li><a href="#">Flag as inappropriate</a></li>
+			<li><a href="#">Cancel</a></li>
+		</ul>
+	</div>
+	<div class="post-coments-newupd">
+				<div class="post-comment__new-newupd">
+			<div class="post-comment__new-owner-newupd">
+				<img src="seearound.me_files/vlab8mnyns.jpg" width="43" height="43">
+			</div>
+			<div class="post-comment__new-body-newupd">
+				<textarea placeholder="Write a Comment..."></textarea>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
