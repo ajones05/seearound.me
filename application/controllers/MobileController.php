@@ -2614,12 +2614,13 @@ class MobileController extends Zend_Controller_Action
 			])
 			->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '')
 			->joinLeft(['v2' => 'votings'],
-				'v2.news_id=n.id AND v2.user_id IS NOT NULL', '')
+				'v2.news_id=n.id AND v2.user_id IS NOT NULL AND ' .
+				'v2.user_id<>' . $user['id'], '')
 			->joinLeft(['u' => 'user_data'], 'u.id=v2.user_id', '')
 			->where(
 				'n.isdeleted=0 AND n.user_id=' . $user['id'] . ' AND ' .
 				'v.created_at>' . $maxDate . ' AND v.active=1 AND ' .
-					'(v.user_id IS NULL OR v.user_id<>' .  $user['id'] . ') AND ' .
+				'(v.user_id IS NULL OR v.user_id<>' .  $user['id'] . ') AND ' .
 				'(v2.id IS NULL OR (v2.active=1 AND v2.created_at>' . $maxDate . '))'
 			)->group('n.id');
 
