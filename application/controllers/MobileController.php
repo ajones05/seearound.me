@@ -2556,9 +2556,9 @@ class MobileController extends Zend_Controller_Action
 
 			$response = ['status' => 'SUCCESS'];
 
-			$maxDate = (new DateTime)->modify('-15 days')->setTime(0, 0)
-				->format(My_Time::SQL);
 			$db = Zend_Db_Table::getDefaultAdapter();
+			$maxDate = $db->quote((new DateTime)->modify('-15 days')->setTime(0, 0)
+				->format(My_Time::SQL));
 
 			$friendSelect = $db->select();
 			$friendSelect->from(['f' => 'friends'], [
@@ -2575,7 +2575,7 @@ class MobileController extends Zend_Controller_Action
 				'is_read' => 'f.notify'
 			]);
 			$friendSelect->where('f.receiver_id=? AND f.status=1', $user['id']);
-			$friendSelect->where('fl.created_at>?', $maxDate);
+			$friendSelect->where('fl.created_at>' . $maxDate);
 			$friendSelect->joinLeft(['fl' => 'friend_log'],
 				'fl.friend_id=f.id AND fl.status_id=f.status', '');
 			$friendSelect->joinLeft(['u' => 'user_data'], 'u.id=fl.user_id', '');
@@ -2595,7 +2595,7 @@ class MobileController extends Zend_Controller_Action
 				'is_read' => 'cm.is_read'
 			]);
 			$messageSelect->where('cm.to_id=?', $user['id']);
-			$messageSelect->where('cm.created_at>?', $maxDate);
+			$messageSelect->where('cm.created_at>' . $maxDate);
 			$messageSelect->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '');
 
 			$postLikeSelect = $db->select();
@@ -2611,17 +2611,17 @@ class MobileController extends Zend_Controller_Action
 				'user_image_id' => 'u.image_id',
 				'user_image_name' => 'u.image_name',
 				'is_read' => 'min(v.is_read)'
-			]);
-			$postLikeSelect->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
-			$postLikeSelect->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '');
-			$postLikeSelect->where('v.active=1 AND (v.user_id IS NULL OR v.user_id<>?)',
-				$user['id']);
-			$postLikeSelect->where('v.created_at>?', $maxDate);
-			$postLikeSelect->joinLeft(['v2' => 'votings'],
-				'v2.news_id=n.id AND v2.user_id IS NOT NULL', '');
-			$postLikeSelect->where('(v2.id IS NULL OR v2.created_at>?)', $maxDate);
-			$postLikeSelect->joinLeft(['u' => 'user_data'], 'u.id=v2.user_id', '');
-			$postLikeSelect->group('n.id');
+			])
+			->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '')
+			->joinLeft(['v2' => 'votings'],
+				'v2.news_id=n.id AND v2.user_id IS NOT NULL', '')
+			->joinLeft(['u' => 'user_data'], 'u.id=v2.user_id', '')
+			->where(
+				'n.isdeleted=0 AND n.user_id=' . $user['id'] . ' AND ' .
+				'v.created_at>' . $maxDate . ' AND v.active=1 AND ' .
+					'(v.user_id IS NULL OR v.user_id<>' .  $user['id'] . ') AND ' .
+				'(v2.id IS NULL OR (v2.active=1 AND v2.created_at>' . $maxDate . '))'
+			)->group('n.id');
 
 			$postCommentSelect = $db->select();
 			$postCommentSelect->from(['n' => 'news'], [
@@ -2640,7 +2640,7 @@ class MobileController extends Zend_Controller_Action
 			$postCommentSelect->where('n.isdeleted=0 AND n.user_id=?', $user['id']);
 			$postCommentSelect->joinLeft(['c' => 'comments'], 'c.news_id=n.id', '');
 			$postCommentSelect->where('c.isdeleted=0 AND c.user_id<>?', $user['id']);
-			$postCommentSelect->where('c.created_at>?', $maxDate);
+			$postCommentSelect->where('c.created_at>' . $maxDate);
 			$postCommentSelect->joinLeft(['u' => 'user_data'], 'u.id=c.user_id', '');
 
 			$select = $db->select()
@@ -2705,7 +2705,8 @@ class MobileController extends Zend_Controller_Action
 								}
 								else
 								{
-									$message .= ($row['param2'] - 1) . ' others';
+									$formatter = new NumberFormatter('en', NumberFormatter::SPELLOUT);
+									$message .= $formatter->format($row['param2'] - 1) . ' others';
 								}
 							}
 
