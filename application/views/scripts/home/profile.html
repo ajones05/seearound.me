@@ -12,7 +12,7 @@ $karma = Application_Model_User::getKarma($this->profile);
 <p class="user_avatar"><img src="<?php echo $this->baseUrl($thumb); ?>"
 width="55" height="55"></p>
 <p class="user_name"><?php echo ucfirst($this->profile['Name']); ?></p>
-<p class="post_text"
+<p class="address"
 ><?php echo My_StringHelper::stringLimit($this->addressFormat, 50, '...'); ?></p>
 <ul>
 <li><h3>Karma</h3><span><strong class="karma"

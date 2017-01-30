@@ -1436,7 +1436,7 @@ class MobileController extends Zend_Controller_Action
 					'Name' => Application_Model_User::getFirstName($post, 'owner_'),
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 						Application_Model_User::getThumb($post, '320x320', ['alias' => 'owner_'])),
-					'canEdit' => Application_Model_News::canEdit($post, $user),
+					'canEdit' => Application_Model_News::canEdit($post, $user) ? 1 : 0,
 					'canVote' => Application_Model_Voting::canVote($user, $post) ? 1 : 0,
 					'isFriend' => $friendStatus ? 1 : 0
 				]
@@ -2023,7 +2023,7 @@ class MobileController extends Zend_Controller_Action
 						'Name' => Application_Model_User::getFirstName($row, 'owner_'),
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
-						'canEdit' => Application_Model_News::canEdit($row, $user),
+						'canEdit' => Application_Model_News::canEdit($row, $user) ? 1 : 0,
 						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0,
 						'isFriend' => $friendStatus ? 1 : 0
 					];
@@ -2141,7 +2141,7 @@ class MobileController extends Zend_Controller_Action
 						'Name' => Application_Model_User::getFirstName($row, 'owner_'),
 						'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
-						'canEdit' => Application_Model_News::canEdit($row, $user),
+						'canEdit' => Application_Model_News::canEdit($row, $user) ? 1 : 0,
 						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0,
 						'isFriend' => $friendStatus ? 1 : 0
 					];

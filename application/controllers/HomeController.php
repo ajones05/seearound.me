@@ -295,7 +295,12 @@ class HomeController extends Zend_Controller_Action
 
 			foreach ($posts as $post)
 			{
-				$data[$post->id] = [$post->latitude, $post->longitude];
+				$data[$post->id] = [
+					'id' => $post['id'],
+					'user_id' => $post['user_id'],
+					'lat' => $post['latitude'],
+					'lng' => $post['longitude']
+				];
 			}
 
 			$this->view->posts = $posts;

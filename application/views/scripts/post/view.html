@@ -1,17 +1,14 @@
 <?php
 $commentsLimit = 3;
 $isGuest = empty($this->user);
-$user_id = !$isGuest ? $this->user['id'] : null;
-$profileUrl = !$isGuest ? $this->baseUrl('profile/' .
-	$this->post['user_id']) : '#';
-$link = $this->baseUrl('post/' . $this->post['id']);
+$profileUrl = $this->baseUrl('profile/' . $this->post['user_id']);
+$firstName = explode(' ', $this->owner['Name'])[0];
+
 $userVote = My_ArrayHelper::getProp($this->post, 'user_vote');
 $postComments = My_ArrayHelper::getProp($this->post, 'comment', 0);
 $canVote = Application_Model_Voting::canVote($this->user, $this->post);
 
 $commentsModel = new Application_Model_Comments;
-
-$hideComments = true;
 
 if ($postComments > 0)
 {
@@ -19,8 +16,6 @@ if ($postComments > 0)
 		'limit' => $commentsLimit,
 		'owner_thumbs' => [[55,55]]
 	]);
-	$hideComments = !My_ArrayHelper::search(['news_id' => $this->post['id']],
-		$comments->toArray(), 1);
 }
 
 if (!empty($this->post['image_id']))
@@ -52,26 +47,15 @@ else
 	$createdAt->setTimezone(Application_Model_User::getTimezone($this->user));
 	$timeAttr = 'title="' . $createdAt->format(My_Time::OUTPUT) . '"';
 }
-$ownerThumb = Application_Model_User::getThumb($this->owner, '55x55');
 ?>
-<div class="post <?php if ($this->hidden) echo ' hidden';?>"
+<div class="post<?php if ($this->hidden) echo ' hidden'; ?>"
 data-id="<?php echo $this->post['id']; ?>">
-<a href="<?php echo $profileUrl; ?>" class="user_avatar"
-><img src="<?php echo $this->baseUrl($ownerThumb); ?>" width="55" height="55"
-></a><a href="<?php echo $profileUrl; ?>" class="user_name"
-><?php echo ucfirst($this->owner['Name']); ?></a>
-<a href="<?php echo $link; ?>" class="post-time"
-<?php echo $timeAttr; ?>><?php echo $timeVal; ?></a>
-<div class="vote"<?php if (!$canVote): ?> disabled<?php endif; ?>>
-<div class="_3_copy"
+<div class="vote<?php if (!$canVote) echo ' disabled'; ?>">
+<div class="like<?php if ($userVote == 1) echo ' active'; ?>"></div>
+<div class="count"
 ><?php echo My_ArrayHelper::getProp($this->post, 'vote', 0); ?></div>
-<div class="icon">
-<div class="like<?php if ($userVote == 1): ?> active<?php endif; ?>"></div>
-<div class="dislike<?php if ($userVote == -1): ?> active<?php endif; ?>"></div>
 </div>
-</div>
-<div class="post_text"
-><?php echo Application_Model_News::renderContent($this->post, [
+<div class="body"><?php echo Application_Model_News::renderContent($this->post, [
 	'limit' => My_ArrayHelper::getProp($this, 'limit'),
 	'link' => $this->link
 ]); ?></div>
@@ -85,26 +69,46 @@ data-width="<?php echo $thumb960x960['width']; ?>"
 data-height="<?php echo $thumb960x960['height']; ?>">
 </div>
 <?php endif; ?>
-<div class="social_share">
-<div class="default-panel">
-<?php if ($hideComments): ?>
-<a class="add-comment" href="#">Comment</a>
-<?php elseif ($postComments > $commentsLimit): ?>
-<a class="view-comments" href="#"
-><?php echo $commentsModel->viewMoreLabel($postComments-$commentsLimit); ?></a>
+<div class="details">
+<a class="time"
+href="<?php echo $this->baseUrl('post/' . $this->post['id']); ?>"
+<?php echo $timeAttr; ?>><?php echo $timeVal; ?></a> by <a class="profile"
+href="<?php echo $profileUrl; ?>"><?php
+echo My_StringHelper::stringLimit($firstName, 35, '...'); ?></a><span
+class="dropdown-toggle"><span></span><span></span><span></span></span>
+<ul class="dropdown-menu hidden">
+<?php if (Application_Model_News::canEdit($this->post, $this->user)): ?>
+<li><span class="edit">Edit</span></li>
+<li><span class="delete">Delete</span></li>
 <?php endif; ?>
-<a class="email" href="#"><img
-src="<?php echo $this->baseUrl("www/images/email.png"); ?>"></a>
-<a class="facebook" href="<?php echo $this->serverUrl() . $link; ?>">
-<img src="<?php echo $this->baseUrl("www/images/facebook.png"); ?>">
-</a>
-<?php if ($user_id == $this->post['user_id']): ?>
-<a class="edit">Edit Post</a>
+<li><span class="fb">Share on Facebook</span></li>
+<li><span class="email">Email this post</span></li>
+<?php if (!$isGuest && $this->user['id'] != $this->post['user_id']):
+$isFriend = (new Application_Model_Friends)
+->isFriend($this->user, ['id' => $this->post['user_id']]); ?>
+<li<?php if ($isFriend) echo ' class="hidden"'; ?>
+><span class="follow">Follow <?php echo $firstName; ?></span></li>
+<li<?php if (!$isFriend) echo ' class="hidden"'; ?>
+><span class="unfollow">Unfollow <?php echo $firstName; ?></span></li>
+<li><span class="message">Message <?php echo $firstName; ?></span></li>
 <?php endif; ?>
-</div>
+<li><a href="<?php echo $profileUrl; ?>"
+>View <?php echo $firstName; ?>'s profile</a></li>
+<?php if (!$isGuest):
+if ($this->user['id'] != $this->post['user_id']): ?>
+<li><span class="block<?php if (!empty($this->post['isUserBlocked'])) echo ' disabled'; ?>">Block <?php echo $firstName; ?></span></li>
+<?php endif; ?>
+<li><span class="flag">Flag as inappropriate</span></li>
+<?php endif; ?>
+<li><span>Cancel</span></li>
+</ul>
 </div>
 <div class="post-coments">
+<?php if ($postComments > $commentsLimit): ?>
+<div class="more"><span><?php echo $commentsModel
+->viewMoreLabel($postComments-$commentsLimit); ?></span></div>
 <?php
+endif;
 if ($postComments > 0)
 {
 	for ($i = $comments->count() - 1; $i >= 0; $i--)
@@ -117,10 +121,7 @@ if ($postComments > 0)
 		]);
 	}
 }
-echo $this->partial('post/_comment_new.html', [
-	'user' => $this->user,
-	'hidden' => $hideComments
-]);
+echo $this->partial('post/_comment_new.html', ['user' => $this->user]);
 ?>
 </div>
 </div>

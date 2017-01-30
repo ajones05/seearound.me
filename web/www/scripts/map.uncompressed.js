@@ -51,6 +51,36 @@ require(['jquery','common'], function(){
 		$(window).on('resize', resizeHandler);
 		resizeHandler();
 
+		$(document).on('click', '.dropdown-toggle', function(e){
+			e.preventDefault();
+			e.stopPropagation();
+			var activeDropdown=$(this).parent().find('.dropdown-menu');
+			if (activeDropdown.parent().hasClass('details')){
+				if (activeDropdown.is(':hidden')){
+					var spaceBottom=$(window).height() - ($(this).offset().top -
+						$(document).scrollTop());
+					if (spaceBottom < activeDropdown.height()+25){
+						activeDropdown.addClass('top');
+					}
+				} else {
+					activeDropdown.removeClass('top');
+				}
+			}
+			activeDropdown.toggle();
+			$('.dropdown-menu')
+				.not(activeDropdown)
+				.hide()
+				.parent().find('.dropdown-toggle .caret.up').removeClass('up');
+		});
+
+		$(document).click(function(e){
+			if (e.button == 2){
+				return true;
+			}
+			$('.dropdown-menu').hide().removeClass('top');
+			$('.dropdown-toggle .caret.up').removeClass('up');
+		});
+
 		if (isLogin){
 			$('#menu-button').click(function(){
 				$(this).next('ul').toggleClass('open');
@@ -78,23 +108,6 @@ require(['jquery','common'], function(){
 			};
 
 			notification();
-
-			$('.dropdown-toggle').click(function(e){
-				e.preventDefault();
-				e.stopPropagation();
-				$('.dropdown-menu')
-					.not($(this).parent().find('.dropdown-menu').toggle())
-					.hide()
-					.parent().find('.dropdown-toggle .caret.up').removeClass('up');
-			});
-
-			$(document).click(function(e){
-				if (e.button == 2){
-					return true;
-				}
-				$('.dropdown-menu').hide();
-				$('.dropdown-toggle .caret.up').removeClass('up');
-			});
 
 			$('.community .dropdown-toggle').click(function(){
 				var dropdown = $(this).parent();
@@ -150,11 +163,14 @@ require(['jquery','common'], function(){
 						userMessageDialog(profile.id);
 				});
 				$('.action .follow').click(function(){
-					var target=$(this);
-					if (target.attr('disabled')){
-						return false
+					var self=$(this);
+
+					if (self.hasClass('disabled')){
+						return;
 					}
-					target.attr('disabled', true);
+
+					self.addClass('disabled');
+
 					ajaxJson({
 						url: baseUrl + 'contacts/friend',
 						data: {
@@ -163,8 +179,8 @@ require(['jquery','common'], function(){
 							total: 1
 						},
 						done: function(response){
-							target.text(isFriend ? 'Follow' : 'Unfollow')
-								.attr('disabled', false);
+							self.text(isFriend ? 'Follow' : 'Unfollow')
+								.removeClass('disabled');;
 							if (response.total > 0){
 								$('#noteTotal').html(response.total);
 							} else {
@@ -224,7 +240,9 @@ function initMap(){
 
 			$(function(){
 				if (viewPage=='post'){
-					var searchForm = $('form.postSearch').submit(function(e){
+					var postContainer = $('.posts>.post').show(),
+					postId=postContainer.attr('data-id'),
+					searchForm = $('form.postSearch').submit(function(e){
 						e.preventDefault();
 						guestAction();
 					});
@@ -237,15 +255,15 @@ function initMap(){
 						icon: postIcon,
 						position: [opts.lat,opts.lng],
 						content: function(content, marker, event, ui){
-							$('.ui-tooltip-content', ui.tooltip)
-								.html(userAddressTooltip(post.address, post.owner.image));
+							var tooltip=userAddressTooltip(postData[postId].address,
+								postData[postId].user_image);
+							$('.ui-tooltip-content', ui.tooltip).html(tooltip);
 							ui.tooltip.position($(event.target).tooltip('option', 'position'));
 						},
 						openTooltip: true
 					});
 
-					var postContainer = $('.post[data-id='+post.id+']').show();
-					postItem_renderContent(post.id,postContainer);
+					postItem_renderContent(postId,postContainer);
 
 					$('a.user_avatar[href=#],a.user_name[href=#]').click(function(e){
 						e.preventDefault();
@@ -333,7 +351,7 @@ function initMap(){
 						}
 					} else {
 						for (var id in postData){
-							postItem_marker(id, postData[id]);
+							postItem_marker(id,[postData[id].lat,postData[id].lng]);
 						}
 					}
 				}
@@ -564,23 +582,18 @@ function initMap(){
 										if (viewPage=='profile'){
 											if (response.data !== null){
 												for (var i in response.data){
-													var id=response.data[i][0],
-														data=[
-															response.data[i][1],
-															response.data[i][2]
-														];
-													postData[id]=data;
-													postItem_marker(id, data);
+													var row=response.data[i];
+													postData[row.id]=row;
+													postItem_marker(row.id,[row.lat,row.lng]);
 												}
 											}
 										} else {
 											if (response.data){
 												for (var i in response.data){
-													$('.posts-container .posts').append(response.data[i][3]);
-
-													var id = response.data[i][0];
-													postData[id]=[response.data[i][1],response.data[i][2]];
-													postItem_render(id);
+													var row=response.data[i];
+													$('.posts-container .posts').append(row.html);
+													postData[row.id]=row;
+													postItem_render(row.id);
 												}
 
 												if (Object.size(response.data) >= postLimit){
@@ -994,41 +1007,92 @@ function postItem_renderContent(id, postContainer){
 			.attr('title',formatOutputDate(postTime));
 	}
 
-	$('.like,.dislike', postContainer).click(function(){
-		var target = $(this),
-			vote = $('.vote', postContainer);
-
+	$('.like',postContainer).click(function(){
 		if (!isLogin){
 			return guestAction();
 		}
 
-		if (vote.attr('disabled')){
-			return false;
+		var self=$(this);
+
+		if (self.hasClass('disabled')){
+			return;
 		}
 
-		vote.attr('disabled', true);
+		self.addClass('disabled');
 
 		ajaxJson({
 			url: baseUrl+'post/vote',
-			data: {
-				id: id,
-				vote: (target.hasClass('like') ? 1 : -1)
-			},
+			data:{id:id,vote:1},
 			done: function(response){
-				$('.like,.dislike', postContainer).removeClass('active');
-				$('._3_copy', vote).html(response.vote);
-				switch (response.active){
-					case '-1':
-						$('.dislike', postContainer).addClass('active');
-						break;
-					case '1':
-						$('.like', postContainer).addClass('active');
-						break;
+				if (response.active==1){
+					self.addClass('active');
+				} else {
+					self.removeClass('active');
 				}
-				vote.attr('disabled', false);
+				$('.count',postContainer).html(response.vote);
+				self.removeClass('disabled');
 			},
 			fail: function(){
-				vote.attr('disabled', false);
+				self.removeClass('disabled');
+			}
+		});
+	});
+
+	$('.message',postContainer).on('click',function(){
+		userMessageDialog(postData[id].user_id);
+	});
+
+	$('.follow,.unfollow',postContainer).on('click', function(){
+		var self=$(this);
+
+		if (self.hasClass('disabled')){
+			return;
+		}
+
+		self.addClass('disabled');
+
+		ajaxJson(baseUrl+'contacts/friend',{
+			data: {
+				action: self.hasClass('follow') ? 'follow' : 'reject',
+				user: postData[id].user_id
+			},
+			done: function(response){
+				self.removeClass('disabled');
+				$('li:has(.follow,.unfollow)',postContainer).toggle();
+			}
+		});
+	});
+
+	$('.block',postContainer).on('click',function(){
+		var self=$(this);
+
+		if (self.hasClass('disabled')){
+			return;
+		}
+
+		self.addClass('disabled');
+
+		ajaxJson(baseUrl+'post/block-user',{
+			data: {user_id:postData[id].user_id},
+			done: function(response){
+				self.removeClass('disabled');
+			}
+		});
+	});
+
+	$('.flag',postContainer).on('click', function(){
+		var self=$(this);
+
+		if (self.hasClass('disabled')){
+			return;
+		}
+
+		self.addClass('disabled');
+
+		ajaxJson(baseUrl+'post/flag',{
+			data: {id:id},
+			done: function(response){
+				self.removeClass('disabled');
 			}
 		});
 	});
@@ -1043,8 +1107,7 @@ function postItem_renderContent(id, postContainer){
 		$(this).remove();
 	});
 
-	$('.social_share .email', postContainer).click(function(e){
-		e.preventDefault();
+	$('.dropdown-menu .email', postContainer).click(function(){
 		if (!isLogin){
 			return guestAction();
 		}
@@ -1186,17 +1249,39 @@ function postItem_renderContent(id, postContainer){
 		comment_render($(this));
 	});
 
-	$('.social_share .facebook', postContainer).click(function(e){
-		var link = $(this).attr('href');
-		e.preventDefault();
-		require(['facebook-sdk'], function(){
-			FB.ui({method:'share',href:link});
+	$('.dropdown-menu .delete', postContainer).on('click',function(){
+		var self=$(this);
+		self.closest('.dropdown-menu').hide();
+
+		if (!confirm('Are you sure you want to delete?')){
+			return;
+		}
+
+		if (self.hasClass('disabled')){
+			return;
+		}
+
+		self.addClass('disabled');
+
+		ajaxJson({
+			url:baseUrl+'post/delete',
+			data:{id:id},
+			done: function(){deletePostHandler(id); },
+			fail: function(){self.removeClass('disabled'); }
 		});
 	});
 
-	$('.view-comments', postContainer).click(function(e){
-		e.preventDefault();
-		$('.view-comments', postContainer).hide();
+	$('.dropdown-menu .fb', postContainer).click(function(){
+		require(['facebook-sdk'], function(){
+			FB.ui({method:'share',href:baseUrl+'post/'+id});
+		});
+	});
+
+	$('.post-coments .more span', postContainer).click(function(e){
+		if ($(this).hasClass('disabled')){
+			return;
+		}
+		var commMore=$(this).addClass('disabled');
 		ajaxJson({
 			url: baseUrl+'post/comments',
 			data: {
@@ -1204,48 +1289,49 @@ function postItem_renderContent(id, postContainer){
 				start: $('.post-comment__item', postContainer).size()
 			},
 			done: function(response){
-				if (!response.data){
-					return true;
+				if (response.data==null){
+					commMore.remove();
+					return;
 				}
 
-				var commentsContainer = $('.post-coments', postContainer);
-
+				var moreLabel=commMore.parent();
 				for (var i in response.data){
-					comment_render($(response.data[i]).prependTo(commentsContainer));
+					comment_render($(response.data[i]).insertAfter(moreLabel));
 				}
 
 				if (response.label){
-					$('.view-comments', postContainer).html(response.label).show();
+					commMore.html(response.label).removeClass('disabled');
+				} else {
+					commMore.remove();
 				}
 			}
 		});
 	});
-	$('.edit', postContainer).click(function(e){
-		e.preventDefault();
 
-		if ($(this).attr('disabled')){
-			return false;
+	$('.dropdown-menu .edit', postContainer).click(function(){
+		var self=$(this);
+		if (self.hasClass('disabled')){
+			return;
 		}
 
-		$(this).attr('disabled', true);
+		self.addClass('disabled');
 
 		ajaxJson({
 			url: baseUrl+'post/edit',
 			data: {id:id},
 			done: function(response){
-				$('.default-panel', postContainer).hide();
-				var editForm = $('<textarea>', {rows:1,name:'body'})
-					.appendTo($('.post_text', postContainer).empty())
+				var detailsPanel=$('.details', postContainer).hide(),
+				editForm=$('<textarea>', {rows:1,name:'body'})
+					.appendTo($('.body', postContainer).empty())
 					.val(response.body)
 					.bind('input paste keypress',validatePost)
 					.textareaAutoSize()
 					.focus();
 
-				$('.social_share', postContainer).append(
+				detailsPanel.after(
 					$('<div/>').addClass('edit-panel').append(
-						$('<a/>').text('Change location')
-							.click(function(e){
-								e.preventDefault();
+						$('<span/>').text('Change location')
+							.on('click',function(){
 								editLocationDialog({
 									mapZoom: 14,
 									markerIcon: assetsBaseUrl+'www/images/icons/icon_1.png',
@@ -1296,72 +1382,55 @@ function postItem_renderContent(id, postContainer){
 									}
 								});
 							}),
-						$('<a/>').text('Delete')
-							.click(function(e){
-								e.preventDefault();
+						$('<span/>').text('Delete')
+							.on('click',function(){
+								var btn=$(this);
+
+								if (btn.hasClass('disabled')){
+									return;
+								}
 
 								if (!confirm('Are you sure you want to delete?')){
-									return false;
+									return;
 								}
 
-								if ($(this).attr('disabled')){
-									return false;
-								}
+								var editButtons=$('.edit-panel span',postContainer)
+									.addClass('disabled');
 
-								var editButtons = $('.edit-panel a', postContainer)
-									.attr('disabled', true);
 								ajaxJson({
 									url: baseUrl+'post/delete',
 									data: {id:id},
-									done: function(){
-										if (viewPage!='posts'){
-											window.location.href = baseUrl;
-											return true;
-										}
-
-										$('.post[data-id="'+id+'"]').remove();
-										postItem_delete(id);
-										delete postData[id];
-										$('.posts-container .posts input[value='+id+']').remove();
-										if (Object.size(postData) == 0){
-											emptyPostsMessage();
-										}
-									},
-									fail: function(data, textStatus, jqXHR){
-										editButtons.attr('disabled', false);
-									}
+									done: function(){deletePostHandler(id); },
+									fail: function(){editButtons.removeClass('disabled'); }
 								});
 							}),
-						$('<a/>').text('Done Editing')
-							.click(function(e){
-								e.preventDefault();
-
-								if ($(this).attr('disabled')){
-									return false;
+						$('<span/>').text('Done Editing')
+							.on('click',function(){
+								var btn=$(this);
+								if (btn.hasClass('disabled')){
+									return;
 								}
 
 								var body=editForm.val();
 								if ($.trim(body)===''){
 									editForm.focus();
-									return false;
+									return;
 								}
 
-								var editButtons = $('.edit-panel a', postContainer)
-									.attr('disabled',true);
+								var editButtons=$('.edit-panel span', postContainer)
+									.addClass('disabled');
 
 								ajaxJson({
 									url:baseUrl+'post/save',
 									data:{id:id,body:body},
 									beforeSend:function(){editForm.attr('disabled',true); },
 									done:function(saveResponse){
-										$('.post_text', postContainer).html(saveResponse.html);
-										$('.edit-panel', postContainer).remove();
-										$('.default-panel', postContainer).show();
-										$('.edit', postContainer).attr('disabled', false);
+										$('.body',postContainer).html(saveResponse.html);
+										$('.edit-panel',postContainer).remove();
+										$('.details', postContainer).show();
+										$('.edit',postContainer).removeClass('disabled');
 									},
-									fail:function(data, textStatus, jqXHR){
-										editButtons.attr('disabled',false);
-									}
+									fail:function(){editButtons.removeClass('disabled'); }
 								});
 							})
 					)
@@ -1410,6 +1479,21 @@ function postItem_renderContent(id, postContainer){
 	require(['textarea_autosize'], function(){
 		input.textareaAutoSize();
 	});
+}
+
+function deletePostHandler(id){
+	if (viewPage!='posts'){
+		window.location.href=baseUrl;
+		return;
+	}
+
+	$('.post[data-id="'+id+'"]').remove();
+	postItem_delete(id);
+	delete postData[id];
+	$('.posts-container .posts input[value='+id+']').remove();
+	if (Object.size(postData) == 0){
+		emptyPostsMessage();
+	}
 }
 
 function emptyPostsMessage(){
@@ -1462,11 +1546,11 @@ function comment_render(comment){
 	$('.moreButton', comment).click(function(e){
 		e.preventDefault();
 
-		if ($(this).attr('disabled')){
+		if ($(this).hasClass('disabled')){
 			return false;
 		}
 
-		$(this).attr('disabled', true);
+		$(this).addClass('disabled', true);
 
 		ajaxJson({
 			url: baseUrl + 'post/read-more-comment',
@@ -1775,7 +1859,7 @@ function newPost_save(position,place){
 				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),getRadius());
 
 				for (var i in response.data){
-					$('.posts-container .posts').append(response.data[i][3]);
+					$('.posts-container .posts').append(response.data[i]['html']);
 				}
 
 				if (Object.size(response.data) >= postLimit){
@@ -1783,20 +1867,20 @@ function newPost_save(position,place){
 				}
 			} else {
 				for (var i in response.data){
-					$('.posts-container .posts').prepend(response.data[i][3]);
+					$('.posts-container .posts').prepend(response.data[i]['html']);
 					break;
 				}
 			}
 
 			for (var i in response.data){
-				var id = response.data[i][0];
-				postData[id]=[response.data[i][1],response.data[i][2]];
-				postItem_render(id);
+				var row=response.data[i];
+				postData[row.id]=row;
+				postItem_render(row.id);
 			}
 
 			$('.posts-container .posts').prepend($('<input/>')
 				.attr({type: 'hidden', name: 'new[]'})
-				.val(response.data[0][0]));
+				.val(response.data[0]['id']));
 
 			$('.location-dialog').dialog('close');
 			$('.post-new__dialog').remove();
@@ -1857,13 +1941,9 @@ function postList_load(start){
 			if (viewPage=='profile'){
 				if (response.data !== null){
 					for (var i in response.data){
-						var id=response.data[i][0],
-							data=[
-								response.data[i][1],
-								response.data[i][2]
-							];
-						postData[id]=data;
-						postItem_marker(id, data);
+						var row=response.data[i];
+						postData[row.id]=row;
+						postItem_marker(row.id,[row.lat,row.lng]);
 					}
 				}
 
@@ -1876,13 +1956,10 @@ function postList_load(start){
 			}
 
 			for (var i in response.data){
-				var id = response.data[i][0],
-					latitude = response.data[i][1],
-					longitude = response.data[i][2],
-					body = response.data[i][3];
-				postData[id]=[latitude,longitude];
-				$('.posts-container .posts').append(body);
-				postItem_render(id);
+				var post=response.data[i];
+				postData[post.id]=post;
+				$('.posts-container .posts').append(post.html);
+				postItem_render(post.id);
 			}
 
 			if (Object.size(response.data) >= postLimit){
@@ -2003,11 +2080,11 @@ function postTooltip_render(content, position, event, ui){
 
 	$('a.prev,a.next', tooltipContent).click(function(e){
 		e.preventDefault();
-		var link = $(this);
-		if (link.attr('disabled')){
-			return false;
+		var link=$(this);
+		if (link.hasClass('disabled')){
+			return;
 		}
-		link.attr('disabled', true);
+		link.addClass('disabled');
 		postTooltip_content(position, event, ui, link.attr('data-start'));
 	});
 
@@ -2016,7 +2093,7 @@ function postTooltip_render(content, position, event, ui){
 }
 
 function postItem_render(id){
-	var marker = postItem_marker(id, postData[id]),
+	var marker = postItem_marker(id,[postData[id].lat,postData[id].lng]),
 		postContainer = $('.post[data-id="'+id+'"]');
 	postItem_renderContent(id, postContainer);
 	postContainer.bind({
@@ -2030,7 +2107,7 @@ function postItem_render(id){
 			marker.css({zIndex: ''});
 		}
 	});
-	$('.post_text .moreButton', postContainer).click(function(e){
+	$('.body .moreButton', postContainer).click(function(e){
 		e.preventDefault();
 		postItem_more(postContainer);
 	});
@@ -2123,17 +2200,17 @@ function postList_scrollHandler(scroll){
 }
 
 function postItem_more(postContainer){
-	var link = $('.post_text .moreButton', postContainer);
-	if (!link.size() || link.attr('disabled')){
+	var link = $('.body .moreButton', postContainer);
+	if (!link.size() || link.hasClass('disabled')){
 		return false;
 	}
-	link.attr('disabled', true);
+	link.addClass('disabled');
 
 	ajaxJson({
 		url: baseUrl+'post/read-more',
 		data: {id:postContainer.attr('data-id')},
 		done: function(response){
-			$('.post_text', postContainer).html(response.html);
+			$('.body', postContainer).html(response.html);
 			link.remove();
 		}
 	});

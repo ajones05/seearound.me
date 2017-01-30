@@ -32,14 +32,15 @@ class PostController extends Zend_Controller_Action
 		$postOptions = [
 			'link' => ['thumbs'=>[[448,320]]],
 			'deleted' => true,
-			'thumbs' => [[448,320],[960,960]]
+			'thumbs' => [[448,320],[960,960]],
+			'userVote' => true,
+			'userBlock' => true,
+			'userBlockFl' => true
 		];
 
 		if ($user != null)
 		{
 			$postOptions['user'] = $user;
-			$postOptions['userVote'] = true;
-			$postOptions['userBlock'] = true;
 		}
 
 		if (!Application_Model_News::checkId($id, $post, $postOptions))
@@ -81,11 +82,12 @@ class PostController extends Zend_Controller_Action
 			'lng' => $post->longitude
 		]);
 
-		$this->view->appendScript[] = 'post=' . json_encode([
-			'id' => $post->id,
+		$this->view->appendScript[] = 'postData=' . json_encode([$post['id'] => [
+			'id' => $post['id'],
 			'address' => Application_Model_Address::format($post),
-			'owner' => ['image' => $this->view->baseUrl($ownerThumb)],
-		]);
+			'user_id' => $post['user_id'],
+			'user_image' => $this->view->baseUrl($ownerThumb)
+		]]);
 
 		if ($user != null)
 		{
@@ -241,7 +243,11 @@ class PostController extends Zend_Controller_Action
 
 			foreach ($posts as $post)
 			{
-				$data[$post->id] = [$post->latitude, $post->longitude];
+				$data[$post->id] = [
+					'user_id' => $post['user_id'],
+					'lat' => $post['latitude'],
+					'lng' => $post['longitude']
+				];
 			}
 
 			$this->view->posts = $posts;
@@ -385,9 +391,10 @@ class PostController extends Zend_Controller_Action
 				foreach ($result as $post)
 				{
 					$postData = [
-						$post->id,
-						$post->latitude,
-						$post->longitude
+						'id' => $post['id'],
+						'user_id' => $post['user_id'],
+						'lat' => $post['latitude'],
+						'lng' => $post['longitude']
 					];
 
 					if ($profile_id == null)
@@ -415,7 +422,7 @@ class PostController extends Zend_Controller_Action
 							];
 						}
 
-						$postData[] = $this->view->partial('post/view.html', $assets);
+						$postData['html'] = $this->view->partial('post/view.html', $assets);
 					}
 
 					$data[] = $postData;
@@ -590,8 +597,6 @@ class PostController extends Zend_Controller_Action
 
 	/**
 	 * Add post action.
-	 *
-	 * @return void
 	 */
 	public function newAction()
 	{
@@ -648,20 +653,18 @@ class PostController extends Zend_Controller_Action
 
 			$response = [
 				'status' => 1,
-				'data' => [
-					[
-						$post['id'],
-						$address['latitude'],
-						$address['longitude'],
-						$this->view->partial('post/view.html', [
-							'post' => $post,
-							'thumbs' => $thumbs,
-							'link' => $link,
-							'user' => $user,
-							'owner' => $postUser
-						])
-					]
-				]
+				'data' => [[
+					'id' => $post['id'],
+					'lat' => $address['latitude'],
+					'lng' => $address['longitude'],
+					'html' => $this->view->partial('post/view.html', [
+						'post' => $post,
+						'thumbs' => $thumbs,
+						'link' => $link,
+						'user' => $user,
+						'owner' => $postUser
+					])
+				]]
 			];
 
 			if ($reset)
@@ -1826,9 +1829,10 @@ class PostController extends Zend_Controller_Action
 			foreach ($result as $post)
 			{
 				$data = [
-					$post['id'],
-					$post['latitude'],
-					$post['longitude'],
+					'id' => $post['id'],
+					'user_id' => $post['user_id'],
+					'lat' => $post['latitude'],
+					'lng' => $post['longitude'],
 				];
 
 				if ($profile_id == null)
@@ -1856,7 +1860,7 @@ class PostController extends Zend_Controller_Action
 						];
 					}
 
-					$data[] = $this->view->partial('post/view.html', $assets);
+					$data['html'] = $this->view->partial('post/view.html', $assets);
 				}
 
 				$response['data'][] = $data;
@@ -1868,6 +1872,119 @@ class PostController extends Zend_Controller_Action
 				'status' => 0,
 				'message' => $e instanceof RuntimeException ? $e->getMessage() :
 					'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Flags post as inappropriate action.
+	 */
+	public function flagAction()
+	{
+		try
+		{
+			$user = Application_Model_User::getAuth();
+
+			if ($user == null)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$id = $this->_request->getPost('id');
+
+			if (!v::intVal()->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			if (!Application_Model_News::checkId($id, $post, ['join'=>false]))
+			{
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($id, true));
+			}
+
+			$settings = Application_Model_Setting::getInstance();
+
+			My_Email::send(
+				$settings['email_fromAddress'],
+				'Report Abuse',
+				[
+					'template' => 'flag-post',
+					'assign' => ['post' => $post],
+					'settings' => $settings
+				]
+			);
+
+			$response = ['status' => 1];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
+		}
+
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Profile details action.
+	 */
+	public function blockUserAction()
+	{
+		try
+		{
+			$user = Application_Model_User::getAuth();
+
+			if ($user == null)
+			{
+				throw new RuntimeException('You are not authorized to access this action');
+			}
+
+			$user_id = $this->_request->getPost('user_id');
+
+			if (!v::intVal()->validate($user_id))
+			{
+				throw new RuntimeException('Incorrect block user ID value: ' .
+					var_export($user_id, true));
+			}
+
+			if ($user['id'] == $user_id)
+			{
+				throw new RuntimeException('Block user ID cannot be the same');
+			}
+
+			if (Application_Model_User::findById($user_id, true) == null)
+			{
+				throw new RuntimeException('Incorrect block user ID: ' .
+					var_export($user_id, true));
+			}
+
+			$userBlockModel = new Application_Model_UserBlock;
+
+			if ($userBlockModel->isBlock($user['id'], $user_id))
+			{
+				throw new RuntimeException('User is already blocked');
+			}
+
+			$userBlockModel->insert([
+				'user_id' => $user['id'],
+				'block_user_id' => $user_id
+			]);
+
+			$response = ['status' => 1];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 0,
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
 			];
 		}
 

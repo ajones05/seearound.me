@@ -85,6 +85,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			'street_name', 'street_number', 'city', 'state', 'country', 'zip'];
 		$postFields = $isCount ? ['count' => 'COUNT(news.id)'] : ['news.*'];
 
+		if (!$isCount && !empty($options['userBlockFl']))
+		{
+			$postFields['isUserBlocked'] = 'ub.id';
+		}
+
 		$query = parent::select()->setIntegrityCheck(false)
 			->from('news', $postFields)
 			->join(['a' => 'address'], 'a.id=news.address_id', $addressFields);
@@ -135,7 +140,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				);
 			}
 
-			if (empty($options['userBlock']))
+			if (empty($options['userBlock']) || !empty($options['userBlockFl']))
 			{
 				$query->joinLeft([
 					'ub' => 'user_block'],
@@ -143,6 +148,10 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 						$options['user']['id'] . ')',
 					''
 				);
+			}
+
+			if (empty($options['userBlock']))
+			{
 				$query->where('ub.id IS NULL');
 			}
 		}
@@ -462,7 +471,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 */
 	public static function canEdit($post, $user)
 	{
-		return $post['user_id'] == $user['id'] ? 1 : 0;
+		if ($post['user_id'] == My_ArrayHelper::getProp($user, 'id'))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
