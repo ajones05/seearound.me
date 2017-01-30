@@ -572,12 +572,12 @@ function initMap(){
 										userPosition = position;
 										centerPosition = position;
 
-										postList_reset();
-
 										mainMap.setCenter(offsetCenter(mainMap,centerPosition,
 											offsetCenterX(true),offsetCenterY(true)));
 										areaCircle.changeCenter(offsetCenter(mainMap, mainMap.getCenter(),
 											offsetCenterX(),offsetCenterY()),getRadius());
+
+										postList_reset();
 
 										if (viewPage=='profile'){
 											if (response.data !== null){
