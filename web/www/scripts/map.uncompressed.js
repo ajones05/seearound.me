@@ -2110,9 +2110,9 @@ function postItem_render(id){
 			marker.css({zIndex: ''});
 		}
 	});
-	$('.body .moreButton', postContainer).click(function(e){
+	$('.body .moreButton',postContainer).click(function(e){
 		e.preventDefault();
-		postItem_more(postContainer);
+		postItem_more($(this).closest('.post'));
 	});
 }
 
@@ -2231,7 +2231,8 @@ function postItem_higlight(id){
 
 	var group = postItem_findCluester(id);
 	for (var i in postMarkersCluster[group]){
-		postItem_more($('.post[data-id="'+postMarkersCluster[group][i]+'"]')
+		var rowId=postMarkersCluster[group][i];
+		postItem_more($('.post[data-id="'+rowId+'"]')
 			.addClass('higlight'));
 	}
 }
