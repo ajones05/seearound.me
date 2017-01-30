@@ -57,21 +57,14 @@ do
 	{
 		$voteCount = rand(2, 5);
 
-		$voteModel->update([
-			'updated_at' => new Zend_Db_Expr('NOW()'),
-			'active' => 0
-		], 'active=1 AND user_id IS NULL AND news_id=' . $post->id);
-
 		for ($i = 1; $i <= $voteCount; $i++)
 		{
-			$isActive = $i == $voteCount;
-
 			$voteModel->insert([
 				'vote' => 1,
 				'bot_id' => mt_rand(0, Application_Model_Voting::$botNamesCount),
 				'news_id' => $post->id,
-				'updated_at' => !$isActive ? new Zend_Db_Expr('NOW()') : null,
-				'active' => $isActive ? 1 : 0
+				'updated_at' => new Zend_Db_Expr('NOW()'),
+				'active' => 1
 			]);
 
 			$post->vote++;
