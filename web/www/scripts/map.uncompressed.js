@@ -1357,9 +1357,10 @@ function postItem_renderContent(id, postContainer){
 													if (getDistance([centerPosition.lat(), centerPosition.lng()],
 														[position.lat(), position.lng()])<=getRadius()){
 														postItem_delete(id);
-														postData[id][0]=position.lat();
-														postData[id][1]=position.lng();
-														postItem_marker(id, postData[id]);
+														postData[id].lat=position.lat();
+														postData[id].lng=position.lng();
+														postData[id].marker=postItem_marker(id,
+															[postData[id].lat,postData[id].lng]);
 													} else {
 														centerPosition = position;
 														mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
@@ -2093,15 +2094,17 @@ function postTooltip_render(content, position, event, ui){
 }
 
 function postItem_render(id){
-	var marker = postItem_marker(id,[postData[id].lat,postData[id].lng]),
-		postContainer = $('.post[data-id="'+id+'"]');
+	postData[id].marker=postItem_marker(id,[postData[id].lat,postData[id].lng]),
+		postContainer=$('.post[data-id="'+id+'"]');
 	postItem_renderContent(id, postContainer);
 	postContainer.bind({
 		mouseenter: function(){
+			var marker=postData[id].marker;
 			marker.setIcon(postActiveIcon);
 			marker.css({zIndex: 100001});
 		},
 		mouseleave: function(){
+			var marker=postData[id].marker;
 			marker.setIcon(marker.data('isRoot')==true ?
 				locationIcon : postIcon);
 			marker.css({zIndex: ''});
