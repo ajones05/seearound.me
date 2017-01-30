@@ -85,9 +85,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			'street_name', 'street_number', 'city', 'state', 'country', 'zip'];
 		$postFields = $isCount ? ['count' => 'COUNT(news.id)'] : ['news.*'];
 
-		if (!$isCount && !empty($options['userBlockFl']))
+		if (!empty($options['user']))
 		{
-			$postFields['isUserBlocked'] = 'ub.id';
+			if (!$isCount && !empty($options['userBlockFl']))
+			{
+				$postFields['isUserBlocked'] = 'ub.id';
+			}
 		}
 
 		$query = parent::select()->setIntegrityCheck(false)
