@@ -465,6 +465,7 @@ body.touch .posts-container .posts {
 .post > .body textarea {
   font-family: 'Lato-Regular', sans-serif;
   font-size: 14.5px;
+  line-height: 21px;
 }
 .post > .body {
   padding: 15px 30px 20px 20px;
@@ -476,7 +477,7 @@ body.touch .posts-container .posts {
   float: right;
   font-size: 50px;
   line-height: 0;
-  margin-top: -5px;
+  margin-top: -8px;
   cursor: pointer;
 }
 .post .details .dropdown-toggle > span {
@@ -489,12 +490,13 @@ body.touch .posts-container .posts {
   margin-top: 3px;
 }
 .post .details {
-  padding: 5px 13px 5px 20px;
+  padding: 4px 13px 6px 20px;
   position: relative;
+  border-top: 1px solid #dddddd;
 }
 .post .details,
 .post .details a.time {
-  font-family: 'Lato-Italic', sans-serif;
+  font-family: 'Lato-LightItalic', sans-serif;
   color: #939393;
   font-size: 13.5px;
 }
@@ -709,6 +711,7 @@ body.profile .post li span {
 }
 .link-meta {
   width: 100%;
+  line-height: initial;
 }
 .link-meta img {
   margin-left: -20px;
