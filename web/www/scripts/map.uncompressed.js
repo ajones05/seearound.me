@@ -1093,6 +1093,7 @@ function postItem_renderContent(id, postContainer){
 			data: {id:id},
 			done: function(response){
 				self.removeClass('disabled');
+				alertDialog('Thanks, this post has been flagged and will be reviewed.');
 			}
 		});
 	});

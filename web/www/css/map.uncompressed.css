@@ -1055,6 +1055,29 @@ body.profile .post li span {
     margin-right: 5px;
     margin-top: 0 !important;
 }
+.alert .ui-dialog-titlebar {
+  padding: 0 !important;
+  border: none;
+  background: none;
+  z-index: 1;
+}
+.alert .ui-dialog-title {
+  display: none;
+}
+.alert.ui-dialog .ui-dialog-content {
+  text-align: center;
+  font-size: 18px;
+}
+.alert .ui-dialog-titlebar-close {
+  display: none;
+}
+.alert.ui-dialog .ui-dialog-buttonpane {
+  border: none;
+  text-align: center;
+}
+.alert.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+  float: none;
+}
 /**
  * Edit location dialog.
  */

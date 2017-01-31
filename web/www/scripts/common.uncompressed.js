@@ -408,6 +408,25 @@ function ajaxJson(url, settings){
 	return jqxhr;
 }
 
+function alertDialog(text){
+  $('<div/>').text(text).appendTo('body')
+    .dialog({
+      resizable: false,
+      height: "auto",
+      width: 300,
+      modal: true,
+      dialogClass: 'alert',
+      buttons:{
+        Okay:function(){
+          $(this).dialog("close");
+        }
+      },
+      beforeClose: function(event, ui){
+        $(event.target).dialog('destroy').remove();
+      }
+    });
+}
+
 function setCookie(name, value, days){
 	var d = new Date();
 	d.setTime(d.getTime() + (days * 86400000));
