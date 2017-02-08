@@ -1000,7 +1000,7 @@ function postItem_imageDimensions(width, height){
 
 function postItem_renderContent(id, postContainer){
 	if (!isLogin){
-		var postTimeContainer=$('.post-time',postContainer),
+		var postTimeContainer=$('.time',postContainer),
 			postTime=new Date(postTimeContainer.attr('data-time'));
 		resetTimeAgo();
 		postTimeContainer.text($.timeago(postTime))
