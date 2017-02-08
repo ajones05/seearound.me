@@ -2604,7 +2604,7 @@ class MobileController extends Zend_Controller_Action
 				'type' => new Zend_Db_Expr('"vote"'),
 				'created_at' => 'max(v.created_at)',
 				'param1' => 'n.id',
-				'param2' => 'count(v.id)',
+				'param2' => 'count(distinct v.id)',
 				'param3' => 'v.bot_id',
 				'user_id' => 'u.id',
 				'user_name' => 'u.Name',
@@ -2613,9 +2613,14 @@ class MobileController extends Zend_Controller_Action
 				'is_read' => 'min(v.is_read)'
 			])
 			->joinLeft(['v' => 'votings'], 'v.news_id=n.id', '')
-			->joinLeft(['v2' => 'votings'],
-				'v2.news_id=n.id AND v2.user_id IS NOT NULL AND ' .
-				'v2.user_id<>' . $user['id'], '')
+			->joinLeft(['v2' => 'votings'], 'v2.id=(' .
+				'SELECT v3.id FROM votings AS v3 WHERE ' .
+					'v3.news_id=n.id AND ' .
+					'v3.user_id IS NOT NULL AND ' .
+					'v3.user_id<>' . $user['id'] .
+					' ORDER BY v3.created_at DESC' .
+					' LIMIT 1' .
+			')', '')
 			->joinLeft(['u' => 'user_data'], 'u.id=v2.user_id', '')
 			->where(
 				'n.isdeleted=0 AND n.user_id=' . $user['id'] . ' AND ' .
