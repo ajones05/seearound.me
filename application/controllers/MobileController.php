@@ -1425,6 +1425,7 @@ class MobileController extends Zend_Controller_Action
 				'post' => [
 					'id' => $post->id,
 					'user_id' => $post->user_id,
+					'category_id' => $post->category_id,
 					'news' => $post->news,
 					'created_date' => My_Time::time_ago($post->created_date, ["ago" => true]),
 					'latitude' => $post->latitude,
@@ -1517,6 +1518,7 @@ class MobileController extends Zend_Controller_Action
 				'status' => 'SUCCESS',
 				'userid' => $user['id'],
 				'post_id' => $post['id'],
+				'category_id' => $post['category_id'],
 				'message' => $post['news']
 			];
 
@@ -1676,6 +1678,7 @@ class MobileController extends Zend_Controller_Action
 			$response = [
 				'status' => 'SUCCESS',
 				'post' => [
+					'category_id' => $post['category_id'],
 					'body' => $post['news'],
 					'latitude' => $address['latitude'],
 					'longitude' => $address['longitude']
@@ -2012,6 +2015,7 @@ class MobileController extends Zend_Controller_Action
 					$data = [
 						'id' => $row->id,
 						'user_id' => $row->user_id,
+						'category_id' => $row->category_id,
 						'news' => $row->news,
 						'created_date' => My_Time::time_ago($row->created_date, ["ago" => true]),
 						'latitude' => $row->latitude,
@@ -2130,6 +2134,7 @@ class MobileController extends Zend_Controller_Action
 					$data = [
 						'id' => $row->id,
 						'user_id' => $row->user_id,
+						'category_id' => $row->category_id,
 						'news' => $row->news,
 						'created_date' => My_Time::time_ago($row->created_date, ["ago" => true]),
 						'latitude' => $row->latitude,

@@ -20,6 +20,17 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	];
 
 	/**
+	 * @var array
+	 */
+	public static $categories = [
+		1 => 'Food',
+		2 => 'Safety',
+		3 => 'Events',
+		4 => 'Development',
+		5 => 'Other'
+	];
+
+	/**
 	 * The table name.
 	 * @var string
 	 */
@@ -334,9 +345,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		&$thumbs=null, &$link=null, &$post=null)
 	{
 		$data = $form->getValues();
+		$body = $this->filterBody($data['body']);
 
-		$data['body'] = $this->filterBody($data['body']);
-		$saveData = ['news' => $data['body']];
+		$saveData = [
+			'category_id' => $data['category_id'],
+			'news' => $body
+		];
 
 		if (!$form->isIgnore('address'))
 		{
@@ -454,7 +468,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 		$link = (new Application_Model_NewsLink)->saveLink([
 			'id' => $post['id'],
-			'news' => $data['body'],
+			'news' => $body,
 		]);
 
 		if (!is_array($post))

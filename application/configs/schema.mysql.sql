@@ -219,6 +219,7 @@ CREATE TABLE `news` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `address_id` int(11) NOT NULL,
   `user_id` int(10) NOT NULL,
+  `category_id` int(11) DEFAULT NULL,
   `news` longtext,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime DEFAULT NULL,

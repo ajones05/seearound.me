@@ -58,6 +58,11 @@ class Application_Form_Post extends Application_Form_Address
 				'validators' => [['Callback', false, v::intVal()->equals(1)]]
 			]);
 		}
+
+		$this->addElement('select', 'category_id', [
+			'required' => false,
+			'multiOptions' => Application_Model_News::$categories
+		]);
 	}
 
 	/**
