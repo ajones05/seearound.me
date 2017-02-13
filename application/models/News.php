@@ -513,10 +513,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 *
 	 * @return string
 	 */
-	public function postScore()
+	public function postScore($alias='news')
 	{
-		return '((news.vote+news.comment+4)/' .
-			'((IFNULL(TIMESTAMPDIFF(HOUR,news.created_date,NOW()),0)+12)^1.4))*10000';
+		return '((' . $alias . '.vote+' . $alias . '.comment+4)/' .
+			'((IFNULL(TIMESTAMPDIFF(HOUR,' . $alias . '.created_date,NOW()),0)+12)' .
+			'^1.4))*10000';
 	}
 
 	/**
@@ -556,6 +557,33 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		}
 
 		return self::$imagePath . '/' . $row[$imageField];
+	}
+
+	/**
+	 * Returns post link data.
+	 *
+	 * @param array|Zend_Db_Table_Row_Abstract $post
+	 * @param string $alias
+	 * @return null|array
+	 */
+	public static function getLink($post, $alias)
+	{
+		$id = My_ArrayHelper::getProp($post, $alias . 'id');
+
+		if ($id == null)
+		{
+			return null;
+		}
+
+		return [
+			'id' => $id,
+			'link' => My_ArrayHelper::getProp($post, $alias . 'link'),
+			'title' => My_ArrayHelper::getProp($post, $alias . 'title'),
+			'description' => My_ArrayHelper::getProp($post, $alias . 'description'),
+			'author' => My_ArrayHelper::getProp($post, $alias . 'author'),
+			'image_id' => My_ArrayHelper::getProp($post, $alias . 'image_id'),
+			'image_name' => My_ArrayHelper::getProp($post, $alias . 'image_name')
+		];
 	}
 
 	/**

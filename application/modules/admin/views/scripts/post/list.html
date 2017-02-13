@@ -1,0 +1,109 @@
+<style>
+.post {
+  display: inline-block;
+  width: 100%;
+  border-bottom: 3px double #ccc;
+  padding: 10px
+}
+.post h4 {
+  text-align: center;
+}
+.post .col-sm-6 {
+  word-wrap: break-word;
+}
+.post .list-group {
+  margin-bottom: 0;
+}
+</style>
+<script>
+jQuery(function(){
+  jQuery('.navbar-form').on('submit', function(e){
+    jQuery(this).attr('action',baseUrl+'admin/post/list');
+  });
+  jQuery('.more').on('click', function(e){
+    var target=jQuery(this);
+    e.preventDefault();
+    if (target.hasClass('active')){
+      return;
+    }
+    target.addClass('active');
+    var emptyCategory=jQuery('#empty-category').is(':checked'),
+      categorySelector=emptyCategory ? ':not(:has(.category .active))' : '';
+    ajaxJson(baseUrl+'admin/post/list',{
+      data: {
+        start:target.closest('.container').find('.post'+categorySelector).size(),
+        'empty-category': emptyCategory ? 1 : 0
+      },
+      done: function(response){
+        target.removeClass('active');
+        if (response.data){
+          for (var i = 0; i < response.data.length; i++){
+            target.before(response.data[i]);
+          }
+        } else {
+          target.remove();
+        }
+      },
+      fail: function(){
+        target.removeClass('active');
+      }
+    });
+  });
+  jQuery(document).on('click', '.post .category a', function(e){
+    var target=jQuery(this);
+    e.preventDefault();
+    if (target.hasClass('active') || target.prop('disabled')){
+      return;
+    }
+    target.prop('disabled', true);
+    ajaxJson(baseUrl+'admin/post/update-category',{
+      data: {
+        id:target.closest('.post').attr('data-id'),
+        category_id:target.attr('data-id')
+      },
+      done: function(){
+        target.parent().find('a').removeClass('active');
+        target.addClass('active');
+        target.prop('disabled', false);
+      },
+      fail: function(){
+        target.prop('disabled', false);
+      }
+    });
+  });
+  jQuery('#empty-category').on('change', function(e){
+    jQuery(this).closest('form').submit();
+  });
+});
+</script>
+<h1>Posts</h1>
+<ol class="breadcrumb">
+<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
+<li>Posts</li>
+</ol>
+<?php if ($this->count > 0): ?>
+<div class="clearfix">
+<form action="<?php echo $this->baseUrl('admin/post/list'); ?>" method="get">
+<input type="hidden" name="keywords"
+value="<?php echo htmlspecialchars($this->request->get('keywords')); ?>">
+<div class="pull-right">
+<input type="checkbox" id="empty-category" name="empty-category" value="1"
+<?php if ($this->request->get('empty-category')) echo ' checked'; ?>>
+<label for="empty-category">Empty Category</label>
+</div>
+</form>
+</div>
+<hr>
+<p>Count: <?php echo $this->resultCount; ?>
+<div>
+<?php
+foreach ($this->posts as $post)
+echo My_ViewHelper::render('post/_list-item', ['post' => $post],
+'modules/admin/views/scripts');
+if ($this->count >= 20): ?>
+<div class="list-group-item btn btn-default more">Load more</div>
+<?php endif; ?>
+</div>
+<?php else: ?>
+<p class="text-warning">There is no posts yet.</p>
+<?php endif; ?>

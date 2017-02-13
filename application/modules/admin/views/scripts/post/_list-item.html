@@ -1,0 +1,30 @@
+<div class="post" data-id="<?php echo $this->post['id']; ?>">
+<div class="col-sm-6">
+<div class="d-flex w-100 justify-content-between">
+<h5><a href="<?php echo $this->baseUrl('profile/' . $this->post['user_id']); ?>"
+><?php echo $this->post['user_name']; ?></a></h5>
+<small><a href="<?php echo $this->baseUrl('post/' . $this->post['id']); ?>"
+title="<?php echo $this->post['created_date']; ?>"
+><?php echo My_Time::time_ago($this->post['created_date'], ['ago' => true]);
+?></a></small>
+</div>
+<p><?php echo Application_Model_News::renderContent($this->post, [
+	'link' => Application_Model_News::getLink($this->post, 'link_')]
+); ?></p>
+<?php if (!empty($this->post['image_id'])):
+	$thumb = My_Query::getThumb($this->post, [448,320], 'post');
+?>
+<p><img src="<?php echo $this->baseUrl($thumb['path']); ?>"></p>
+<?php endif; ?>
+</div>
+<h4>Category</h4>
+<div class="col-sm-6 category">
+<div class="list-group">
+<?php foreach (Application_Model_News::$categories as $id => $category): ?>
+<a href="#" data-id="<?php echo $id; ?>"
+class="list-group-item<?php if ($this->post['category_id'] == $id)
+	echo ' active'; ?>"><?php echo $category; ?></a>
+<?php endforeach; ?>
+</div>
+</div>
+</div>

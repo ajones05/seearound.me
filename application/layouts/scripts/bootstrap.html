@@ -93,7 +93,7 @@ value="<?php echo htmlspecialchars($keywords); ?>">
             <div class="input-group-btn">
                 <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
 								<?php if (trim($keywords) !== ''): ?>
-                <a href="<?php echo $this->baseUrl('admin/settings'); ?>"
+                <a href="<?php echo $this->baseUrl($formAction); ?>"
 class="btn btn-default" role="button"><i class="glyphicon glyphicon-remove"></i></a>
 							<?php endif; ?>
             </div>
@@ -108,6 +108,8 @@ class="btn btn-default" role="button"><i class="glyphicon glyphicon-remove"></i>
 				<li><a href="<?php echo $this->baseUrl('admin'); ?>">Statistic</a></li>
 				<li><a href="<?php echo $this->baseUrl('admin/settings'); ?>">Settings</a></li>
 				<li><a href="<?php echo $this->baseUrl('admin/mobile-api'); ?>">Mobile API</a></li>
+				<li class="divider"></li>
+				<li><a href="<?php echo $this->baseUrl('admin/post/list'); ?>">Posts</a></li>
 				<li><a href="<?php echo $this->baseUrl('admin/index/post-likes'); ?>">Post Likes</a></li>
 			</ul>
 		</li>
