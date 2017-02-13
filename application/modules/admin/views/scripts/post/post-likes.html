@@ -6,7 +6,7 @@ $count = $this->likes->count();
 <li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
 <li>Post Likes</li>
 </ol>
-<form action="<?php echo $this->baseUrl('admin/index/post-likes'); ?>"
+<form action="<?php echo $this->baseUrl('admin/post/post-likes'); ?>"
 method="get">
 <div class="form-group">
 <label for="postID">Post ID</label>
@@ -19,7 +19,7 @@ value="<?php echo $this->request->getParam('post_id'); ?>">
 <?php if ($count): ?>
 <ul class="list-group">
 <?php foreach ($this->likes as $like)
-echo My_ViewHelper::render('index/_post-like', ['like' => $like],
+echo My_ViewHelper::render('post/_post-like', ['like' => $like],
 'modules/admin/views/scripts');
 if ($count >= 100): ?>
 <li class="list-group-item btn btn-default more">Load more</li>
@@ -37,7 +37,7 @@ jQuery('.more').on('click',function(){
 	target.addClass('disabled');
 	if (likesAjax)
 		likesAjax.abort();
-	likesAjax = ajaxJson(baseUrl+'admin/index/post-likes',{
+	likesAjax = ajaxJson(baseUrl+'admin/post/post-likes',{
 		data: {
 			start: jQuery('.list-group-item[data-id]').size(),
 			post_id: jQuery('#postID').val()
@@ -57,7 +57,7 @@ jQuery('.more').on('click',function(){
 updateLikes();
 function updateLikes(){
 	setTimeout(function(){
-		likesAjax = ajaxJson(baseUrl+'admin/index/post-likes',{
+		likesAjax = ajaxJson(baseUrl+'admin/post/post-likes',{
 			data: {
 				source: 'new',
 				id: jQuery('.list-group li[data-id]:first-child').attr('data-id'),
