@@ -17,9 +17,6 @@
 </style>
 <script>
 jQuery(function(){
-  jQuery('.navbar-form').on('submit', function(e){
-    jQuery(this).attr('action',baseUrl+'admin/post/list');
-  });
   jQuery('.more').on('click', function(e){
     var target=jQuery(this);
     e.preventDefault();
@@ -32,6 +29,7 @@ jQuery(function(){
     ajaxJson(baseUrl+'admin/post/list',{
       data: {
         start:target.closest('.container').find('.post'+categorySelector).size(),
+        keywords: jQuery('.navbar-form [name=keywords]').val(),
         'empty-category': emptyCategory ? 1 : 0
       },
       done: function(response){
