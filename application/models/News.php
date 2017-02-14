@@ -239,6 +239,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				$order[] = $this->postScore() . ' DESC';
 		}
 
+		if (!empty($parameters['category_id']))
+		{
+			$query->where('news.category_id=?', $parameters['category_id']);
+		}
+
 		if (!empty($parameters['exclude_id']))
 		{
 			foreach ($parameters['exclude_id'] as $id)

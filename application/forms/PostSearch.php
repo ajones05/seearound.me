@@ -34,6 +34,11 @@ class Application_Form_PostSearch extends Zend_Form
 			]
 		]);
 
+		$this->addElement('select', 'category_id', [
+			'required' => false,
+			'multiOptions' => Application_Model_News::$categories
+		]);
+
 		$this->addElement('text', 'latitude', [
 			'required' => true,
 			'validators' => [
