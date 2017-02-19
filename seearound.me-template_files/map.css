@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'Lato-Italic';
-    src: url('fonts/Lato-Italic.eot');
+    src: url('../fonts/Lato-Italic.eot');
     src: url('fonts/Lato-Italic.eot?#iefix') format('embedded-opentype'),
          /*url('fonts/Lato-Italic.woff2') format('woff2'),*/
          url('fonts/Lato-Italic.woff') format('woff'),
@@ -10,7 +10,7 @@
 }
 @font-face {
     font-family: 'Lato-Bold';
-    src: url('fonts/Lato-Bold.eot');
+    src: url('../fonts/Lato-Bold.eot');
     src: local('☺'),
 		url('fonts/Lato-Bold.woff') format('woff'),
 		url('fonts/Lato-Bold.ttf') format('truetype'),
@@ -20,7 +20,7 @@
 }
 @font-face {
     font-family: 'Lato-Light';
-    src: url('fonts/Lato-Light.eot');
+    src: url('../fonts/Lato-Light.eot');
     src: local('☺'),
 		url('fonts/Lato-Light.woff') format('woff'),
 		url('fonts/Lato-Light.ttf') format('truetype'),
@@ -30,7 +30,7 @@
 }
 @font-face {
     font-family: 'Lato-Regular';
-    src: url('fonts/Lato-Regular.eot');
+    src: url('../fonts/Lato-Regular.eot');
     src: local('☺'), url('fonts/Lato-Regular.woff') format('woff'), url('fonts/Lato-Regular.ttf') format('truetype'), url('fonts/Lato-Regular.svg') format('svg');
     font-weight: normal;
     font-style: normal;
@@ -38,7 +38,7 @@
 
 @font-face {
 	font-family:'Lato-LightItalic';
-	src: url('fonts/Lato-LightItalic.eot');
+	src: url('../fonts/Lato-LightItalic.eot');
 	src:local('☺'),url('fonts/Lato-LightItalic.woff')format('woff'), url('fonts/Lato-LightItalic.ttf')format('truetype'), url('fonts/Lato-LightItalic.svg')format('svg');
 	font-weight:400;font-style:normal;
 }
@@ -1316,6 +1316,275 @@ body.profile .action span[disabled]{
 	border: 1px solid #ff5959;
 }
 
+/* Added changes for popover */
+.dnp.dnp-popup .ic.loc {
+  background-image: url('../seearound.me-template_files/popover/SVG/location-off.svg');
+  background-repeat: no-repeat;
+  width: 18px;
+  height: 24px;
+  display: inline-block;
+  background-position: 0 0;
+}
+.dnp.dnp-popup .ic.loc:hover {
+  background-image: url('../seearound.me-template_files/popover/SVG/location-on.svg');
+}
+.dnp.dnp-popup .ic.cat {
+  background-image: url('../seearound.me-template_files/popover/SVG/category-off.svg');
+  background-repeat: no-repeat;
+  width: 21px;
+  height: 23px;
+  display: inline-block;
+  background-position: 0 0;
+}
+.dnp.dnp-popup .ic.cat:hover {
+  background-image: url('../seearound.me-template_files/popover/SVG/category-on.svg');
+}
+.dnp.dnp-popup .ic.pic {
+  background-image: url('../seearound.me-template_files/popover/SVG/camera-off.svg');
+  background-repeat: no-repeat;
+  width: 23px;
+  height: 17px;
+  display: inline-block;
+  background-position: 0 0;
+}
+.dnp.dnp-popup .ic.pic:hover {
+  background-image: url('../seearound.me-template_files/popover/SVG/camera-on.svg');
+}
+.dnp.dnp-popup .arrow-left:before  {
+  content: "";
+  display: inline-block;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent; 
+  border-right: 12px solid #8c8c8c;
+  position: absolute;
+  left: -12px; 
+}
+.dnp.dnp-popup .arrow-left:after  {
+  content: "";
+  display: inline-block; 
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent; 
+  border-right:12px solid #fff;
+  position: absolute;
+  left: -10px; 
+}
+.inner-edit {
+  position: relative;
+  border: 1px solid #8c8c8c;
+  background-color: #fff;
+}
+.inner-edit .arrow-left {
+  position: absolute;
+  left: 0;
+  top: 25%;
+  margin-top: 5px;
+}
+.dnp.dnp-popup .arrow-top:before  {
+  content: "";
+  display: inline-block;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 6px solid #8c8c8c;
+  position: absolute;
+  bottom: -7px;
+}
+.dnp.dnp-popup .arrow-top:after  {
+  content: "";
+  display: inline-block;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 6px solid #fff;
+  position: absolute;
+  bottom: -8px; 
+}
+
+.arrow-top {
+  position: absolute;
+  bottom: 0px;
+}
+.dnp .cat ul {
+  border: 1px solid #8c8c8c;
+  /*position: relative;*/
+}
+.dnp .cat ul li {
+  border-bottom: 1px solid #8c8c8c;
+  padding-top: 5px;
+  padding-bottom: 2px;
+}
+.dnp .cat ul li:hover {
+  background-color: #bd9afc;
+}
+.dnp .cat ul li:first-child {
+  background-color: #ffffff;
+  cursor: auto;
+}
+.dnp.dnp-popup .wrapper {
+  padding: 0;
+}
+.dnp.dnp-popup textarea {
+  width: 322px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-family: 'Lato-Regular', sans-serif;
+}
+.dnp.dnp-popup .user p {
+  color: #595959;
+}
+.dnp.dnp-popup textarea::-webkit-input-placeholder  { color:#858585; } 
+.dnp.dnp-popup textarea:-moz-placeholder { color:#858585; }  
+.dnp.dnp-popup textarea::-moz-placeholder { color:#858585; }  
+.dnp.dnp-popup textarea:-ms-input-placeholder {  color: #858585; } 
+
+.dnp.dnp-popup .edit {
+  margin-top: 0px;
+  margin-left: 69px;
+}
+.inner-action {
+  display: inline-block;
+}
+.dnp.dnp-popup .action input[type=submit] {
+  border: 1px solid #f9f9f9;
+  padding: 5px 10px;
+  width: auto;
+  font-size: 15px;
+  color: #000000;
+  outline: none;
+}
+.dnp.dnp-popup .action input[type=submit]:hover {
+  border: 1px solid #786768;
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  -khtml-border-radius: 6px;
+  background-color: #ffdbdc;
+}
+.wrapper-action {
+  margin-left: 80px;
+  padding-right: 20px;
+  padding-left: 30px;
+  border-left: 1px solid #8c8c8c;
+  border-right: 1px solid #8c8c8c;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+.dnp.dnp-popup .user {
+  padding: 13px;
+}
+.dnp.dnp-popup .action {
+  margin-top: 5px;
+  margin-bottom: 3px;
+  width: 100%;
+}
+.dnp.dnp-popup {
+  border: none;
+}
+.dnp.dnp-popup .inner-action .ic {
+  margin-left: 20px;
+}
+.dnp.dnp-popup .ic {
+  /*margin-left: 5px;*/
+}
+.inner-action .drp li {
+  font-family: 'Lato-Regular', sans-serif; 
+  font-size: 13px;
+}
+.inner-action .drp li:first-child {
+  font-size: 14px;
+  padding: 5px;
+  text-align: center;
+}
+.inner-action .drp li:last-child {
+  border-bottom: none;
+}
+.inner-action .drp li img {
+  width: 20px;
+  height: 26px;
+  padding-left: 5px;
+  vertical-align: middle;
+}
+.inner-action .drp li span {
+  vertical-align: middle;
+  padding-left: 5px;
+}
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  float: right;
+}
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  color: #000;
+  text-align: center;
+  padding: 5px 0;
+  border: 1px solid #786768;
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  -khtml-border-radius: 6px;
+  background-color: #fff;
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+  margin-left: 3px;
+}
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+.tooltip .tooltiptext {
+  top: -2px;
+  left: 106%;
+  font-family: 'Lato-Regular', sans-serif; 
+  font-size: 12px;
+}
+.tooltip .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 40%;
+  right: 100%; /* To the left of the tooltip */
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #fff transparent transparent;
+}
+.tooltip .tooltiptext::before {
+  content: " ";
+  position: absolute;
+  top: 40%;
+  right: 100%; /* To the left of the tooltip */
+  margin-top: -7px;
+  border-width: 7px;
+  border-style: solid;
+  border-color: transparent #8c8c8c transparent transparent;
+}
+.tooltip .tooltiptext {
+  opacity: 0;
+  transition: opacity 1s;
+}
+.tooltip:hover .tooltiptext {
+  opacity: 1;
+}
+
+/* Special Classes */
+.clearfix {
+    clear: both;
+}
+.clearfix:before, .clearfix:after {
+    content: '';
+    display: table;
+}
+.clearfix:after {
+    clear: both;
+}
+.clearfix {
+    *zoom: 1;
+}
+/* /Special Classes */
+
+/* / Added changes for popover */
 @media all and (max-width: 1100px),
 only screen and (-webkit-min-device-pixel-ratio: 2) and (max-width: 1024px),
 only screen and (min--moz-device-pixel-ratio: 2) and (max-width: 1024px),
