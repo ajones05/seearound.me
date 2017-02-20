@@ -1,9 +1,13 @@
+<?php
+$postLink = $this->baseUrl('post/' . $this->post['id']);
+?>
 <div class="post" data-id="<?php echo $this->post['id']; ?>">
 <div class="col-sm-6">
 <div class="d-flex w-100 justify-content-between">
+<h3><a href="<?php echo $postLink; ?>">#<?php echo $this->post['id']; ?></a></h3>
 <h5><a href="<?php echo $this->baseUrl('profile/' . $this->post['user_id']); ?>"
 ><?php echo $this->post['user_name']; ?></a></h5>
-<small><a href="<?php echo $this->baseUrl('post/' . $this->post['id']); ?>"
+<small><a href="<?php echo $postLink; ?>"
 title="<?php echo $this->post['created_date']; ?>"
 ><?php echo My_Time::time_ago($this->post['created_date'], ['ago' => true]);
 ?></a></small>

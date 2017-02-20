@@ -37,20 +37,12 @@ class Admin_PostController extends Zend_Controller_Action
 
 		try
 		{
-			$source = $this->_request->get('source');
-
-			if (!v::optional(v::stringType())->validate($source))
-			{
-				throw new RuntimeException('Incorrect source value type: ' .
-					var_export($source, true));
-			}
-
 			$start = $this->_request->get('start');
 
 			if (!v::optional(v::intVal())->validate($start))
 			{
 				throw new RuntimeException('Incorrect start value type: ' .
-					var_export($source, true));
+					var_export($start, true));
 			}
 
 			$keywords = $this->_request->get('keywords');
@@ -72,7 +64,8 @@ class Admin_PostController extends Zend_Controller_Action
 			$postModel = new Application_Model_News;
 			$query = $postModel->select()->setIntegrityCheck(false)
 				->from(['post' => 'news'], ['count' => 'count(post.id)'])
-				->where('post.isdeleted=0');
+				->where('post.isdeleted=0')
+				->group('post.id');
 
 			if ($emptyCategory != null)
 			{
@@ -86,7 +79,9 @@ class Admin_PostController extends Zend_Controller_Action
 
 			if (!$isAjax)
 			{
-				$this->view->resultCount = $postModel->fetchRow($query)->count;
+				$countResult = $postModel->fetchRow($query);
+				$this->view->resultCount = $countResult != null ?
+					$countResult->count : 0;
 			}
 
 			$query
@@ -220,7 +215,7 @@ class Admin_PostController extends Zend_Controller_Action
 			if (!v::optional(v::intVal())->validate($start))
 			{
 				throw new RuntimeException('Incorrect start value type: ' .
-					var_export($source, true));
+					var_export($start, true));
 			}
 
 			$post_id = $this->_request->get('post_id');
