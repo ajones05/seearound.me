@@ -64,8 +64,7 @@ class Admin_PostController extends Zend_Controller_Action
 			$postModel = new Application_Model_News;
 			$query = $postModel->select()->setIntegrityCheck(false)
 				->from(['post' => 'news'], ['count' => 'count(post.id)'])
-				->where('post.isdeleted=0')
-				->group('post.id');
+				->where('post.isdeleted=0');
 
 			if ($emptyCategory != null)
 			{
@@ -101,7 +100,8 @@ class Admin_PostController extends Zend_Controller_Action
 					'link_author' => 'author',
 					'link_image_id' => 'image_id',
 					'link_image_name' => 'image_name'
-				]);
+				])
+				->group('post.id');
 
 			My_Query::setThumbsQuery($query, [[448,320]], 'post');
 			My_Query::setThumbsQuery($query, [[448,320]], 'link');
