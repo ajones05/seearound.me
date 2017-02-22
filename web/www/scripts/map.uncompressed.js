@@ -716,52 +716,9 @@ function initMap(){
 					$('.pnd img').on('click',function(){
 						if (gl.dnp.is(':visible')){
 							gl.dnp.fadeOut(50,closeNpd);
-							return;
+						} else {
+							gl.dnp.fadeIn(150).find('textarea').focus();
 						}
-
-						if (getCookie('newpost')==1){
-							newPost_dialog();
-							return true;
-						}
-
-						$('<div/>')
-							.append(
-								$('<p/>')
-									.html('After you write something and hit "Post" you\'ll be asked to add the location the post relates to.')
-							)
-							.appendTo($('body'))
-							.dialog({
-								modal: true,
-								resizable: false,
-								drag: false,
-								width: 350,
-								dialogClass: 'dialog',
-								buttons:{
-									OK: function(){
-										if ($('#newPost_notify').is(':checked')){
-											setCookie('newpost', 1, 365);
-										}
-										$(this).dialog('close');
-										newPost_dialog();
-									}
-								},
-								open: function(event, ui){
-									$(event.target).parent().find('.ui-dialog-buttonpane').append(
-										$('<div/>')
-											.append(
-												$('<input/>').val(1)
-													.attr({type:'checkbox',id:'newPost_notify',
-														checked:getCookie('newpost')==1}),
-												$('<label/>').attr({for:'newPost_notify'})
-													.text('Don\'t show this message again')
-											)
-											.addClass('post-new__notify')
-									);
-								},
-								beforeClose: function(event, ui){
-									$(event.target).dialog('destroy').remove();
-								}
-							});
 					});
 				}
 
@@ -1892,14 +1849,6 @@ function validatePost(){
 			' charactes.');
 	}
 	return true;
-}
-
-function newPost_dialog(){
-	if (gl.dnp.is(':visible')){
-		closeNpd();
-	} else {
-		gl.dnp.fadeIn(150).find('textarea').focus();
-	}
 }
 
 function newPost_InputHeight(){
