@@ -1318,7 +1318,12 @@ body.profile .action span[disabled]{
 }
 .inner-edit {
   position: relative;
-  border: 1px solid #8c8c8c;
+  border-width: 1px;
+  border-style: solid;
+  border-top-color: #8c8c8c;
+  border-left-color: #8c8c8c;
+  border-right-color: #8c8c8c;
+  border-bottom-color: #cccccc;
   background-color: #fff;
 }
 .inner-edit .arrow-left {
