@@ -53,13 +53,13 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilemypost
 	<div class="form-group">
 		<label class="control-label col-sm-2" for="category_id">Category [category_id]:</label>
 		<div class="col-sm-10">
-<select name="category_id" class="form-control" id="category_id">
-<option value="">Select category</option>
+<select name="category_id" class="form-control" id="category_id" multiple
+size="<?php echo count(Application_Model_News::$categories); ?>">
 <?php foreach (Application_Model_News::$categories as $id => $category):
-$category_id = $this->request->getParam('category_id'); ?>
+$category_id = (array)$this->request->getParam('category_id'); ?>
 <option
 value="<?php echo $id; ?>"
-<?php if ($id == $category_id) echo ' selected'; ?>
+<?php if (in_array($id, $category_id)) echo ' selected'; ?>
 ><?php echo $category; ?></option>
 <?php endforeach; ?>
 </select>
@@ -81,7 +81,7 @@ value="<?php echo $id; ?>"
 				value="<?php echo $this->request->getParam('start'); ?>">
 		</div>
 	</div>
-	<div class="form-group">        
+	<div class="form-group">
 		<div class="col-sm-offset-2 col-sm-10">
 			<button type="submit" class="btn btn-default">Submit</button>
 		</div>

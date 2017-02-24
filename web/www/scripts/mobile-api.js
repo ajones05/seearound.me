@@ -18,8 +18,15 @@ $(function(){
 					}
 			}
 			if (isValid && $.trim(value) !== ''){
-				data.append(name, $(this).attr('type') == 'file' ?
-					$(this)[0].files[0] : value);
+				if ($.isArray(value)){
+					for (var i in value){
+						data.append(name+'[]', $(this).attr('type') == 'file' ?
+							$(this)[i].files[0] : value[i]);
+					}
+				} else {
+					data.append(name, $(this).attr('type') == 'file' ?
+						$(this)[0].files[0] : value);
+				}
 				outputData[name] = value;
 			}
 		});

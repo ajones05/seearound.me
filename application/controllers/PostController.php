@@ -195,6 +195,7 @@ class PostController extends Zend_Controller_Action
 			'longitude' => $center[1],
 			'keywords' => $this->_request->getParam('keywords'),
 			'filter' => $this->_request->getParam('filter'),
+			'category_id' => (array) $this->_request->getParam('category_id')
 		];
 
 		if ($isValidData && !empty($userData['radius']))

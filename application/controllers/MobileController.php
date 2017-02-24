@@ -2103,7 +2103,7 @@ class MobileController extends Zend_Controller_Action
 				'radius' => $this->_request->getPost('radious', 1.5),
 				'keywords' => $this->_request->getPost('searchText'),
 				'filter' => $this->_request->getPost('filter'),
-				'category_id' => $this->_request->getPost('category_id'),
+				'category_id' => (array) $this->_request->getPost('category_id'),
 				'start' => $this->_request->getPost('start', 0)
 			];
 
