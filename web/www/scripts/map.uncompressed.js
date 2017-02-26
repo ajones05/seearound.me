@@ -654,38 +654,48 @@ function initMap(){
 								locDlg.prop('disabled',false)
 									.closest('form').find(':data(ui-tooltip)')
 										.tooltip('destroy');
+								if (typeof gl.newPostData === 'undefined'){
+									locDlg.removeClass('ac');
+								}
 							},
 							submit: function(map, dialogEvent, position, place){
 								gl.newPostData={
 									position:position,
 									place:place
 								}
-								locDlg.prop('disabled',false);
+								locDlg.addClass('ac').prop('disabled',false);
 								$(dialogEvent.target).dialog('close');
 							}
 						});
 					});
-					dnp.find('.cat select').on('change',function(){
+					dnp.find('[name=category_id]').on('change',function(){
 						$(this).closest('form').find(':data(ui-tooltip)')
 							.tooltip('destroy');
+						$(this).closest('.cat').addClass('ac');
 					});
 					dnp.find('.pic').on('click',function(){
 						$(this).closest('form').find('[name=image]').click();
 					});
 					dnp.find('[name=image]').on('change',function(){
 						var targetEl=$(this),
-							containerEl=targetEl.parent();
+							containerEl=targetEl.parent(),
+							imgIc=containerEl.find('.pic');
 						containerEl.find('.image').remove();
 
 						if ($.trim(targetEl.val()) === ''){
+							imgIc.removeClass('ac');
 							return true;
 						}
 
 						if ($.inArray(this.files[0]['type'],['image/gif','image/jpeg','image/png'])<0){
 							alert('Invalid file type');
 							targetEl.val('');
+							imgIc.removeClass('ac');
 							return false;
+
 						}
+
+						imgIc.addClass('ac');
 
 						var imageContainer=$('<div/>');
 						if (typeof window.FileReader !== 'undefined'){
@@ -709,6 +719,7 @@ function initMap(){
 										}
 										$('.image',containerEl).remove();
 										$('[type=file]',containerEl).val('');
+										imgIc.removeClass('ac');
 									})
 							)
 						));
@@ -2300,8 +2311,10 @@ function guestAction(){
 
 function closeNpd(){
 	var dnp=$('.dnp').hide().attr('style','');
-	dnp.find('[name=body],[name=image],[name=category_id]').val('');
+	dnp.find('[name=body],[name=image]').val('');
+	dnp.find('[name=category_id]').prop('selectedIndex',0);
 	dnp.find('textarea,input').attr('disabled',false);
 	dnp.find('.image').remove();
+	dnp.find('.ic.ac').removeClass('ac');
 	gl.newPostData={};
 }

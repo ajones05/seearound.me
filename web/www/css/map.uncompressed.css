@@ -1266,6 +1266,7 @@ body.profile .action span[disabled]{
   display: inline-block;
   background-position: 0 0;
 }
+.dnp.dnp-popup .ic.loc.ac,
 .dnp.dnp-popup .ic.loc:hover {
   background-image: url('../images/popover/svg/location-on.svg');
 }
@@ -1280,6 +1281,7 @@ body.profile .action span[disabled]{
   display: inline-block;
   background-position: 0 0;
 }
+.dnp.dnp-popup .ic.cat.ac,
 .dnp.dnp-popup .ic.cat:hover {
   background-image: url('../images/popover/svg/category-on.svg');
 }
@@ -1292,6 +1294,7 @@ body.profile .action span[disabled]{
   background-position: 0 0;
   margin-bottom: 3px;
 }
+.dnp.dnp-popup .ic.pic.ac,
 .dnp.dnp-popup .ic.pic:hover {
   background-image: url('../images/popover/svg/camera-on.svg');
 }
