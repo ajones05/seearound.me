@@ -1,3 +1,6 @@
+<?php
+$category_id = $this->request->getParam('category_id');
+?>
 <h2>mobile/myposts</h2>
 <ol class="breadcrumb">
 	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
@@ -53,13 +56,12 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilemypost
 	<div class="form-group">
 		<label class="control-label col-sm-2" for="category_id">Category [category_id]:</label>
 		<div class="col-sm-10">
-<select name="category_id" class="form-control" id="category_id" multiple
-size="<?php echo count(Application_Model_News::$categories); ?>">
-<?php foreach (Application_Model_News::$categories as $id => $category):
-$category_id = (array)$this->request->getParam('category_id'); ?>
+<select name="category_id" class="form-control" id="category_id">
+<option value="">Select Category ID</option>
+<?php foreach (Application_Model_News::$categories as $id => $category): ?>
 <option
 value="<?php echo $id; ?>"
-<?php if (in_array($id, $category_id)) echo ' selected'; ?>
+<?php if ($id == $category_id) echo ' selected'; ?>
 ><?php echo $category; ?></option>
 <?php endforeach; ?>
 </select>
