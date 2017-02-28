@@ -646,7 +646,7 @@ function initMap(){
 							mapZoom: 14,
 							markerIcon: assetsBaseUrl+'www/images/icons/icon_1.png',
 							inputPlaceholder: 'Enter address',
-							submitText: 'Post from here',
+							submitText: 'Use this location',
 							cancelButton: true,
 							center: centerPosition,
 							infoWindowContent: function(address){
