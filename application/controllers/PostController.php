@@ -901,6 +901,9 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException(My_Form::outputErrors($postForm));
 			}
 
+			// TODO: remove after finish edit post category option
+			$postForm->category_id->setValue($post['category_id']);
+
 			$post = $postModel->save($postForm, $user, $address,
 				$image, $thumbs, $link, $post);
 
