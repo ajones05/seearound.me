@@ -137,6 +137,9 @@ body.profile .post-search {
 .post-search .filter {
 	padding-left: 85px;
 }
+.post-search .filter .cat ul {
+  width: 146px;
+}
 .post-search .filter,
 .post-search .keywords {
 	float: left;
@@ -1357,10 +1360,10 @@ body.profile .action span[disabled]{
   position: absolute;
   bottom: 0px;
 }
-.dnp .cat {
+.cat {
 	position: relative;
 }
-.dnp .cat ul {
+.cat ul {
   background-color: #fff;
   list-style: none;
   margin: 0;
@@ -1368,20 +1371,43 @@ body.profile .action span[disabled]{
   position: absolute;
   text-align: left;
   top: 32px;
-  left: -150%;
   display: none;
-  width: 111px;
   border: 1px solid #8c8c8c;
 }
-.dnp .cat ul li {
+.dnp .cat ul {
+  left: -150%;
+  width: 111px;
+}
+.cat ul li {
   border-bottom: 1px solid #8c8c8c;
   padding-top: 5px;
   padding-bottom: 2px;
 }
-.dnp .cat ul li:hover {
+.cat ul li:hover,
+.cat ul li.ac {
+  cursor: pointer;
+}
+.pcat1:hover,
+.pcat1.ac {
+  background-color: #FF7263;
+}
+.pcat2:hover,
+.pcat2.ac {
+  background-color: #919191;
+}
+.pcat3:hover,
+.pcat3.ac {
   background-color: #bd9afc;
 }
-.dnp .cat ul li:first-child {
+.pcat4:hover,
+.pcat4.ac {
+  background-color: #31CFBC;
+}
+.pcat5:hover,
+.pcat5.ac {
+  background-color: #4FB7F2;
+}
+.cat ul li.plh {
   background-color: #ffffff;
   cursor: auto;
 }
@@ -1457,16 +1483,19 @@ body.profile .action span[disabled]{
 .dnp.dnp-popup .inner-action .ic {
   margin-left: 20px;
 }
-.inner-action .drp li {
+.drp ul {
+  display: block;
+}
+.drp li {
   font-family: 'Lato-Regular', sans-serif;
   font-size: 13px;
 }
-.inner-action .drp li:first-child {
+.drp li.plh {
   font-size: 14px;
   padding: 5px;
   text-align: center;
 }
-.inner-action .drp li:last-child {
+.drp li:last-child {
   border-bottom: none;
 }
 .catc .i {
@@ -1556,12 +1585,16 @@ only screen and (min-resolution: 2dppx) and (max-width: 1024px) {
 		border-top: 1px solid rgba(120, 120, 120, 0.15);
 		float: none;
 	}
-	.main-menu ul li a {
+	.main-menu ul li a,
+	.main-menu ul li > span {
 		display: block;
 		padding: 20px;
 	}
 	.main-menu ul li a:hover,
-	.main-menu ul li a:focus {
+	.main-menu ul li a:focus,
+  .main-menu ul li > span:hover,
+	.main-menu ul li > span:focus,
+	.main-menu ul li.ac {
 	  color: #262626;
 	  text-decoration: none;
 	  background-color: #f5f5f5;

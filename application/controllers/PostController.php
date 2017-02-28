@@ -320,6 +320,7 @@ class PostController extends Zend_Controller_Action
 				'radius' => $this->_request->getPost('radius', 1.5),
 				'keywords' => $this->_request->getPost('keywords'),
 				'filter' => $this->_request->getPost('filter'),
+				'category_id' => (array) $this->_request->getPost('category_id'),
 				'start' => $this->_request->getPost('start', 0)
 			];
 
@@ -503,6 +504,7 @@ class PostController extends Zend_Controller_Action
 				'longitude' => $this->_request->getPost('longitude'),
 				'keywords' => $this->_request->getPost('keywords'),
 				'filter' => $this->_request->getPost('filter'),
+				'category_id' => (array) $this->_request->getPost('category_id')
 			];
 
 			if (!$searchForm->isValid($searchParameters))
@@ -1802,6 +1804,7 @@ class PostController extends Zend_Controller_Action
 				'longitude' => $data['longitude'],
 				'keywords' => $this->_request->getPost('keywords'),
 				'filter' => $this->_request->getPost('filter'),
+				'category_id' => (array) $this->_request->getPost('category_id'),
 				'radius' => $this->_request->getPost('radius')
 			];
 

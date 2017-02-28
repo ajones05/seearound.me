@@ -71,7 +71,8 @@ require(['jquery','common'], function(){
 			$('.dropdown-menu,.drp')
 				.not(activeDropdown)
 				.hide()
-				.parent().find('.dropdown-toggle .caret.up').removeClass('up');
+				.parent().find('.dropdown-toggle .caret,'+
+					'.drp-t .caret').removeClass('up');
 		});
 
 		$(document).click(function(e){
@@ -79,7 +80,8 @@ require(['jquery','common'], function(){
 				return true;
 			}
 			$('.dropdown-menu,.drp').hide().removeClass('top');
-			$('.dropdown-toggle .caret.up').removeClass('up');
+			$('.dropdown-toggle .caret,'+
+				'.drp-t .caret').removeClass('up');
 		});
 
 		if (isLogin){
@@ -749,24 +751,37 @@ function initMap(){
 					e.preventDefault();
 					opts.keywords=$(this).find('[name=keywords]').val();
 					opts.filter=$(this).find('[name=filter]').val();
+					var catVal=$(this).find('[name=category_id]').val();
+					opts.category_id=catVal!==null?catVal:[];
 					postList_change();
 				});
 
-				$('.postSearch [name=filter]').change(function(){
+				$('.postSearch').find('[name=filter],[name=category_id]').change(function(){
 					$(this).closest('form').submit();
 				});
 
-				$('.postSearch .dropdown-toggle').click(function(){
+				$('.postSearch .drp-t').click(function(){
 					$(this).find('.caret').toggleClass('up');
 				});
 				$('.dropdown-menu.hsel>*,.drp.hsel li').click(function(e){
 					e.preventDefault();
 					var drpCn=$(this).closest('.dropdown'),
 						drpSel=drpCn.find('select'),
+						drpOpts=drpSel.find('option'),
 						selText=$(this).text();
-					drpSel.find('option').removeAttr('selected').filter(function(){
+					if (!drpSel.is('[multiple]')){
+						drpOpts.removeAttr('selected');
+						$(this).parent().find('li').removeClass('ac');
+						$(this).addClass('ac');
+					} else {
+						$(this).toggleClass('ac');
+					}
+
+					drpOpts.filter(function(){
 						return $(this).text()==selText;
-					}).attr('selected',true);
+					}).each(function(){
+						$(this).attr('selected',!$(this).attr('selected'));
+					});
 					drpSel.change();
 					drpCn.find('.dropdown-toggle span:first-child').text(selText);
 				});
@@ -802,6 +817,7 @@ function initMap(){
 								var data = {
 									radius: getRadius(),
 									keywords: opts.keywords,
+									category_id: opts.category_id,
 									latitude: position.lat(),
 									longitude: position.lng(),
 									timezone: timezone
@@ -1973,11 +1989,11 @@ function postList_load(start){
 	var position=areaCircle.center,data={
 		radius:getRadius(),
 		keywords:opts.keywords,
+		category_id:opts.category_id,
 		latitude:areaCircle.center.lat(),
 		longitude:areaCircle.center.lng(),
 		start:start
 	};
-
 	if (viewPage=='profile'){
 		data.filter=0;
 		data.user_id=profile.id;
@@ -2067,6 +2083,7 @@ function postTooltip_content(position, event, ui, start){
 		data.latitude=position.lat();
 		data.longitude=position.lng();
 		data.keywords=opts.keywords;
+		data.category_id=opts.category_id;
 		if (viewPage=='profile'){
 			data.filter=0;
 			data.user_id=profile.id;
