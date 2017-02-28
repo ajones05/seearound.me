@@ -450,9 +450,17 @@ body.touch .posts-container .posts {
 	font-family: 'Lato-Regular';
 	text-align: center;
 }
-.vote {
+.post .c {
   float: right;
-  padding: 13px 9px;
+  width: 20px;
+  height: 26px;
+  vertical-align: middle;
+  background-size: 20px 26px;
+  background-repeat: no-repeat;
+  display: inline-block;
+}
+.vote {
+  float: left;
   text-align: center;
 }
 .vote .count {
@@ -1511,19 +1519,24 @@ body.profile .action span[disabled]{
   vertical-align: middle;
   padding-left: 5px;
 }
-.catc .pcat1 .i {
+.catc .pcat1 .i,
+.post .c.cat1 {
   background-image: url('../images/popover/icons/ic-food.png');
 }
-.catc .pcat2 .i {
+.catc .pcat2 .i,
+.post .c.cat2 {
   background-image: url('../images/popover/icons/ic-safety.png');
 }
-.catc .pcat3 .i {
+.catc .pcat3 .i,
+.post .c.cat3 {
   background-image: url('../images/popover/icons/ic-events.png');
 }
-.catc .pcat4 .i {
+.catc .pcat4 .i,
+.post .c.cat4 {
   background-image: url('../images/popover/icons/ic-development.png');
 }
-.catc .pcat5 .i {
+.catc .pcat5 .i,
+.post .c.cat5 {
   background-image: url('../images/popover/icons/ic-other.png');
 }
 
