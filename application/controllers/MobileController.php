@@ -1998,10 +1998,10 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 12], $user,
+				->search($searchParameters + ['limit' => 15], $user,
 					['link'=>true,'user'=>$user,'userVote'=>true]);
 
-			if (count($result))
+			if ($result->count())
 			{
 				$friendModel = new Application_Model_Friends;
 				$userTimezone = Application_Model_User::getTimezone($user);
@@ -2124,7 +2124,7 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 12], $user,
+				->search($searchParameters + ['limit' => 15], $user,
 					['link'=>true,'user'=>$user,'userVote'=>true]);
 
 			if ($result->count())
