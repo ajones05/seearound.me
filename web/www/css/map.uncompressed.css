@@ -120,6 +120,7 @@ body.profile .post-search {
 	padding-right: 10px;
 	padding-top: 7px;
 	padding-bottom: 3px;
+  outline: none;
 }
 .post-search .keywords img,
 .main-menu .keywords img {
@@ -138,7 +139,7 @@ body.profile .post-search {
 	padding-left: 85px;
 }
 .post-search .filter .cat ul {
-  width: 146px;
+  width: 136px;
 }
 .post-search .filter,
 .post-search .keywords {
@@ -146,7 +147,7 @@ body.profile .post-search {
 }
 .post-search .dropdown {
 	height: 27px;
-	width: 149px;
+	width: 114px;
 	position: relative;
 }
 .dropdown {
@@ -158,6 +159,7 @@ body.profile .post-search {
 	width: 100%;
 	line-height: 2;
 	cursor: pointer;
+  outline: none
 }
 .dropdown button,
 .dropdown a,
@@ -452,12 +454,13 @@ body.touch .posts-container .posts {
 }
 .post .c {
   float: right;
-  width: 20px;
-  height: 26px;
+  width: 23px;
+  height: 31px;
   vertical-align: middle;
-  background-size: 20px 26px;
+  background-size: 23px 31px;
   background-repeat: no-repeat;
   display: inline-block;
+  margin: 14px 8px 0 0;
 }
 .vote {
   float: left;
@@ -466,7 +469,10 @@ body.touch .posts-container .posts {
 .vote .count {
   font-family: 'Lato-Bold', sans-serif;
   color: #ce2424;
-  font-size: 12px;
+  font-size: 10px;
+  position: absolute;
+  bottom: 2px;
+  left: 35px;
 }
 .vote .like {
   background: rgba(0, 0, 0, 0) url("../images/template/like-small-off.png") no-repeat scroll center center;
@@ -474,6 +480,7 @@ body.touch .posts-container .posts {
   cursor: pointer;
   height: 17px;
   width: 18px;
+  margin-top: -2px;
 }
 .vote .like.active {
   background: rgba(0, 0, 0, 0) url("../images/template/like-small-on.png") no-repeat scroll center center;
@@ -507,9 +514,10 @@ body.touch .posts-container .posts {
   margin-top: 3px;
 }
 .post .details {
-  padding: 4px 13px 6px 20px;
+  padding: 6px 13px 6px 20px;
   position: relative;
   border-top: 1px solid #dddddd;
+  text-align: center;
 }
 .post .details,
 .post .details a.time {
@@ -1378,7 +1386,8 @@ body.profile .action span[disabled]{
   padding: 0;
   position: absolute;
   text-align: left;
-  top: 32px;
+  top: 28px;
+  left: -2px;
   display: none;
   border: 1px solid #8c8c8c;
 }
@@ -1389,7 +1398,8 @@ body.profile .action span[disabled]{
 .cat ul li {
   border-bottom: 1px solid #8c8c8c;
   padding-top: 5px;
-  padding-bottom: 2px;
+  padding-bottom: 3px;
+  font-size: 15px;
 }
 .cat ul li:hover,
 .cat ul li.ac {
@@ -1507,11 +1517,11 @@ body.profile .action span[disabled]{
   border-bottom: none;
 }
 .catc .i {
-  width: 20px;
-  height: 26px;
+  width: 23px;
+  height: 31px;
   margin-left: 5px;
   vertical-align: middle;
-  background-size: 20px 26px;
+  background-size: 23px 31px;
   background-repeat: no-repeat;
   display: inline-block;
 }
