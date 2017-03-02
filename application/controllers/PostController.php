@@ -725,7 +725,7 @@ class PostController extends Zend_Controller_Action
 			My_Log::exception($e);
 			$response = [
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+				'message' => true || $e instanceof RuntimeException ? $e->getMessage() :
 					'Internal Server Error'
 			];
 		}
