@@ -50,11 +50,9 @@ else
 ?>
 <div class="post<?php if ($this->hidden) echo ' hidden'; ?>"
 data-id="<?php echo $this->post['id']; ?>">
-<div class="vote<?php if (!$canVote) echo ' disabled'; ?>">
-<div class="like<?php if ($userVote == 1) echo ' active'; ?>"></div>
-<div class="count"
-><?php echo My_ArrayHelper::getProp($this->post, 'vote', 0); ?></div>
-</div>
+<?php if (!empty($this->post['category_id'])): ?>
+<div class="c cat<?php echo $this->post['category_id']; ?>"></div>
+<?php endif; ?>
 <div class="body"><?php echo Application_Model_News::renderContent($this->post, [
 	'limit' => My_ArrayHelper::getProp($this, 'limit'),
 	'link' => $this->link
@@ -70,6 +68,11 @@ data-height="<?php echo $thumb960x960['height']; ?>">
 </div>
 <?php endif; ?>
 <div class="details">
+<div class="vote<?php if (!$canVote) echo ' disabled'; ?>">
+<div class="like<?php if ($userVote == 1) echo ' active'; ?>"></div>
+<div class="count"
+><?php echo My_ArrayHelper::getProp($this->post, 'vote', 0); ?></div>
+</div
 <a class="time"
 href="<?php echo $this->baseUrl('post/' . $this->post['id']); ?>"
 <?php echo $timeAttr; ?>><?php echo $timeVal; ?></a> by <a class="profile"

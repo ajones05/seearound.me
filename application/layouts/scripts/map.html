@@ -34,6 +34,24 @@ if ($isTouch)
 {
 	$addClass[] = 'touch';
 }
+
+$categoryVal = $this->searchForm->category_id->getValue();
+$categorySel = '<select name="category_id" style="display:none" multiple>' .
+	'<option value="">Filter</option>';
+
+foreach (Application_Model_News::$categories as $id => $cat)
+{
+	$categorySel .= '<option value="' . $id . '"';
+
+	if (in_array($id, $categoryVal))
+	{
+		$categorySel .= ' selected';
+	}
+
+	$categorySel .= '>' . $cat . '</option>';
+}
+
+$categorySel .= '</select>';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -77,8 +95,8 @@ src="<?php echo $this->baseUrl(Application_Model_User::getThumb($this->user, '55
 <div class="catc dropdown">
 <span class="ic cat drp-t">
 <div class="drp hsel">
-<ul style="display: block;">
-<li>Pick Category:</li>
+<ul>
+<li class="plh">Pick Category:</li>
 <?php foreach (Application_Model_News::$categories as $id => $cat): ?>
 <li class="pcat<?php echo $id; ?>"
 ><span class="i"></span
@@ -106,21 +124,25 @@ src="<?php echo $this->baseUrl(Application_Model_User::getThumb($this->user, '55
 </div>
 <?php endif; ?>
 <div class="post-search">
-<form class="postSearch" action="<?php echo $this->baseUrl('/'); ?>" method="GET">
+<form class="postSearch" action="<?php echo $this->baseUrl('/'); ?>" method="GET"
+autocomplete="off">
 <div class="keywords"><?php echo $this->searchForm->keywords; ?></div>
 <?php if ($this->viewPage == 'posts'): ?>
 <div class="filter">
-<div class="dropdown">
-<button class="dropdown-toggle" type="button">
-<span><?php echo $this->searchForm->filter->getMultiOption($this->searchForm->filter->getValue()); ?></span>
+<div class="cat catc dropdown">
+<button class="drp-t" type="button">
+<span>Filter</span>
 <span class="caret"></span>
 </button>
-<ul class="dropdown-menu hsel">
-<?php foreach ($this->searchForm->filter->getMultiOptions() as $label): ?>
-<li><a href="#"><?php echo $label; ?></a></li>
+<div class="drp hsel" style="display:none;">
+<ul>
+<?php foreach (Application_Model_News::$categories as $id => $label): ?>
+<li class="pcat<?php echo $id; if (in_array($id, $categoryVal)) echo ' ac'; ?>"
+><span class="i"></span><span class="l"><?php echo $label; ?></span></li>
 <?php endforeach; ?>
 </ul>
-<?php echo $this->searchForm->filter; ?>
+<?php echo $categorySel; ?>
+</div>
 </div>
 </div>
 <?php endif; ?>
@@ -131,19 +153,23 @@ src="<?php echo $this->baseUrl(Application_Model_User::getThumb($this->user, '55
 <ul>
 <?php if ($this->viewPage == 'posts'): ?>
 <li class="search">
-<form class="postSearch" action="<?php echo $this->baseUrl('/'); ?>" method="GET">
+<form class="postSearch" action="<?php echo $this->baseUrl('/'); ?>" method="GET"
+autocomplete="off">
 <div class="keywords"><?php echo $this->searchForm->keywords; ?></div>
 <div class="filter">
-<div class="dropdown">
-<a class="dropdown-toggle" href="#">
-<span><?php echo $this->searchForm->filter->getMultiOption($this->searchForm->filter->getValue()); ?></span>
+<div class="catc dropdown">
+<a class="drp-t" href="#">
+<span>Filter</span>
 </a>
+<div class="drp hsel" style="display:none;">
 <ul class="dropdown-menu">
-<?php foreach ($this->searchForm->filter->getMultiOptions() as $label): ?>
-<li><a href="#"><?php echo $label; ?></a></li>
+<?php foreach (Application_Model_News::$categories as $id => $label): ?>
+<li<?php if (in_array($id, $categoryVal)) echo ' class="ac"'; ?>
+><span><?php echo $label; ?></span></li>
 <?php endforeach; ?>
 </ul>
-<?php echo $this->searchForm->filter; ?>
+<?php echo $categorySel; ?>
+</div>
 </div>
 </div>
 </form>

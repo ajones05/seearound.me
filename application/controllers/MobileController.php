@@ -1998,10 +1998,10 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 12], $user,
+				->search($searchParameters + ['limit' => 15], $user,
 					['link'=>true,'user'=>$user,'userVote'=>true]);
 
-			if (count($result))
+			if ($result->count())
 			{
 				$friendModel = new Application_Model_Friends;
 				$userTimezone = Application_Model_User::getTimezone($user);
@@ -2103,9 +2103,15 @@ class MobileController extends Zend_Controller_Action
 				'radius' => $this->_request->getPost('radious', 1.5),
 				'keywords' => $this->_request->getPost('searchText'),
 				'filter' => $this->_request->getPost('filter'),
-				'category_id' => (array) $this->_request->getPost('category_id'),
+				'category_id' => $this->_request->getPost('category_id'),
 				'start' => $this->_request->getPost('start', 0)
 			];
+
+			if (!v::optional(v::intVal())->validate($searchParameters['category_id']))
+			{
+				throw new RuntimeException('Incorrect category ID value: ' .
+					var_export($searchParameters['category_id']));
+			}
 
 			if (!$searchForm->isValid($searchParameters))
 			{
@@ -2118,7 +2124,7 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 12], $user,
+				->search($searchParameters + ['limit' => 15], $user,
 					['link'=>true,'user'=>$user,'userVote'=>true]);
 
 			if ($result->count())
