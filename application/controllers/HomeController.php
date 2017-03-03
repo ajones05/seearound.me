@@ -298,6 +298,7 @@ class HomeController extends Zend_Controller_Action
 				$data[$post->id] = [
 					'id' => $post['id'],
 					'user_id' => $post['user_id'],
+					'cid' => $post['category_id'],
 					'lat' => $post['latitude'],
 					'lng' => $post['longitude']
 				];

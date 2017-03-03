@@ -18,17 +18,12 @@ postLimit=15,
 groupDistance=0.018939,
 disableScroll=false,
 markerClick=false,
-postIcon={
-	url: assetsBaseUrl+'www/images/template/post-icon35x50.png',
-	width: 35, height: 50
-},
-locationIcon={
-	url: assetsBaseUrl+'www/images/template/user-location-icon34x49.png',
-	width: 34, height: 49
-},
-postActiveIcon={
-	url: assetsBaseUrl+'www/images/template/post-active-icon35x51.png',
-	width: 35, height: 51
+categoryMarker={
+	1:assetsBaseUrl+'www/images/popover/icons/Icons-lg/ic-lg-food.png',
+	2:assetsBaseUrl+'www/images/popover/icons/Icons-lg/ic-lg-safety.png',
+	3:assetsBaseUrl+'www/images/popover/icons/Icons-lg/ic-lg-events.png',
+	4:assetsBaseUrl+'www/images/popover/icons/Icons-lg/ic-lg-development.png',
+	5:assetsBaseUrl+'www/images/popover/icons/Icons-lg/ic-lg-other.png'
 };
 
 loadStyle(assetsBaseUrl+'bower_components/jquery-ui/themes/base/jquery-ui.min.css');
@@ -255,7 +250,11 @@ function initMap(){
 					postMarkers[0] = postList_tooltipmarker({
 						map: mainMap,
 						id: 0,
-						icon: postIcon,
+						icon: {
+							url:getPostMarker(postData[postId]),
+							width: 37,
+							height: 53
+						},
 						position: [opts.lat,opts.lng],
 						content: function(content, marker, event, ui){
 							var tooltip=userAddressTooltip(postData[postId].address,
@@ -339,8 +338,6 @@ function initMap(){
 					$('<div/>').addClass('customMapControl')
 						.append(controlUIzoomIn, controlUIzoomOut, controlUImyLocation)[0]
 				);
-
-				postList_locationMarker([opts.lat,opts.lng]);
 
 				var postDataSize = Object.size(postData);
 
@@ -959,8 +956,6 @@ function initMap(){
 	};
 	googleMapsCustomMarker.prototype.setIcon = function(icon){
 		if (this.div){
-			var resetPosition = this.opts.icon.width != icon.width ||
-				this.opts.icon.height != icon.height;
 			this.opts.icon = icon;
 
 			$(this.div).find('img')
@@ -974,6 +969,24 @@ function initMap(){
 				});
 
 			this.setPosition(this.opts.position);
+		}
+
+		return this;
+	};
+	googleMapsCustomMarker.prototype.setIconDimensions = function(w,h){
+		if (this.div){
+			this.opts.icon.width = w;
+			this.opts.icon.height = h;
+			$(this.div).find('img')
+				.attr({
+					width: w,
+					height: h
+				}).css({
+					width: w,
+					height: h
+				});
+
+				this.setPosition(this.opts.position);
 		}
 
 		return this;
@@ -1841,14 +1854,9 @@ function postItem_delete(id){
 	var group = postItem_findCluester(id);
 
 	if (postMarkersCluster[group].length === 1){
-		if (postMarkers[group].data('isRoot')){
-			postMarkers[group].data('id', 0);
-			postMarkersCluster[group][0]=0;
-		} else {
 			postMarkers[group].remove();
 			delete postMarkers[group];
 			delete postMarkersCluster[group];
-		}
 	} else {
 		for (var i in postMarkersCluster[group]){
 			if (postMarkersCluster[group][i] == id){
@@ -1977,7 +1985,6 @@ function postList_reset(){
 	postData={};
 	postMarkers={};
 	postMarkersCluster={};
-	postList_locationMarker();
 
 	if (viewPage!='profile'){
 		$('.posts-container .posts').html('');
@@ -2038,37 +2045,6 @@ function postList_load(start){
 			}
 		}
 	})
-}
-
-function postList_locationMarker(center){
-	var center = [areaCircle.center.lat(),areaCircle.center.lng()];
-	if (getDistance(user.location, center) <= getRadius()){
-		postItem_marker(0, user.location, {isRoot:true});
-	} else if (mainMap.getBounds().contains(userPosition)){
-		postMarkers[0] = postList_tooltipmarker({
-			map: mainMap,
-			id: 0,
-			position: user.location,
-			data: {isRoot:true},
-			icon: locationIcon,
-			addClass: 'rootMarker',
-			content: function(content, marker, event, ui){
-				if ($.trim(content) !== ''){
-					$('.ui-tooltip-content', ui.tooltip).html(content);
-					return true;
-				}
-				$.ajax({
-					url: baseUrl+'post/user-tooltip',
-					type: 'GET',
-					dataType: 'html'
-				}).done(function(response){
-					$(event.target).data('tooltip-content', response);
-					$('.ui-tooltip-content', ui.tooltip).html(response);
-					ui.tooltip.position($(event.target).tooltip('option', 'position'));
-				})
-			}
-		});
-	}
 }
 
 function postTooltip_content(position, event, ui, start){
@@ -2171,13 +2147,21 @@ function postItem_render(id){
 	postContainer.bind({
 		mouseenter: function(){
 			var marker=postData[id].marker;
-			marker.setIcon(postActiveIcon);
+			marker.setIcon({
+				url:getPostMarker(postData[id]),
+				width:46,
+				height:60
+			});
 			marker.css({zIndex: 100001});
 		},
 		mouseleave: function(){
 			var marker=postData[id].marker;
-			marker.setIcon(marker.data('isRoot')==true ?
-				locationIcon : postIcon);
+			marker.setIconDimensions(37,53);
+			marker.setIcon({
+				url:getPostMarker(postData[id]),
+				width:37,
+				height:53
+			});
 			marker.css({zIndex: ''});
 		}
 	});
@@ -2222,8 +2206,11 @@ function postItem_marker(id, location, data){
 		id: newGroup,
 		position: location,
 		data: $.extend({id:id}, data),
-		icon: data.isRoot==true ? locationIcon : postIcon,
-		addClass: data.isRoot===true ?'rootMarker':'',
+		icon: {
+			url:getPostMarker(postData[id]),
+			width: 37,
+			height: 53
+		},
 		content: function(content, marker, event, ui){
 			if ($.trim(content) !== ''){
 				postTooltip_render(content, marker.getPosition(), event, ui);
@@ -2317,6 +2304,11 @@ function postItem_findCluester(id){
 		}
 	}
 	return false;
+}
+
+function getPostMarker(data){
+	return data.cid ? categoryMarker[data.cid] :
+		assetsBaseUrl+'www/images/template/post-icon35x50.png'
 }
 
 function guestAction(){

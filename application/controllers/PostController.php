@@ -85,6 +85,7 @@ class PostController extends Zend_Controller_Action
 		$this->view->appendScript[] = 'postData=' . json_encode([$post['id'] => [
 			'id' => $post['id'],
 			'address' => Application_Model_Address::format($post),
+			'cid' => $post['category_id'],
 			'user_id' => $post['user_id'],
 			'user_image' => $this->view->baseUrl($ownerThumb)
 		]]);
@@ -246,6 +247,7 @@ class PostController extends Zend_Controller_Action
 			{
 				$data[$post->id] = [
 					'user_id' => $post['user_id'],
+					'cid' => $post['category_id'],
 					'lat' => $post['latitude'],
 					'lng' => $post['longitude']
 				];
@@ -395,6 +397,7 @@ class PostController extends Zend_Controller_Action
 					$postData = [
 						'id' => $post['id'],
 						'user_id' => $post['user_id'],
+						'cid' => $post['category_id'],
 						'lat' => $post['latitude'],
 						'lng' => $post['longitude']
 					];
