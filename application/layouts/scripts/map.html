@@ -35,23 +35,26 @@ if ($isTouch)
 	$addClass[] = 'touch';
 }
 
-$categoryVal = $this->searchForm->category_id->getValue();
-$categorySel = '<select name="category_id" style="display:none" multiple>' .
-	'<option value="">Filter</option>';
-
-foreach (Application_Model_News::$categories as $id => $cat)
+if ($this->viewPage == 'posts')
 {
-	$categorySel .= '<option value="' . $id . '"';
+	$categoryVal = $this->searchForm->category_id->getValue();
+	$categorySel = '<select name="category_id" style="display:none" multiple>' .
+		'<option value="">Filter</option>';
 
-	if (in_array($id, $categoryVal))
+	foreach (Application_Model_News::$categories as $id => $cat)
 	{
-		$categorySel .= ' selected';
+		$categorySel .= '<option value="' . $id . '"';
+
+		if (in_array($id, $categoryVal))
+		{
+			$categorySel .= ' selected';
+		}
+
+		$categorySel .= '>' . $cat . '</option>';
 	}
 
-	$categorySel .= '>' . $cat . '</option>';
+	$categorySel .= '</select>';
 }
-
-$categorySel .= '</select>';
 ?>
 <!DOCTYPE html>
 <html lang="en">
