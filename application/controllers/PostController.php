@@ -661,6 +661,7 @@ class PostController extends Zend_Controller_Action
 				'status' => 1,
 				'data' => [[
 					'id' => $post['id'],
+					'cid' => $post['category_id'],
 					'lat' => $address['latitude'],
 					'lng' => $address['longitude'],
 					'html' => $this->view->partial('post/view.html', [
