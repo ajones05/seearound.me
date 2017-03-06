@@ -262,7 +262,8 @@ function initMap(){
 							$('.ui-tooltip-content', ui.tooltip).html(tooltip);
 							ui.tooltip.position($(event.target).tooltip('option', 'position'));
 						},
-						openTooltip: true
+						openTooltip: true,
+						addClass: 'mg'
 					});
 
 					postItem_renderContent(postId,postContainer);
@@ -2153,6 +2154,7 @@ function postItem_render(id){
 				height:60
 			});
 			marker.css({zIndex: 100001});
+			marker.div.addClass('ac');
 		},
 		mouseleave: function(){
 			var marker=postData[id].marker;
@@ -2163,6 +2165,7 @@ function postItem_render(id){
 				height:53
 			});
 			marker.css({zIndex: ''});
+			marker.div.removeClass('ac');
 		}
 	});
 	$('.body .moreButton',postContainer).click(function(e){
@@ -2206,6 +2209,7 @@ function postItem_marker(id, location, data){
 		id: newGroup,
 		position: location,
 		data: $.extend({id:id}, data),
+		addClass: 'mg',
 		icon: {
 			url:getPostMarker(postData[id]),
 			width: 37,

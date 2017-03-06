@@ -301,6 +301,12 @@ body.profile .post-search {
   left: 17px;
     width: 435px;
 }
+.mg {
+  opacity: 0.6;
+}
+.mg.ac {
+  opacity: 1;
+}
 body.touch {
   overflow: hidden;
 }
