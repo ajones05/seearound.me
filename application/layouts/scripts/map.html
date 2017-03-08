@@ -38,6 +38,12 @@ if ($isTouch)
 if ($this->viewPage == 'posts')
 {
 	$categoryVal = $this->searchForm->category_id->getValue();
+
+	if ($categoryVal == null)
+	{
+		$categoryVal = array_keys(Application_Model_News::$categories);
+	}
+
 	$categorySel = '<select name="category_id" style="display:none" multiple>' .
 		'<option value="">Filter</option>';
 

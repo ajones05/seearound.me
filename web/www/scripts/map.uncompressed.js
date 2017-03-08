@@ -754,14 +754,33 @@ function initMap(){
 					postList_change();
 				});
 
-				$('.postSearch').find('[name=filter],[name=category_id]').change(function(){
-					$(this).closest('form').submit();
+				$('.postSearch').find('[name=filter],[name=category_id]')
+					.on('change',function(){
+						$(this).closest('form').submit();
 				});
 
 				$('.postSearch .drp-t').click(function(){
 					$(this).find('.caret').toggleClass('up');
 				});
-				$('.dropdown-menu.hsel>*,.drp.hsel li').click(function(e){
+
+				$('.filter .cat .drp.hsel li').on('click',function(e){
+					var drpCn=$(this).closest('.dropdown'),
+						drpSel=drpCn.find('select'),
+						drpOpts=drpSel.find('option'),
+						selText=$(this).text();
+
+					var option=drpOpts.filter(function(){
+						return $(this).text()==selText;
+					});
+
+					if (option.is('[selected]') &&
+						drpOpts.filter('[selected]').size() == 1){
+							e.stopImmediatePropagation();
+							alert('Please choose at least one category. Otherwise you won\'t see any posts!');
+					}
+				});
+
+				$('.dropdown-menu.hsel>*,.drp.hsel li').on('click',function(e){
 					e.preventDefault();
 					var drpCn=$(this).closest('.dropdown'),
 						drpSel=drpCn.find('select'),
@@ -773,16 +792,17 @@ function initMap(){
 						$(this).addClass('ac');
 					} else {
 						$(this).toggleClass('ac');
-					}
 
-					drpOpts.filter(function(){
-						return $(this).text()==selText;
-					}).each(function(){
-						$(this).attr('selected',!$(this).attr('selected'));
-					});
+						drpOpts.filter(function(){
+							return $(this).text()==selText;
+						}).each(function(){
+							$(this).attr('selected',!$(this).attr('selected'));
+						});
+					}
 					drpSel.change();
 					drpCn.find('.dropdown-toggle span:first-child').text(selText);
 				});
+
 				$('.user-location button').click(function(){
 					if (!isLogin){
 						return guestAction();
