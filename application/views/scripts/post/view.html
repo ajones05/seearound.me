@@ -72,7 +72,7 @@ data-height="<?php echo $thumb960x960['height']; ?>">
 <div class="like<?php if ($userVote == 1) echo ' active'; ?>"></div>
 <div class="count"
 ><?php echo My_ArrayHelper::getProp($this->post, 'vote', 0); ?></div>
-</div
+</div>
 <a class="time"
 href="<?php echo $this->baseUrl('post/' . $this->post['id']); ?>"
 <?php echo $timeAttr; ?>><?php echo $timeVal; ?></a> by <a class="profile"
