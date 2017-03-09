@@ -770,7 +770,7 @@ function initMap(){
 					e.stopImmediatePropagation();
 					var drp=$(this).parent().parent().unbind('closeDrp.filterCat');
 
-					if ($(this).parent().find('li.ac').size()>1){
+					if (!$(this).hasClass('ac') || $(this).parent().find('li.ac').size()>1){
 						$(this).toggleClass('ac');
 					} else {
 						alert('Please choose at least one category. Otherwise you won\'t see any posts!');
