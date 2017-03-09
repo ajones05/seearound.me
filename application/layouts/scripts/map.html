@@ -44,7 +44,7 @@ if ($this->viewPage == 'posts')
 		$categoryVal = array_keys(Application_Model_News::$categories);
 	}
 
-	$categorySel = '<select name="category_id" style="display:none" multiple>' .
+	$categorySel = '<select name="category_id[]" style="display:none" multiple>' .
 		'<option value="">Filter</option>';
 
 	foreach (Application_Model_News::$categories as $id => $cat)

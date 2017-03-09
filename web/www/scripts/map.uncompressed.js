@@ -749,12 +749,14 @@ function initMap(){
 					e.preventDefault();
 					opts.keywords=$(this).find('[name=keywords]').val();
 					opts.filter=$(this).find('[name=filter]').val();
-					var catVal=$(this).find('[name=category_id]').val();
-					opts.category_id=catVal!==null?catVal:[];
+					opts.category_id=[];
+					$(this).find('[name=category_id\\[\\]] [selected]').each(function(){
+						opts.category_id.push($(this).val());
+					});
 					postList_change();
 				});
 
-				$('.postSearch').find('[name=filter],[name=category_id]')
+				$('.postSearch').find('[name=filter],[name=category_id\\[\\]]')
 					.on('change',function(){
 						$(this).closest('form').submit();
 				});
@@ -796,7 +798,7 @@ function initMap(){
 						drpOpts.filter(function(){
 							return $(this).text()==selText;
 						}).each(function(){
-							$(this).attr('selected',!$(this).attr('selected'));
+							$(this).attr('selected',!$(this).is('[selected]'));
 						});
 					}
 					drpSel.change();
