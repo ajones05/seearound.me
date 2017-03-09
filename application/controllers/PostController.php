@@ -1842,6 +1842,7 @@ class PostController extends Zend_Controller_Action
 				$data = [
 					'id' => $post['id'],
 					'user_id' => $post['user_id'],
+					'cid' => $post['category_id'],
 					'lat' => $post['latitude'],
 					'lng' => $post['longitude'],
 				];
