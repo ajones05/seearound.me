@@ -794,13 +794,13 @@ function initMap(){
 						$(this).addClass('ac');
 					} else {
 						$(this).toggleClass('ac');
-
-						drpOpts.filter(function(){
-							return $(this).text()==selText;
-						}).each(function(){
-							$(this).attr('selected',!$(this).is('[selected]'));
-						});
 					}
+
+					drpOpts.filter(function(){
+						return $(this).text()==selText;
+					}).each(function(){
+						$(this).attr('selected',!$(this).is('[selected]'));
+					});
 					drpSel.change();
 					drpCn.find('.dropdown-toggle span:first-child').text(selText);
 				});
