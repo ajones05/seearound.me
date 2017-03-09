@@ -64,7 +64,7 @@ require(['jquery','common'], function(){
 			}
 			activeDropdown.toggle();
 			$('.dropdown-menu,.drp')
-				.not(activeDropdown)
+				.not(activeDropdown.trigger('closeDrp'))
 				.hide()
 				.parent().find('.dropdown-toggle .caret,'+
 					'.drp-t .caret').removeClass('up');
@@ -74,7 +74,8 @@ require(['jquery','common'], function(){
 			if (e.button == 2){
 				return true;
 			}
-			$('.dropdown-menu,.drp').hide().removeClass('top');
+			$('.dropdown-menu,.drp').filter(':visible')
+				.trigger('closeDrp').hide().removeClass('top');
 			$('.dropdown-toggle .caret,'+
 				'.drp-t .caret').removeClass('up');
 		});
@@ -766,20 +767,28 @@ function initMap(){
 				});
 
 				$('.filter .cat .drp.hsel li').on('click',function(e){
-					var drpCn=$(this).closest('.dropdown'),
-						drpSel=drpCn.find('select'),
-						drpOpts=drpSel.find('option'),
-						selText=$(this).text();
+					e.stopImmediatePropagation();
+					var drp=$(this).parent().parent().unbind('closeDrp.filterCat');
 
-					var option=drpOpts.filter(function(){
-						return $(this).text()==selText;
-					});
-
-					if (option.is('[selected]') &&
-						drpOpts.filter('[selected]').size() == 1){
-							e.stopImmediatePropagation();
-							alert('Please choose at least one category. Otherwise you won\'t see any posts!');
+					if ($(this).parent().find('li.ac').size()>1){
+						$(this).toggleClass('ac');
+					} else {
+						alert('Please choose at least one category. Otherwise you won\'t see any posts!');
 					}
+
+					drp.bind('closeDrp.filterCat',function(){
+						drp.find('[name=category_id\\[\\]] option').each(function(){
+							var option = $(this),
+								optionText = option.text();
+							drp.find('li').each(function(){
+								if (optionText == $(this).text()){
+									option.attr('selected',$(this).hasClass('ac'));
+								}
+							});
+						})
+						drp.unbind('closeDrp.filterCat')
+							.closest('form').submit();
+					});
 				});
 
 				$('.dropdown-menu.hsel>*,.drp.hsel li').on('click',function(e){
@@ -795,7 +804,6 @@ function initMap(){
 					} else {
 						$(this).toggleClass('ac');
 					}
-
 					drpOpts.filter(function(){
 						return $(this).text()==selText;
 					}).each(function(){
@@ -2176,7 +2184,9 @@ function postItem_render(id){
 				height:60
 			});
 			marker.css({zIndex: 100001});
-			marker.div.addClass('ac');
+			if (marker.div){
+				marker.div.addClass('ac');
+			}
 		},
 		mouseleave: function(){
 			var marker=postData[id].marker;
@@ -2187,7 +2197,9 @@ function postItem_render(id){
 				height:53
 			});
 			marker.css({zIndex: ''});
-			marker.div.removeClass('ac');
+			if (marker.div){
+				marker.div.removeClass('ac');
+			}
 		}
 	});
 	$('.body .moreButton',postContainer).click(function(e){
