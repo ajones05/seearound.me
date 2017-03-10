@@ -195,6 +195,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 		$order = [];
 
+		if (!empty($parameters['category_id']))
+		{
+			$order[] = 'FIELD(news.category_id,' .
+				implode(',', $parameters['category_id']) . ') DESC';
+		}
+
 		switch (My_ArrayHelper::getProp($parameters, 'filter'))
 		{
 			// My posts
@@ -237,11 +243,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				break;
 			default:
 				$order[] = $this->postScore() . ' DESC';
-		}
-
-		if (!empty($parameters['category_id']))
-		{
-			$query->where('news.category_id IN(?)', $parameters['category_id']);
 		}
 
 		if (!empty($parameters['exclude_id']))
