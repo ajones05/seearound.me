@@ -194,19 +194,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		}
 
 		$order = [];
+		$filter = My_ArrayHelper::getProp($parameters, 'filter');
 
-		if (!empty($parameters['category_id']))
-		{
-			$order[] = 'FIELD(news.category_id,' .
-				implode(',', $parameters['category_id']) . ') DESC';
-		}
-
-		switch (My_ArrayHelper::getProp($parameters, 'filter'))
+		switch ($filter)
 		{
 			// My posts
 			case '0':
 				$query->where('news.user_id=?', $user['id']);
-				$order[] = $this->postScore() . ' DESC';
 				break;
 			// My interests
 			case '1':
@@ -224,7 +218,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 					$query->where(implode(' OR ', $interests));
 				}
-				$order[] = $this->postScore() . ' DESC';
 				break;
 			// Following
 			case '2':
@@ -235,14 +228,32 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				$query->where('news.user_id=f1.receiver_id)');
 				$query->orWhere('(f2.status=1');
 				$query->where('news.user_id=f2.sender_id))');
-				$order[] = $this->postScore() . ' DESC';
 				break;
 			// Most recent
 			case '3':
 				$order[] = 'created_date DESC';
 				break;
-			default:
-				$order[] = $this->postScore() . ' DESC';
+		}
+
+		if ($filter == 3)
+		{
+			if (!empty($parameters['category_id']))
+			{
+				$order[] = 'FIELD(news.category_id,' .
+					implode(',', array_reverse($parameters['category_id'])) . ') DESC';
+			}
+		}
+		else
+		{
+			$score = $this->postScore();
+
+			if (!empty($parameters['category_id']))
+			{
+				$score .= '+(IF(news.category_id IN (' .
+					implode(',',$parameters['category_id']) . '),1000000,0))';
+			}
+
+			$order[] = $score . ' DESC';
 		}
 
 		if (!empty($parameters['exclude_id']))
