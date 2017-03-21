@@ -7,28 +7,6 @@ use Respect\Validation\Validator as v;
 class Application_Form_Post extends Application_Form_Address
 {
 	/**
-	 * Validate scenario name.
-	 * @var string
-	 */
-	private $_scenario;
-
-	/**
-	 * Constructor
-	 *
-	 * @param mixed $options
-	 */
-	public function __construct($options = null)
-	{
-		if (isset($options['scenario']))
-		{
-			$this->setScenario($options['scenario']);
-			unset($options['scenario']);
-		}
-
-		parent::__construct($options);
-	}
-
-	/**
 	 * The post body max length.
 	 * @var integer
 	 */
@@ -51,13 +29,10 @@ class Application_Form_Post extends Application_Form_Address
 			]
 		]);
 
-		if ($this->getScenario() == 'mobile-save')
-		{
-			$this->addElement('text', 'delete_image', [
-				'required' => false,
-				'validators' => [['Callback', false, v::intVal()->equals(1)]]
-			]);
-		}
+		$this->addElement('text', 'delete_image', [
+			'required' => false,
+			'validators' => [['Callback', false, v::intVal()->equals(1)]]
+		]);
 
 		$this->addElement('select', 'category_id', [
 			'required' => false,
@@ -80,69 +55,43 @@ class Application_Form_Post extends Application_Form_Address
 			return false;
 		}
 
-		$scenario = $this->getScenario();
+		$upload = new Zend_File_Transfer;
 
-		if ($scenario == 'new' ||
-			$scenario == 'mobile-save' && empty($data['delete_image']))
+		if ($upload->getFileInfo() != null)
 		{
-			$upload = new Zend_File_Transfer;
+			$this->addElement('text', 'image');
 
-			if ($upload->getFileInfo() != null)
+			$upload->setValidators([
+				['Extension', false, ['jpg', 'jpeg', 'png', 'gif']],
+				['MimeType', false, ['image/jpeg', 'image/png', 'image/gif'],
+					['magicFile' => false]],
+				['Count', false, 2]
+			]);
+
+			if ($upload->isValid('image'))
 			{
-				$this->addElement('text', 'image');
+				$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
 
-				$upload->setValidators([
-					['Extension', false, ['jpg', 'jpeg', 'png', 'gif']],
-					['MimeType', false, ['image/jpeg', 'image/png', 'image/gif'],
-						['magicFile' => false]],
-					['Count', false, 2]
-				]);
-
-				if ($upload->isValid('image'))
+				do
 				{
-					$ext = My_CommonUtils::$mimetype_extension[$upload->getMimeType('image')];
-
-					do
-					{
-						$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
-						$full_path = ROOT_PATH_WEB . '/uploads/' . $name;
-					}
-					while (file_exists($full_path));
-
-					$upload->addFilter('Rename', $full_path);
-					$upload->receive();
-
-					$this->image->setValue($name);
+					$name = strtolower(My_StringHelper::generateKey(10)) . '.' . $ext;
+					$full_path = ROOT_PATH_WEB . '/uploads/' . $name;
 				}
-				else
-				{
-					$isValid = false;
-					$this->image->addErrorMessage(implode(', ', $upload->getMessages()));
-					$this->image->markAsError();
-				}
+				while (file_exists($full_path));
+
+				$upload->addFilter('Rename', $full_path);
+				$upload->receive();
+
+				$this->image->setValue($name);
+			}
+			else
+			{
+				$isValid = false;
+				$this->image->addErrorMessage(implode(', ', $upload->getMessages()));
+				$this->image->markAsError();
 			}
 		}
 
 		return $isValid;
-	}
-
-	/**
-	 * Returns the scenario that this model is used in.
-	 *
-	 * @return string the scenario that this model is in.
-	 */
-	public function getScenario()
-	{
-		return $this->_scenario;
-	}
-
-	/**
-	 * Sets the scenario for the model.
-	 *
-	 * @param string $value the scenario that this model is in.
-	 */
-	public function setScenario($value)
-	{
-		$this->_scenario=$value;
 	}
 }

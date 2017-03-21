@@ -602,9 +602,9 @@ class PostController extends Zend_Controller_Action
 	}
 
 	/**
-	 * Add post action.
+	 * Save post action.
 	 */
-	public function newAction()
+	public function saveAction()
 	{
 		try
 		{
@@ -637,6 +637,37 @@ class PostController extends Zend_Controller_Action
 				}
 			}
 
+			$id = $this->_request->getPost('id');
+
+			if (!v::optional(v::intVal())->validate($id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($id, true));
+			}
+
+			$isNew = $id == null ? true : false;
+			$postModel = new Application_Model_News;
+
+			$postOpts = [
+				'link' => ['thumbs'=>[[448,320]]],
+				'userVote' => true,
+				'thumbs' => [[448,320],[960,960]]
+			];
+
+			if (!$isNew)
+			{
+				if (!$postModel->checkId($id, $post, $postOpts))
+				{
+					throw new RuntimeException('Incorrect post ID: ' .
+						var_export($id, true));
+				}
+
+				if (!$postModel->canEdit($post, $user))
+				{
+					throw new RuntimeException('You have not access for this action');
+				}
+			}
+
 			$reset = $this->_request->getPost('reset');
 
 			if (!v::optional(v::intVal()->equals(1))->validate($reset))
@@ -645,93 +676,115 @@ class PostController extends Zend_Controller_Action
 					var_export($reset, true), -1);
 			}
 
-			$postForm = new Application_Form_Post(['scenario' => 'new']);
+			$postForm = new Application_Form_Post;
 
 			if (!$postForm->isValid($this->_request->getPost()))
 			{
 				throw new RuntimeException(My_Form::outputErrors($postForm));
 			}
 
-			$postModel = new Application_Model_News;
 			$postUser = $user_id ? $customUser : $user;
-			$post = $postModel->save($postForm, $postUser,
-				$address, $image, $thumbs, $link);
 
-			$response = [
-				'status' => 1,
-				'data' => [[
+			$postModel->save($postForm, $postUser, $address,
+				$image, $thumbs, $link, $post);
+
+			$response = ['status' => 1];
+
+			if ($reset)
+			{
+				$filter = [
+					'latitude' => $address['latitude'],
+					'longitude' => $address['longitude'],
+					'radius' => 1.5,
+					'limit' => 14
+				];
+
+				if ($isNew)
+				{
+					$response['data'][] = [
+						'id' => $post['id'],
+						'cid' => $post['category_id'],
+						'lat' => $address['latitude'],
+						'lng' => $address['longitude'],
+						'html' => $this->view->partial('post/view.html', [
+							'post' => $post,
+							'thumbs' => $thumbs,
+							'link' => $link,
+							'user' => $user,
+							'owner' => $postUser
+						])
+					];
+
+					$filter['exclude_id'][] = $post['id'];
+				}
+
+				$result = $postModel->search($filter, $user, $postOpts);
+
+				foreach ($result as $post)
+				{
+					$assets = [
+						'post' => $post,
+						'owner' => [
+							'Name' => $post['owner_name'],
+							'image_name' => $post['owner_image_name']
+						],
+						'user' => $user,
+						'limit' => 350
+					];
+
+					if (!empty($post['link_id']))
+					{
+						$assets['link'] = [
+							'id' => $post['link_id'],
+							'link' => $post['link_link'],
+							'title' => $post['link_title'],
+							'description' => $post['link_description'],
+							'author' => $post['link_author'],
+							'image_id' => $post['link_image_id'],
+							'image_name' => $post['link_image_name']
+						];
+					}
+
+					$response['data'][] = [
+						'id' => $post['id'],
+						'cid' => $post['category_id'],
+						'lat' => $post['latitude'],
+						'lng' => $post['longitude'],
+						'html' => $this->view->partial('post/view.html', $assets)
+					];
+				}
+			}
+			else
+			{
+				$response['update'] = [
 					'id' => $post['id'],
 					'cid' => $post['category_id'],
 					'lat' => $address['latitude'],
 					'lng' => $address['longitude'],
 					'html' => $this->view->partial('post/view.html', [
 						'post' => $post,
-						'thumbs' => $thumbs,
+						'user' => $user,
+						'owner' => $postUser,
 						'link' => $link,
-						'user' => $user,
-						'owner' => $postUser
+						'image' => $image,
+						'thumbs' => $thumbs
 					])
-				]]
-			];
-
-			if ($reset)
-			{
-				$result = $postModel->search([
-					'latitude' => $address['latitude'],
-					'longitude' => $address['longitude'],
-					'radius' => 1.5,
-					'limit' => 14,
-					'exclude_id' => [$post['id']]
-				], $user, [
-					'link' => ['thumbs'=>[[448,320]]],
-					'userVote' => true,
-					'thumbs' => [[448,320],[960,960]]
-				]);
-
-				foreach ($result as $_post)
-				{
-					$assets = [
-						'post' => $_post,
-						'owner' => [
-							'Name' => $_post['owner_name'],
-							'image_name' => $_post['owner_image_name']
-						],
-						'user' => $user,
-						'limit' => 350
-					];
-
-					if (!empty($_post['link_id']))
-					{
-						$assets['link'] = [
-							'id' => $_post['link_id'],
-							'link' => $_post['link_link'],
-							'title' => $_post['link_title'],
-							'description' => $_post['link_description'],
-							'author' => $_post['link_author'],
-							'image_id' => $_post['link_image_id'],
-							'image_name' => $_post['link_image_name']
-						];
-					}
-
-					$response['data'][] = [
-						$_post['id'],
-						$_post['latitude'],
-						$_post['longitude'],
-						$this->view->partial('post/view.html', $assets)
-					];
-				}
+				];
 			}
 
-			(new Application_Model_User)->updateWithCache([
-				'post' => $user['post']+1
-			], $user);
+			if ($isNew)
+			{
+				(new Application_Model_User)->updateWithCache([
+					'post' => $user['post']+1
+				], $user);
+			}
 		}
 		catch (Exception $e)
 		{
 			My_Log::exception($e);
 			$response = [
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() :
+				'message' => true || $e instanceof RuntimeException ? $e->getMessage() :
 					'Internal Server Error'
 			];
 		}
@@ -776,9 +829,10 @@ class PostController extends Zend_Controller_Action
 
 			$response = [
 				'status' => 1,
-				'latitude' => $post->latitude,
-				'longitude' => $post->longitude,
-				'body' => $post->news
+				'body' => $this->view->partial('post/_edit-dialog.html', [
+					'user' => $user,
+					'post' => $post
+				])
 			];
 		}
 		catch (Exception $e)
@@ -844,77 +898,6 @@ class PostController extends Zend_Controller_Action
 			{
 				$response['post_id'] = $linkExist->news_id;
 			}
-		}
-		catch (Exception $e)
-		{
-			My_Log::exception($e);
-			$response = [
-				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() :
-					'Internal Server Error'
-			];
-		}
-
-		$this->_helper->json($response);
-	}
-
-	/**
-	 * Save post action.
-	 *
-	 * @return void
-	 */
-	public function saveAction()
-	{
-		try
-		{
-			$user = Application_Model_User::getAuth();
-
-			if ($user == null)
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
-			$id = $this->_request->getPost('id');
-
-			if (!v::intVal()->validate($id))
-			{
-				throw new RuntimeException('Incorrect post ID value: ' .
-					var_export($id, true));
-			}
-
-			$postModel = new Application_Model_News;
-
-			if (!$postModel->checkId($id, $post, ['link'=>true]))
-			{
-				throw new RuntimeException('Incorrect post ID: ' .
-					var_export($id, true));
-			}
-
-			if (!Application_Model_News::canEdit($post, $user))
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
-			$postForm = new Application_Form_Post([
-				'ignore' => ['address'],
-				'scenario' => 'save'
-			]);
-
-			if (!$postForm->isValid($this->_request->getPost()))
-			{
-				throw new RuntimeException(My_Form::outputErrors($postForm));
-			}
-
-			// TODO: remove after finish edit post category option
-			$postForm->category_id->setValue($post['category_id']);
-
-			$post = $postModel->save($postForm, $user, $address,
-				$image, $thumbs, $link, $post);
-
-			$response = [
-				'status' => 1,
-				'html' => $postModel->renderContent($post, ['link' => $link])
-			];
 		}
 		catch (Exception $e)
 		{

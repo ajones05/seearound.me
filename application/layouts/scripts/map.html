@@ -77,59 +77,7 @@ $this->headLink() . $this->headScript(); ?></head>
 <div class="pnd pnd-popup">
 <img width="29" height="26"
 src="<?php echo $this->baseUrl('www/images/template/new-post.png'); ?>" alt="new">
-<div class="dnp dnp-popup">
-<form class="wrapper" autocomplete="off">
-<div class="wrapper-user">
-<div class="user">
-<img width="43px" height="43px"
-src="<?php echo $this->baseUrl(Application_Model_User::getThumb($this->user, '55x55')); ?>">
-<p><?php echo $this->user['Name']; ?></p>
-</div>
-</div>
-<div class="wrapper-edit">
-<div class="edit">
-<div class="inner-edit">
-<div class="arrow-left"></div>
-<textarea name="body" placeholder="What do you want to share..."></textarea>
-</div>
-</div>
-</div>
-<?php if (!empty($this->user['is_admin'])): ?>
-<div class="options">options</div>
-<?php endif; ?>
-<div class="wrapper-action">
-<div class="action">
-<div class="inner-action">
-<span class="ic loc"></span>
-<div class="catc dropdown">
-<span class="ic cat drp-t">
-<div class="drp hsel">
-<ul>
-<li class="plh">Pick Category:</li>
-<?php foreach (Application_Model_News::$categories as $id => $cat): ?>
-<li class="pcat<?php echo $id; ?>"
-><span class="i"></span
-><span class="l"><?php echo $cat; ?></span></li>
-<?php endforeach; ?>
-</ul>
-<div class="arrow-top"></div>
-</span>
-<select name="category_id">
-<option selected></option>
-<?php foreach (Application_Model_News::$categories as $id => $cat): ?>
-<option value="<?php echo $id; ?>"><?php echo $cat; ?></option>
-<?php endforeach; ?>
-</select>
-</div>
-</div>
-<span class="ic pic"></span>
-</div>
-<input name="image" accept="image/*" type="file">
-<input value="Post" type="submit">
-</div>
-</div>
-</form>
-</div>
+<?php echo $this->partial('post/_edit-dialog.html', ['user' => $this->user]); ?>
 </div>
 <?php endif; ?>
 <div class="post-search">

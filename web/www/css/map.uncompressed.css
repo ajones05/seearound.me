@@ -378,6 +378,7 @@ body.touch .posts-container .posts {
   bottom: 10px;
   left: 15px;
   position: absolute;
+  font-size: 12px;
 }
 .dnp .options:hover {
   text-decoration: underline;
@@ -401,12 +402,17 @@ body.touch .posts-container .posts {
   color: #cc3333;
 }
 .dnp .action > img,
+.dnp .action input[type=button],
 .dnp .action input[type=submit] {
   cursor: pointer;
 }
+.dnp .action input[type=button],
 .dnp .action input[type=submit] {
   background: none;
   border: none;
+}
+.dnp .action input[type=button]{
+  float: left;
 }
 .dnp .action input[type=submit] {
   float: right;
@@ -414,7 +420,6 @@ body.touch .posts-container .posts {
   padding: 0;
 }
 .dnp .image {
-  float: left;
   width: 180px;
   margin-bottom: 10px;
   text-align: center;
@@ -883,7 +888,7 @@ body.profile .post li span {
 .ui-tooltip.postTooltip {
   position: fixed;
     border-width: 0;
-  z-index: 50001;
+  z-index: 50005;
   min-height: 55px;
   font: 14.37px/19.55px 'Lato-Regular', Arial;
 }
@@ -1470,6 +1475,7 @@ body.profile .action span[disabled]{
 .inner-action {
   display: inline-block;
 }
+.dnp.dnp-popup .action input[type=button],
 .dnp.dnp-popup .action input[type=submit] {
   border: 1px solid #f9f9f9;
   padding: 5px 10px;
@@ -1478,6 +1484,7 @@ body.profile .action span[disabled]{
   color: #000000;
   outline: none;
 }
+.dnp.dnp-popup .action input[type=button]:hover,
 .dnp.dnp-popup .action input[type=submit]:hover {
   border: 1px solid #786768;
   -moz-border-radius: 6px;
@@ -1509,6 +1516,9 @@ body.profile .action span[disabled]{
 }
 .dnp.dnp-popup .inner-action .ic {
   margin-left: 20px;
+}
+.drp {
+  display: none;
 }
 .drp ul {
   display: block;

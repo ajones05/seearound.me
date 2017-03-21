@@ -18,6 +18,7 @@ postLimit=15,
 groupDistance=0.018939,
 disableScroll=false,
 markerClick=false,
+addressFl=['street_number','street_name','city','state','country','zip'],
 categoryMarker={
 	1:assetsBaseUrl+'www/images/popover/icons/Icons-lg/ic-lg-food.png',
 	2:assetsBaseUrl+'www/images/popover/icons/Icons-lg/ic-lg-safety.png',
@@ -424,312 +425,12 @@ function initMap(){
 				});
 
 				if (viewPage=='posts'){
-					var dnp=gl.dnp=$('.dnp');
-					dnp.find('textarea')
-						.css('max-height',newPost_InputHeight())
-						.on('input paste keypress',validatePost)
-						.on('focus', function(){
-							var bodyEl=$(this);
-							bodyEl.attr('placeholder-data',bodyEl.attr('placeholder'))
-								.removeAttr('placeholder');
-							})
-							.on('blur', function(){
-								var bodyEl=$(this);
-								bodyEl.attr('placeholder',bodyEl.attr('placeholder-data'))
-								.removeAttr('placeholder-data');
-							});
-					require(['textarea_autosize'],function(){
-						$('.dnp textarea').textareaAutoSize();
-					});
-					dnp.find('form')
-					.on('submit',function(e){
-						e.preventDefault();
-						var form=$(this),
-							textEl=form.find('[name=body]'),
-							textVal=textEl.val(),
-							catEl=form.find('[name=category_id]'),
-							elErrs={},errLen=0;
-
-						if ($(this).find('[type=submit]').data('ui-tooltip') != null){
-							$(this).find('[type=submit]').tooltip('destroy');
-						}
-
-						if ($.trim(textVal) === ''){
-							elErrs.text=true;
-							errLen++;
-						}
-						if ($.trim(catEl.val()) === ''){
-							elErrs.cat=true;
-							errLen++;
-						}
-						if (gl.newPostData == null ||
-							gl.newPostData.position==null && gl.newPostData.place==null){
-							elErrs.loc=true;
-							errLen++;
-						}
-
-						if (errLen>0){
-							var errMsg='Please add';
-
-							if (elErrs.text===true){
-								errMsg+=' text';
-							}
-
-							if (elErrs.loc===true){
-								if (elErrs.text===true){
-									if (errLen==3){
-										errMsg+=', ';
-									} else {
-										errMsg+=' and ';
-									}
-								} else {
-									errMsg+=' ';
-								}
-
-								errMsg+='location';
-							}
-							if (elErrs.cat===true){
-								if (errLen>1){
-									errMsg+=' and ';
-								} else {
-									errMsg+=' ';
-								}
-
-								errMsg+='category';
-							}
-
-							errMsg+='.';
-
-							$(this).find('[type=submit]').tooltip({
-								items: '*',
-								show: 0,
-								hide: .1,
-								tooltipClass: 'postTooltip',
-								content: errMsg,
-								position: {
-									of: $(this).find('[type=submit]'),
-									my: 'center bottom',
-									at: 'center top',
-									using: function(position, feedback){
-										$(this).find('.arrow').remove();
-
-										var arrow = $('<div/>').addClass('arrow');
-
-										if (feedback.vertical == 'bottom'){
-											position.top = position.top - 17;
-											arrow.addClass('bottom').appendTo(this);
-										} else if (feedback.vertical == 'top'){
-											position.top = position.top + 17;
-											arrow.addClass('top').prependTo(this);
-										}
-
-										if (position.left == 0 || (position.left + $(this).outerWidth()) == $(window).width()){
-											arrow.css({left: feedback.target.left-position.left+arrow.width()/3});
-										}
-
-										$(this).css(position);
-									}
-								},
-								open: function(event, ui){
-								},
-								close: function(event, ui){
-								}
-							}).tooltip('open');
-
-							return false;
-						}
-
-						var formFields=$(this).find('textarea,input,.image .delete')
-							.attr('disabled',true);
-
-						ajaxJson({
-							url: baseUrl+'post/before-save',
-							data: {body:textVal},
-							done: function(response){
-								if (response.post_id){
-									$('<div/>').appendTo('body')
-										.text('Another user has already shared that same link: '+
-											'do you want to see that post?')
-										.dialog({
-											width: 450,
-											modal:true,
-											buttons: [{
-												text:'Cancel',
-												click:function(){
-													$(this).dialog('close');
-												}
-											},{
-												text:'See post',
-												id:'view-post',
-												click:function(){return true; }
-											},{
-												text:'Post anyway',
-												click:function(){
-													newPost_save();
-													$(this).dialog('close');
-												}
-											}],
-											beforeClose: function(event,ui){
-												formFields.attr('disabled',false);
-												$(event.target).dialog('destroy').remove();
-											},
-											open:function(event,ui){
-												$('#view-post').wrap($('<a/>',{
-													href:baseUrl+'post/'+response.post_id,
-													target:'_blank'
-												}));
-											}
-										});
-								} else {
-									newPost_save();
-								}
-							},
-							fail: function(){
-								formFields.attr('disabled',false);
-							}
-						});
-					}).find('textarea').on('input',function(){
-						$(this).closest('form').find(':data(ui-tooltip)').tooltip('destroy');
-					});
-
-					dnp.find('.options').on('click',function(){
-						var self=$(this);
-						if (self.prop('disabled')){
-							return;
-						}
-						var urlParams='',
-							formData=self.closest('form').find('select,textarea,input[type=hidden]')
-								.filter(function(){
-									return $.trim($(this).val())!=='';
-								});
-
-						if (formData.size()){
-							urlParams+='?'+formData.serialize();
-						}
-
-						self.prop('disabled',true);
-						$('<div/>').appendTo($('body'))
-							.append(
-								$('<div/>').text('Loading...'),
-								$('<iframe/>',{
-									src:baseUrl+'post/post-options'+urlParams,
-									frameborder:0,
-									width:'100%',
-									id:'post-options'
-								})
-							).dialog({
-								modal:true,
-								resizable:false,
-								drag:false,
-								width:500,
-								dialogClass:'dialog fixed new-post-dialog',
-								buttons:{
-									OK:function(){
-										var iframeBody=$(this).find('iframe').contents();
-										$('form',iframeBody).submit();
-									}
-								},
-								beforeClose: function(event, ui){
-									$(this).dialog('destroy').remove();
-									self.prop('disabled',false);
-								}
-							});
-						});
-					dnp.find('.loc').on('click',function(){
-						var locDlg=$(this);
-						if (locDlg.prop('disabled')){
-							return;
-						}
-						locDlg.prop('disabled',true);
-						editLocationDialog({
-							mapZoom: 14,
-							markerIcon: assetsBaseUrl+'www/images/icons/icon_1.png',
-							inputPlaceholder: 'Enter address',
-							submitText: 'Use this location',
-							cancelButton: true,
-							center: centerPosition,
-							infoWindowContent: function(address){
-								return userAddressTooltip(address, user.image);
-							},
-							beforeClose: function(){
-								locDlg.prop('disabled',false)
-									.closest('form').find(':data(ui-tooltip)')
-										.tooltip('destroy');
-								if (typeof gl.newPostData === 'undefined'){
-									locDlg.removeClass('ac');
-								}
-							},
-							submit: function(map, dialogEvent, position, place){
-								gl.newPostData={
-									position:position,
-									place:place
-								}
-								locDlg.addClass('ac').prop('disabled',false);
-								$(dialogEvent.target).dialog('close');
-							}
-						});
-					});
-					dnp.find('[name=category_id]').on('change',function(){
-						$(this).closest('form').find(':data(ui-tooltip)')
-							.tooltip('destroy');
-						$(this).closest('.cat').addClass('ac');
-					});
-					dnp.find('.pic').on('click',function(){
-						$(this).closest('form').find('[name=image]').click();
-					});
-					dnp.find('[name=image]').on('change',function(){
-						var targetEl=$(this),
-							containerEl=targetEl.parent(),
-							imgIc=containerEl.find('.pic');
-						containerEl.find('.image').remove();
-
-						if ($.trim(targetEl.val()) === ''){
-							imgIc.removeClass('ac');
-							return true;
-						}
-
-						if ($.inArray(this.files[0]['type'],['image/gif','image/jpeg','image/png'])<0){
-							alert('Invalid file type');
-							targetEl.val('');
-							imgIc.removeClass('ac');
-							return false;
-
-						}
-
-						imgIc.addClass('ac');
-
-						var imageContainer=$('<div/>');
-						if (typeof window.FileReader !== 'undefined'){
-							var reader=new FileReader();
-							reader.onload=function(e){
-								imageContainer.prepend($('<img/>').addClass('preview')
-									.attr('src', e.target.result));
-							}
-							reader.readAsDataURL(this.files[0]);
-						} else {
-							imageContainer.html(targetEl.val());
-						}
-						containerEl.prepend($('<div/>').addClass('image').append(imageContainer
-							.append(
-								$('<img/>',{width:12,height:12,
-									src:assetsBaseUrl+'www/images/delete-icon12x12.png'})
-									.addClass('delete')
-									.click(function(){
-										if ($(this).is('[disabled]')){
-											return;
-										}
-										$('.image',containerEl).remove();
-										$('[type=file]',containerEl).val('');
-										imgIc.removeClass('ac');
-									})
-							)
-						));
-					});
+					var editPostDlg=renderEditPostDlg($('.pnd .dnp'));
 					$('.pnd img').on('click',function(){
-						if (gl.dnp.is(':visible')){
-							gl.dnp.fadeOut(50,closeNpd);
+						if (editPostDlg.is(':visible')){
+							editPostDlg.fadeOut(50,closeNpd);
 						} else {
-							gl.dnp.fadeIn(150).find('textarea').focus();
+							editPostDlg.fadeIn(150).find('textarea').focus();
 						}
 					});
 				}
@@ -791,7 +492,7 @@ function initMap(){
 					});
 				});
 
-				$('.dropdown-menu.hsel>*,.drp.hsel li').on('click',function(e){
+				$(document).on('click','.dropdown-menu.hsel>*,.drp.hsel li',function(e){
 					e.preventDefault();
 					var drpCn=$(this).closest('.dropdown'),
 						drpSel=drpCn.find('select'),
@@ -1634,126 +1335,24 @@ function postItem_renderContent(id, postContainer){
 
 		self.addClass('disabled');
 
+		$('body').append('<div class="ui-widget-overlay ui-front" style="z-index: 50001;"></div>');
+
+		$('html, body').animate({
+			scrollTop: (postContainer.offset().top - $('.navbar').outerHeight()) - 7
+		}, 1000);
+
+		$('body').css({overflow: 'hidden'});
+
 		ajaxJson({
 			url: baseUrl+'post/edit',
 			data: {id:id},
 			done: function(response){
-				var detailsPanel=$('.details', postContainer).hide(),
-				editForm=$('<textarea>', {rows:1,name:'body'})
-					.appendTo($('.body', postContainer).empty())
-					.val(response.body)
-					.bind('input paste keypress',validatePost)
-					.textareaAutoSize()
-					.focus();
-
-				detailsPanel.after(
-					$('<div/>').addClass('edit-panel').append(
-						$('<span/>').text('Change location')
-							.on('click',function(){
-								editLocationDialog({
-									mapZoom: 14,
-									markerIcon: assetsBaseUrl+'www/images/icons/icon_1.png',
-									inputPlaceholder: 'Enter address',
-									submitText: 'Save Location',
-									center: new google.maps.LatLng(response.latitude,response.longitude),
-									infoWindowContent: function(address){
-										return userAddressTooltip(address, user.image);
-									},
-									submit: function(map, dialogEvent, position, place){
-										var data={};
-										data.latitude=response.latitude=position.lat();
-										data.longitude=response.longitude=position.lng();
-										if (place){
-											data=$.extend(data,parsePlaceAddress(place));
-										}
-										map.setOptions({draggable:false,zoomControl:false});
-										ajaxJson({
-											url:baseUrl+'post/save-location/id/'+id,
-											data:data,
-											done:function(saveResponse){
-												if (viewPage=='posts'){
-													if (getDistance([centerPosition.lat(), centerPosition.lng()],
-														[position.lat(), position.lng()])<=getRadius()){
-														postItem_delete(id);
-														postData[id].lat=position.lat();
-														postData[id].lng=position.lng();
-														postData[id].marker=postItem_marker(id,
-															[postData[id].lat,postData[id].lng]);
-													} else {
-														centerPosition = position;
-														mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
-														areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()), getRadius());
-														postList_change();
-													}
-												} else {
-													post.address=saveResponse.address;
-													centerPosition = position;
-													postMarkers[0].setPosition(position);
-													mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
-												}
-												$(dialogEvent.target).dialog('close');
-											},
-											fail: function(jqXHR, textStatus){
-												map.setOptions({draggable: true, zoomControl: true});
-												$('[name=address],[type=submit]', dialogEvent.target).attr('disabled', false);
-											}
-										});
-									}
-								});
-							}),
-						$('<span/>').text('Delete')
-							.on('click',function(){
-								var btn=$(this);
-
-								if (btn.hasClass('disabled')){
-									return;
-								}
-
-								if (!confirm('Are you sure you want to delete?')){
-									return;
-								}
-
-								var editButtons=$('.edit-panel span',postContainer)
-									.addClass('disabled');
-
-								ajaxJson({
-									url: baseUrl+'post/delete',
-									data: {id:id},
-									done: function(){deletePostHandler(id); },
-									fail: function(){editButtons.removeClass('disabled'); }
-								});
-							}),
-						$('<span/>').text('Done Editing')
-							.on('click',function(){
-								var btn=$(this);
-								if (btn.hasClass('disabled')){
-									return;
-								}
-
-								var body=editForm.val();
-								if ($.trim(body)===''){
-									editForm.focus();
-									return;
-								}
-
-								var editButtons=$('.edit-panel span', postContainer)
-									.addClass('disabled');
-
-								ajaxJson({
-									url:baseUrl+'post/save',
-									data:{id:id,body:body},
-									beforeSend:function(){editForm.attr('disabled',true); },
-									done:function(saveResponse){
-										$('.body',postContainer).html(saveResponse.html);
-										$('.edit-panel',postContainer).remove();
-										$('.details', postContainer).show();
-										$('.edit',postContainer).removeClass('disabled');
-									},
-									fail:function(){editButtons.removeClass('disabled'); }
-								});
-							})
-					)
-				);
+				var editDlg=$(response.body).css('z-index',50002)
+					.appendTo($('body')).show();
+				$('input[type=button]',editDlg).on('click',function(){
+					closeEditDlg(editDlg,id);
+				});
+				renderEditPostDlg(editDlg,id);
 			}
 		});
 	});
@@ -1921,53 +1520,47 @@ function newPost_InputHeight(){
 	return $(window).height()/2;
 }
 
-function newPost_save(){
-	var form = $('.dnp form'),
-		image = $('[name=image]', form),
-		reset = (getDistance([centerPosition.lat(),centerPosition.lng()],
-			[gl.newPostData.position.lat(),gl.newPostData.position.lng()]) > getRadius()),
-		data = new FormData();
-
-	form.find('select,textarea,input[type=hidden]').each(function(){
+function newPost_save(dlg,postId){
+	var imgEl=$('[name=image]',dlg),
+		isNew=typeof postId === 'undefined' ? true : false,
+		mapRadius=getRadius(),
+		data=new FormData();
+	if (!isNew){
+		data.append('id',postId);
+	}
+	$('select,textarea,input[type=hidden]',dlg).each(function(){
 		var el=$(this);
 		data.append(el.attr('name'),el.val());
 	});
-
-	data.append('latitude', gl.newPostData.position.lat());
-	data.append('longitude', gl.newPostData.position.lng());
-
-	if (gl.newPostData.place!=null){
-		var addressData=parsePlaceAddress(gl.newPostData.place);
-		if (Object.size(addressData)){
-			for (var field in addressData){
-				data.append(field,addressData[field]);
-			}
-		}
+	if ($.trim(imgEl.val())!==''){
+		data.append('image', imgEl[0].files[0]);
 	}
-
-	if ($.trim(image.val())!==''){
-		data.append('image', image[0].files[0]);
-	}
-
-	if (reset){
+	var latitude=data.get('latitude'),
+		longitude=data.get('longitude')
+		reset=false;
+	if (getDistance([centerPosition.lat(),centerPosition.lng()],
+		[latitude,longitude])>mapRadius){
 		data.append('reset', 1);
+		reset=true;
 	}
 
 	ajaxJson({
-		url: baseUrl+'post/new',
+		url: baseUrl+'post/save',
 		data: data,
 		cache: false,
 		contentType: false,
 		processData: false,
 		done: function(response){
-			$('html, body').animate({scrollTop: 0}, 0);
-			$('.posts-container .posts > .empty').remove();
+			if (isNew){
+				$('.posts-container .posts > .empty').remove();
+				$('html, body').animate({scrollTop: 0}, 0);
+			}
 
 			if (reset){
 				postList_reset();
-				centerPosition=gl.newPostData.position;
+				centerPosition=new google.maps.LatLng(latitude,longitude);
 				mainMap.setCenter(offsetCenter(mainMap,centerPosition,offsetCenterX(true),offsetCenterY(true)));
-				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),getRadius());
+				areaCircle.changeCenter(offsetCenter(mainMap,mainMap.getCenter(),offsetCenterX(),offsetCenterY()),mapRadius);
 
 				for (var i in response.data){
 					$('.posts-container .posts').append(response.data[i]['html']);
@@ -1976,24 +1569,31 @@ function newPost_save(){
 				if (Object.size(response.data) >= postLimit){
 					postList_scrollHandler();
 				}
-			} else {
+
 				for (var i in response.data){
-					$('.posts-container .posts').prepend(response.data[i]['html']);
-					break;
+					var row=response.data[i];
+					postData[row.id]=row;
+					postItem_render(row.id);
 				}
+			} else if (isNew) {
+				$('.posts-container .posts').prepend(response.update.html);
+				postData[response.update.id]=response.update;
+				postItem_render(response.update.id);
 			}
-
-			for (var i in response.data){
-				var row=response.data[i];
-				postData[row.id]=row;
-				postItem_render(row.id);
+			if (isNew){
+				$('.posts-container .posts').prepend($('<input/>')
+					.attr({type: 'hidden', name: 'new[]'})
+					.val(reset?response.data[0].id:response.update.id));
+				closeNpd();
+			} else {
+				if (!reset){
+					$('.post[data-id='+postId+']').replaceWith(response.update.html);
+					postItem_delete(postId);
+					postData[postId]=response.update;
+					postItem_render(postId);
+				}
+				closeEditDlg(dlg,postId);
 			}
-
-			$('.posts-container .posts').prepend($('<input/>')
-				.attr({type: 'hidden', name: 'new[]'})
-				.val(response.data[0]['id']));
-
-			closeNpd();
 		}
 	});
 }
@@ -2358,10 +1958,332 @@ function guestAction(){
 
 function closeNpd(){
 	var dnp=$('.dnp').hide().attr('style','');
-	dnp.find('[name=body],[name=image]').val('');
+	dnp.find('[name=body],[name=image],[name=latitude],[name=longitude]').val('');
 	dnp.find('[name=category_id]').prop('selectedIndex',0);
+	dnp.find('textarea').css('height','auto');
 	dnp.find('textarea,input').attr('disabled',false);
-	dnp.find('.image').remove();
-	dnp.find('.ic.ac').removeClass('ac');
-	gl.newPostData={};
+	dnp.find('.image,[name=user_id]').remove();
+	dnp.find('.ic.ac,.drp li.ac').removeClass('ac');
+	for (var i in addressFl){
+		$('[name='+addressFl[i]+']').val('');
+	}
+}
+
+function renderEditPostDlg(dlg,postId){
+	var isNew=typeof postId === 'undefined' ? true : false;
+	$('textarea',dlg)
+		.css('max-height',newPost_InputHeight())
+		.on('input paste keypress',validatePost)
+		.on('focus', function(){
+			$(this).attr('placeholder-data',$(this).attr('placeholder'))
+				.removeAttr('placeholder');
+		})
+		.on('blur', function(){
+			$(this).attr('placeholder',$(this).attr('placeholder-data'))
+			.removeAttr('placeholder-data');
+		});
+	require(['textarea_autosize'],function(){
+		$('textarea',dlg).textareaAutoSize();
+	});
+
+	$('form',dlg).on('submit',function(e){
+		e.preventDefault();
+		var form=$(this),
+			textEl=form.find('[name=body]'),
+			textVal=textEl.val(),
+			catEl=form.find('[name=category_id]'),
+			latEl=form.find('[name=latitude]'),
+			lngEl=form.find('[name=longitude]'),
+			submitBtn=form.find('[type=submit]'),
+			elErrs={},errLen=0;
+
+		if (submitBtn.data('ui-tooltip') != null){
+			submitBtn.tooltip('destroy');
+		}
+
+		if ($.trim(textVal) === ''){
+			elErrs.text=true;
+			errLen++;
+		}
+		if ($.trim(catEl.val()) === ''){
+			elErrs.cat=true;
+			errLen++;
+		}
+
+		if ($.trim(latEl.val())==='' || $.trim(lngEl.val())===''){
+			errLen++;
+			elErrs.loc=true;
+		}
+
+		if (errLen>0){
+			var errMsg='Please add';
+
+			if (elErrs.text===true){
+				errMsg+=' text';
+			}
+
+			if (elErrs.loc===true){
+				if (elErrs.text===true){
+					if (errLen==3){
+						errMsg+=', ';
+					} else {
+						errMsg+=' and ';
+					}
+				} else {
+					errMsg+=' ';
+				}
+
+				errMsg+='location';
+			}
+			if (elErrs.cat===true){
+				if (errLen>1){
+					errMsg+=' and ';
+				} else {
+					errMsg+=' ';
+				}
+
+				errMsg+='category';
+			}
+
+			errMsg+='.';
+
+			submitBtn.tooltip({
+				items: '*',
+				show: 0,
+				hide: .1,
+				tooltipClass: 'postTooltip',
+				content: errMsg,
+				position: {
+					of: submitBtn,
+					my: 'center bottom',
+					at: 'center top',
+					using: function(position, feedback){
+						$(this).find('.arrow').remove();
+
+						var arrow = $('<div/>').addClass('arrow');
+
+						if (feedback.vertical == 'bottom'){
+							position.top = position.top - 17;
+							arrow.addClass('bottom').appendTo(this);
+						} else if (feedback.vertical == 'top'){
+							position.top = position.top + 17;
+							arrow.addClass('top').prependTo(this);
+						}
+
+						if (position.left == 0 || (position.left + $(this).outerWidth()) == $(window).width()){
+							arrow.css({left: feedback.target.left-position.left+arrow.width()/3});
+						}
+
+						$(this).css(position);
+					}
+				}
+			}).tooltip('open');
+
+			return false;
+		}
+
+		var formFields=form.find('textarea,input,.image .delete')
+			.attr('disabled',true);
+
+		if (typeof postId !== 'undefined'){
+			return newPost_save(dlg,postId);
+		}
+
+		ajaxJson({
+			url: baseUrl+'post/before-save',
+			data: {body:textVal},
+			done: function(response){
+				if (response.post_id){
+					$('<div/>').appendTo('body')
+						.text('Another user has already shared that same link: '+
+							'do you want to see that post?')
+						.dialog({
+							width: 450,
+							modal:true,
+							buttons: [{
+								text:'Cancel',
+								click:function(){
+									$(this).dialog('close');
+								}
+							},{
+								text:'See post',
+								id:'view-post',
+								click:function(){return true; }
+							},{
+								text:'Post anyway',
+								click:function(){
+									newPost_save(dlg);
+									$(this).dialog('close');
+								}
+							}],
+							beforeClose: function(event,ui){
+								formFields.attr('disabled',false);
+								$(event.target).dialog('destroy').remove();
+							},
+							open:function(event,ui){
+								$('#view-post').wrap($('<a/>',{
+									href:baseUrl+'post/'+response.post_id,
+									target:'_blank'
+								}));
+							}
+						});
+				} else {
+					newPost_save(dlg);
+				}
+			},
+			fail: function(){
+				formFields.attr('disabled',false);
+			}
+		});
+	}).find('textarea').on('input',function(){
+		$(this).closest('form').find(':data(ui-tooltip)').tooltip('destroy');
+	});
+
+	$('.options',dlg).on('click',function(){
+		var self=$(this);
+		if (self.prop('disabled')){
+			return;
+		}
+		var urlParams='',
+			formData=self.closest('form').find('select,textarea,input[type=hidden]')
+				.filter(function(){
+					return $.trim($(this).val())!=='';
+				});
+
+		if (formData.size()){
+			urlParams+='?'+formData.serialize();
+		}
+
+		self.prop('disabled',true);
+		$('<div/>').appendTo($('body'))
+			.append(
+				$('<div/>').text('Loading...'),
+				$('<iframe/>',{
+					src:baseUrl+'post/post-options'+urlParams,
+					frameborder:0,
+					width:'100%',
+					id:'post-options'
+				})
+			).dialog({
+				modal:true,
+				resizable:false,
+				drag:false,
+				width:500,
+				dialogClass:'dialog fixed new-post-dialog',
+				buttons:{
+					OK:function(){
+						var iframeBody=$(this).find('iframe').contents();
+						$('form',iframeBody).submit();
+					}
+				},
+				beforeClose: function(event, ui){
+					$(this).dialog('destroy').remove();
+					self.prop('disabled',false);
+				}
+			});
+		});
+
+	$('.loc',dlg).on('click',function(){
+		var locDlg=$(this);
+		if (locDlg.prop('disabled')){
+			return;
+		}
+		var lat=$.trim($('[name=latitude]',dlg).val()),
+			lng=$.trim($('[name=longitude]',dlg).val());
+		locDlg.prop('disabled',true);
+		editLocationDialog({
+			mapZoom: 14,
+			markerIcon: assetsBaseUrl+'www/images/icons/icon_1.png',
+			inputPlaceholder: 'Enter address',
+			submitText: 'Use this location',
+			cancelButton: true,
+			center: lat!=='' && lng!=='' ? new google.maps.LatLng(lat,lng) :
+				centerPosition,
+			infoWindowContent: function(address){
+				return userAddressTooltip(address, user.image);
+			},
+			beforeClose: function(){
+				locDlg.prop('disabled',false)
+					.closest('form').find(':data(ui-tooltip)')
+						.tooltip('destroy');
+			},
+			submit: function(map, dialogEvent, position, place){
+				var addr=parsePlaceAddress(place);
+				for (var i in addressFl){
+					var name=addressFl[i];
+					$('[name='+name+']').val(typeof addr[name] !== 'undefined' ?
+						addr[name] : '');
+				}
+				$('[name=latitude]').val(position.lat());
+				$('[name=longitude]').val(position.lng());
+
+				locDlg.addClass('ac').prop('disabled',false);
+				$(dialogEvent.target).dialog('close');
+			}
+		});
+	});
+	$('[name=category_id]',dlg).on('change',function(){
+		$(this).closest('form').find(':data(ui-tooltip)')
+			.tooltip('destroy');
+		$(this).closest('.cat').addClass('ac');
+	});
+	$('.pic',dlg).on('click',function(){
+		$(this).closest('form').find('[name=image]').click();
+	});
+	$('[name=image]',dlg).on('change',function(){
+		var targetEl=$(this),
+			containerEl=targetEl.parent(),
+			imgIc=containerEl.find('.pic');
+		containerEl.find('.image').remove();
+
+		if ($.trim(targetEl.val()) === ''){
+			imgIc.removeClass('ac');
+			return true;
+		}
+
+		if ($.inArray(this.files[0]['type'],['image/gif','image/jpeg','image/png'])<0){
+			alert('Invalid file type');
+			targetEl.val('');
+			imgIc.removeClass('ac');
+			return false;
+
+		}
+
+		imgIc.addClass('ac');
+
+		var imageContainer=$('<div/>');
+		if (typeof window.FileReader !== 'undefined'){
+			var reader=new FileReader();
+			reader.onload=function(e){
+				imageContainer.prepend($('<img/>').addClass('preview')
+					.attr('src', e.target.result));
+			}
+			reader.readAsDataURL(this.files[0]);
+		} else {
+			imageContainer.html(targetEl.val());
+		}
+		containerEl.prepend($('<div/>').addClass('image').append(imageContainer
+			.append(
+				$('<img/>',{width:12,height:12,
+					src:assetsBaseUrl+'www/images/delete-icon12x12.png'})
+					.addClass('delete')
+					.click(function(){
+						if ($(this).is('[disabled]')){
+							return;
+						}
+						$('.image',containerEl).remove();
+						$('[type=file]',containerEl).val('');
+						imgIc.removeClass('ac');
+					})
+			)
+		));
+	});
+
+	return dlg;
+}
+function closeEditDlg(dlg,id){
+	dlg.remove();
+	$('body').css({overflow: 'visible'});
+	$('.ui-widget-overlay.ui-front').remove();
+	$('.post[data-id="'+id+'"] .edit').removeClass('disabled');
 }

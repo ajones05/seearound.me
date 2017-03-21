@@ -1,0 +1,81 @@
+<?php
+$postCat = trim(My_ArrayHelper::getProp($this, 'post.category_id'));
+?>
+<div class="dnp dnp-popup"<?php if (!empty($this->post))
+echo ' data-id="' . $this->post['id'] . '"'; ?>>
+<form class="wrapper" autocomplete="off">
+<div class="wrapper-user">
+<div class="user">
+<img width="43px" height="43px"
+src="<?php echo $this->baseUrl(Application_Model_User::getThumb($this->user, '55x55')); ?>">
+<p><?php echo $this->user['Name']; ?></p>
+</div>
+</div>
+<div class="wrapper-edit">
+<div class="edit">
+<div class="inner-edit">
+<div class="arrow-left"></div>
+<textarea name="body" placeholder="What do you want to share..."
+><?php echo htmlspecialchars(My_ArrayHelper::getProp($this, 'post.news'));
+?></textarea>
+</div>
+</div>
+</div>
+<?php if (!empty($this->user['is_admin'])): ?>
+<div class="options">options</div>
+<?php endif; ?>
+<div class="wrapper-action">
+<div class="action">
+<?php if (!empty($this->post)): ?>
+<input value="Cancel" type="button">
+<?php endif; ?>
+<div class="inner-action">
+<span class="ic loc<?php if (!empty($this->post)) echo ' ac'; ?>"></span>
+<div class="catc dropdown">
+<span class="ic cat drp-t<?php if ($postCat !== '') echo ' ac'; ?>">
+<div class="drp hsel">
+<ul>
+<li class="plh">Pick Category:</li>
+<?php foreach (Application_Model_News::$categories as $id => $cat): ?>
+<li class="pcat<?php echo $id; if ($postCat == $id) echo ' ac'; ?>"
+><span class="i"></span
+><span class="l"><?php echo $cat; ?></span></li>
+<?php endforeach; ?>
+</ul>
+<div class="arrow-top"></div>
+</span>
+<select name="category_id">
+<option<?php if ($postCat == '') echo ' selected'; ?>></option>
+<?php foreach (Application_Model_News::$categories as $id => $cat): ?>
+<option value="<?php echo $id; ?>"
+<?php if ($postCat == $id) echo ' selected'; ?>><?php echo $cat; ?></option>
+<?php endforeach; ?>
+</select>
+</div>
+</div>
+<span class="ic pic<?php if (!empty($this->post['image_id']))
+  echo ' ac'; ?>"></span>
+</div>
+<input name="image" accept="image/*" type="file">
+<input value="<?php echo !empty($this->post) ? 'Save' : 'Post'; ?>"
+type="submit">
+</div>
+</div>
+<input name="latitude" type="hidden"
+value="<?php echo My_ArrayHelper::getProp($this, 'post.latitude'); ?>">
+<input name="longitude" type="hidden"
+value="<?php echo My_ArrayHelper::getProp($this, 'post.longitude'); ?>">
+<input name="street_number" type="hidden" value="<?php echo htmlspecialchars(
+  My_ArrayHelper::getProp($this, 'post.street_number')); ?>">
+<input name="street_name" type="hidden" value="<?php echo htmlspecialchars(
+  My_ArrayHelper::getProp($this, 'post.street_name')); ?>">
+<input name="city" type="hidden" value="<?php echo htmlspecialchars(
+  My_ArrayHelper::getProp($this, 'post.city')); ?>">
+<input name="state" type="hidden" value="<?php echo htmlspecialchars(
+  My_ArrayHelper::getProp($this, 'post.state')); ?>">
+<input name="country" type="hidden" value="<?php echo htmlspecialchars(
+  My_ArrayHelper::getProp($this, 'post.country')); ?>">
+<input name="zip" type="hidden" value="<?php echo htmlspecialchars(
+  My_ArrayHelper::getProp($this, 'post.zip')); ?>">
+</form>
+</div>

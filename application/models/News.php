@@ -361,10 +361,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	public function save(Zend_Form $form, $user, &$address, &$image=null,
 		&$thumbs=null, &$link=null, &$post=null)
 	{
+		$isNew = $post == null ? true : false;
 		$data = $form->getValues();
 		$body = $this->filterBody($data['body']);
 
 		$saveData = [
+			'user_id' => $user['id'],
 			'category_id' => $data['category_id'],
 			'news' => $body
 		];
@@ -384,28 +386,25 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				'timezone' => $data['timezone']
 			];
 
-			if ($post !== null)
+			if (!$isNew)
 			{
 				$this->_db->update('address', $address, 'id=' . $post['address_id']);
-			}
-			else
-			{
-				$this->_db->insert('address', $address);
-				$saveData['address_id'] = $this->_db->lastInsertId('address');
 			}
 		}
 
 		$timeNow = (new DateTime)->format(My_Time::SQL);
 
-		if ($post !== null)
+		if ($isNew)
 		{
-			$saveData['updated_date'] = $timeNow;
+			$post = $this->createRow();
+			$post->created_date = $timeNow;
+
+			$this->_db->insert('address', $address);
+			$post->address_id = $this->_db->lastInsertId('address');
 		}
 		else
 		{
-			$this->_db->insert('address', $address);
-			$saveData['user_id'] = $user['id'];
-			$saveData['created_date'] = $timeNow;
+			$saveData['updated_date'] = $timeNow;
 		}
 
 		$existImage = !empty($post['image_id']);
@@ -454,13 +453,15 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			}
 		}
 
-		if ($post !== null)
+		$post->setFromArray($saveData);
+
+		if ($isNew)
 		{
-			$this->update($saveData, 'id=' . $post['id']);
+			$post->save();
 		}
 		else
 		{
-			$post = ['id' => $this->insert($saveData)];
+			$this->update($saveData, 'id=' . $post['id']);
 		}
 
 		if (!empty($post['link_id']))
@@ -488,12 +489,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			'news' => $body,
 		]);
 
-		if (!is_array($post))
-		{
-			$post = $post->toArray();
-		}
-
-		return $saveData + $post;
+		return $post;
 	}
 
 	/**

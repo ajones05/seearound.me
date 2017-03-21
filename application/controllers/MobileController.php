@@ -1509,7 +1509,7 @@ class MobileController extends Zend_Controller_Action
 		try
 		{
 			$user = $this->getUserByToken();
-			$postForm = new Application_Form_Post(['scenario' => 'new']);
+			$postForm = new Application_Form_Post;
 
 			if (!$postForm->isValid($this->_request->getPost()))
 			{
@@ -1517,8 +1517,8 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$postModel = new Application_Model_News;
-			$post = $postModel->save($postForm, $user,
-				$address, $image, $thumbs, $link);
+			$postModel->save($postForm, $user,
+				$address, $image, $thumbs, $link, $post);
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -1593,8 +1593,7 @@ class MobileController extends Zend_Controller_Action
 			$user = $this->getUserByToken();
 			$data = $this->_request->getPost();
 			$postForm = new Application_Form_Post([
-				'ignore' => ['address'],
-				'scenario' => 'before-save'
+				'ignore' => ['address']
 			]);
 
 			if (!$postForm->isValid($data))
@@ -1671,7 +1670,7 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$postForm = new Application_Form_Post(['scenario' => 'mobile-save']);
+			$postForm = new Application_Form_Post;
 
 			if (!$postForm->isValid($this->_request->getPost()))
 			{
@@ -1681,7 +1680,7 @@ class MobileController extends Zend_Controller_Action
 			// TODO: remove after finish edit post category option
 			$postForm->category_id->setValue($post['category_id']);
 
-			$post = $postModel->save($postForm, $user, $address,
+			$postModel->save($postForm, $user, $address,
 				$image, $thumbs, $link, $post);
 
 			$response = [
