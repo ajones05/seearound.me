@@ -112,8 +112,8 @@ require(['jquery','common'], function(){
 			$('.community .dropdown-toggle').click(function(){
 				var dropdown = $(this).parent();
 
-				if (!$('.dropdown-menu', dropdown).is(':visible')){
-					return true;
+				if (!$('.dropdown-menu', dropdown).is(':hidden')){
+					return;
 				}
 
 				$('.load', dropdown).show();
