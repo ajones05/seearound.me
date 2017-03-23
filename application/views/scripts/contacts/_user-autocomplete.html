@@ -1,0 +1,16 @@
+<?php
+$name = $this->user['Name'];
+$thumb = Application_Model_User::getThumb($this->user, '55x55');
+$address = Application_Model_Address::format($this->user);
+?>
+<li>
+<div class="post-comment__new-owner">
+<img src="<?php echo $this->baseUrl($thumb); ?>" title="<?php echo $name; ?>"
+alt="" width="43" height="43">
+</div>
+<div class="post-comment__body">
+<div class="post-coment-user-name"><?php echo $name; ?></div>
+<p class="post-coment__date"><?php echo $address; ?></p>
+</div>
+</div>
+</li>

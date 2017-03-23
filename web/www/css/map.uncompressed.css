@@ -90,7 +90,8 @@ body {
   padding-left: 34px;
 }
 body.post .post-search,
-body.profile .post-search {
+body.profile .post-search,
+body.community .post-search {
   padding-left: 30%;
 }
 .post-search {
@@ -123,15 +124,18 @@ body.profile .post-search {
   outline: none;
 }
 .post-search .keywords img,
-.main-menu .keywords img {
+.main-menu .keywords img,
+.people-search .keywords img {
   position: absolute;
   cursor: pointer;
 }
-.post-search .keywords img {
+.post-search .keywords img,
+.people-search .keywords img {
   right: 11px;
   top: 8px;
 }
 .post-search .keywords,
+#peopleSearch .keywords,
 .main-menu .keywords {
   position: relative;
 }
@@ -1570,6 +1574,71 @@ body.profile .action span[disabled]{
 .catc .pcat5 .i,
 .post .c.cat5 {
   background-image: url('../images/popover/icons/ic-other.png');
+}
+
+/**
+ * Community
+ */
+body.community .post {
+  min-height: 77px;
+}
+body.community .post.empty {
+  min-height: auto;
+}
+body.community .invite,
+body.community .people-search {
+  text-align: center;
+  padding: 10px 0;
+  background-color: #fff;
+  margin-bottom: 10px;
+}
+body.community .people-search .keywords {
+  display: inline-block;
+}
+body.community .invite span,
+body.community .invite p,
+body.community .people-search {
+  font-family: 'Lato-Regular',sans-serif;
+  color: rgb(204, 0, 0);
+  font-size: 23px;
+}
+body.community .invite span {
+  position: relative;
+  top: -13px;
+}
+body.community .invite p {
+  margin: 0 0 10px 0;
+}
+body.community .invite a {
+  text-decoration: none;
+}
+body.community .invite a img {
+  width: 150px;
+}
+body.community .post .msg {
+  cursor: pointer;
+}
+body.community .post .msg:hover {
+  opacity: 0.8;
+}
+body.community .post-comment__new-owner img {
+  display: inline-block;
+}
+body.community .post-comment__delete {
+  margin-top: 10px;
+}
+body.community .post:hover .post-comment__delete {
+  display: block;
+}
+body.community .ui-autocomplete .post-comment__body {
+  max-width: 156px;
+}
+body.community .ui-autocomplete {
+  max-width: 241px;
+}
+body.community .ui-autocomplete li {
+  display: inline-block;
+  width: 220px;
 }
 
 @media all and (max-width: 1100px),

@@ -1,32 +1,29 @@
-<div class="listHight" id="frindsListMain" style="width:100%;">
-	<ul class="connListSecTopNav">
-		<li class="txtBold">
-			<div class="txtbold-top"><span class="hdB15">Invite your friends by</span></div>
-			<div class="txtBold-bottom">
-				<a class="hypDecNone" href="<?php echo $this->baseUrl("contacts/invites"); ?>">
-					<img style="margin-right: 25px;" src="<?php echo $this->baseUrl("www/images/email_big.png"); ?>" alt="Facebook" />
-				</a>
-				<span>Or</span>  
-				<a class="hypDecNone" href="<?php echo $this->baseUrl("contacts"); ?>">
-					<img style="margin-left: 25px;" src="<?php echo $this->baseUrl("www/images/btn-fblogo.gif"); ?>" alt="Facebook" />
-				</a>
-			</div>
-		</li>
-		<li class="searchBar">
-			<div class="hdB15" style="display: inline-block; float: left; margin-top: 7px; font-size: 14px;">Or find people already on SeeAround.me</div>
-			<div style="float:left; position:relative;">
-				<input name="search" id="search" placeholder="Search People..." type="text" value="" />
-				<img class="search-btn" src="<?php echo $this->baseUrl("www/images/icn-search.png"); ?>" alt="Search" />
-				<img id="sacrchWait" class="searchWait" src="<?php echo $this->baseUrl("www/images/wait.gif"); ?>"/>
-			</div>
-			<div class="clr"></div>
-		</li>
-	</ul>
-	<div class="clr"></div>
-<?php if ($this->friends->count() > 0): ?>
-<div id="friendList" class="invtFrndList">
-<p class="invtFrndList-title">Following</p>
+<div class="invite">
+<p>Invite your friends by</p>
+<div>
+<a href="<?php echo $this->baseUrl("contacts/invites"); ?>">
+<img src="<?php echo $this->baseUrl("www/images/email_big.png"); ?>"
+alt="Email" width="150" height="45">
+</a>
+<span>Or</span>
+<a href="<?php echo $this->baseUrl("contacts"); ?>">
+<img src="<?php echo $this->baseUrl("www/images/btn-fblogo.gif"); ?>"
+alt="Facebook" width="150" height="45">
+</a>
+</div>
+</div>
+<div class="people-search">
+<form id="peopleSearch" autocomplete="off">
+<p>Or find people already on SeeAround.me</p>
+<div class="keywords">
+<input type="text" name="keywords" placeholder="Search People...">
+<img class="search" alt="search" width="14" height="14"
+src="<?php echo $this->baseUrl('www/images/template/search14x14.png'); ?>">
+</div>
+</form>
+</div>
 <?php
+if ($this->friends->count()):
 foreach ($this->friends as $friend)
 {
 	echo $this->partial('contacts/_friend.html', [
@@ -35,15 +32,7 @@ foreach ($this->friends as $friend)
 			'sender_' : 'receiver_'
 	]);
 }
+else:
 ?>
-</div>
-<?php else: ?>
-<div class="connListSec">No connection found</div>
-<?php endif; ?>
-</div>
-<?php if ($this->friends->count() >= 15): ?>
-<div class="postClass_after">
-<label>More</label>
-<img src="<?php echo $this->baseUrl('www/images/wait.gif'); ?>" style="display: none;">
-</div>
+<div class="post empty">No connection found</div>
 <?php endif;

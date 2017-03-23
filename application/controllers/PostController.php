@@ -331,6 +331,14 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
+			$nohtml = $this->_request->getParam('nohtml');
+
+			if (!v::optional(v::intVal())->validate($nohtml))
+			{
+				throw new RuntimeException('Incorrect no html value: ' .
+					var_export($nohtml, true));
+			}
+
 			$user = Application_Model_User::getAuth();
 			$profile_id = $this->_request->getParam('user_id');
 
@@ -427,7 +435,10 @@ class PostController extends Zend_Controller_Action
 							];
 						}
 
-						$postData['html'] = $this->view->partial('post/view.html', $assets);
+						if (!$nohtml)
+						{
+							$postData['html'] = $this->view->partial('post/view.html', $assets);
+						}
 					}
 
 					$data[] = $postData;
@@ -784,7 +795,7 @@ class PostController extends Zend_Controller_Action
 			My_Log::exception($e);
 			$response = [
 				'status' => 0,
-				'message' => true || $e instanceof RuntimeException ? $e->getMessage() :
+				'message' => $e instanceof RuntimeException ? $e->getMessage() :
 					'Internal Server Error'
 			];
 		}

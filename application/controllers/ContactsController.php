@@ -34,7 +34,7 @@ class ContactsController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-	public function invitesAction() 
+	public function invitesAction()
 	{
 		$user = Application_Model_User::getAuth();
 
@@ -156,7 +156,7 @@ class ContactsController extends Zend_Controller_Action
 	/**
 	 * Ajax check facebook user status action.
 	 */
-	public function checkfbstatusAction() 
+	public function checkfbstatusAction()
 	{
 		try
 		{
@@ -227,7 +227,7 @@ class ContactsController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-	public function inviteAction() 
+	public function inviteAction()
 	{
 		try
 		{
@@ -285,7 +285,7 @@ class ContactsController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-	public function followAction() 
+	public function followAction()
 	{
 		try
 		{
@@ -357,8 +357,6 @@ class ContactsController extends Zend_Controller_Action
 
 	/**
 	 * Friends list action.
-	 *
-	 * @return void
 	 */
 	public function friendsListAction()
 	{
@@ -366,77 +364,64 @@ class ContactsController extends Zend_Controller_Action
 
 		if ($user == null)
 		{
+			$this->_helper->flashMessenger('Please log in to access this page.');
 			$this->_redirect('/');
 		}
 
-		$settings = Application_Model_Setting::getInstance();
+		$this->view->layout()->setLayout('map');
+		$this->view->viewPage = 'community';
+		$this->view->searchForm = new Application_Form_PostSearch;
+		$this->view->user = $user;
+
+		$this->view->appendScript = ['opts=' . json_encode([
+			'lat' => $user['latitude'],
+			'lng' => $user['longitude'],
+			'filter' => 2
+		]) . ',user=' . json_encode([
+			'name' => $user['Name'],
+			'image' => $this->view->baseUrl(
+				Application_Model_User::getThumb($user, '55x55')),
+			'location' => [$user['latitude'], $user['longitude']],
+			'is_admin' => $user['is_admin']
+		]) . ',timizoneList=' . json_encode(My_CommonUtils::$timezone)];
+
+
 		$friendModel = new Application_Model_Friends;
-		$friends = $friendModel->findAllByUserId($user, [
-			'limit' => 15,
+		$this->view->friends = $friendModel->findAllByUserId($user, [
+			'limit' => 30,
 			'address' => true
 		]);
 
-		$posts = (new Application_Model_News)->search([
+		$postModel = new Application_Model_News;
+		$posts = $postModel->search([
 			'latitude' => $user['latitude'],
 			'longitude' => $user['longitude'],
-			'radius' => 0.8,
+			'radius' => 1.5,
 			'filter' => 2,
 			'start' => 0,
 			'limit' => 15
 		], $user);
 
-		$this->view->headLink()->appendStylesheet(My_Layout::assetUrl(
-			'bower_components/jquery-loadmask/src/jquery.loadmask.css', $settings));
-
-		$javaScript = 'var profileData=' . json_encode([
-			'address' => Application_Model_Address::format($user),
-			'latitude' => $user['latitude'],
-			'longitude' => $user['longitude']
-		]) . ',' .
-		'timizoneList=' . json_encode(My_CommonUtils::$timezone);
-
-		if ($posts->count() > 0)
+		if ($posts->count())
 		{
-			$postData = [];
+			$data = [];
 
 			foreach ($posts as $post)
 			{
-				$postData[] = [
-					$post['id'],
-					$post['latitude'],
-					$post['longitude'],
-					My_StringHelper::stringLimit($post['news'], 100, '...'),
-					$post['owner_name'],
-					Application_Model_User::getThumb($post, '55x55',
-						['alias' => 'owner_']),
+				$data[$post['id']] = [
+					'user_id' => $post['user_id'],
+					'cid' => $post['category_id'],
+					'lat' => $post['latitude'],
+					'lng' => $post['longitude']
 				];
 			}
 
-			$javaScript .= ',posts=' . json_encode($postData);
+			$this->view->appendScript[] = 'postData=' . json_encode($data);
 		}
-
-		$this->view->headScript()
-			->appendScript($javaScript . ';')
-			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
-				$settings['google_mapsKey'])
-			->appendFile(My_Layout::assetUrl(
-				'bower_components/jquery-loadmask/src/jquery.loadmask.js', $settings))
-			->appendFile(My_Layout::assetUrl(
-				'www/scripts/friendlist.js', $settings));
-
-		$this->view->homePageExist = true;
-		$this->view->changeLocation = true;
-		$this->view->displayMapSlider = true;
-		$this->view->displayMapZoom = true;
-
-		$this->view->user = $user;
-		$this->view->friends = $friends;
 	}
 
 	/**
 	 * Ajax load friends list action.
-	 *
-	 * @return void
 	 */
 	public function friendsListLoadAction()
 	{
@@ -449,16 +434,19 @@ class ContactsController extends Zend_Controller_Action
 				throw new RuntimeException('You are not authorized to access this action');
 			}
 
-			$offset = $this->_request->getPost('offset', 0);
+			$start = $this->_request->getPost('start', 0);
 
-			if (!v::intVal()->validate($offset))
+			if (!v::intVal()->validate($start))
 			{
-				throw new RuntimeException('Incorrect offset value: ' .
-					var_export($offset, true));
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
 			}
 
-			$friends = (new Application_Model_Friends)->findAllByUserId($user,
-				['limit' => 15, 'offset' => $offset, 'address' => true]);
+			$friends = (new Application_Model_Friends)->findAllByUserId($user, [
+				'limit' => 30,
+				'offset' => $start,
+				'address' => true
+			]);
 
 			$response = ['status' => 1];
 
@@ -491,7 +479,7 @@ class ContactsController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-	public function friendAction() 
+	public function friendAction()
 	{
 		try
 		{
@@ -671,7 +659,7 @@ class ContactsController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-	public function requestsAction() 
+	public function requestsAction()
 	{
 		try
 		{
@@ -776,78 +764,15 @@ class ContactsController extends Zend_Controller_Action
 
 			$users = $userModel->fetchAll($query);
 
-			if (count($users))
+			if ($users->count())
 			{
-				foreach ($users as $_user)
-				{
-					$response['result'][] = [
-						'id' => $_user->id,
-						'name' => $_user->Name,
-						'image' => $this->view->baseUrl(
-							Application_Model_User::getThumb($_user, '55x55')),
-						'address' => Application_Model_Address::format($_user)
-					];
-				}
-			}
-		}
-		catch (Exception $e)
-		{
-			$response = [
-				'status' => 0,
-				'message' => $e instanceof RuntimeException ?
-					$e->getMessage() : 'Internal Server Error'
-			];
-		}
-
-		$this->_helper->json($response);
-	}
-
-	/**
-	 * Load friend news action.
-	 *
-	 * @return	void
-	 */
-	public function loadFriendNewsAction()
-	{
-		try
-		{
-			$user = Application_Model_User::getAuth();
-
-			if ($user == null)
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
-			$searchForm = new Application_Form_PostSearch;
-			$searchParameters = [
-				'latitude' => $this->_request->getPost('latitude'),
-				'longitude' => $this->_request->getPost('longitude'),
-				'radius' => $this->_request->getPost('radius', 1.5),
-				'keywords' => $this->_request->getPost('keywords'),
-			];
-
-			if (!$searchForm->isValid($searchParameters))
-			{
-				throw new RuntimeException(My_Form::outputErrors($searchForm));
-			}
-
-			$result = (new Application_Model_News)->search($searchParameters +
-				['filter' => 2, 'start' => 0, 'limit' => 15], $user);
-
-			$response = ['status' => 1];
-
-			if ($result->count() > 0)
-			{
-				foreach ($result as $post)
+				foreach ($users as $user)
 				{
 					$response['data'][] = [
-						$post['id'],
-						$post['latitude'],
-						$post['longitude'],
-						My_StringHelper::stringLimit($post['news'], 100, '...'),
-						$post['owner_name'],
-						Application_Model_User::getThumb($post, '55x55',
-							['alias' => 'owner_'])
+						'id' => $user['id'],
+						'name' => $user['Name'],
+						'html' => $this->view->partial('contacts/_user-autocomplete.html',
+							['user' => $user])
 					];
 				}
 			}
@@ -856,95 +781,9 @@ class ContactsController extends Zend_Controller_Action
 		{
 			$response = [
 				'status' => 0,
-				'message' => $e instanceof RuntimeException ?
+				'message' => true || $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			];
-		}
-
-		$this->_helper->json($response);
-	}
-
-	/**
-	 * Change user address news action.
-	 *
-	 * @return void
-	 */
-	public function changeAddressAction()
-	{
-		try
-		{
-			$user = Application_Model_User::getAuth();
-
-			if ($user == null)
-			{
-				throw new RuntimeException('You are not authorized to access this action');
-			}
-
-			$keywords = $this->_request->getPost('keywords');
-
-			if (!v::optional(v::stringType())->validate($keywords))
-			{
-				throw new RuntimeException('Incorrect keywords value: ' .
-					var_export($keywords, true));
-			}
-
-			$radius = $this->_request->getPost('radius', 1.5);
-
-			if (!v::floatVal()->min(0.25)->max(2)->validate($radius))
-			{
-				throw new RuntimeException('Incorrect radius value: ' .
-					var_export($radius, true));
-			}
-
-			$addressForm = new Application_Form_Address;
-
-			if (!$addressForm->isValid($this->_request->getPost()))
-			{
-				throw new RuntimeException(My_Form::outputErrors($addressForm));
-			}
-
-			$addressData = $addressForm->getValues();
-
-			(new Application_Model_Address)->update($addressData,
-				'id=' . $user['address_id']);
-
-			Application_Model_User::cleanUserCache($user);
-
-			$posts = (new Application_Model_News)->search([
-				'latitude' => $addressData['latitude'],
-				'longitude' => $addressData['longitude'],
-				'radius' => $radius,
-				'keywords' => $keywords,
-				'filter' => 2,
-				'start' => 0,
-				'limit' => 15
-			], $user);
-
-			$response = ['status' => 1];
-
-			if ($posts->count())
-			{
-				foreach ($posts as $post)
-				{
-					$response['posts'][] = [
-						$post['id'],
-						$post['latitude'],
-						$post['longitude'],
-						My_StringHelper::stringLimit($post['news'], 100, '...'),
-						$post['owner_name'],
-						Application_Model_User::getThumb($post, '55x55',
-							['alias' => 'owner_']),
-					];
-				}
-			}
-		}
-		catch (Exception $e)
-		{
-			$response = array(
-				'status' => 0,
-				'message' => $e instanceof RuntimeException ? $e->getMessage() :
-					'Internal Server Error'
-			);
 		}
 
 		$this->_helper->json($response);

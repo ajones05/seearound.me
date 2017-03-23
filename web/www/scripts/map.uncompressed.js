@@ -14,7 +14,7 @@ defaultMinZoom=13,
 defaultMaxZoom=15,
 defaultZoom=viewPage=='post'?15:14,
 renderRadius=opts.radius?opts.radius:1.5,
-postLimit=15,
+postLimit=viewPage =='community'?30:15,
 groupDistance=0.018939,
 disableScroll=false,
 markerClick=false,
@@ -151,6 +151,69 @@ require(['jquery','common'], function(){
 				e.preventDefault();
 				e.stopPropagation();
 				guestAction();
+			});
+		}
+
+		if (viewPage=='community'){
+			if ($('.posts .post').size()>=postLimit){
+				postList_scrollHandler(true);
+			}
+			$('#peopleSearch').submit(function(e){
+				e.preventDefault();
+			});
+			$('#peopleSearch [name=keywords]').autocomplete({
+				minLength: 1,
+				source: function (request, callback){
+					ajaxJson({
+						url:baseUrl+'contacts/search',
+						data:{keywords:request.term},
+						done: function(response){
+							callback(response.data);
+						}
+					});
+				},
+				focus: function (event, ui){
+					$(event.target).val(ui.item.name);
+					return false;
+				},
+				select: function (event, ui){
+					$(event.target).val(ui.item.name).attr('disabled',true);
+					window.location.href=baseUrl+'profile/'+ui.item.id;
+					return false;
+				}
+			}).data('ui-autocomplete')._renderItem=function(ul,item){
+				return $(item.html).data('item.autocomplete',item).appendTo(ul);
+			};
+			$('.posts').on('click','.post-comment__delete',function(){
+				var self=$(this);
+
+				if (self.hasClass('disabled')){
+					return;
+				}
+
+				var userCnt=$(this).closest('.post'),
+					name=$('.post-coment-user-name',userCnt).text();
+				if (!confirm('Are you sure you want to unfollow '+name+'?')){
+					return;
+				}
+
+				self.addClass('disabled');
+
+				ajaxJson({
+					url: baseUrl + 'contacts/friend',
+					data: {
+						action: 'reject',
+						user: userCnt.attr('data-id')
+					},
+					done: function(response){
+						userCnt.remove();
+						postList_reset();
+						postList_load();
+					}
+				});
+			});
+			$('.posts').on('click','.msg',function(){
+				userMessageDialog($(this).closest('.post').attr('data-id'));
 			});
 		}
 
@@ -450,7 +513,9 @@ function initMap(){
 				$('.postSearch').submit(function(e){
 					e.preventDefault();
 					opts.keywords=$(this).find('[name=keywords]').val();
-					opts.filter=$(this).find('[name=filter]').val();
+					if (viewPage!='community'){
+						opts.filter=$(this).find('[name=filter]').val();
+					}
 					opts.category_id=[];
 					$(this).find('[name=category_id\\[\\]] [selected]').each(function(){
 						opts.category_id.push($(this).val());
@@ -883,7 +948,7 @@ function postSearch_submit(form){
 
 	$('.search', form).remove();
 
-	if (viewPage=='posts'||viewPage=='profile'){
+	if (viewPage=='posts'||viewPage=='profile'||viewPage=='community'){
 		$('.keywords img', form).remove();
 		postSearch_clearButton(form);
 	}
@@ -1617,7 +1682,7 @@ function postList_reset(){
 	postMarkers={};
 	postMarkersCluster={};
 
-	if (viewPage!='profile'){
+	if (viewPage!='profile' && viewPage!='community'){
 		$('.posts-container .posts').html('');
 	}
 }
@@ -1643,6 +1708,10 @@ function postList_load(start){
 		}).get();
 	}
 
+	if (viewPage == 'community'){
+		data.nohtml=1;
+	}
+
 	loadXhr = ajaxJson({
 		url: baseUrl+'post/load',
 		data: data,
@@ -1659,20 +1728,26 @@ function postList_load(start){
 				return true;
 			}
 
-			if (response.empty){
-				$('.posts-container .posts').html(response.empty);
-				return true;
+			if (viewPage != 'community'){
+				if (response.empty){
+					$('.posts-container .posts').html(response.empty);
+					return true;
+				}
 			}
 
 			for (var i in response.data){
 				var post=response.data[i];
 				postData[post.id]=post;
-				$('.posts-container .posts').append(post.html);
+				if (viewPage != 'community'){
+					$('.posts-container .posts').append(post.html);
+				}
 				postItem_render(post.id);
 			}
 
-			if (Object.size(response.data) >= postLimit){
-				postList_scrollHandler(true);
+			if (viewPage != 'community'){
+				if (Object.size(response.data) >= postLimit){
+					postList_scrollHandler(true);
+				}
 			}
 		}
 	})
@@ -1696,8 +1771,10 @@ function postTooltip_content(position, event, ui, start){
 			data.user_id=profile.id;
 		} else {
 			data.filter=opts.filter;
-			data.point=opts.point;
-			data.readmore=1;
+			if (viewPage != 'community'){
+				data.point=opts.point;
+				data.readmore=1;
+			}
 		}
 		url=baseUrl+'post/tooltip';
 		postTooltip = true;
@@ -1772,8 +1849,11 @@ function postTooltip_render(content, position, event, ui){
 }
 
 function postItem_render(id){
-	postData[id].marker=postItem_marker(id,[postData[id].lat,postData[id].lng]),
-		postContainer=$('.post[data-id="'+id+'"]');
+	postData[id].marker=postItem_marker(id,[postData[id].lat,postData[id].lng]);
+	if (viewPage == 'community'){
+		return;
+	}
+	var postContainer=$('.post[data-id="'+id+'"]');
 	postItem_renderContent(id, postContainer);
 	postContainer.bind({
 		mouseenter: function(){
@@ -1884,11 +1964,20 @@ function postList_scrollHandler(scroll){
 		}
 
 		var scrollTop = $(this).scrollTop()+$(this).height(),
-			scrollHeight = isTouch ? this.scrollHeight : $(document).height();
+			scrollHeight = isTouch ? this.scrollHeight : $(document).height(),
+			maxHeight=$(window).height();
 
-		if ((scrollHeight-scrollTop) < $(window).height()*3){
+		if (viewPage != 'community'){
+			maxHeight *= 3;
+		}
+
+		if ((scrollHeight-scrollTop) < maxHeight){
 			$(this).unbind('scroll.load');
-			postList_load(Object.size(postData));
+			if (viewPage =='community'){
+				community_load($('.posts .post').size());
+			} else {
+				postList_load(Object.size(postData));
+			}
 		}
 
 	});
@@ -2286,4 +2375,19 @@ function closeEditDlg(dlg,id){
 	$('body').css({overflow: 'visible'});
 	$('.ui-widget-overlay.ui-front').remove();
 	$('.post[data-id="'+id+'"] .edit').removeClass('disabled');
+}
+function community_load(start){
+	start = start || 0;
+	ajaxJson({
+		url: baseUrl+'contacts/friends-list-load',
+		data: {start:start || 0},
+		done: function(response){
+			for (var i in response.data){
+				$('.posts-container .posts').append(response.data[i]);
+			}
+			if (Object.size(response.data) >= postLimit){
+				postList_scrollHandler(true);
+			}
+		}
+	})
 }
