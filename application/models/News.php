@@ -226,6 +226,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					' AND f1.status=1 AND news.user_id=f1.receiver_id)', '');
 				$query->joinLeft(['f2' => 'friends'], '(f2.receiver_id=' . $user['id'] .
 					' AND f2.status=1 AND news.user_id=f2.sender_id)', '');
+				$query->where('f1.id IS NOT NULL OR f2.id IS NOT NULL');
 				break;
 			// Most recent
 			case '3':

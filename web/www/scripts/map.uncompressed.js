@@ -161,29 +161,31 @@ require(['jquery','common'], function(){
 			$('#peopleSearch').submit(function(e){
 				e.preventDefault();
 			});
-			$('#peopleSearch [name=keywords]').autocomplete({
-				minLength: 1,
-				source: function (request, callback){
-					ajaxJson({
-						url:baseUrl+'contacts/search',
-						data:{keywords:request.term},
-						done: function(response){
-							callback(response.data);
-						}
-					});
-				},
-				focus: function (event, ui){
-					$(event.target).val(ui.item.name);
-					return false;
-				},
-				select: function (event, ui){
-					$(event.target).val(ui.item.name).attr('disabled',true);
-					window.location.href=baseUrl+'profile/'+ui.item.id;
-					return false;
-				}
-			}).data('ui-autocomplete')._renderItem=function(ul,item){
-				return $(item.html).data('item.autocomplete',item).appendTo(ul);
-			};
+			require(['jquery-ui'], function(){
+				$('#peopleSearch [name=keywords]').autocomplete({
+					minLength: 1,
+					source: function (request, callback){
+						ajaxJson({
+							url:baseUrl+'contacts/search',
+							data:{keywords:request.term},
+							done: function(response){
+								callback(response.data);
+							}
+						});
+					},
+					focus: function (event, ui){
+						$(event.target).val(ui.item.name);
+						return false;
+					},
+					select: function (event, ui){
+						$(event.target).val(ui.item.name).attr('disabled',true);
+						window.location.href=baseUrl+'profile/'+ui.item.id;
+						return false;
+					}
+				}).data('ui-autocomplete')._renderItem=function(ul,item){
+					return $(item.html).data('item.autocomplete',item).appendTo(ul);
+				};
+			});
 			$('.posts').on('click','.post-comment__delete',function(){
 				var self=$(this);
 
@@ -604,7 +606,10 @@ function initMap(){
 								return true;
 							}
 
-							$('html, body').animate({scrollTop:0},0);
+							if (viewPage!='community'){
+								$('html, body').animate({scrollTop:0},0);
+							}
+
 							map.setOptions({draggable: false, zoomControl: false});
 
 							locationTimezone(position,function(timezone){
@@ -628,8 +633,10 @@ function initMap(){
 									data = $.extend(data, parsePlaceAddress(place));
 								}
 
-								$('html, body').animate({scrollTop: 0}, 0);
-								$('.posts-container .posts > .empty').remove();
+								if (viewPage!='community'){
+									$('html, body').animate({scrollTop: 0}, 0);
+									$('.posts-container .posts > .empty').remove();
+								}
 
 								ajaxJson({
 									url: baseUrl+'post/change-user-location',
@@ -658,7 +665,9 @@ function initMap(){
 											if (response.data){
 												for (var i in response.data){
 													var row=response.data[i];
-													$('.posts-container .posts').append(row.html);
+													if (viewPage!='community'){
+														$('.posts-container .posts').append(row.html);
+													}
 													postData[row.id]=row;
 													postItem_render(row.id);
 												}
@@ -1664,7 +1673,9 @@ function newPost_save(dlg,postId){
 }
 
 function postList_change(){
-	$('html, body').animate({scrollTop: '0px'}, 300);
+	if (viewPage!='community'){
+		$('html, body').animate({scrollTop: '0px'}, 300);
+	}
 	postList_reset();
 	postList_load();
 }
