@@ -66,12 +66,12 @@ class Admin_PostController extends Zend_Controller_Action
 				->from(['post' => 'news'], ['count' => 'count(post.id)'])
 				->where('post.isdeleted=0');
 
-			if ($emptyCategory != null)
+			if ($emptyCategory == 1)
 			{
 				$query->where('post.category_id IS NULL');
 			}
 
-			if ($keywords != null)
+			if (trim($keywords) !== '')
 			{
 				$query->where('post.news LIKE ?', '%' . $keywords . '%');
 			}
@@ -146,7 +146,7 @@ class Admin_PostController extends Zend_Controller_Action
 			]);
 		}
 	}
-	
+
 	/**
 	 * Update post category action.
 	 */
