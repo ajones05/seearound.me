@@ -53,6 +53,7 @@ class ContactsController extends Zend_Controller_Action
 		$userModel = new Application_Model_User;
 		$settings = Application_Model_Setting::getInstance();
 		$invite_success = 0;
+		$sendInvites = 0;
 
 		if ($this->_request->isPost())
 		{
@@ -65,7 +66,6 @@ class ContactsController extends Zend_Controller_Action
 			}
 
 			$inviteModel = new Application_Model_Emailinvites;
-			$sendInvites = 0;
 			$sendEmails = [];
 
 			foreach (explode(',', $emails) as $email)
