@@ -1388,7 +1388,7 @@ class PostController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-    public function commentAction()
+	public function commentAction()
 	{
 		try
 		{
@@ -1423,8 +1423,10 @@ class PostController extends Zend_Controller_Action
 			$data = $form->getValues();
 			$data['comment'] = Application_Model_News::filterBody($data['comment']);
 
-			$comment_id = (new Application_Model_Comments)->insert($data+[
-				'user_id' => $user['id'],
+			$commentModel = new Application_Model_Comments;
+			$commentUser = $commentModel->getCommentUser($user);
+			$comment_id = $commentModel->insert($data+[
+				'user_id' => $commentUser['id'],
 				'news_id' => $post_id,
 				'created_at' => new Zend_Db_Expr('NOW()'),
 				'updated_at' => new Zend_Db_Expr('NOW()')
@@ -1434,23 +1436,23 @@ class PostController extends Zend_Controller_Action
 				'comment' => $post['comment']+1
 			], 'id=' . $post_id);
 
-			$updateUser = ['comment' => $user['comment']+1];
+			$updateUser = ['comment' => $commentUser['comment']+1];
 
-			if ($post['user_id'] != $user['id'])
+			if ($post['user_id'] != $commentUser['id'])
 			{
-				$updateUser['comment_other'] = $user['comment_other']+1;
+				$updateUser['comment_other'] = $commentUser['comment_other']+1;
 			}
 
 			(new Application_Model_User)
-				->updateWithCache($updateUser, $user);
+				->updateWithCache($updateUser, $commentUser);
 
 			$response = [
 				'status' => 1,
 				'html' => My_ViewHelper::render('post/_comment', [
-					'user' => $user,
+					'user' => $commentUser,
 					'comment' => [
 						'id' => $comment_id,
-						'user_id' => $user['id'],
+						'user_id' => $commentUser['id'],
 						'comment' => $data['comment']
 					],
 					'post' => $post,

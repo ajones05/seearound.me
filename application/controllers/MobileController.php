@@ -2339,8 +2339,10 @@ class MobileController extends Zend_Controller_Action
 			$data = $commentForm->getValues();
 			$data['comment'] = Application_Model_News::filterBody($data['comment']);
 
-			$comment_id = (new Application_Model_Comments)->insert($data+[
-				'user_id' => $user['id'],
+			$commentModel = new Application_Model_Comments;
+			$commentUser = $commentModel->getCommentUser($user);
+			$comment_id = $commentModel->insert($data+[
+				'user_id' => $commentUser['id'],
 				'news_id' => $id,
 				'created_at' => new Zend_Db_Expr('NOW()'),
 				'updated_at' => new Zend_Db_Expr('NOW()')
@@ -2352,15 +2354,15 @@ class MobileController extends Zend_Controller_Action
 				'comment' => $postComments
 			], 'id=' . $id);
 
-			$updateUser = ['comment' => $user['comment']+1];
+			$updateUser = ['comment' => $commentUser['comment']+1];
 
-			if ($post['user_id'] != $user['id'])
+			if ($post['user_id'] != $commentUser['id'])
 			{
-				$updateUser['comment_other'] = $user['comment_other']+1;
+				$updateUser['comment_other'] = $commentUser['comment_other']+1;
 			}
 
 			(new Application_Model_User)
-				->updateWithCache($updateUser, $user);
+				->updateWithCache($updateUser, $commentUser);
 
 			$response = [
 				'status' => 'SUCCESS',
@@ -2369,12 +2371,12 @@ class MobileController extends Zend_Controller_Action
 					'id' => $comment_id,
 					'news_id' => $id,
 					'comment' => $data['comment'],
-					'user_name' => $user['Name'],
-					'user_id' => $user['id'],
+					'user_name' => $commentUser['Name'],
+					'user_id' => $commentUser['id'],
 					'Profile_image' => $this->view->serverUrl() . $this->view->baseUrl(
-						Application_Model_User::getThumb($user, '320x320')),
+						Application_Model_User::getThumb($commentUser, '320x320')),
 					'commTime' => (new DateTime)
-						->setTimezone(Application_Model_User::getTimezone($user))
+						->setTimezone(Application_Model_User::getTimezone($commentUser))
 						->format(My_Time::SQL),
 					'commTimeAgo' => 'Just now',
 					'totalComments' => $postComments

@@ -198,4 +198,46 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 		}
 		return $this->fetchRow($query);
 	}
+
+	/**
+	 * Returns post comment user.
+	 *
+	 * @param array|Zend_Db_Table_Row_Abstract $user The current user.
+	 * @return array|Zend_Db_Table_Row_Abstract
+	 */
+	public static function getCommentUser($user)
+	{
+		$settings =  Application_Model_Setting::getInstance();
+
+		if (!empty($settings['comment_randomUserEnable']))
+		{
+			$forUsers = array_filter(explode(',',
+				My_ArrayHelper::getProp($settings, 'comment_randomForUsers')));
+
+			if (in_array($user['id'], $forUsers))
+			{
+				$fromUsers = array_filter(explode(',',
+					My_ArrayHelper::getProp($settings, 'comment_randomFromUsers')));
+
+				if ($fromUsers != null)
+				{
+					do
+					{
+						$user_id = $fromUsers[mt_rand(0, count($fromUsers)-1)];
+						$randomUser = Application_Model_User::findById($user_id);
+
+						if ($randomUser != null)
+						{
+							return $randomUser;
+						}
+
+						$fromUsers = array_values(array_diff($fromUsers, [$user_id]));
+					}
+					while (count($fromUsers) > 0);
+				}
+			}
+		}
+
+		return $user;
+	}
 }
