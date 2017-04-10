@@ -60,4 +60,7 @@ INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description
 	(NOW(), NOW(), 'email_inviteBody', '', 'Invite user email body'),
 	(NOW(), NOW(), 'geo_lat', '', 'Default geolocation latitude'),
 	(NOW(), NOW(), 'geo_lng', '', 'Default geolocation longitude'),
-	(NOW(), NOW(), 'geo_address', '', 'Default geolocation address');
+	(NOW(), NOW(), 'geo_address', '', 'Default geolocation address'),
+	(NOW(), NOW(), 'comment_randomUserEnable', '', 'Enable random commenting'),
+	(NOW(), NOW(), 'comment_randomForUsers', '', 'Accounts for random commenting'),
+	(NOW(), NOW(), 'comment_randomFromUsers', '', 'Accounts from random commenting');
