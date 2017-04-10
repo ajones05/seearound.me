@@ -697,4 +697,46 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			'/([&?]utm_\w+=\w+|#link_time=\d+)/',
 			'', $body);
 	}
+
+	/**
+	 * Returns post user.
+	 *
+	 * @param array|Zend_Db_Table_Row_Abstract $user The current user.
+	 * @return array|Zend_Db_Table_Row_Abstract
+	 */
+	public static function getPostUser($user)
+	{
+		$settings =  Application_Model_Setting::getInstance();
+
+		if (!empty($settings['post_randomUserEnable']))
+		{
+			$forUsers = array_filter(explode(',',
+				My_ArrayHelper::getProp($settings, 'post_randomForUsers')));
+
+			if (in_array($user['id'], $forUsers))
+			{
+				$fromUsers = array_filter(explode(',',
+					My_ArrayHelper::getProp($settings, 'post_randomFromUsers')));
+
+				if ($fromUsers != null)
+				{
+					do
+					{
+						$user_id = $fromUsers[mt_rand(0, count($fromUsers)-1)];
+						$randomUser = Application_Model_User::findById($user_id);
+
+						if ($randomUser != null)
+						{
+							return $randomUser;
+						}
+
+						$fromUsers = array_values(array_diff($fromUsers, [$user_id]));
+					}
+					while (count($fromUsers) > 0);
+				}
+			}
+		}
+
+		return $user;
+	}
 }

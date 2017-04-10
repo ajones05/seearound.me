@@ -63,4 +63,7 @@ INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description
 	(NOW(), NOW(), 'geo_address', '', 'Default geolocation address'),
 	(NOW(), NOW(), 'comment_randomUserEnable', '', 'Enable random commenting'),
 	(NOW(), NOW(), 'comment_randomForUsers', '', 'Accounts for random commenting'),
-	(NOW(), NOW(), 'comment_randomFromUsers', '', 'Accounts from random commenting');
+	(NOW(), NOW(), 'comment_randomFromUsers', '', 'Accounts from random commenting'),
+	(NOW(), NOW(), 'post_randomUserEnable', '', 'Enable random user for posts'),
+	(NOW(), NOW(), 'post_randomForUsers', '', 'Users list for random post'),
+	(NOW(), NOW(), 'post_randomFromUsers', '', 'Users list from random post');

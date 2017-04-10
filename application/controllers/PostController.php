@@ -694,7 +694,8 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException(My_Form::outputErrors($postForm));
 			}
 
-			$postUser = $user_id ? $customUser : $user;
+			$postUser = $user_id != null ? $customUser :
+				($isNew ? $postModel->getPostUser($user) : $user);
 
 			$postModel->save($postForm, $postUser, $address,
 				$image, $thumbs, $link, $post);

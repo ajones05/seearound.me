@@ -1517,12 +1517,13 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			$postModel = new Application_Model_News;
-			$postModel->save($postForm, $user,
+			$postUser = $postModel->getPostUser($user);
+			$postModel->save($postForm, $postUser,
 				$address, $image, $thumbs, $link, $post);
 
 			$response = [
 				'status' => 'SUCCESS',
-				'userid' => $user['id'],
+				'userid' => $postUser['id'],
 				'post_id' => $post['id'],
 				'category_id' => $post['category_id'],
 				'message' => $post['news']
