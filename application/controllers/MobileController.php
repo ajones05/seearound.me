@@ -1410,7 +1410,7 @@ class MobileController extends Zend_Controller_Action
 			}
 
 			if (!Application_Model_News::checkId($post_id, $post,
-						['link'=>true,'user'=>$user,'userVote'=>true]))
+						['link'=>true,'auth'=>$user,'userVote'=>true]))
 			{
 				throw new RuntimeException('Incorrect post ID: ' .
 					var_export($post_id, true));
@@ -2007,8 +2007,11 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user,
-					['link'=>true,'user'=>$user,'userVote'=>true]);
+				->search($searchParameters + ['limit' => 15], [
+					'auth' => $user,
+					'link' => true,
+					'userVote' => true
+				]);
 
 			if ($result->count())
 			{
@@ -2120,17 +2123,21 @@ class MobileController extends Zend_Controller_Action
 					var_export($userId, true));
 			}
 
+			$queryOptions = [
+				'auth' => $user,
+				'link' => true,
+				'userVote' => true
+			];
+
 			if ($userId != null)
 			{
 				if (!Application_Model_User::checkId($userId, $filterUser))
 				{
 					throw new RuntimeException('Incorrect user ID: ' .
 						var_export($userId, true));
+
 				}
-			}
-			else
-			{
-				$filterUser = $user;
+				$queryOptions['user'] = $filterUser;
 			}
 
 			$searchForm = new Application_Form_PostSearch;
@@ -2155,8 +2162,7 @@ class MobileController extends Zend_Controller_Action
 			];
 
 			$result = (new Application_Model_News)
-				->search($searchParameters + ['limit' => 15], $user,
-					['link'=>true,'user'=>$filterUser,'userVote'=>true]);
+				->search($searchParameters + ['limit' => 15], $queryOptions);
 
 			if ($result->count())
 			{

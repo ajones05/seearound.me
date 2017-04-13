@@ -400,7 +400,7 @@ class ContactsController extends Zend_Controller_Action
 			'filter' => 2,
 			'start' => 0,
 			'limit' => 15
-		], $user);
+		], ['auth' => $user]);
 
 		if ($posts->count())
 		{

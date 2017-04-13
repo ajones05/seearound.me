@@ -215,6 +215,11 @@ class HomeController extends Zend_Controller_Action
 		}
 
 		$auth_id = My_ArrayHelper::getProp($user, 'id');
+		$queryOptions = [
+			'auth' => $user,
+			'link' => ['thumbs'=>[[448,320]]],
+			'thumbs' => [[448,320],[960,960]]
+		];
 
 		if ($user_id != null && $user_id !== $auth_id)
 		{
@@ -225,6 +230,8 @@ class HomeController extends Zend_Controller_Action
 				throw new RuntimeException('Incorrect user ID: ' .
 					var_export($user_id, true));
 			}
+
+			$queryOptions['user'] = $profile;
 		}
 		else
 		{
@@ -284,10 +291,7 @@ class HomeController extends Zend_Controller_Action
 			'limit' => 15,
 			'radius' => 1.5,
 			'filter' => 0
-		], ['id' => $profile['id']], [
-			'link' => ['thumbs'=>[[448,320]]],
-			'thumbs' => [[448,320],[960,960]]
-		]);
+		], $queryOptions);
 
 		if ($posts->count())
 		{

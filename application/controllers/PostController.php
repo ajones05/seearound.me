@@ -40,7 +40,7 @@ class PostController extends Zend_Controller_Action
 
 		if ($user != null)
 		{
-			$postOptions['user'] = $user;
+			$postOptions['auth'] = $user;
 		}
 
 		if (!Application_Model_News::checkId($id, $post, $postOptions))
@@ -213,7 +213,8 @@ class PostController extends Zend_Controller_Action
 			$searchParameters,
 			['limit' => 15, 'radius' => $point ? 0.03 :
 				My_ArrayHelper::getProp($searchParameters, 'radius', 1.5)]
-		), $user, [
+		), [
+			'auth' => $user,
 			'link' => ['thumbs'=>[[448,320]]],
 			'userVote' => true,
 			'thumbs' => [[448,320],[960,960]]
@@ -348,6 +349,13 @@ class PostController extends Zend_Controller_Action
 					var_export($profile_id, true));
 			}
 
+			$queryOptions = [
+				'auth' => $user,
+				'link' => ['thumbs'=>[[448,320]]],
+				'userVote' => $user !== null ? true : false,
+				'thumbs' => [[448,320],[960,960]]
+			];
+
 			if ($profile_id != null)
 			{
 				$profile = Application_Model_User::findById($profile_id, true);
@@ -357,6 +365,8 @@ class PostController extends Zend_Controller_Action
 					throw new RuntimeException('Incorrect user ID: ' .
 						var_export($profile_id, true));
 				}
+
+				$queryOptions['user'] = $profile;
 			}
 			else
 			{
@@ -388,11 +398,7 @@ class PostController extends Zend_Controller_Action
 			$queryUser = $profile_id !== null ? $profile : $user;
 
 			$result = (new Application_Model_News)->search(
-				$searchParameters + ['limit' => 15], $queryUser, [
-				'link' => ['thumbs'=>[[448,320]]],
-				'userVote' => $user !== null ? true : false,
-				'thumbs' => [[448,320],[960,960]]
-			]);
+				$searchParameters + ['limit' => 15], $queryOptions);
 
 			$response = ['status' => 1];
 
@@ -550,11 +556,16 @@ class PostController extends Zend_Controller_Action
 				$this->view->readmore = $readmore;
 			}
 
-			$queryUser = $profile_id != null ? $profile : $user;
+			$queryOptions = ['auth' => $user];
+
+			if ($profile_id != null)
+			{
+				$queryOptions['user'] = $profile;
+			}
 
 			$model = new Application_Model_News;
 			$post = $model->fetchRow($model->searchQuery($searchParameters +
-				['radius' => 0.03], $queryUser)->limit(1, $start));
+				['radius' => 0.03], $queryOptions)->limit(1, $start));
 
 			if (!$post)
 			{
@@ -564,7 +575,7 @@ class PostController extends Zend_Controller_Action
 			}
 
 			$count = $model->fetchRow($model->searchQuery($searchParameters +
-				['radius' => 0.03], $queryUser, ['count' => true]))->count;
+				['radius' => 0.03], $queryOptions+['count' => true]))->count;
 
 			if ($start)
 			{
@@ -639,6 +650,7 @@ class PostController extends Zend_Controller_Action
 			$postModel = new Application_Model_News;
 
 			$postOpts = [
+				'auth' => $user,
 				'link' => ['thumbs'=>[[448,320]]],
 				'userVote' => true,
 				'thumbs' => [[448,320],[960,960]]
@@ -709,7 +721,7 @@ class PostController extends Zend_Controller_Action
 					$filter['exclude_id'][] = $post['id'];
 				}
 
-				$result = $postModel->search($filter, $user, $postOpts);
+				$result = $postModel->search($filter, $postOpts);
 
 				foreach ($result as $post)
 				{
@@ -1762,6 +1774,13 @@ class PostController extends Zend_Controller_Action
 					var_export($profile_id, true));
 			}
 
+			$queryOptions = [
+				'auth' => $user,
+				'link' => ['thumbs'=>[[448,320]]],
+				'userVote' => $user != null ? true : false,
+				'thumbs' => [[448,320],[960,960]]
+			];
+
 			if ($profile_id != null)
 			{
 				$profile = Application_Model_User::findById($profile_id, true);
@@ -1771,6 +1790,8 @@ class PostController extends Zend_Controller_Action
 					throw new RuntimeException('Incorrect user ID: ' .
 						var_export($profile_id, true));
 				}
+
+				$queryOptions['user'] = $profile;
 			}
 
 			$addressForm = new Application_Form_Address;
@@ -1803,15 +1824,9 @@ class PostController extends Zend_Controller_Action
 			Application_Model_User::cleanUserCache($user);
 
 			$response = ['status' => 1];
-			$queryUser = $profile_id !== null ? $profile : $user;
 
-			$result = (new Application_Model_News)->search([
-				'limit' => 15
-				] + $searchParameters, $queryUser, [
-				'link' => ['thumbs'=>[[448,320]]],
-				'userVote' => $user != null ? true : false,
-				'thumbs' => [[448,320],[960,960]]
-			]);
+			$result = (new Application_Model_News)->search(['limit' => 15] +
+				$searchParameters, $queryOptions);
 
 			foreach ($result as $post)
 			{

@@ -96,7 +96,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			'street_name', 'street_number', 'city', 'state', 'country', 'zip'];
 		$postFields = $isCount ? ['count' => 'COUNT(news.id)'] : ['news.*'];
 
-		if (!empty($options['user']))
+		if (!empty($options['auth']))
 		{
 			if (!$isCount && !empty($options['userBlockFl']))
 			{
@@ -142,14 +142,14 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			}
 		}
 
-		if (!empty($options['user']))
+		if (!empty($options['auth']))
 		{
 			if (!empty($options['userVote']))
 			{
 				$query->joinLeft(
 					['v' => 'votings'],
 					'(v.news_id=news.id AND v.active=1 AND ' .
-						'v.user_id=' . $options['user']['id'] . ')',
+						'v.user_id=' . $options['auth']['id'] . ')',
 					['user_vote' => 'vote']
 				);
 			}
@@ -159,7 +159,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 				$query->joinLeft([
 					'ub' => 'user_block'],
 					'(ub.block_user_id=news.user_id AND ub.user_id=' .
-						$options['user']['id'] . ')',
+						$options['auth']['id'] . ')',
 					''
 				);
 			}
@@ -177,15 +177,18 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * Returns search news query.
 	 *
 	 * @param	array $parameters
-	 * @param	mixed $user
 	 * @param	array $options
 	 * @return	Zend_Db_Table_Select
 	 */
-	public function searchQuery(array $parameters, $user, array $options = [])
+	public function searchQuery(array $parameters, array $options = [])
 	{
+		if (empty($options['user']))
+		{
+			$options['user'] = My_ArrayHelper::getProp($options, 'auth');
+		}
+
 		// TODO: refactoring
-		$query = $this->publicSelect($options+['user'=>$user])
-			->where('news.vote>-4');
+		$query = $this->publicSelect($options)->where('news.vote>-4');
 		$isCount = My_ArrayHelper::getProp($options, 'count', false);
 
 		if (trim(My_ArrayHelper::getProp($parameters, 'keywords')) !== '')
@@ -196,42 +199,45 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		$order = [];
 		$filter = My_ArrayHelper::getProp($parameters, 'filter');
 
-		switch ($filter)
+		if (!empty($options['user']))
 		{
-			// My posts
-			case '0':
-				$query->where('news.user_id=?', $user['id']);
-				break;
-			// My interests
-			case '1':
-				$interests = !empty($user['interest']) ?
-					explode(', ', $user['interest']) : null;
+			switch ($filter)
+			{
+				// My posts
+				case '0':
+					$query->where('news.user_id=?', $options['user']['id']);
+					break;
+				// My interests
+				case '1':
+					$interests = !empty($options['user']['interest']) ?
+						explode(', ', $options['user']['interest']) : null;
 
-				if ($interests != null)
-				{
-					$adapter = $this->getAdapter();
-
-					foreach ($interests as &$_interest)
+					if ($interests != null)
 					{
-						$_interest = 'news.news LIKE ' . $adapter->quote('%' . $_interest . '%');
-					}
+						$adapter = $this->getAdapter();
 
-					$query->where(implode(' OR ', $interests));
-				}
-				break;
-			// Following
-			case '2':
-				$query->where('news.user_id<>?', $user['id']);
-				$query->joinLeft(['f1' => 'friends'], '(f1.sender_id=' . $user['id'] .
-					' AND f1.status=1 AND news.user_id=f1.receiver_id)', '');
-				$query->joinLeft(['f2' => 'friends'], '(f2.receiver_id=' . $user['id'] .
-					' AND f2.status=1 AND news.user_id=f2.sender_id)', '');
-				$query->where('f1.id IS NOT NULL OR f2.id IS NOT NULL');
-				break;
-			// Most recent
-			case '3':
-				$order[] = 'created_date DESC';
-				break;
+						foreach ($interests as &$_interest)
+						{
+							$_interest = 'news.news LIKE ' . $adapter->quote('%' . $_interest . '%');
+						}
+
+						$query->where(implode(' OR ', $interests));
+					}
+					break;
+				// Following
+				case '2':
+					$query->where('news.user_id<>?', $options['user']['id']);
+					$query->joinLeft(['f1' => 'friends'], '(f1.sender_id=' . $options['user']['id'] .
+						' AND f1.status=1 AND news.user_id=f1.receiver_id)', '');
+					$query->joinLeft(['f2' => 'friends'], '(f2.receiver_id=' . $options['user']['id'] .
+						' AND f2.status=1 AND news.user_id=f2.sender_id)', '');
+					$query->where('f1.id IS NOT NULL OR f2.id IS NOT NULL');
+					break;
+				// Most recent
+				case '3':
+					$order[] = 'created_date DESC';
+					break;
+			}
 		}
 
 		if ($filter == 3)
@@ -283,13 +289,12 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * Search news by parameters.
 	 *
 	 * @param	array $parameters
-	 * @param	mixed $user
 	 * @param	array $options
 	 * @return	array
 	 */
-	public function search(array $parameters, $user, array $options=[])
+	public function search(array $parameters, array $options=[])
 	{
-		$query = $this->searchQuery($parameters, $user, $options);
+		$query = $this->searchQuery($parameters, $options);
 		$result = $this->fetchAll($query->limit($parameters['limit'],
 			My_ArrayHelper::getProp($parameters, 'start', 0)));
 
