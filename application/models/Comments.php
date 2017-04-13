@@ -211,13 +211,13 @@ class Application_Model_Comments extends Zend_Db_Table_Abstract
 
 		if (!empty($settings['comment_randomUserEnable']))
 		{
-			$forUsers = array_filter(explode(',',
-				My_ArrayHelper::getProp($settings, 'comment_randomForUsers')));
+			$forUsers = array_filter(array_map('trim', explode(',',
+				My_ArrayHelper::getProp($settings, 'comment_randomForUsers'))));
 
 			if (in_array($user['id'], $forUsers))
 			{
-				$fromUsers = array_filter(explode(',',
-					My_ArrayHelper::getProp($settings, 'comment_randomFromUsers')));
+				$fromUsers = array_filter(array_map('trim', explode(',',
+					My_ArrayHelper::getProp($settings, 'comment_randomFromUsers'))));
 
 				if ($fromUsers != null)
 				{

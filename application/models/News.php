@@ -710,13 +710,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 
 		if (!empty($settings['post_randomUserEnable']))
 		{
-			$forUsers = array_filter(explode(',',
-				My_ArrayHelper::getProp($settings, 'post_randomForUsers')));
+			$forUsers = array_filter(array_map('trim', explode(',',
+				My_ArrayHelper::getProp($settings, 'post_randomForUsers'))));
 
 			if (in_array($user['id'], $forUsers))
 			{
-				$fromUsers = array_filter(explode(',',
-					My_ArrayHelper::getProp($settings, 'post_randomFromUsers')));
+				$fromUsers = array_filter(array_map('trim', explode(',',
+					My_ArrayHelper::getProp($settings, 'post_randomFromUsers'))));
 
 				if ($fromUsers != null)
 				{
