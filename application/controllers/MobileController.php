@@ -917,7 +917,7 @@ class MobileController extends Zend_Controller_Action
 					'sender_id' => 'c.from_id',
 					'receiver_id' => 'c.to_id',
 					'cm1.body',
-					'cm1.created_at',
+					'created_at' => 'IFNULL(cm3.created_at,cm1.created_at)',
 					'is_read' => 'IFNULL(cm3.is_read,1)'
 				])
 				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
