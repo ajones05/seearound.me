@@ -1,7 +1,7 @@
 <?php
 $url = $this->opts['baseUrl'] . 'post/' . $this->post->id;
 
-$label = $this->users->count() == 1 ?
+$label = count($this->users) == 1 ?
 	$this->comments[0]['owner_name'] : 'Friends';
 
 $label .= ' has commented on ';

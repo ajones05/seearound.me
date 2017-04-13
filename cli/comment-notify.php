@@ -1,5 +1,5 @@
 <?php
-defined('ROOT_PATH') 
+defined('ROOT_PATH')
     || define('ROOT_PATH', dirname(dirname(__FILE__)));
 
 defined('ROOT_PATH_WEB') ||
@@ -60,18 +60,12 @@ do
 
 	foreach ($posts as $post)
 	{
-		$commentUsersQuery = $commentModel->publicSelect()
-			->where('c.notify=0 AND c.news_id=?', $post->id)
-			->group('c.user_id');
-		$commentUsers = $commentModel->fetchAll($commentUsersQuery);
-
 		$userStart = 0;
 		$userQuery = $userModel->select()->setIntegrityCheck(false)
 			->from(['u' => 'user_data'], 'u.*')
 			->joinLeft(['c' => 'comments'], 'u.id=c.user_id', '')
-			->where('((c.isdeleted =?', 0)
-			->where('c.news_id=?)', $post->id)
-			->orWhere('u.id=?)', $post->user_id)
+			->where('((c.isdeleted=0 AND c.news_id=?)', $post['id'])
+			->orWhere('u.id=?)', $post['user_id'])
 			->joinLeft(['cs' => 'comment_subscription'], '(cs.user_id=u.id AND '.
 				'(cs.post_id IS NULL OR cs.post_id=' . $post['id'] . '))', '')
 			->where('cs.id IS NULL')
@@ -104,7 +98,18 @@ do
 
 				if ($comments->count())
 				{
+					$commentUsers = [];
+
+					foreach ($comments as $comment)
+					{
+						if (!in_array($comment['user_id'], $commentUsers))
+						{
+							$commentUsers[] = $comment['user_id'];
+						}
+					}
+
 					$userIdEncoded = base64_encode($user['id']);
+
 					My_Email::send(
 						[$user->Name => $user->Email_id],
 						$user->id == $post->user_id ?
