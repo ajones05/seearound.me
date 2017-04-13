@@ -2111,6 +2111,28 @@ class MobileController extends Zend_Controller_Action
 		try
 		{
 			$user = $this->getUserByToken();
+
+			$userId = $this->_request->getPost('user_id');
+
+			if (!v::optional(v::intVal())->validate($userId))
+			{
+				throw new RuntimeException('Incorrect user ID value: ' .
+					var_export($userId, true));
+			}
+
+			if ($userId != null)
+			{
+				if (!Application_Model_User::checkId($userId, $filterUser))
+				{
+					throw new RuntimeException('Incorrect user ID: ' .
+						var_export($userId, true));
+				}
+			}
+			else
+			{
+				$filterUser = $user;
+			}
+
 			$searchForm = new Application_Form_PostSearch;
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
@@ -2134,12 +2156,11 @@ class MobileController extends Zend_Controller_Action
 
 			$result = (new Application_Model_News)
 				->search($searchParameters + ['limit' => 15], $user,
-					['link'=>true,'user'=>$user,'userVote'=>true]);
+					['link'=>true,'user'=>$filterUser,'userVote'=>true]);
 
 			if ($result->count())
 			{
 				$friendModel = new Application_Model_Friends;
-				$userTimezone = Application_Model_User::getTimezone($user);
 
 				foreach ($result as $row)
 				{
