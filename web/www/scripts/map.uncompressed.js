@@ -15,7 +15,7 @@ defaultMaxZoom=15,
 defaultZoom=viewPage=='post'?15:14,
 renderRadius=opts.radius?opts.radius:1.5,
 postLimit=viewPage =='community'?30:15,
-groupDistance=0.018939,
+groupDistance=0.03,
 disableScroll=false,
 markerClick=false,
 addressFl=['street_number','street_name','city','state','country','zip'],
@@ -1765,50 +1765,36 @@ function postList_load(start){
 }
 
 function postTooltip_content(position, event, ui, start){
-	!$(event.target).data('tooltip-ajax') ||
-		$(event.target).data('tooltip-ajax').abort();
+	var tooltipAjax=$(event.target).data('tooltip-ajax');
+	!tooltipAjax || tooltipAjax.abort();
 
-	var url, postTooltip, data = {};
+	var data = {
+		start:start,
+		latitude:position.lat(),
+		longitude:position.lng(),
+		keywords:opts.keywords,
+		category_id:opts.category_id
+	};
 
-	if (!opts.point || getDistance([position.lat(),position.lng()],
-		[opts.lat,opts.lng])<=groupDistance){
-		data.start=start;
-		data.latitude=position.lat();
-		data.longitude=position.lng();
-		data.keywords=opts.keywords;
-		data.category_id=opts.category_id;
-		if (viewPage=='profile'){
-			data.filter=0;
-			data.user_id=profile.id;
-		} else {
-			data.filter=opts.filter;
-			if (viewPage != 'community'){
-				data.point=opts.point;
-				data.readmore=1;
-			}
-		}
-		url=baseUrl+'post/tooltip';
-		postTooltip = true;
+	if (viewPage=='profile'){
+		data.filter=0;
+		data.user_id=profile.id;
 	} else {
-		url=baseUrl+'post/user-tooltip';
-		postTooltip = false;
+		data.filter=opts.filter;
+		if (viewPage != 'community'){
+			data.point=opts.point;
+			data.readmore=1;
+		}
 	}
 
 	$(event.target).data('tooltip-ajax', $.ajax({
-		url: url,
+		url: baseUrl+'post/tooltip',
 		data: data,
 		type: 'POST',
 		dataType: 'html'
 	}).done(function(response){
 		$(event.target).data('tooltip-content', response);
-
-		if (postTooltip){
-			postTooltip_render(response, position, event, ui);
-			return true;
-		}
-
-		$('.ui-tooltip-content', ui.tooltip).html(response);
-		ui.tooltip.position($(event.target).tooltip('option', 'position'));
+		postTooltip_render(response, position, event, ui);
 	}));
 }
 
@@ -1901,16 +1887,17 @@ function postItem_render(id){
 
 function postItem_marker(id, location, data){
 	data = data || {};
-
+	console.log('post location: '+id+' - '+location[0]+','+location[1]);
 	if (!$.isEmptyObject(postMarkersCluster)){
 		for (var group in postMarkersCluster){
-			if (getDistance(location, postMarkers[group].getPosition(true)) <= groupDistance){
+			if (getDistance(location, postMarkers[group].getPosition(true)) < groupDistance){
 				if (postMarkersCluster[group][0]==0){
 					postMarkersCluster[group][0]=id;
 					postMarkers[group].data('id', id);
 				} else {
 					postMarkersCluster[group].push(id);
 				}
+				console.log('exist group: '+group)
 				return postMarkers[group];
 			}
 		}
@@ -1928,7 +1915,7 @@ function postItem_marker(id, location, data){
 	}
 
 	postMarkersCluster[newGroup]=[id];
-
+console.log('new group: '+newGroup)
 	var postMarker = postList_tooltipmarker({
 		map: mainMap,
 		id: newGroup,

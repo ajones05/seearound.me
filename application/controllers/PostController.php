@@ -211,7 +211,7 @@ class PostController extends Zend_Controller_Action
 
 		$posts = (new Application_Model_News)->search(array_merge(
 			$searchParameters,
-			['limit' => 15, 'radius' => $point ? 0.018939 :
+			['limit' => 15, 'radius' => $point ? 0.03 :
 				My_ArrayHelper::getProp($searchParameters, 'radius', 1.5)]
 		), $user, [
 			'link' => ['thumbs'=>[[448,320]]],
@@ -381,7 +381,7 @@ class PostController extends Zend_Controller_Action
 				}
 
 				$searchParameters['exclude_id'] = $new;
-				$searchParameters['radius'] = $point ? 0.018939 :
+				$searchParameters['radius'] = $point ? 0.03 :
 					$searchParameters['radius'];
 			}
 
@@ -474,27 +474,6 @@ class PostController extends Zend_Controller_Action
 	}
 
 	/**
-	 * User tooltip action.
-	 */
-	public function userTooltipAction()
-	{
-		$this->_helper->layout()->disableLayout();
-
-		try
-		{
-			$user = Application_Model_User::getAuth();
-			$this->view->user = $this->getTooltipUserData($user);
-		}
-		catch (Exception $e)
-		{
-			My_Log::exception($e);
-			$this->_helper->viewRenderer->setNoRender(true);
-			echo $e instanceof RuntimeException ? $e->getMessage() :
-				'Internal Server Error';
-		}
-	}
-
-	/**
 	 * Posts tooltip action.
 	 */
 	public function tooltipAction()
@@ -575,17 +554,17 @@ class PostController extends Zend_Controller_Action
 
 			$model = new Application_Model_News;
 			$post = $model->fetchRow($model->searchQuery($searchParameters +
-				['radius' => 0.018939], $queryUser)->limit(1, $start));
+				['radius' => 0.03], $queryUser)->limit(1, $start));
 
 			if (!$post)
 			{
-				$this->view->user = $this->getTooltipUserData($user);
-				$this->_helper->viewRenderer->setNoRender(true);
-				return $this->render('user-tooltip');
+				throw new RUntimeException('Incorrect tooltip center: ' .
+					var_export([$searchParameters['latitude'],
+						$searchParameters['longitude']], true));
 			}
 
 			$count = $model->fetchRow($model->searchQuery($searchParameters +
-				['radius' => 0.018939], $queryUser, ['count' => true]))->count;
+				['radius' => 0.03], $queryUser, ['count' => true]))->count;
 
 			if ($start)
 			{
