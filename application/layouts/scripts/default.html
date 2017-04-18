@@ -1,0 +1,18 @@
+<?php
+$request = Zend_Controller_Front::getInstance()->getRequest();
+$action = $request->getActionName();
+$this->headLink()
+	->appendStylesheet(My_Layout::assetUrl('www/css/default.css'));
+$this->headScript()
+	->prependFile(My_Layout::assetUrl('bower_components/jquery/dist/jquery.min.js'))
+	->appendFile(My_Layout::assetUrl('www/scripts/default.js'));
+$this->headMeta('text/html; charset=utf-8', 'Content-Type', 'http-equiv');
+?>
+<!DOCTYPE html>
+<html>
+<head><?php echo $this->headTitle($action) . $this->headMeta() .
+$this->headLink() . $this->headScript(); ?></head>
+<body>
+<?php echo $this->layout()->content; ?>
+</body>
+</html>
