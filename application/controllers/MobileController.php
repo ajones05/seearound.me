@@ -18,8 +18,6 @@ class MobileController extends Zend_Controller_Action
 	{
 		$this->settings = Application_Model_Setting::getInstance();
 
-		$this->getResponse()->setHeader('Access-Control-Allow-Origin', '*');
-
 		if ($this->settings['api_enable'] == 0)
 		{
 			$this->_helper->json([
