@@ -185,17 +185,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		);
 
 		$router->addRoute(
-			'register',
-			new Zend_Controller_Router_Route(
-				'register',
-				array(
-					'controller' => 'index',
-					'action' => 'index'
-				)
-			)
-		);
-
-		$router->addRoute(
 			'confirm',
 			new Zend_Controller_Router_Route(
 				'confirm/:code',
@@ -227,18 +216,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				'login',
 				array(
 					'controller' => 'index',
-					'action' => 'index',
-					'isLogin' => true
-				)
-			)
-		);
-		$router->addRoute(
-			'register',
-			new Zend_Controller_Router_Route(
-				'register',
-				array(
-					'controller' => 'index',
-					'action' => 'index'
+					'action' => 'login'
 				)
 			)
 		);

@@ -1,0 +1,55 @@
+<?php
+$errors = $this->loginForm->getMessages();
+?>
+<div  class="bgNewForm">
+<div class="header">
+<a href="http://www.seearound.me/"><img class="logo" alt="" src="<?= $this->baseUrl('img/logo.png') ?>"></a>
+<ul>
+<li><a href="<?= $this->baseUrl('/') ?>">Home</a></li>
+<li><a href="<?= $this->baseUrl('about') ?>">About</a></li>
+</ul>
+</div>
+<div class="newmainContainer">
+<div class="d-table-cell">
+<div class="app-s margin-top-0">
+<h2 class="h2">What’s Happening Nearby?</h2>
+<div>
+<p class="info">Hyper Local News For Oakland,</p>
+<p class="info">Berkeley, and San Francisco</p>
+<a href="https://itunes.apple.com/us/app/seearoundme/id1186414014" target="_blank"><img class="appstore" alt"" src="<?= $this->baseUrl('img/appstore.png') ?>"></a>
+<a href="https://play.google.com/store/apps/details?id=com.seearoundme.mobileapp" target="_blank"><img class="googleplay" alt="" src="<?= $this->baseUrl('img/googleplay.png') ?>"></a>
+</div>
+</div>
+</div>
+<div class="d-table-cell">
+<div class="leftForm">
+<?php if ($errors != null): ?>
+<div class="formErrors">
+<?php foreach ($errors as $fieldErrors): ?>
+<p><?= is_array($fieldErrors) ? implode('<br>', $fieldErrors) : $fieldErrors ?></p>
+<?php endforeach; ?>
+</div>
+<?php endif; ?>
+<div class="desktop-login">
+<span>Desktop login:</span>
+<img class="login-f" src="<?= $this->baseUrl('img/login-faceb.png') ?>" alt="">
+</div>
+<div class="loginForm">
+<span>Or with Email:</span>
+<form action="<?= $this->baseUrl('login') ?>" method="post" autocomplete="off">
+<ul class="frm-n">
+<li>
+<input name="email" placeholder="Email Address" type="text">
+</li>
+<li>
+<input name="password" placeholder="Password" value="" type="password">
+</li>
+</ul>
+<div class="wrapper-forgot"><a href="<?= $this->baseUrl('forgot') ?>" class="forgot">Forgot your password?</a></div>
+<input class="sign-in" value="Sign in" type="submit">
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>

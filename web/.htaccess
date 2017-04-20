@@ -8,8 +8,8 @@ RewriteRule ^(assets-[0-9a-zA-Z.]+)/www/images/favicon/favicon-60x60.png /$1/www
 RewriteRule ^(assets-[0-9a-zA-Z.]+)/www/images/favicon/favicon-72x72.png /$1/www/images/favicon/apple-touch-icon-72x72.png [R=301,L]
 RewriteRule ^assets-[0-9a-zA-Z.]+/(.*\.(gif|jpe?g|png|ico|css|js|swf|woff|woff2|ttf|svg))$ /$1 [QSA,L]
 
-# favicon
 RewriteRule ^favicon\.ico$ /www/images/favicon/favicon.ico [L]
+RewriteRule ^js\/jquery\.min\.js$ /bower_components/jquery/dist/jquery.min.js [L]
 
 # rewrite controller rules
 RewriteRule ^post\/view\/(.*)$ /post/$1 [R=301,L]

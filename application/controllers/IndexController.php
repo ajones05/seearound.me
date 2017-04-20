@@ -25,6 +25,21 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
+		$this->view->layout()->setLayout('default');
+
+		$this->view->headScript()
+			->setAllowArbitraryAttributes(true)
+			->appendFile($this->view->baseUrl('js/index.min.js'), 'text/javascript', ['defer' => 'defer']);
+
+		$this->view->headLink()
+			->appendStylesheet($this->view->baseUrl('css/index.min.css'));
+	}
+
+	/**
+	 * Login action.
+	 */
+	public function loginAction()
+	{
 		if (My_CommonUtils::isMobile())
 		{
 			$this->_helper->viewRenderer->setNoRender(true);
@@ -33,117 +48,72 @@ class IndexController extends Zend_Controller_Action
 		}
 
 		$settings = Application_Model_Setting::getInstance();
-		$config = Zend_Registry::get('config_global');
+
+		$this->view->layout()->setLayout('default');
+		$this->view->headScript()
+			->setAllowArbitraryAttributes(true)
+			->appendFile($this->view->baseUrl('js/login.min.js'), 'text/javascript', ['defer' => 'defer'])
+			->appendScript('window.fbAsyncInit=function(){FB.init(' . json_encode([
+				'appId' => $settings['fb_appId'],
+				'xfbml' => true,
+				'cookie' => true,
+				'version' => $settings['fb_apiVersion']
+			]) . ')}');
+
+		$this->view->headLink()
+			->appendStylesheet($this->view->baseUrl('css/default.min.css'));
+
 		$loginForm = new Application_Form_Login;
-		$registrationForm = new Application_Form_Registration;
 
 		if ($this->_request->isPost())
 		{
-			$userModel = new Application_Model_User;
 			$data = $this->_request->getPost();
 
-			if ($this->_request->get('isLogin'))
+			if ($loginForm->isValid($data))
 			{
-				if ($loginForm->isValid($data))
+				$userModel = new Application_Model_User;
+				$user = $userModel->findByEmail($loginForm->email->getValue());
+
+				if ($user != null)
 				{
-					$user = $userModel->findByEmail($loginForm->email->getValue());
+					$password = $loginForm->password->getValue();
 
-					if ($user != null)
+					if (empty($user['password']))
 					{
-						$password = $loginForm->password->getValue();
-
-						if (empty($user['password']))
-						{
-							$this->_redirect('/forgot');
-						}
-
-						if (password_verify($password, $user->password))
-						{
-							if ($user->Status != 'active')
-							{
-								$this->_redirect('index/reg-success/id/' . $user->id);
-							}
-
-							$loginId = (new Application_Model_Loginstatus)->save($user);
-							Application_Model_User::updateInvites($user);
-
-							$auth = Zend_Auth::getInstance();
-							$auth->getStorage()->write([
-								'user_id' => $user->id,
-								'login_id' => $loginId
-							]);
-
-							$remember = $loginForm->remember->getValue();
-							Zend_Session::rememberMe($remember == 1 ?
-								1209600 : // 2 weeks
-								604800 // 1 week
-							);
-
-							$this->_redirect('/');
-						}
+						$this->_redirect('/forgot');
 					}
 
-					$loginForm->addError('Incorrect user email or password');
-				}
-			}
-			else
-			{
-				if ($registrationForm->isValid($data))
-				{
-					$user = $userModel->register($registrationForm->getValues()+
-						['Status'=>'inactive']);
+					if (password_verify($password, $user['password']))
+					{
+						if ($user['Status'] != 'active')
+						{
+							$this->_redirect('index/reg-success/id/' . $user['id']);
+						}
 
-					$confirmModel = new Application_Model_UserConfirm;
-					$confirmCode = $confirmModel->generateConfirmCode();
-					$confirmModel->insert([
-						'user_id' => $user['id'],
-						'type_id' => $confirmModel::$type['registration'],
-						'code' => $confirmCode,
-						'deleted' => 0,
-						'created_at' => new Zend_Db_Expr('NOW()')
-					]);
+						$loginId = (new Application_Model_Loginstatus)->save($user);
+						Application_Model_User::updateInvites($user);
 
-					My_Email::send(
-						$user['Email_id'],
-						'SeeAround.me Registration',
-						[
-							'template' => 'registration',
-							'assign' => ['code' => $confirmCode],
-							'settings' => $settings
-						]
-					);
+						$auth = Zend_Auth::getInstance();
+						$auth->getStorage()->write([
+							'user_id' => $user['id'],
+							'login_id' => $loginId
+						]);
 
-					$loginId = (new Application_Model_Loginstatus)->save($user);
+						$remember = $loginForm->remember->getValue();
+						Zend_Session::rememberMe($remember == 1 ?
+							1209600 : // 2 weeks
+							604800 // 1 week
+						);
 
-					Zend_Auth::getInstance()->getStorage()->write(array(
-						"user_id" => $user['id'],
-						"login_id" => $loginId
-					));
-
-					$this->_redirect($this->view->baseUrl('/'));
+						$this->_redirect('/');
+					}
 				}
 
-				if (!$registrationForm->latitude->hasErrors() &&
-					!$registrationForm->longitude->hasErrors())
-				{
-					$this->view->headScript('script', 'var postData=' . json_encode([
-						'address' => Application_Model_Address::format($data),
-						'latitude' => $registrationForm->latitude->getValue(),
-						'longitude' => $registrationForm->longitude->getValue()
-					]) . ';');
-				}
+				$loginForm->addError('Incorrect user email or password');
 			}
 		}
 
-		$this->view->layout()->setLayout('login');
-		$this->view->login_form = $loginForm;
-		$this->view->registrationForm = $registrationForm;
-
-		$this->view->headScript()
-			->appendScript('var	geolocation=' . json_encode(My_Ip::geolocation()) . ',' .
-				'timizoneList=' . json_encode(My_CommonUtils::$timezone) . ';')
-			->prependFile('https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' .
-				$settings['google_mapsKey']);
+		$this->view->loginForm = $loginForm;
 	}
 
 	/**
@@ -162,10 +132,10 @@ class IndexController extends Zend_Controller_Action
 		$loginId = (new Application_Model_Loginstatus)->save($user);
 		Application_Model_User::updateInvites($user);
 
-		Zend_Auth::getInstance()->getStorage()->write(array(
+		Zend_Auth::getInstance()->getStorage()->write([
 			'user_id' => $user['id'],
 			'login_id' => $loginId
-		));
+		]);
 
 		$this->_redirect('/');
 	}
@@ -201,7 +171,7 @@ class IndexController extends Zend_Controller_Action
 	 *
 	 * @return void
 	 */
-	public function resendAction() 
+	public function resendAction()
 	{
 		try
 		{

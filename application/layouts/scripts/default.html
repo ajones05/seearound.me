@@ -1,0 +1,31 @@
+<?php
+$settings = Application_Model_Setting::getInstance();
+?>
+<?= $this->doctype('HTML5') ?>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<?= $this->headTitle('SeeAroundMe - See What\'s Happening Nearby')->setSeparator(' - ')->setAutoEscape(false) ?>
+<?= $this->headMeta() ?>
+<?= $this->headLink(['rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->baseUrl('favicon.ico')]) ?>
+<?= $this->headScript()
+  ->setAllowArbitraryAttributes(true)
+  ->prependFile($this->baseUrl('js/jquery.min.js'), 'text/javascript', ['defer' => 'defer'])
+?>
+</head>
+<body>
+<?= $this->layout()->content ?>
+<script type="text/javascript">
+(function(){
+var wf=document.createElement('link');
+wf.href='https://fonts.googleapis.com/css?family=Lato:100i,300,300i,400,400i,700,700i,900,900i';
+wf.rel  = 'stylesheet';;
+wf.type='text/css';
+var s=document.getElementsByTagName('head')[0];
+s.appendChild(wf);
+})();
+</script>
+<?php include '_analytics.html'; ?>
+</body>
+</html>
