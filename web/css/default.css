@@ -183,13 +183,15 @@ body {
   float: right;
 }
 .appstore {
-  width: 16vw !important;
+  width: 175px;
+  /*width: 16vw;*/
   padding: 0 !important;
   margin-right: 10px;
-  margin-right: 2vh;
+  /*margin-right: 2vh;*/
 }
 .googleplay {
-  width: 16vw !important;
+  width: 175px;
+  /*width: 16vw;*/
 }
 .wr-appstore,
 .wr-googleplay {
@@ -204,7 +206,7 @@ body {
 .newmainContainer .d-table-cell {
   display: table-cell;
   vertical-align: middle;
-  padding-bottom: 7%;
+  padding-bottom: 9%;
 }
 .app-s .h1 {
   font-size: 32px;
@@ -221,7 +223,7 @@ body {
 .app-s {
   margin-top: -115px;
   float: left;
-  margin-left: 100px;
+  margin-left: 120px;
 }
 .app-s img {
   margin-left: 0;
