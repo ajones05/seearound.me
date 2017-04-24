@@ -18,7 +18,7 @@ class PageController extends Zend_Controller_Action
 				->appendStylesheet($this->view->baseUrl('css/default.min.css'));
 			$this->view->menuItems = [
 				['/', 'Home'],
-				['about', 'About']
+				['login', 'Desktop Login']
 			];
 		}
 		else
