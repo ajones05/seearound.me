@@ -9,6 +9,7 @@
 		"textarea-autosize": "latest",
 		"requirejs": "*",
 		"requirejs-plugins": "*",
-		"bootstrap": "3.3.6"
+		"bootstrap": "3.3.6",
+		"swiper": "3.4.2"
 	}
 }

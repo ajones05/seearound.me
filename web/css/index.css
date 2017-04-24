@@ -1,4 +1,4 @@
 /* swipper.css */
-@import url('swiper.css');
+@import url('../bower_components/swiper/dist/css/swiper.css');
 /* default.css */
 @import url('default.css');
