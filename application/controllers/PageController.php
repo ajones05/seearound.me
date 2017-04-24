@@ -11,13 +11,20 @@ class PageController extends Zend_Controller_Action
 	 */
 	public function init()
 	{
-		$this->view->layout()->setLayout('default');
-		$this->view->headLink()
-			->appendStylesheet($this->view->baseUrl('css/default.min.css'));
-		$this->view->menuItems = [
-			['/', 'Home'],
-			['about', 'About']
-		];
+		if ($this->_request->get('view') == 'about')
+		{
+			$this->view->layout()->setLayout('default');
+			$this->view->headLink()
+				->appendStylesheet($this->view->baseUrl('css/default.min.css'));
+			$this->view->menuItems = [
+				['/', 'Home'],
+				['about', 'About']
+			];
+		}
+		else
+		{
+			$this->view->layout()->setLayout('page');
+		}
 	}
 
 	/**
