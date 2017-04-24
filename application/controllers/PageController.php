@@ -11,7 +11,13 @@ class PageController extends Zend_Controller_Action
 	 */
 	public function init()
 	{
-		$this->view->layout()->setLayout('page');
+		$this->view->layout()->setLayout('default');
+		$this->view->headLink()
+			->appendStylesheet($this->view->baseUrl('css/default.min.css'));
+		$this->view->menuItems = [
+			['/', 'Home'],
+			['about', 'About']
+		];
 	}
 
 	/**

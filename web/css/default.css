@@ -493,3 +493,44 @@ body {
 input.error {
   background-color: #ff5959;
 }
+
+/* page about */
+.t-and-c{
+  background: rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 940px;
+  margin: 30px auto 0;
+  padding: 30px 30px 1px;
+  border-radius: 30px;
+  color: #fff;
+  font-family: 'Lato-Regular';
+  text-align: left;
+}
+.t-and-c h2{
+  font-size: 22px;
+  width:44%;
+  display: inline-block;
+  vertical-align: top;
+}
+.t-and-c .answer{
+  display: inline-block;
+  width:55%;
+}
+.t-and-c h3{
+  font-size: 20px;
+  margin-bottom: 36px;
+}
+.t-and-c p{
+  font-size: 16px;
+  margin-bottom: 36px;
+}
+.t-and-c a{
+  color: #fff;
+}
+.t-and-c .further-step{
+  text-align: center;
+  margin-top:30px;
+}
+.paragraph {
+	margin-top: 30px;
+}

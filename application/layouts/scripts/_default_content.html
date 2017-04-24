@@ -1,0 +1,15 @@
+<div class="bgNewForm">
+<div class="header">
+<a href="<?= $this->baseUrl('/') ?>"><img class="logo" alt="" src="<?= $this->baseUrl('img/logo.png') ?>"></a>
+<?php if (!empty($this->menuItems)): ?>
+<ul>
+<?php foreach ($this->menuItems as $menuItem): ?>
+<li><a href="<?= $this->baseUrl($menuItem[0]) ?>"><?= $menuItem[1] ?></a></li>
+<?php endforeach; ?>
+</ul>
+<?php endif; ?>
+</div>
+<div class="newmainContainer">
+<?= $this->layout()->content ?>
+</div>
+</div>

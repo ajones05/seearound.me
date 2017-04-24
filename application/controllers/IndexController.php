@@ -33,6 +33,12 @@ class IndexController extends Zend_Controller_Action
 
 		$this->view->headLink()
 			->appendStylesheet($this->view->baseUrl('css/index.min.css'));
+
+		$this->view->slides = [$this->view->partial('index/_index_slide1.html')];
+		$this->view->menuItems = [
+			['about', 'About'],
+			['login', 'Desktop Login']
+		];
 	}
 
 	/**
@@ -114,6 +120,11 @@ class IndexController extends Zend_Controller_Action
 		}
 
 		$this->view->loginForm = $loginForm;
+
+		$this->view->menuItems = [
+			['/', 'Home'],
+			['about', 'About']
+		];
 	}
 
 	/**
