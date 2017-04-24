@@ -98,13 +98,6 @@ body {
   color: #afafaf;
 }
 
-.appstore {
-  width: 180px;
-  padding: 14px 0;
-}
-.googleplay {
-  width: 206px;
-}
 .swiper-container {
   width: 100%;
   height: 100%;
@@ -143,19 +136,21 @@ body {
   color: #fff;
   font-family: 'Lato-Regular', sans-serif;
   font-size: 20px;
+  font-size: 3vh;
   text-align: left;
   text-shadow: 0px 0px 4px #000;
 }
 .logo {
   height: auto;
-  width:185px;
+  width: 185px;
+  width: 28vh;
   margin: 10px 0px 16px 80px;
-  vertical-align: middle;
 }
 .header ul li a {
   text-decoration: none;
   background: none;
   font-size: 16px;
+  font-size: 3vh;
   color: #464646;
   font-variant: normal;
   font-family: 'Lato-Regular', sans-serif;
@@ -182,10 +177,23 @@ body {
   padding-right: 8px;
 }
 .iphone {
-  width: 250px;
+  width: 43vh;
   max-width: 100%;
   margin-left: 100px;
   float: right;
+}
+.appstore {
+  width: 16vw !important;
+  padding: 0 !important;
+  margin-right: 10px;
+  margin-right: 2vh;
+}
+.googleplay {
+  width: 16vw !important;
+}
+.wr-appstore,
+.wr-googleplay {
+  float: left;
 }
 .newmainContainer {
   margin: 0 auto;
@@ -196,12 +204,15 @@ body {
 .newmainContainer .d-table-cell {
   display: table-cell;
   vertical-align: middle;
-  padding-bottom: 10%;
+  padding-bottom: 7%;
 }
 .app-s .h1 {
   font-size: 32px;
+  font-size: 6vh;
   margin-bottom: 160px;
+  margin-bottom: 25vh;
   margin-top: 20px;
+  margin-top: 3vh;
   color: #fff;
   font-family: "Lato-Bold", sans-serif;
   display: inline-block;
@@ -209,6 +220,7 @@ body {
 }
 .app-s {
   margin-top: -115px;
+
   float: left;
   margin-left: 150px;
 }
@@ -219,6 +231,7 @@ body {
   display: block;
   vertical-align: middle;
   font-size: 32px;
+  font-size: 6vh;
   color: #ffffff;
   text-shadow: 0px 0px 4px #000;
 }
@@ -239,6 +252,7 @@ body {
   color: #fff;
   font-family: "Lato-Bold", sans-serif;
   font-size: 40px;
+  font-size: 6vh;
   text-align: left;
 }
 .pull-left {
@@ -249,8 +263,8 @@ body {
 }
 .radiusimage {
   width: 720px;
+  width: 100vh;
   max-width: 100%;
-  vertical-align: middle;
 }
 .inner-bg {
   display: table;
@@ -269,6 +283,7 @@ body {
   text-align: center;
   font-family: "Lato-Bold", sans-serif;
   font-size: 38px;
+   font-size: 6vh;
   color: #fff;
   margin-top: 30px;
   display: table;
@@ -336,6 +351,7 @@ body {
 .to-bottom li {
   float: left;
   font-size: 16px;
+  font-size: 3vh;
   color: #fff;
   font-family: 'Lato-Regular', sans-serif;
   font-weight: 400;
@@ -349,10 +365,19 @@ body {
   position: relative;
   overflow: hidden;
 }
-@media (max-width: 1200px) {}
+@media (max-width: 1370px) {
+  .iphone {
+    /*width: 260px;*/
+  }
+}
+@media (max-width: 1200px) {
+  .iphone {
+    /*width: 250px;*/
+  }
+}
 @media (max-width: 900px) {
   .app-s {
-    margin-left: 50px
+    margin-left: 50px;
   }
   .iphone {
     margin-left: 0px;
@@ -360,12 +385,18 @@ body {
 }
 .app-s .h2 {
   font-size: 32px;
+  font-size: 6vh;
   margin-bottom: 30px;
+  margin-bottom: 4vh;
   margin-top: 20px;
+  margin-top: 3vh;
   color: #fff;
   font-family: "Lato-Bold", sans-serif;
   display: inline-block;
   text-shadow: 0px 0px 4px #000;
+}
+.last-info {
+  margin-bottom: 4vh;
 }
 .regForm,
 .leftForm {
@@ -375,6 +406,7 @@ body {
 }
 .desktop-login span {
   font-size: 22px;
+  /*font-size: 3vh;*/
   color: #4d4a49;
   margin-top: 3px;
   margin-bottom: 40px;
@@ -382,12 +414,14 @@ body {
 }
 .loginForm span {
   font-size: 16px;
+  /*font-size: 2vh;*/
   color: #4d4a49;
   margin-bottom: 20px;
   display: inline-block;
 }
 .login-f {
   width: 175px;
+  /*width: 28vh;*/
   border-radius: 4px;
   float: right;
   cursor: pointer;
@@ -398,6 +432,7 @@ body {
 .frm-n li input {
   padding: 9px 10px;
   font-size: 16px;
+  /*font-size: 3vh;*/
   width: 93%;
   margin-bottom: 6px;
 }
@@ -416,6 +451,7 @@ body {
   text-decoration: none;
   color: #4276cd;
   font-size: 16px;
+  font-size: 3vh;
   margin-bottom: 20px;
   display: inline-block;
 }
@@ -425,10 +461,27 @@ body {
   background-color: #3366cc;
   color: #FFFFFF;
   font-size: 18px;
+  font-size: 4vh;
   font-family: "Lato-Bold", sans-serif;
+  font-weight: 700;
   border: none;
 }
+/* Special Classes */
+.clearfix {
+    clear: both;
+}
+.clearfix:before, .clearfix:after {
+    content: '';
+    display: table;
+}
+.clearfix:after {
+    clear: both;
+}
+.clearfix {
+    *zoom: 1;
+}
 /* END NEW Added changes */
+
 .formErrors {
   margin-bottom: 15px;
 }
