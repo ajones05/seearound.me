@@ -178,8 +178,9 @@ body {
 }
 .iphone {
   width: 43vh;
-  max-width: 100%;
+  max-width: 380px;
   margin-left: 100px;
+  margin-right: 30px;
   float: right;
 }
 .appstore {
