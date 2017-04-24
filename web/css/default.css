@@ -267,7 +267,7 @@ body {
 }
 .radiusimage {
   width: 720px;
-  /*width: 100vh;*/
+  width: 100vh;
   max-width: 100%;
 }
 .inner-bg {
