@@ -915,11 +915,17 @@ class MobileController extends Zend_Controller_Action
 					'sender_id' => 'c.from_id',
 					'receiver_id' => 'c.to_id',
 					'cm1.body',
-					'created_at' => 'IFNULL(cm3.created_at,cm1.created_at)',
+					'created_at' => 'IFNULL(cm3.created_at,cm2.created_at)',
 					'is_read' => 'IFNULL(cm3.is_read,1)'
 				])
 				->joinLeft(['cm1' => 'conversation_message'], '(cm1.conversation_id=c.id AND ' .
 					'cm1.is_first=1)', '')
+				->joinLeft(['cm2' => 'conversation_message'], 'cm2.id=(' .
+					'SELECT cm2sub.id FROM conversation_message AS cm2sub WHERE ' .
+						'cm2sub.conversation_id=c.id' .
+						' ORDER BY cm2sub.created_at DESC' .
+						' LIMIT 1' .
+				')', '')
 				->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
 					'cm3.is_read=0 AND cm3.to_id=' . $user['id'] . ')', '')
 				->joinLeft(['us' => 'user_data'], 'us.id=c.from_id', [
