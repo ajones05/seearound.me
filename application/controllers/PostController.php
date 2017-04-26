@@ -113,6 +113,7 @@ class PostController extends Zend_Controller_Action
 		$this->view->post = $post;
 		$this->view->owner = [
 			'Name' => $post['owner_name'],
+			'image_id' => $post['owner_image_id'],
 			'image_name' => $post['owner_image_name']
 		];
 		$this->view->hidden = true;
@@ -279,7 +280,8 @@ class PostController extends Zend_Controller_Action
 					'user' => $user,
 					'owner' => [
 						'Name' => $post['owner_name'],
-						'image_name' => $post['owner_image_name'],
+						'image_id' => $post['owner_image_id'],
+						'image_name' => $post['owner_image_name']
 					],
 					'limit' => 350,
 					'hidden' => true
@@ -423,6 +425,7 @@ class PostController extends Zend_Controller_Action
 							'user' => $user,
 							'owner' => [
 								'Name' => $post['owner_name'],
+								'image_id' => $post['owner_image_id'],
 								'image_name' => $post['owner_image_name']
 							],
 							'limit' => 350
@@ -729,6 +732,7 @@ class PostController extends Zend_Controller_Action
 						'post' => $post,
 						'owner' => [
 							'Name' => $post['owner_name'],
+							'image_id' => $post['owner_image_id'],
 							'image_name' => $post['owner_image_name']
 						],
 						'user' => $user,
@@ -1844,6 +1848,7 @@ class PostController extends Zend_Controller_Action
 						'post' => $post,
 						'owner' => [
 							'Name' => $post['owner_name'],
+							'image_id' => $post['owner_image_id'],
 							'image_name' => $post['owner_image_name']
 						],
 						'user' => $user,

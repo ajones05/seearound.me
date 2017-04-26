@@ -121,7 +121,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		if (!$isCount)
 		{
 			$query->join(['owner' => 'user_data'], 'owner.id=news.user_id',
-				['owner_name' => 'Name', 'owner_image_name' => 'image_name']);
+				[
+					'owner_name' => 'Name',
+					'owner_image_id' => 'image_id',
+					'owner_image_name' => 'image_name'
+				]);
 		}
 
 		if (!empty($options['link']))

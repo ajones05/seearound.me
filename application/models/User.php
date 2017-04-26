@@ -306,6 +306,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'timezone' => $data['timezone']
 		]);
 
+		$imageName = My_ArrayHelper::getProp($data, 'image_name');
+
 		$user = [
 			'address_id' => $addressId,
 			'Name' => $data['name'],
@@ -313,7 +315,8 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			'password' => $this->encryptPassword($data['password']),
 			'Status' => $data['Status'],
 			'image_id' => My_ArrayHelper::getProp($data, 'image_id'),
-			'image_name' => My_ArrayHelper::getProp($data, 'image_name'),
+			'image_name' => $imageName != null ? $imageName :
+				basename($this->getDefaultThumb('320x320')),
 			'invite' => 10,
 			'Creation_date' => (new DateTime)->format(My_Time::SQL)
 		];
@@ -417,6 +420,11 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 					catch (Exception $e)
 					{
 					}
+				}
+
+				if (empty($user['image_name']))
+				{
+					$user['image_name'] = basename($this->getDefaultThumb('320x320'));
 				}
 
 				$user['id'] = $this->insert($user+[
@@ -608,17 +616,20 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function getThumb($row, $thumb, array $options=[])
 	{
-		$imageField = My_ArrayHelper::getProp($options, 'alias') . 'image_name';
+		$alias = My_ArrayHelper::getProp($options, 'alias');
+		$imageIdFl = $alias . 'image_id';
+		$imageNameFl = $alias . 'image_name';
 
-		if (!empty($row[$imageField]))
+		if (!empty($row[$imageIdFl]))
 		{
-			return self::$thumbPath[$thumb] . '/' . $row[$imageField];
+			return self::$thumbPath[$thumb] . '/' . $row[$imageNameFl];
 		}
 
 		if (!array_key_exists('default', $options) || $options['default'])
 		{
-			return self::getDefaultThumb($thumb);
+			return 'user/' . $row[$imageNameFl];
 		}
+
 
 		return null;
 	}
@@ -631,6 +642,15 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 	 */
 	public static function getDefaultThumb($thumb)
 	{
+		$settings = Application_Model_Setting::getInstance();
+		$defaultImages = array_filter(array_map('trim', explode(',',
+			$settings['user_defaultImages'])));
+
+		if ($defaultImages != null)
+		{
+			return 'user/' . $defaultImages[mt_rand(0, count($defaultImages) - 1)];
+		}
+
 		return self::$thumbPath[$thumb] . '/default.jpg';
 	}
 

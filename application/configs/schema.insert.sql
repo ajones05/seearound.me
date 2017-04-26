@@ -66,4 +66,5 @@ INSERT INTO `setting` (`created_at`, `updated_at`, `name`, `value`, `description
 	(NOW(), NOW(), 'comment_randomFromUsers', '', 'Accounts from random commenting'),
 	(NOW(), NOW(), 'post_randomUserEnable', '', 'Enable random user for posts'),
 	(NOW(), NOW(), 'post_randomForUsers', '', 'Users list for random post'),
-	(NOW(), NOW(), 'post_randomFromUsers', '', 'Users list from random post');
+	(NOW(), NOW(), 'post_randomFromUsers', '', 'Users list from random post'),
+	(NOW(), NOW(), 'user_defaultImages', '', 'User default images in svg format');
