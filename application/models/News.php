@@ -537,7 +537,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	public function postScore($alias='news')
 	{
 		return '((' . $alias . '.vote+' . $alias . '.comment+1)/' .
-			'((IFNULL(TIMESTAMPDIFF(HOUR,' . $alias . '.created_date,NOW()),0)+2)' .
+			'((IFNULL(TIMESTAMPDIFF(SECOND,' . $alias . '.created_date,NOW()),0)+2)' .
 			'^1.8))*10000';
 	}
 
