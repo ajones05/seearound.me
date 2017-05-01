@@ -481,15 +481,19 @@ body.touch .posts-container .posts {
   float: left;
   text-align: center;
 }
+.vote .count,
+.vote .dislike {
+  position: absolute;
+  bottom: 2px;
+}
 .vote .count {
   font-family: 'Lato-Bold', sans-serif;
   color: #ce2424;
   font-size: 10px;
-  position: absolute;
-  bottom: 2px;
   left: 35px;
 }
-.vote .like {
+.vote .like,
+.vote .dislike {
   background: rgba(0, 0, 0, 0) url("../images/template/like-small-off.png") no-repeat scroll center center;
   margin-bottom: 4px;
   cursor: pointer;
@@ -499,6 +503,13 @@ body.touch .posts-container .posts {
 }
 .vote .like.active {
   background: rgba(0, 0, 0, 0) url("../images/template/like-small-on.png") no-repeat scroll center center;
+}
+.vote .dislike {
+  left: 50px;
+  background: rgba(0, 0, 0, 0) url("../images/template/dislike-small-off.png") no-repeat scroll center center;
+}
+.vote .dislike.active {
+  background: rgba(0, 0, 0, 0) url("../images/template/dislike-small-on.png") no-repeat scroll center center;
 }
 .post > .body,
 .post > .body textarea {

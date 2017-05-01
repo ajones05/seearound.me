@@ -1110,7 +1110,7 @@ class PostController extends Zend_Controller_Action
 
 			$voteModel = new Application_Model_Voting;
 
-			if (!$voteModel->canVote($user, $post))
+			if (!$voteModel->canVote($user, $post, $vote))
 			{
 				throw new RuntimeException('You cannot vote this post');
 			}

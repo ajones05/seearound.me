@@ -1099,7 +1099,7 @@ function postItem_renderContent(id, postContainer){
 			.attr('title',formatOutputDate(postTime));
 	}
 
-	$('.like',postContainer).click(function(){
+	$('.like,.dislike',postContainer).click(function(){
 		if (!isLogin){
 			return guestAction();
 		}
@@ -1110,22 +1110,22 @@ function postItem_renderContent(id, postContainer){
 			return;
 		}
 
-		self.addClass('disabled');
+		$('.like,.dislike',postContainer).addClass('disabled');
 
 		ajaxJson({
 			url: baseUrl+'post/vote',
-			data:{id:id,vote:1},
+			data:{id:id,vote:$(this).hasClass('dislike') ? -1 : 1},
 			done: function(response){
+				$('.like,.dislike',postContainer).removeClass('active disabled');
 				if (response.active==1){
-					self.addClass('active');
-				} else {
-					self.removeClass('active');
+					$('.like',postContainer).addClass('active');
+				} else if (response.active==-1) {
+					$('.dislike',postContainer).addClass('active');
 				}
 				$('.count',postContainer).html(response.vote);
-				self.removeClass('disabled');
 			},
 			fail: function(){
-				self.removeClass('disabled');
+				$('.like,.dislike',postContainer).removeClass('disabled');
 			}
 		});
 	});
@@ -1887,7 +1887,6 @@ function postItem_render(id){
 
 function postItem_marker(id, location, data){
 	data = data || {};
-	console.log('post location: '+id+' - '+location[0]+','+location[1]);
 	if (!$.isEmptyObject(postMarkersCluster)){
 		for (var group in postMarkersCluster){
 			if (getDistance(location, postMarkers[group].getPosition(true)) < groupDistance){
@@ -1897,7 +1896,6 @@ function postItem_marker(id, location, data){
 				} else {
 					postMarkersCluster[group].push(id);
 				}
-				console.log('exist group: '+group)
 				return postMarkers[group];
 			}
 		}
@@ -1915,7 +1913,7 @@ function postItem_marker(id, location, data){
 	}
 
 	postMarkersCluster[newGroup]=[id];
-console.log('new group: '+newGroup)
+
 	var postMarker = postList_tooltipmarker({
 		map: mainMap,
 		id: newGroup,

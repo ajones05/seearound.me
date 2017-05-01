@@ -95,11 +95,32 @@ class Application_Model_Voting extends Zend_Db_Table_Abstract
 	 *
 	 * @param mixed $user
 	 * @param mixed $post
+	 * @param intreger $vote
 	 * @return boolean
 	 */
-	public static function canVote($user, $post)
+	public static function canVote($user, $post, $vote = null)
 	{
-		return $user != null && (!empty($user['is_admin']) ||
-			$user['id'] != $post['user_id']) ? true : false;
+		if ($user == null)
+		{
+			return false;
+		}
+
+		if (empty($user['is_admin']))
+		{
+			if ($user['id'] == $post['user_id'])
+			{
+				return false;
+			}
+
+			if ($vote !== null)
+			{
+				if ($vote == -1)
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 }
