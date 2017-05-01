@@ -42,7 +42,10 @@ class MessageController extends Zend_Controller_Action
 				'cm1.is_first=1)', '')
 			->joinLeft(['cm3' => 'conversation_message'], '(cm3.conversation_id=c.id AND ' .
 				'cm3.is_read=0 AND cm3.to_id=' . $user['id'] . ')', '')
-			->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', '')
+			->joinLeft(['u' => 'user_data'], 'u.id=c.from_id', [
+				'u_image_id' => 'u.image_id',
+				'u_image_name' => 'u.image_name'
+			])
 			->group('c.id')
 			->order(['is_read ASC', 'c.created_at DESC']);
 
@@ -85,7 +88,10 @@ class MessageController extends Zend_Controller_Action
 				->where('c.from_id=?', $user['id'])
 				->joinLeft(array('cm' => 'conversation_message'), '(cm.conversation_id=c.id AND ' .
 					'cm.is_read=0 AND cm.from_id=' . $user['id'] . ')', '')
-				->joinLeft(array('u' => 'user_data'), 'u.id=c.to_id', '')
+				->joinLeft(array('u' => 'user_data'), 'u.id=c.to_id', [
+					'u_image_id' => 'u.image_id',
+					'u_image_name' => 'u.image_name'
+				])
 				->group('c.id')
 				->order('c.created_at DESC')
 		);
@@ -159,7 +165,10 @@ class MessageController extends Zend_Controller_Action
 				])
 				->where('cm.conversation_id=?', $conversation->id)
 				->where('cm.is_first<>1')
-				->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', '')
+				->joinLeft(['u' => 'user_data'], 'u.id=cm.from_id', [
+					'u_image_id' => 'u.image_id',
+					'u_image_name' => 'u.image_name'
+				])
 				->order('cm.created_at DESC')
 				->limit($limit, $start);
 

@@ -625,11 +625,13 @@ class Application_Model_User extends Zend_Db_Table_Abstract
 			return self::$thumbPath[$thumb] . '/' . $row[$imageNameFl];
 		}
 
-		if (!array_key_exists('default', $options) || $options['default'])
+		if (!empty($row[$imageNameFl]))
 		{
-			return 'user/' . $row[$imageNameFl];
+			if (!array_key_exists('default', $options) || $options['default'])
+			{
+				return 'user/' . $row[$imageNameFl];
+			}
 		}
-
 
 		return null;
 	}
