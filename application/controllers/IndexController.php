@@ -36,7 +36,6 @@ class IndexController extends Zend_Controller_Action
 
 		$this->view->slides = [$this->view->partial('index/_index_slide1.html')];
 		$this->view->menuItems = [
-			['about', 'About'],
 			['login', 'Desktop Login']
 		];
 	}
