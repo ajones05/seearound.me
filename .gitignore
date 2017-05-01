@@ -15,10 +15,10 @@
 /web/thumb448x320/*
 /web/www/scripts/common.js
 /web/www/scripts/global.js
-/web/www/scripts/map.js
+/web/www/scripts/map.min.js
 /web/www/css/global.css
 /web/www/css/mobile.css
-/web/www/css/map.css
+/web/www/css/map.min.css
 /web/css/default.min.css
 /web/css/index.min.css
 /web/js/index.min.js

@@ -6,7 +6,7 @@ $isTouch = $userAgent->isMobile() || $userAgent->isTablet();
 My_Layout::renderFavicon($this);
 
 $this->headLink()
-	->appendStylesheet(My_Layout::assetUrl('www/css/map.uncompressed.css'));
+	->appendStylesheet(My_Layout::assetUrl('www/css/map.min.css'));
 
 $serverUrl = $this->serverUrl();
 
@@ -24,7 +24,7 @@ $this->headScript()
 		], $this->appendScript)) . ';')
 	->appendFile(My_Layout::assetUrl('bower_components/requirejs/require.js'),
 		'text/javascript', array('defer' => 'defer',
-		'data-main' => My_Layout::assetUrl('www/scripts/map.uncompressed')));
+		'data-main' => My_Layout::assetUrl('www/scripts/map.min')));
 
 $this->headTitle()->setSeparator(' - ')->prepend($settings['site_titlePrefix']);
 
