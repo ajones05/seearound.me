@@ -7,6 +7,11 @@ use Respect\Validation\Validator as v;
 class MobileController extends Zend_Controller_Action
 {
 	/**
+	 * @var integer
+	 */
+	protected $postBodyLen = 350;
+
+	/**
 	 * @var array Contains site settings
 	 */
 	protected $settings;
@@ -1453,6 +1458,12 @@ class MobileController extends Zend_Controller_Action
 				]
 			];
 
+			if (strlen($post->news) > $this->postBodyLen)
+			{
+				$response['post']['truncatedNews'] =
+					substr($post->news, 0, $this->postBodyLen);
+			}
+
 			if ($post->image_id != null)
 			{
 				$response['post']['image'] = $this->view->serverUrl() .
@@ -2054,6 +2065,12 @@ class MobileController extends Zend_Controller_Action
 						'isFriend' => $friendStatus ? 1 : 0
 					];
 
+					if (strlen($row->news) > $this->postBodyLen)
+					{
+						$data['truncatedNews'] =
+							substr($row->news, 0, $this->postBodyLen);
+					}
+
 					if ($row->image_id)
 					{
 						$data['thumb'] = $this->view->serverUrl() .
@@ -2203,6 +2220,12 @@ class MobileController extends Zend_Controller_Action
 						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0,
 						'isFriend' => $friendStatus ? 1 : 0
 					];
+
+					if (strlen($row->news) > $this->postBodyLen)
+					{
+						$data['truncatedNews'] =
+							substr($row->news, 0, $this->postBodyLen);
+					}
 
 					if ($row->image_id)
 					{
