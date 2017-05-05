@@ -1461,7 +1461,7 @@ class MobileController extends Zend_Controller_Action
 			if (strlen($post->news) > $this->postBodyLen)
 			{
 				$response['post']['truncatedNews'] =
-					substr($post->news, 0, $this->postBodyLen);
+					substr($post->news, 0, $this->postBodyLen) . '...';
 			}
 
 			if ($post->image_id != null)
@@ -2068,7 +2068,7 @@ class MobileController extends Zend_Controller_Action
 					if (strlen($row->news) > $this->postBodyLen)
 					{
 						$data['truncatedNews'] =
-							substr($row->news, 0, $this->postBodyLen);
+							substr($row->news, 0, $this->postBodyLen) . '...';
 					}
 
 					if ($row->image_id)
@@ -2224,7 +2224,7 @@ class MobileController extends Zend_Controller_Action
 					if (strlen($row->news) > $this->postBodyLen)
 					{
 						$data['truncatedNews'] =
-							substr($row->news, 0, $this->postBodyLen);
+							substr($row->news, 0, $this->postBodyLen) . '...';
 					}
 
 					if ($row->image_id)
