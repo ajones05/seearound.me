@@ -1458,10 +1458,12 @@ class MobileController extends Zend_Controller_Action
 				]
 			];
 
-			if (strlen($post->news) > $this->postBodyLen)
+			$bodyLen = strlen($post->news);
+
+			if ($bodyLen > $this->postBodyLen)
 			{
 				$response['post']['truncatedNews'] =
-					substr($post->news, 0, $this->postBodyLen) . '...';
+					$this->truncatePostBody($post->news, $bodyLen);
 			}
 
 			if ($post->image_id != null)
@@ -2065,10 +2067,11 @@ class MobileController extends Zend_Controller_Action
 						'isFriend' => $friendStatus ? 1 : 0
 					];
 
-					if (strlen($row->news) > $this->postBodyLen)
+					$bodyLen = strlen($row->news);
+
+					if ($bodyLen > $this->postBodyLen)
 					{
-						$data['truncatedNews'] =
-							substr($row->news, 0, $this->postBodyLen) . '...';
+						$data['truncatedNews'] = $this->truncatePostBody($row->news, $bodyLen);
 					}
 
 					if ($row->image_id)
@@ -2221,10 +2224,11 @@ class MobileController extends Zend_Controller_Action
 						'isFriend' => $friendStatus ? 1 : 0
 					];
 
-					if (strlen($row->news) > $this->postBodyLen)
+					$bodyLen = strlen($row->news);
+
+					if ($bodyLen > $this->postBodyLen)
 					{
-						$data['truncatedNews'] =
-							substr($row->news, 0, $this->postBodyLen) . '...';
+						$data['truncatedNews'] = $this->truncatePostBody($row->news, $bodyLen);
 					}
 
 					if ($row->image_id)
@@ -3027,5 +3031,46 @@ class MobileController extends Zend_Controller_Action
 			"\n>> " . var_export($_REQUEST, true) .
 			"\n<< " . var_export($response, true) .
 			"\n\$_SERVER: " . var_export($_SERVER, true));
+	}
+
+	/**
+	 * Truncates the post body.
+	 *
+	 * @param string $body The post body
+	 * @param integer $len The post body length
+	 * @return string
+	 */
+	protected function truncatePostBody($body, $len)
+	{
+		$output = '';
+
+		for ($i = 0; $i < $this->postBodyLen;)
+		{
+			$substr = substr($body, $i);
+
+			if (preg_match('/^' . My_Regex::url() . '/ui', $substr, $matches))
+			{
+				$substrLen = strlen($matches[0]);
+
+				if (($i + $substrLen) > $this->postBodyLen)
+				{
+					if ($i == 0)
+					{
+						$output = substr($matches[0], 0, $this->postBodyLen);
+					}
+
+					break;
+				}
+
+				$output .= $matches[0];
+				$i += $substrLen;
+			}
+			else
+			{
+				$output .= $body[$i++];
+			}
+		}
+
+		return rtrim($output, ' .') . '...';
 	}
 }
