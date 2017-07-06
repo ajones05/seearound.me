@@ -2018,6 +2018,16 @@ class MobileController extends Zend_Controller_Action
 				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
+			if (!empty($searchParameters['keywords']))
+			{
+				(new Application_Model_SearchLog)>insert([
+					'user_id' => $user['id'],
+					'keywords' => $searchParameters['keywords'],
+					'created_at' => new Zend_Db_Expr('NOW()'),
+					'is_api' => 1
+				]);
+			}
+
 			$response = [
 				'status' => 'SUCCESS',
 				'message' => 'Nearest point data rendered successfully'
@@ -2178,6 +2188,16 @@ class MobileController extends Zend_Controller_Action
 			if (!$searchForm->isValid($searchParameters))
 			{
 				throw new RuntimeException(My_Form::outputErrors($searchForm));
+			}
+
+			if (!empty($searchParameters['keywords']))
+			{
+				(new Application_Model_SearchLog)>insert([
+					'user_id' => $user['id'],
+					'keywords' => $searchParameters['keywords'],
+					'created_at' => new Zend_Db_Expr('NOW()'),
+					'is_api' => 1
+				]);
 			}
 
 			$response = [
@@ -2618,6 +2638,54 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			);
+			$this->errorHandler($e);
+		}
+
+		$this->responseHandler($response);
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Search log action.
+	 */
+	public function searchLogAction()
+	{
+		try
+		{
+			$user = $this->getUserByToken();
+			$start = $this->_request->getPost('start', 0);
+
+			if (!v::optional(v::intVal())->min(0)->validate($start))
+			{
+				throw new RuntimeException('Incorrect start value: ' .
+					var_export($start, true));
+			}
+
+			$searchLogModel = new Application_Model_SearchLog;
+			$searchLog = $searchLogModel->fetchAll(
+				$searchLogModel->select()
+					->where('user_id=?', $user['id'])
+					->limit(20, $start)
+					->order('created_at DESC')
+			);
+
+			$response = ['status' => 'SUCCESS'];
+
+			if ($searchLog != null)
+			{
+				foreach ($searchLog as $row)
+				{
+					$response['result'][] = $row['keywords'];
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 			$this->errorHandler($e);
 		}
 

@@ -210,6 +210,16 @@ class PostController extends Zend_Controller_Action
 			throw new RuntimeException(My_Form::outputErrors($searchForm));
 		}
 
+		if (trim($searchParameters['keywords']) !== '')
+		{
+			(new Application_Model_SearchLog)->insert([
+				'user_id' => $user['id'],
+				'keywords' => $searchParameters['keywords'],
+				'created_at' => new Zend_Db_Expr('NOW()'),
+				'is_api' => 0
+			]);
+		}
+
 		$posts = (new Application_Model_News)->search(array_merge(
 			$searchParameters,
 			['limit' => 15, 'radius' => $point ? 0.03 :
@@ -334,6 +344,21 @@ class PostController extends Zend_Controller_Action
 				throw new RuntimeException(My_Form::outputErrors($searchForm));
 			}
 
+			$user = Application_Model_User::getAuth();
+
+			if ($user != null)
+			{
+				if ($searchParameters['start'] == 0 && trim($searchParameters['keywords']) !== '')
+				{
+					(new Application_Model_SearchLog)->insert([
+						'user_id' => $user['id'],
+						'keywords' => $searchParameters['keywords'],
+						'created_at' => new Zend_Db_Expr('NOW()'),
+						'is_api' => 0
+					]);
+				}
+			}
+
 			$nohtml = $this->_request->getParam('nohtml');
 
 			if (!v::optional(v::intVal())->validate($nohtml))
@@ -342,7 +367,6 @@ class PostController extends Zend_Controller_Action
 					var_export($nohtml, true));
 			}
 
-			$user = Application_Model_User::getAuth();
 			$profile_id = $this->_request->getParam('user_id');
 
 			if (!v::optional(v::intVal())->validate($profile_id))
