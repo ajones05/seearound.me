@@ -2192,7 +2192,7 @@ class MobileController extends Zend_Controller_Action
 
 			if (!empty($searchParameters['keywords']))
 			{
-				(new Application_Model_SearchLog)>insert([
+				(new Application_Model_SearchLog)->insert([
 					'user_id' => $user['id'],
 					'keywords' => $searchParameters['keywords'],
 					'created_at' => new Zend_Db_Expr('NOW()'),
