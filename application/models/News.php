@@ -31,6 +31,17 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	];
 
 	/**
+	 * @var array
+	 */
+	public static $filters = [
+		'' => 'Most interesting',
+		'3' => 'Most recent',
+		'0' => 'My posts',
+		'1' => 'My interests',
+		'2' => 'Following'
+	];
+
+	/**
 	 * The table name.
 	 * @var string
 	 */

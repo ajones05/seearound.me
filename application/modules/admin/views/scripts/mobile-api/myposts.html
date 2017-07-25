@@ -1,5 +1,6 @@
 <?php
 $category_id = (array) $this->request->getParam('category_id');
+$filter_id = $this->request->getParam('filter');
 ?>
 <h2>mobile/myposts</h2>
 <ol class="breadcrumb">
@@ -56,9 +57,14 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilemypost
 	<div class="form-group">
 		<label class="control-label col-sm-2" for="filter">Filter [filter]:</label>
 		<div class="col-sm-10">
-			<input type="text" name="filter" class="form-control"
-				id="filter" placeholder="Enter search filter"
-				value="<?php echo $this->request->getParam('filter'); ?>">
+			<select name="filter" class="form-control" id="filter">
+				<?php foreach (Application_Model_News::$filters as $id => $filter): ?>
+				<option
+				value="<?php echo $id; ?>"
+				<?php if ($filter_id === (string) $id) echo ' selected'; ?>
+				><?php echo $filter; ?></option>
+				<?php endforeach; ?>
+			</select>
 		</div>
 	</div>
 	<div class="form-group">

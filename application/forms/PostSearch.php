@@ -25,13 +25,7 @@ class Application_Form_PostSearch extends Zend_Form
 			'decorators' => ['ViewHelper'],
 			'value' => '',
 			'style' => 'display:none',
-			'multiOptions' => [
-				'' => 'Most interesting',
-				'3' => 'Most recent',
-				'0' => 'My posts',
-				'1' => 'My interests',
-				'2' => 'Following'
-			]
+			'multiOptions' => Application_Model_News::$filters
 		]);
 
 		$this->addElement('multiselect', 'category_id', [
