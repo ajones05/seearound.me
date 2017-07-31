@@ -290,12 +290,22 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		}
 
 		$order[] = 'news.id ASC';
+		$query->order($order);
 
-		$query
-			->where('IFNULL((3959*acos(cos(radians(' . $parameters['latitude'] . '))*cos(radians(a.latitude))*' .
-				'cos(radians(a.longitude)-' . 'radians(' . $parameters['longitude'] . '))+' .
-				'sin(radians(' . $parameters['latitude'] . '))*sin(radians(a.latitude)))),0)<' . $parameters['radius'])
-			->order($order);
+		if (!empty($parameters['ne']) && !empty($parameters['sw']))
+		{
+			$query
+				->where('st_within(point(a.latitude,a.longitude),' .
+					'st_envelope(linestring(point(' . $parameters['ne'] . '),
+					point(' . $parameters['sw'] . '))))');
+		}
+		else
+		{
+			$query
+				->where('IFNULL((3959*acos(cos(radians(' . $parameters['latitude'] . '))*cos(radians(a.latitude))*' .
+					'cos(radians(a.longitude)-' . 'radians(' . $parameters['longitude'] . '))+' .
+					'sin(radians(' . $parameters['latitude'] . '))*sin(radians(a.latitude)))),0)<' . $parameters['radius']);
+		}
 
 		return $query;
 	}

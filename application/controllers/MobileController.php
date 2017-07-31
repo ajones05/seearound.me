@@ -2005,13 +2005,22 @@ class MobileController extends Zend_Controller_Action
 		try
 		{
 			$user = $this->getUserByToken();
-			$searchForm = new Application_Form_PostSearch;
 			$searchParameters = [
+				'start' => $this->_request->getPost('start', 0),
+
+				// INFO: filter shape by North-East and Soth-West points
+				'ne' => $this->_request->getPost('ne'),
+				'sw' => $this->_request->getPost('sw'),
+
+				// INFO: legacy
 				'latitude' => $this->_request->getPost('latitude'),
 				'longitude' => $this->_request->getPost('longitude'),
-				'radius' => $this->_request->getPost('radious', 1.5),
-				'start' => $this->_request->getPost('start', 0)
+				'radius' => $this->_request->getPost('radious', 1.5)
 			];
+
+			$searchForm = !empty($searchParameters['ne']) ?
+				new Application_Form_PostSearchApi :
+				new Application_Form_PostSearch;
 
 			if (!$searchForm->isValid($searchParameters))
 			{
