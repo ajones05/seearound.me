@@ -380,6 +380,7 @@ CREATE TABLE `search_log` (
   `keywords` varchar(255) NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `is_api` tinyint(1) NOT NULL DEFAULT 0,
+  `is_duplicate` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE,
   INDEX(`user_id`, `keywords`, `created_at`)

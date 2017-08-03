@@ -2029,10 +2029,9 @@ class MobileController extends Zend_Controller_Action
 
 			if (!empty($searchParameters['keywords']))
 			{
-				(new Application_Model_SearchLog)>insert([
+				(new Application_Model_SearchLog)>save([
 					'user_id' => $user['id'],
 					'keywords' => $searchParameters['keywords'],
-					'created_at' => new Zend_Db_Expr('NOW()'),
 					'is_api' => 1
 				]);
 			}
@@ -2201,10 +2200,9 @@ class MobileController extends Zend_Controller_Action
 
 			if (!empty($searchParameters['keywords']))
 			{
-				(new Application_Model_SearchLog)->insert([
+				(new Application_Model_SearchLog)->save([
 					'user_id' => $user['id'],
 					'keywords' => $searchParameters['keywords'],
-					'created_at' => new Zend_Db_Expr('NOW()'),
 					'is_api' => 1
 				]);
 			}
@@ -2674,6 +2672,7 @@ class MobileController extends Zend_Controller_Action
 			$searchLog = $searchLogModel->fetchAll(
 				$searchLogModel->select()
 					->where('user_id=?', $user['id'])
+					->where('is_duplicate=?', 0)
 					->limit(20, $start)
 					->order('created_at DESC')
 			);

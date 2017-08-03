@@ -212,11 +212,9 @@ class PostController extends Zend_Controller_Action
 
 		if (trim($searchParameters['keywords']) !== '')
 		{
-			(new Application_Model_SearchLog)->insert([
+			(new Application_Model_SearchLog)->save([
 				'user_id' => $user['id'],
-				'keywords' => $searchParameters['keywords'],
-				'created_at' => new Zend_Db_Expr('NOW()'),
-				'is_api' => 0
+				'keywords' => $searchParameters['keywords']
 			]);
 		}
 
@@ -350,11 +348,9 @@ class PostController extends Zend_Controller_Action
 			{
 				if ($searchParameters['start'] == 0 && trim($searchParameters['keywords']) !== '')
 				{
-					(new Application_Model_SearchLog)->insert([
+					(new Application_Model_SearchLog)->save([
 						'user_id' => $user['id'],
-						'keywords' => $searchParameters['keywords'],
-						'created_at' => new Zend_Db_Expr('NOW()'),
-						'is_api' => 0
+						'keywords' => $searchParameters['keywords']
 					]);
 				}
 			}
