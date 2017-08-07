@@ -1,3 +1,22 @@
+<?php
+$settings = Application_Model_Setting::getInstance();
+
+$ne = $this->request->getParam('ne');
+$sw = $this->request->getParam('sw');
+
+if ($ne != null && $sw != null)
+{
+	$neLatLng = explode(',', $ne);
+	$swLatLng = explode(',', $sw);
+}
+else
+{
+	$ne = '37.805741,-122.269452';
+	$sw = '37.800401,-122.278539';
+	$neLatLng = [37.805741, -122.269452];
+	$swLatLng = [37.800401, -122.278539];
+}
+?>
 <h2>mobile/request-nearest</h2>
 <ol class="breadcrumb">
 	<li><a href="<?php echo $this->baseUrl('admin'); ?>">Admin</a></li>
@@ -9,7 +28,7 @@
 <a href="https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilerequest-nearest">
 https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilerequest-nearest</a>
 </div>
-<form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/request-nearest'); ?>" method="post">
+<form class="form-horizontal" role="form" action="<?php echo $this->baseUrl('mobile/request-nearest'); ?>" method="post" id="apiForm">
 	<div class="form-group">
 		<label class="control-label col-sm-2" for="token">Token [token]:</label>
 		<div class="col-sm-10">
@@ -30,18 +49,19 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilereques
 		<label class="control-label col-sm-2" for="latitude">North-East [ne]:</label>
 		<div class="col-sm-10">
 			<input type="text" name="ne" class="form-control"
-				id="latitude" placeholder="Enter North-East coordinates: latitude,longitude"
-				value="<?php echo $this->request->getParam('ne'); ?>">
+				id="ne" placeholder="Enter North-East coordinates: latitude,longitude"
+				value="<?php echo $ne; ?>">
 		</div>
 	</div>
 	<div class="form-group">
 		<label class="control-label col-sm-2" for="longitude">Soth-West [sw]:</label>
 		<div class="col-sm-10">
 			<input type="text" name="sw" class="form-control"
-				id="longitude" placeholder="Enter Soth-West coordinates: latitude,longitude"
-				value="<?php echo $this->request->getParam('sw'); ?>">
+				id="sw" placeholder="Enter Soth-West coordinates: latitude,longitude"
+				value="<?php echo $sw; ?>">
 		</div>
 	</div>
+	<div id="map" style="height:480px;"></div>
 	<hr>
 	<div class="form-group">
 		<label class="control-label col-sm-2" for="latitude" style="color: #ccc">Latitude [latitude]:</label>
@@ -73,3 +93,73 @@ https://github.com/ajones05/seearound.me/wiki/Mobile-Api-Reference#-mobilereques
 		</div>
 	</div>
 </form>
+<script>
+var map, rectangle, markers = [];
+jQuery(function(){
+	jQuery('#ne,#sw').on('change',function(){
+		var ne = jQuery('#ne').val().split(','),
+			sw = jQuery('#sw').val().split(',');
+
+		rectangle.setBounds({
+			north:parseFloat(ne[0]),
+			south:parseFloat(sw[0]),
+			east:parseFloat(ne[1]),
+			west:parseFloat(sw[1])
+		});
+	});
+});
+function initMap(){
+	var bounds = {
+		north:<?= $neLatLng[0] ?>,
+		south:<?= $swLatLng[0] ?>,
+		east:<?= $neLatLng[1] ?>,
+		west:<?= $swLatLng[1] ?>
+	};
+
+	map = new google.maps.Map(document.getElementById('map'));
+	map.fitBounds(bounds);
+
+	rectangle = new google.maps.Rectangle({
+		map: map,
+		bounds: bounds,
+		editable: true
+	});
+
+	google.maps.event.addListener(rectangle, 'bounds_changed', function(){
+		resetMarkers();
+		var rectangleBounds = rectangle.getBounds();
+		var ne = rectangleBounds.getNorthEast();
+		var sw = rectangleBounds.getSouthWest();
+		jQuery('#ne').val(ne.lat()+','+ne.lng());
+		jQuery('#sw').val(sw.lat()+','+sw.lng());
+		jQuery('#apiForm').submit();
+	});
+}
+function resetMarkers(){
+	if (markers.length > 0){
+		for (var i in markers){
+			markers[i].setMap(null);
+		}
+		markers = [];
+	}
+}
+window.responseCallback = function(response){
+	resetMarkers();
+	if (response.result){
+		for (var i in response.result){
+			var marker = new google.maps.Marker({
+				position: {
+					lat:parseFloat(response.result[i].latitude),
+					lng:parseFloat(response.result[i].longitude)
+				},
+				map: map,
+				title: response.result[i].id
+			});
+			markers.push(marker);
+		}
+	}
+}
+</script>
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=<?= $settings['google_mapsKey'] ?>&callback=initMap">
+</script>

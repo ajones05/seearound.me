@@ -45,6 +45,10 @@ $(function(){
 					$('<pre/>').text(JSON.stringify(response, null, 4))
 				)
 			));
+
+			if(window.responseCallback && typeof window.responseCallback == 'function'){
+				window.responseCallback(response);
+			}
 		}).fail(function(jqXHR, textStatus){
 			form.after($('<div/>').addClass('panel panel-default').append(
 				$('<div/>').addClass('panel-heading').text('#' + (++requestCount) + ' - ' + form.attr('action')),
