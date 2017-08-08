@@ -2182,16 +2182,25 @@ class MobileController extends Zend_Controller_Action
 				$queryOptions['user'] = $filterUser;
 			}
 
-			$searchForm = new Application_Form_PostSearch;
 			$searchParameters = [
-				'latitude' => $this->_request->getPost('latitude'),
-				'longitude' => $this->_request->getPost('longitude'),
-				'radius' => $this->_request->getPost('radious', 1.5),
 				'keywords' => $this->_request->getPost('searchText'),
 				'filter' => $this->_request->getPost('filter'),
 				'category_id' => (array) $this->_request->getPost('category_id'),
-				'start' => $this->_request->getPost('start', 0)
+				'start' => $this->_request->getPost('start', 0),
+
+				// INFO: filter shape by North-East and Soth-West points
+				'ne' => $this->_request->getPost('ne'),
+				'sw' => $this->_request->getPost('sw'),
+
+				// INFO: legacy
+				'latitude' => $this->_request->getPost('latitude'),
+				'longitude' => $this->_request->getPost('longitude'),
+				'radius' => $this->_request->getPost('radious', 1.5)
 			];
+
+			$searchForm = !empty($searchParameters['ne']) ?
+				new Application_Form_PostSearchApi :
+				new Application_Form_PostSearch;
 
 			if (!$searchForm->isValid($searchParameters))
 			{
