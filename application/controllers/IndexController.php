@@ -25,6 +25,13 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function indexAction()
 	{
+		if (My_CommonUtils::isMobile())
+		{
+			$this->_helper->viewRenderer->setNoRender(true);
+			$this->view->layout()->setLayout('beta-mobile');
+			return;
+		}
+
 		$this->view->layout()->setLayout('default');
 
 		$this->view->headScript()
