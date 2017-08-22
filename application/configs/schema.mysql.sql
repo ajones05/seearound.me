@@ -271,6 +271,19 @@ CREATE TABLE `post_social` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
+-- Table structure for table `post_read`
+--
+
+CREATE TABLE `post_read` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `post_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`post_id`) REFERENCES `news` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `user_data` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
 -- Table structure for table `setting`
 --
 

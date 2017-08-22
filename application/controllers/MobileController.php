@@ -2045,7 +2045,8 @@ class MobileController extends Zend_Controller_Action
 				->search($searchParameters + ['limit' => 15], [
 					'auth' => $user,
 					'link' => true,
-					'userVote' => true
+					'userVote' => true,
+					'userRead' => true
 				]);
 
 			if ($result->count())
@@ -2082,7 +2083,8 @@ class MobileController extends Zend_Controller_Action
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
 						'canEdit' => Application_Model_News::canEdit($row, $user) ? 1 : 0,
 						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0,
-						'isFriend' => $friendStatus ? 1 : 0
+						'isFriend' => $friendStatus ? 1 : 0,
+						'isRead' => $row['user_read']
 					];
 
 					$bodyLen = strlen($row->news);
@@ -2168,7 +2170,8 @@ class MobileController extends Zend_Controller_Action
 			$queryOptions = [
 				'auth' => $user,
 				'link' => true,
-				'userVote' => true
+				'userVote' => true,
+				'userRead' => true
 			];
 
 			if ($userId != null)
@@ -2257,7 +2260,8 @@ class MobileController extends Zend_Controller_Action
 							Application_Model_User::getThumb($row, '320x320', ['alias' => 'owner_'])),
 						'canEdit' => Application_Model_News::canEdit($row, $user) ? 1 : 0,
 						'canVote' => Application_Model_Voting::canVote($user, $row) ? 1 : 0,
-						'isFriend' => $friendStatus ? 1 : 0
+						'isFriend' => $friendStatus ? 1 : 0,
+						'isRead' => $row['user_read']
 					];
 
 					$bodyLen = strlen($row->news);
@@ -2654,6 +2658,54 @@ class MobileController extends Zend_Controller_Action
 				'message' => $e instanceof RuntimeException ?
 					$e->getMessage() : 'Internal Server Error'
 			);
+			$this->errorHandler($e);
+		}
+
+		$this->responseHandler($response);
+		$this->_helper->json($response);
+	}
+
+	/**
+	 * Mark post as read action.
+	 */
+	public function postReadAction()
+	{
+		try
+		{
+			$user = $this->getUserByToken();
+			$post_id = $this->_request->getPost('post_id');
+
+			if (!v::intVal()->validate($post_id))
+			{
+				throw new RuntimeException('Incorrect post ID value: ' .
+					var_export($post_id, true));
+			}
+
+			if (!Application_Model_News::checkId($post_id, $post,
+						['auth'=>$user,'userRead'=>true]))
+			{
+				throw new RuntimeException('Incorrect post ID: ' .
+					var_export($post_id, true));
+			}
+
+			if (!$post['user_read'])
+			{
+				$postReadModel = new Application_Model_PostRead;
+				$postReadModel->insert([
+					'user_id' => $user['id'],
+					'post_id' => $post_id
+				]);
+			}
+
+			$response = ['status' => 'SUCCESS'];
+		}
+		catch (Exception $e)
+		{
+			$response = [
+				'status' => 'FAILED',
+				'message' => $e instanceof RuntimeException ?
+					$e->getMessage() : 'Internal Server Error'
+			];
 			$this->errorHandler($e);
 		}
 

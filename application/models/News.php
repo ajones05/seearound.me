@@ -55,7 +55,8 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		'Application_Model_Comments',
 		'Application_Model_NewsLink',
 		'Application_Model_Voting',
-		'Application_Model_PostSocial'
+		'Application_Model_PostSocial',
+		'Application_Model_PostRead'
 	];
 
 	/**
@@ -90,6 +91,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		'Social' => [
 			'columns' => 'id',
 			'refTableClass' => 'Application_Model_PostSocial',
+			'refColumns' => 'post_id'
+    ],
+		'Read' => [
+			'columns' => 'id',
+			'refTableClass' => 'Application_Model_PostRead',
 			'refColumns' => 'post_id'
     ]
 	];
@@ -182,6 +188,15 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			if (empty($options['userBlock']))
 			{
 				$query->where('ub.id IS NULL');
+			}
+
+			if (!empty($options['userRead']))
+			{
+				$query->joinLeft(
+					['r' => 'post_read'],
+					'(r.post_id=news.id AND ' . 'r.user_id=' . $options['auth']['id'] . ')',
+					['user_read' => '(r.id IS NOT NULL)']
+				);
 			}
 		}
 
