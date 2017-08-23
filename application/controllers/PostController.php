@@ -196,7 +196,7 @@ class PostController extends Zend_Controller_Action
 			'latitude' => $center[0],
 			'longitude' => $center[1],
 			'keywords' => $this->_request->getParam('keywords'),
-			'filter' => $this->_request->getParam('filter'),
+			'filter' => (array) $this->_request->getParam('filter'),
 			'category_id' => (array) $this->_request->getParam('category_id')
 		];
 
@@ -332,7 +332,7 @@ class PostController extends Zend_Controller_Action
 				'longitude' => $this->_request->getPost('longitude'),
 				'radius' => $this->_request->getPost('radius', 1.5),
 				'keywords' => $this->_request->getPost('keywords'),
-				'filter' => $this->_request->getPost('filter'),
+				'filter' => (array) $this->_request->getPost('filter'),
 				'category_id' => (array) $this->_request->getPost('category_id'),
 				'start' => $this->_request->getPost('start', 0)
 			];
@@ -525,7 +525,7 @@ class PostController extends Zend_Controller_Action
 				'latitude' => $this->_request->getPost('latitude'),
 				'longitude' => $this->_request->getPost('longitude'),
 				'keywords' => $this->_request->getPost('keywords'),
-				'filter' => $this->_request->getPost('filter'),
+				'filter' => (array) $this->_request->getPost('filter'),
 				'category_id' => (array) $this->_request->getPost('category_id')
 			];
 
@@ -1831,7 +1831,7 @@ class PostController extends Zend_Controller_Action
 				'latitude' => $data['latitude'],
 				'longitude' => $data['longitude'],
 				'keywords' => $this->_request->getPost('keywords'),
-				'filter' => $this->_request->getPost('filter'),
+				'filter' => (array) $this->_request->getPost('filter'),
 				'category_id' => (array) $this->_request->getPost('category_id'),
 				'radius' => $this->_request->getPost('radius')
 			];

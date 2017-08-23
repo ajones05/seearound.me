@@ -290,7 +290,7 @@ class HomeController extends Zend_Controller_Action
 			'longitude' => $location[1],
 			'limit' => 15,
 			'radius' => 1.5,
-			'filter' => 0
+			'filter' => [0]
 		], $queryOptions);
 
 		if ($posts->count())

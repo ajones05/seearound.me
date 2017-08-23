@@ -227,50 +227,54 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		}
 
 		$order = [];
-		$filter = My_ArrayHelper::getProp($parameters, 'filter');
+		$filters = My_ArrayHelper::getProp($parameters, 'filter', array());
 
 		if (!empty($options['user']))
 		{
-			switch ($filter)
+			// My posts
+			if (in_array('0', $filters))
 			{
-				// My posts
-				case '0':
-					$query->where('news.user_id=?', $options['user']['id']);
-					break;
-				// My interests
-				case '1':
-					$interests = !empty($options['user']['interest']) ?
-						explode(', ', $options['user']['interest']) : null;
+				$query->where('news.user_id=?', $options['user']['id']);
+			}
 
-					if ($interests != null)
+			// My interests
+			if (in_array('1', $filters))
+			{
+				$interests = !empty($options['user']['interest']) ?
+					explode(', ', $options['user']['interest']) : null;
+
+				if ($interests != null)
+				{
+					$adapter = $this->getAdapter();
+
+					foreach ($interests as &$_interest)
 					{
-						$adapter = $this->getAdapter();
-
-						foreach ($interests as &$_interest)
-						{
-							$_interest = 'news.news LIKE ' . $adapter->quote('%' . $_interest . '%');
-						}
-
-						$query->where(implode(' OR ', $interests));
+						$_interest = 'news.news LIKE ' . $adapter->quote('%' . $_interest . '%');
 					}
-					break;
-				// Following
-				case '2':
-					$query->where('news.user_id<>?', $options['user']['id']);
-					$query->joinLeft(['f1' => 'friends'], '(f1.sender_id=' . $options['user']['id'] .
-						' AND f1.status=1 AND news.user_id=f1.receiver_id)', '');
-					$query->joinLeft(['f2' => 'friends'], '(f2.receiver_id=' . $options['user']['id'] .
-						' AND f2.status=1 AND news.user_id=f2.sender_id)', '');
-					$query->where('f1.id IS NOT NULL OR f2.id IS NOT NULL');
-					break;
-				// Most recent
-				case '3':
-					$order[] = 'created_date DESC';
-					break;
+
+					$query->where(implode(' OR ', $interests));
+				}
+			}
+
+			// Following
+			if (in_array('2', $filters))
+			{
+				$query->where('news.user_id<>?', $options['user']['id']);
+				$query->joinLeft(['f1' => 'friends'], '(f1.sender_id=' . $options['user']['id'] .
+					' AND f1.status=1 AND news.user_id=f1.receiver_id)', '');
+				$query->joinLeft(['f2' => 'friends'], '(f2.receiver_id=' . $options['user']['id'] .
+					' AND f2.status=1 AND news.user_id=f2.sender_id)', '');
+				$query->where('f1.id IS NOT NULL OR f2.id IS NOT NULL');
+			}
+
+			// Most recent
+			if (in_array('3', $filters))
+			{
+				$order[] = 'created_date DESC';
 			}
 		}
 
-		if ($filter == 3)
+		if (in_array('3', $filters))
 		{
 			if (!empty($parameters['category_id']))
 			{

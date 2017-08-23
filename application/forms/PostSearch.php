@@ -19,12 +19,8 @@ class Application_Form_PostSearch extends Zend_Form
 			'value' => ''
 		]);
 
-		$this->addElement('select', 'filter', [
+		$this->addElement('multiselect', 'filter', [
 			'required' => false,
-			'filters' => ['StringTrim'],
-			'decorators' => ['ViewHelper'],
-			'value' => '',
-			'style' => 'display:none',
 			'multiOptions' => Application_Model_News::$filters
 		]);
 

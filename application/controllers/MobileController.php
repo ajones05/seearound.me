@@ -2187,7 +2187,7 @@ class MobileController extends Zend_Controller_Action
 
 			$searchParameters = [
 				'keywords' => $this->_request->getPost('searchText'),
-				'filter' => $this->_request->getPost('filter'),
+				'filter' => (array) $this->_request->getPost('filter'),
 				'category_id' => (array) $this->_request->getPost('category_id'),
 				'start' => $this->_request->getPost('start', 0),
 

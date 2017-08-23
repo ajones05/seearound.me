@@ -376,7 +376,7 @@ class ContactsController extends Zend_Controller_Action
 		$this->view->appendScript = ['opts=' . json_encode([
 			'lat' => $user['latitude'],
 			'lng' => $user['longitude'],
-			'filter' => 2
+			'filter' => [2]
 		]) . ',user=' . json_encode([
 			'name' => $user['Name'],
 			'image' => $this->view->baseUrl(
@@ -397,7 +397,7 @@ class ContactsController extends Zend_Controller_Action
 			'latitude' => $user['latitude'],
 			'longitude' => $user['longitude'],
 			'radius' => 1.5,
-			'filter' => 2,
+			'filter' => [2],
 			'start' => 0,
 			'limit' => 15
 		], ['auth' => $user]);
