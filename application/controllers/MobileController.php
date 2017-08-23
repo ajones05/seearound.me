@@ -2007,6 +2007,7 @@ class MobileController extends Zend_Controller_Action
 			$user = $this->getUserByToken();
 			$searchParameters = [
 				'start' => $this->_request->getPost('start', 0),
+				'filter' => (array) $this->_request->getPost('filter'),
 
 				// INFO: filter shape by North-East and Soth-West points
 				'ne' => $this->_request->getPost('ne'),
