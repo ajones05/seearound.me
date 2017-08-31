@@ -103,10 +103,223 @@ function editLocationDialog(options){
 					zoomControl:false,
 					scrollwheel:false,
 					disableDoubleClickZoom:true,
-					styles:[{
-						featureType:'poi',
-						stylers:[{visibility:'off'}]
-					}]
+					styles:[
+						{
+							"elementType": "labels.icon",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "administrative.neighborhood",
+							"elementType": "geometry.fill",
+							"stylers": [
+								{
+									"lightness": 30
+								}
+							]
+						},
+						{
+							"featureType": "administrative.neighborhood",
+							"elementType": "geometry.stroke",
+							"stylers": [
+								{
+									"lightness": 35
+								}
+							]
+						},
+						{
+							"featureType": "administrative.neighborhood",
+							"elementType": "labels.icon",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "landscape",
+							"elementType": "labels.icon",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "landscape.man_made",
+							"elementType": "geometry",
+							"stylers": [
+								{
+									"lightness": 30
+								}
+							]
+						},
+						{
+							"featureType": "landscape.man_made",
+							"elementType": "geometry.fill",
+							"stylers": [
+								{
+									"lightness": 25
+								}
+							]
+						},
+						{
+							"featureType": "landscape.man_made",
+							"elementType": "geometry.stroke",
+							"stylers": [
+								{
+									"lightness": -5
+								}
+							]
+						},
+						{
+							"featureType": "landscape.man_made",
+							"elementType": "labels",
+							"stylers": [
+								{
+									"weight": 0.5
+								}
+							]
+						},
+						{
+							"featureType": "landscape.natural",
+							"elementType": "labels",
+							"stylers": [
+								{
+									"weight": 0.5
+								}
+							]
+						},
+						{
+							"featureType": "poi",
+							"elementType": "labels.icon",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "poi",
+							"elementType": "labels.text",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "poi.business",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "poi.park",
+							"elementType": "geometry.fill",
+							"stylers": [
+								{
+									"color": "#bbe88c"
+								}
+							]
+						},
+						{
+							"featureType": "road",
+							"elementType": "labels",
+							"stylers": [
+								{
+									"weight": 0.5
+								}
+							]
+						},
+						{
+							"featureType": "road",
+							"elementType": "labels.icon",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "road.highway",
+							"elementType": "geometry.fill",
+							"stylers": [
+								{
+									"lightness": 25
+								}
+							]
+						},
+						{
+							"featureType": "road.highway",
+							"elementType": "geometry.stroke",
+							"stylers": [
+								{
+									"color": "#f1c358"
+								}
+							]
+						},
+						{
+							"featureType": "road.local",
+							"stylers": [
+								{
+									"weight": 1
+								}
+							]
+						},
+						{
+							"featureType": "road.local",
+							"elementType": "labels",
+							"stylers": [
+								{
+									"weight": 0.5
+								}
+							]
+						},
+						{
+							"featureType": "road.local",
+							"elementType": "labels.icon",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "transit",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "transit",
+							"elementType": "labels.icon",
+							"stylers": [
+								{
+									"visibility": "off"
+								}
+							]
+						},
+						{
+							"featureType": "water",
+							"elementType": "geometry.fill",
+							"stylers": [
+								{
+									"color": "#9cc9ff"
+								},
+								{
+									"lightness": 10
+								}
+							]
+						}
+					]
 				});
 				var marker = new google.maps.Marker({
 					position:options.center,
