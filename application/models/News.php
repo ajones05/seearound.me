@@ -34,11 +34,11 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 	 * @var array
 	 */
 	public static $filters = [
-		'' => 'Most interesting',
-		'3' => 'Most recent',
-		'0' => 'My posts',
-		'1' => 'My interests',
-		'2' => 'Following'
+		4 => 'Most interesting',
+		3 => 'Most recent',
+		0 => 'My posts',
+		1 => 'My interests',
+		2 => 'Following'
 	];
 
 	/**
@@ -232,13 +232,13 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 		if (!empty($options['user']))
 		{
 			// My posts
-			if (in_array('0', $filters))
+			if (in_array(0, $filters))
 			{
 				$query->where('news.user_id=?', $options['user']['id']);
 			}
 
 			// My interests
-			if (in_array('1', $filters))
+			if (in_array(1, $filters))
 			{
 				$interests = !empty($options['user']['interest']) ?
 					explode(', ', $options['user']['interest']) : null;
@@ -257,7 +257,7 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			}
 
 			// Following
-			if (in_array('2', $filters))
+			if (in_array(2, $filters))
 			{
 				$query->where('news.user_id<>?', $options['user']['id']);
 				$query->joinLeft(['f1' => 'friends'], '(f1.sender_id=' . $options['user']['id'] .
@@ -266,23 +266,22 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 					' AND f2.status=1 AND news.user_id=f2.sender_id)', '');
 				$query->where('f1.id IS NOT NULL OR f2.id IS NOT NULL');
 			}
-
-			// Most recent
-			if (in_array('3', $filters))
-			{
-				$order[] = 'created_date DESC';
-			}
 		}
 
-		if (in_array('3', $filters))
+		// Most recent
+		if (in_array(3, $filters))
 		{
+			$order[] = 'created_date DESC';
+
 			if (!empty($parameters['category_id']))
 			{
 				$order[] = 'FIELD(news.category_id,' .
 					implode(',', array_reverse($parameters['category_id'])) . ') DESC';
 			}
 		}
-		else
+
+		// Most interesting
+		if (in_array(4, $filters) || !in_array(3, $filters))
 		{
 			$score = $this->postScore();
 
@@ -308,7 +307,6 @@ class Application_Model_News extends Zend_Db_Table_Abstract
 			$query->group('news.id');
 		}
 
-		$order[] = 'news.id ASC';
 		$query->order($order);
 
 		if (!empty($parameters['ne']) && !empty($parameters['sw']))

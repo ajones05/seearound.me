@@ -1,5 +1,6 @@
 <?php
 use Respect\Validation\Validator as v;
+use Application_Form_PostSearch as SearchForm;
 
 /**
  * Post controller class.
@@ -26,7 +27,7 @@ class PostController extends Zend_Controller_Action
 		}
 
 		$this->view->layout()->setLayout('map');
-		$this->view->searchForm = new Application_Form_PostSearch;
+		$this->view->searchForm = new SearchForm;
 		$this->view->user = $user;
 
 		$postOptions = [
@@ -178,7 +179,7 @@ class PostController extends Zend_Controller_Action
 				var_export($center, true));
 		}
 
-		$searchForm = new Application_Form_PostSearch;
+		$searchForm = new SearchForm;
 		$userData = (new Zend_Session_Namespace('userData'))->data;
 		$isValidData = $userData ? $searchForm->isValid($userData) : false;
 
@@ -196,7 +197,7 @@ class PostController extends Zend_Controller_Action
 			'latitude' => $center[0],
 			'longitude' => $center[1],
 			'keywords' => $this->_request->getParam('keywords'),
-			'filter' => (array) $this->_request->getParam('filter'),
+			'filter' => SearchForm::getFilter($this->_request->getParam('filter')),
 			'category_id' => (array) $this->_request->getParam('category_id')
 		];
 
@@ -326,13 +327,13 @@ class PostController extends Zend_Controller_Action
 
 		try
 		{
-			$searchForm = new Application_Form_PostSearch;
+			$searchForm = new SearchForm;
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
 				'longitude' => $this->_request->getPost('longitude'),
 				'radius' => $this->_request->getPost('radius', 1.5),
 				'keywords' => $this->_request->getPost('keywords'),
-				'filter' => (array) $this->_request->getPost('filter'),
+				'filter' => SearchForm::getFilter($this->_request->getPost('filter')),
 				'category_id' => (array) $this->_request->getPost('category_id'),
 				'start' => $this->_request->getPost('start', 0)
 			];
@@ -520,12 +521,12 @@ class PostController extends Zend_Controller_Action
 					var_export($start, true));
 			}
 
-			$searchForm = new Application_Form_PostSearch;
+			$searchForm = new SearchForm;
 			$searchParameters = [
 				'latitude' => $this->_request->getPost('latitude'),
 				'longitude' => $this->_request->getPost('longitude'),
 				'keywords' => $this->_request->getPost('keywords'),
-				'filter' => (array) $this->_request->getPost('filter'),
+				'filter' => SearchForm::getFilter($this->_request->getPost('filter')),
 				'category_id' => (array) $this->_request->getPost('category_id')
 			];
 
@@ -1831,12 +1832,12 @@ class PostController extends Zend_Controller_Action
 				'latitude' => $data['latitude'],
 				'longitude' => $data['longitude'],
 				'keywords' => $this->_request->getPost('keywords'),
-				'filter' => (array) $this->_request->getPost('filter'),
+				'filter' => SearchForm::getFilter($this->_request->getPost('filter')),
 				'category_id' => (array) $this->_request->getPost('category_id'),
 				'radius' => $this->_request->getPost('radius')
 			];
 
-			$searchForm = new Application_Form_PostSearch;
+			$searchForm = new SearchForm;
 
 			if (!$searchForm->isValid($searchParameters))
 			{

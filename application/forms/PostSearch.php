@@ -56,4 +56,32 @@ class Application_Form_PostSearch extends Zend_Form
 			'validators' => [['Callback', false, v::intVal()->min(0)]]
 		]);
 	}
+
+	/**
+	 * Returns search filter value.
+	 *
+	 * @param mixed $filter
+	 * @return array
+	 */
+	public static function getFilter($filter)
+	{
+		if (!is_array($filter))
+		{
+			$filter = trim($filter) === '' ? [] : (array) $filter;
+		}
+		else
+		{
+			if ($filter == [''])
+			{
+				$filter = [];
+			}
+		}
+
+		if ($filter == null)
+		{
+			$filter[] = 4;
+		}
+
+		return $filter;
+	}
 }

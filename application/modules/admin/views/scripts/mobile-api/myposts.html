@@ -1,8 +1,10 @@
 <?php
+use Application_Form_PostSearch as SearchForm;
+
 $settings = Application_Model_Setting::getInstance();
 
 $category_id = (array) $this->request->getParam('category_id');
-$filter_id = (array) $this->request->getParam('filter');
+$filter_id = SearchForm::getFilter($this->request->getParam('filter'));
 
 $ne = $this->request->getParam('ne');
 $sw = $this->request->getParam('sw');

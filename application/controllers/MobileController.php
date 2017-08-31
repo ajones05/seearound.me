@@ -1,5 +1,6 @@
 <?php
 use Respect\Validation\Validator as v;
+use Application_Form_PostSearch as SearchForm;
 
 /**
  * Mobile API class.
@@ -2007,7 +2008,7 @@ class MobileController extends Zend_Controller_Action
 			$user = $this->getUserByToken();
 			$searchParameters = [
 				'start' => $this->_request->getPost('start', 0),
-				'filter' => (array) $this->_request->getPost('filter'),
+				'filter' => SearchForm::getFilter($this->_request->getPost('filter')),
 
 				// INFO: filter shape by North-East and Soth-West points
 				'ne' => $this->_request->getPost('ne'),
@@ -2188,7 +2189,7 @@ class MobileController extends Zend_Controller_Action
 
 			$searchParameters = [
 				'keywords' => $this->_request->getPost('searchText'),
-				'filter' => (array) $this->_request->getPost('filter'),
+				'filter' => SearchForm::getFilter($this->_request->getPost('filter')),
 				'category_id' => (array) $this->_request->getPost('category_id'),
 				'start' => $this->_request->getPost('start', 0),
 
